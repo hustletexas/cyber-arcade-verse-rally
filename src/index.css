@@ -1,94 +1,51 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Cyber City Arcade Design System - Retro 80s Synthwave Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono:wght@400&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 20% 8%;
+    --foreground: 300 100% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 240 15% 12%;
+    --card-foreground: 300 100% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 240 15% 12%;
+    --popover-foreground: 300 100% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 315 100% 60%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 280 100% 70%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 10% 20%;
+    --muted-foreground: 280 20% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 180 100% 50%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 280 50% 30%;
+    --input: 240 15% 20%;
+    --ring: 315 100% 60%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Custom Cyber Colors */
+    --neon-pink: 315 100% 60%;
+    --neon-cyan: 180 100% 50%;
+    --neon-purple: 280 100% 70%;
+    --neon-green: 120 100% 50%;
+    --dark-bg: 220 20% 8%;
+    --card-bg: 240 15% 12%;
   }
 }
 
@@ -98,6 +55,330 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
+    background: linear-gradient(135deg, 
+      hsl(var(--dark-bg)) 0%, 
+      hsl(240 15% 6%) 50%, 
+      hsl(280 20% 10%) 100%);
+    min-height: 100vh;
+  }
+
+  .font-display {
+    font-family: 'Orbitron', monospace;
+  }
+
+  .font-mono {
+    font-family: 'Share Tech Mono', monospace;
+  }
+}
+
+@layer components {
+  /* Neon Effects */
+  .neon-glow {
+    filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 20px currentColor);
+  }
+
+  .neon-border {
+    border: 2px solid hsl(var(--neon-cyan));
+    box-shadow: 
+      0 0 10px hsl(var(--neon-cyan) / 0.5),
+      inset 0 0 10px hsl(var(--neon-cyan) / 0.1);
+  }
+
+  .holographic {
+    background: linear-gradient(
+      45deg,
+      hsl(var(--neon-pink) / 0.1),
+      hsl(var(--neon-cyan) / 0.1),
+      hsl(var(--neon-purple) / 0.1),
+      hsl(var(--neon-pink) / 0.1)
+    );
+    background-size: 400% 400%;
+    animation: holographic-shift 3s ease-in-out infinite;
+  }
+
+  .glitch-text {
+    position: relative;
+    color: hsl(var(--neon-cyan));
+    text-shadow: 
+      0 0 5px currentColor,
+      0 0 10px currentColor,
+      0 0 15px currentColor;
+  }
+
+  .glitch-text::before,
+  .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .glitch-text::before {
+    animation: glitch-1 0.5s infinite linear alternate-reverse;
+    color: hsl(var(--neon-pink));
+    z-index: -1;
+  }
+
+  .glitch-text::after {
+    animation: glitch-2 0.5s infinite linear alternate-reverse;
+    color: hsl(var(--neon-green));
+    z-index: -2;
+  }
+
+  /* Arcade Cabinet Styling */
+  .arcade-frame {
+    background: linear-gradient(145deg, hsl(var(--card-bg)), hsl(240 10% 8%));
+    border: 3px solid hsl(var(--neon-cyan));
+    border-radius: 12px;
+    box-shadow: 
+      0 0 20px hsl(var(--neon-cyan) / 0.3),
+      inset 0 0 20px hsl(var(--neon-cyan) / 0.1);
+    position: relative;
+  }
+
+  .arcade-frame::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+      hsl(var(--neon-pink)), 
+      hsl(var(--neon-cyan)), 
+      hsl(var(--neon-purple)));
+    border-radius: 12px;
+    z-index: -1;
+    opacity: 0.7;
+    filter: blur(2px);
+  }
+
+  /* VHS Glitch Effect */
+  .vhs-glitch {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .vhs-glitch::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(var(--neon-cyan) / 0.03) 2px,
+      hsl(var(--neon-cyan) / 0.03) 4px
+    );
+    pointer-events: none;
+    animation: vhs-lines 0.1s linear infinite;
+  }
+
+  /* Button Styles */
+  .cyber-button {
+    background: linear-gradient(145deg, hsl(var(--neon-pink)), hsl(var(--neon-purple)));
+    border: 2px solid hsl(var(--neon-cyan));
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cyber-button:hover {
+    background: linear-gradient(145deg, hsl(var(--neon-cyan)), hsl(var(--neon-green)));
+    box-shadow: 
+      0 0 20px hsl(var(--neon-cyan)),
+      0 0 40px hsl(var(--neon-cyan) / 0.5);
+    transform: translateY(-2px);
+  }
+
+  .cyber-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, white, transparent);
+    opacity: 0.2;
+    transition: left 0.5s ease;
+  }
+
+  .cyber-button:hover::before {
+    left: 100%;
+  }
+
+  /* Marketplace Vending Machine */
+  .vending-machine {
+    background: linear-gradient(145deg, hsl(var(--card-bg)), hsl(240 8% 6%));
+    border: 4px solid hsl(var(--neon-purple));
+    border-radius: 20px;
+    box-shadow: 
+      0 0 30px hsl(var(--neon-purple) / 0.4),
+      inset 0 0 30px hsl(var(--neon-purple) / 0.1);
+    position: relative;
+  }
+
+  .vending-machine::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    height: 60%;
+    background: linear-gradient(180deg, 
+      hsl(var(--neon-cyan) / 0.1), 
+      transparent);
+    border-radius: 10px;
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  /* Animation Keyframes */
+  @keyframes holographic-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes glitch-1 {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(-2px, 2px);
+    }
+    40% {
+      transform: translate(-2px, -2px);
+    }
+    60% {
+      transform: translate(2px, 2px);
+    }
+    80% {
+      transform: translate(2px, -2px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+
+  @keyframes glitch-2 {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(2px, -2px);
+    }
+    40% {
+      transform: translate(2px, 2px);
+    }
+    60% {
+      transform: translate(-2px, -2px);
+    }
+    80% {
+      transform: translate(-2px, 2px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+
+  @keyframes vhs-lines {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(4px);
+    }
+  }
+
+  @keyframes neon-flicker {
+    0%, 100% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+    50% {
+      opacity: 0.8;
+      filter: brightness(0.8);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Utility Classes */
+  .animate-neon-flicker {
+    animation: neon-flicker 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .text-neon-pink {
+    color: hsl(var(--neon-pink));
+  }
+
+  .text-neon-cyan {
+    color: hsl(var(--neon-cyan));
+  }
+
+  .text-neon-purple {
+    color: hsl(var(--neon-purple));
+  }
+
+  .text-neon-green {
+    color: hsl(var(--neon-green));
+  }
+
+  .bg-neon-pink {
+    background-color: hsl(var(--neon-pink));
+  }
+
+  .bg-neon-cyan {
+    background-color: hsl(var(--neon-cyan));
+  }
+
+  .bg-neon-purple {
+    background-color: hsl(var(--neon-purple));
+  }
+
+  .bg-neon-green {
+    background-color: hsl(var(--neon-green));
+  }
+
+  .border-neon-pink {
+    border-color: hsl(var(--neon-pink));
+  }
+
+  .border-neon-cyan {
+    border-color: hsl(var(--neon-cyan));
+  }
+
+  .border-neon-purple {
+    border-color: hsl(var(--neon-purple));
+  }
+
+  .border-neon-green {
+    border-color: hsl(var(--neon-green));
   }
 }
