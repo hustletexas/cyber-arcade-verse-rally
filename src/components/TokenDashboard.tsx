@@ -3,23 +3,96 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export const TokenDashboard = () => {
-  const tokenData = {
-    balance: 15420,
-    claimableRewards: 850,
-    tokenPrice: 0.045,
-    marketCap: '2.3M',
-    totalSupply: '100M'
+  const { user } = useAuth();
+  const { balance, loading, claimRewards, adminAirdrop } = useUserBalance();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const tokenPrice = 0.045;
+
+  const handleClaimRewards = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to claim rewards",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+
+    const result = await claimRewards();
+    if (result?.success) {
+      toast({
+        title: "🎉 Rewards Claimed!",
+        description: `Successfully claimed ${balance.claimable_rewards} $CCTR tokens!`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to claim rewards. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const claimRewards = () => {
-    console.log('Claiming rewards...');
+  const handleAdminAirdrop = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to use admin features",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+
+    const result = await adminAirdrop(500);
+    if (result?.success) {
+      toast({
+        title: "🎁 Airdrop Successful!",
+        description: "Added 500 $CCTR to claimable rewards!",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to process airdrop. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const adminAirdrop = () => {
-    console.log('Admin airdrop initiated...');
-  };
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <Card className="arcade-frame">
+          <CardHeader>
+            <CardTitle className="font-display text-2xl text-neon-green flex items-center gap-3">
+              💰 $CCTR TOKEN DASHBOARD
+              <Badge className="bg-neon-pink text-black">LOGIN REQUIRED</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center py-12">
+            <p className="text-lg text-neon-purple mb-6">
+              Please log in to view your token balance and claim rewards
+            </p>
+            <Button 
+              onClick={() => navigate('/auth')}
+              className="cyber-button"
+            >
+              🔐 LOGIN TO CONTINUE
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -37,11 +110,11 @@ export const TokenDashboard = () => {
             <Card className="holographic p-6 text-center">
               <h3 className="font-display text-lg text-neon-cyan mb-2">YOUR BALANCE</h3>
               <div className="text-4xl font-black text-neon-green mb-2">
-                {tokenData.balance.toLocaleString()}
+                {loading ? '...' : balance.cctr_balance.toLocaleString()}
               </div>
               <p className="text-sm text-muted-foreground">$CCTR Tokens</p>
               <div className="mt-4 text-lg text-neon-purple">
-                ≈ ${(tokenData.balance * tokenData.tokenPrice).toFixed(2)} USD
+                ≈ ${loading ? '...' : (balance.cctr_balance * tokenPrice).toFixed(2)} USD
               </div>
             </Card>
 
@@ -49,14 +122,15 @@ export const TokenDashboard = () => {
             <Card className="holographic p-6 text-center">
               <h3 className="font-display text-lg text-neon-pink mb-2">CLAIMABLE REWARDS</h3>
               <div className="text-4xl font-black text-neon-cyan mb-2">
-                {tokenData.claimableRewards.toLocaleString()}
+                {loading ? '...' : balance.claimable_rewards.toLocaleString()}
               </div>
               <p className="text-sm text-muted-foreground">$CCTR Available</p>
               <Button 
-                onClick={claimRewards}
+                onClick={handleClaimRewards}
+                disabled={loading || balance.claimable_rewards === 0}
                 className="mt-4 cyber-button w-full"
               >
-                🏆 CLAIM REWARDS
+                {balance.claimable_rewards === 0 ? '✅ NO REWARDS' : '🏆 CLAIM REWARDS'}
               </Button>
             </Card>
 
@@ -64,7 +138,7 @@ export const TokenDashboard = () => {
             <Card className="holographic p-6 text-center">
               <h3 className="font-display text-lg text-neon-purple mb-2">TOKEN PRICE</h3>
               <div className="text-4xl font-black text-neon-green mb-2">
-                ${tokenData.tokenPrice}
+                ${tokenPrice}
               </div>
               <p className="text-sm text-muted-foreground">Per $CCTR</p>
               <Badge className="mt-4 bg-neon-green text-black">
@@ -82,11 +156,11 @@ export const TokenDashboard = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span>Market Cap:</span>
-              <span className="text-neon-green font-bold">${tokenData.marketCap}</span>
+              <span className="text-neon-green font-bold">$2.3M</span>
             </div>
             <div className="flex justify-between items-center">
               <span>Total Supply:</span>
-              <span className="text-neon-purple font-bold">{tokenData.totalSupply} $CCTR</span>
+              <span className="text-neon-purple font-bold">100M $CCTR</span>
             </div>
             <div className="flex justify-between items-center">
               <span>Circulating Supply:</span>
@@ -128,21 +202,21 @@ export const TokenDashboard = () => {
         </Card>
       </div>
 
-      {/* Admin Panel (conditional) */}
+      {/* Admin Panel */}
       <Card className="arcade-frame border-neon-pink">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
             👑 ADMIN PANEL
-            <Badge className="bg-neon-pink text-black">RESTRICTED</Badge>
+            <Badge className="bg-neon-pink text-black">DEMO</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button 
-              onClick={adminAirdrop}
+              onClick={handleAdminAirdrop}
               className="cyber-button"
             >
-              🎁 AIRDROP TOKENS
+              🎁 AIRDROP 500 TOKENS
             </Button>
             <Button 
               variant="outline"

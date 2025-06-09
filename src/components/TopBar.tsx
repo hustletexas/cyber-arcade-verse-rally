@@ -1,47 +1,39 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export const TopBar = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [userType, setUserType] = useState<'google' | 'wallet' | null>(null);
-  const [userInfo, setUserInfo] = useState({
-    name: '',
-    address: '',
-    avatar: ''
-  });
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleGoogleLogin = () => {
-    // Placeholder for Google login via Thirdweb Auth
-    setIsConnected(true);
-    setUserType('google');
-    setUserInfo({
-      name: 'Player One',
-      address: 'player.one@gmail.com',
-      avatar: ''
-    });
-    console.log('Google login initiated');
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Goodbye!",
+        description: "Successfully logged out from Cyber City Arcade",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleWalletConnect = (walletType: 'phantom' | 'metamask' | 'walletconnect') => {
-    // Placeholder for wallet connection
-    setIsConnected(true);
-    setUserType('wallet');
-    setUserInfo({
-      name: `${walletType} User`,
-      address: '7xKX...9Qmp',
-      avatar: ''
+    toast({
+      title: "Wallet Connect",
+      description: `${walletType} integration coming soon!`,
     });
-    console.log(`${walletType} wallet connection initiated`);
-  };
-
-  const handleDisconnect = () => {
-    setIsConnected(false);
-    setUserType(null);
-    setUserInfo({ name: '', address: '', avatar: '' });
   };
 
   return (
@@ -61,41 +53,45 @@ export const TopBar = () => {
 
           {/* Connection Status & User Info */}
           <div className="flex items-center gap-4">
-            {isConnected ? (
+            {loading ? (
+              <div className="text-neon-cyan">Loading...</div>
+            ) : user ? (
               <Card className="arcade-frame px-4 py-2">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-8 h-8 border-2 border-neon-cyan">
-                    <AvatarImage src={userInfo.avatar} />
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
                     <AvatarFallback className="bg-neon-purple text-black font-bold">
-                      {userInfo.name.charAt(0)}
+                      {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-sm">
-                    <p className="font-bold text-neon-cyan">{userInfo.name}</p>
-                    <p className="text-neon-purple text-xs">{userInfo.address}</p>
+                    <p className="font-bold text-neon-cyan">
+                      {user.user_metadata?.username || user.email?.split('@')[0]}
+                    </p>
+                    <p className="text-neon-purple text-xs">{user.email}</p>
                   </div>
                   <Badge className="bg-neon-green text-black">
-                    {userType === 'google' ? '🔐 GOOGLE' : '🔗 WALLET'}
+                    🔐 AUTHENTICATED
                   </Badge>
                   <Button 
-                    onClick={handleDisconnect}
+                    onClick={handleSignOut}
                     variant="outline" 
                     size="sm"
                     className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
                   >
-                    Disconnect
+                    Logout
                   </Button>
                 </div>
               </Card>
             ) : (
               <div className="flex items-center gap-3">
-                {/* Google Login */}
+                {/* Email Login */}
                 <Button 
-                  onClick={handleGoogleLogin}
+                  onClick={() => navigate('/auth')}
                   className="cyber-button flex items-center gap-2"
                 >
                   <span className="text-lg">🔐</span>
-                  GOOGLE LOGIN
+                  LOGIN / SIGNUP
                 </Button>
 
                 {/* Wallet Connect Options */}

@@ -9,7 +9,166 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          updated_at: string
+          username: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          id: string
+          updated_at?: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      token_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          tournament_id: string | null
+          transaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          tournament_id?: string | null
+          transaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          tournament_id?: string | null
+          transaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_transactions_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_participants: {
+        Row: {
+          created_at: string
+          id: string
+          placement: number | null
+          rewards_claimed: boolean | null
+          tournament_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          placement?: number | null
+          rewards_claimed?: boolean | null
+          tournament_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          placement?: number | null
+          rewards_claimed?: boolean | null
+          tournament_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          entry_fee: number | null
+          id: string
+          name: string
+          prize_pool: number | null
+          start_date: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          entry_fee?: number | null
+          id?: string
+          name: string
+          prize_pool?: number | null
+          start_date: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          entry_fee?: number | null
+          id?: string
+          name?: string
+          prize_pool?: number | null
+          start_date?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      user_balances: {
+        Row: {
+          cctr_balance: number | null
+          claimable_rewards: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cctr_balance?: number | null
+          claimable_rewards?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cctr_balance?: number | null
+          claimable_rewards?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
