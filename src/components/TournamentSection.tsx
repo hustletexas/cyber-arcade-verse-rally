@@ -1,11 +1,17 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TournamentGameInterface } from './TournamentGameInterface';
+import { useAuth } from '@/hooks/useAuth';
 
 export const TournamentSection = () => {
+  const { user } = useAuth();
   const [ownedPasses, setOwnedPasses] = useState<string[]>(['elite']);
+  const [activeGame, setActiveGame] = useState<{
+    tournamentId: string;
+    gameType: 'tetris' | 'pacman' | 'galaga';
+  } | null>(null);
 
   const tournaments = [
     {
@@ -16,7 +22,8 @@ export const TournamentSection = () => {
       passRequired: 'elite',
       status: 'upcoming',
       participants: 256,
-      description: 'The ultimate gaming showdown in the neon-lit arenas'
+      description: 'The ultimate gaming showdown in the neon-lit arenas',
+      gameType: 'tetris' as const
     },
     {
       id: 'neon-nights',
@@ -26,7 +33,8 @@ export const TournamentSection = () => {
       passRequired: 'standard',
       status: 'live',
       participants: 128,
-      description: 'Fast-paced arcade action under the city lights'
+      description: 'Fast-paced arcade action under the city lights',
+      gameType: 'pacman' as const
     },
     {
       id: 'retro-rumble',
@@ -36,7 +44,8 @@ export const TournamentSection = () => {
       passRequired: 'legendary',
       status: 'upcoming',
       participants: 512,
-      description: 'Legendary warriors compete for ultimate glory'
+      description: 'Legendary warriors compete for ultimate glory',
+      gameType: 'galaga' as const
     }
   ];
 
@@ -72,12 +81,42 @@ export const TournamentSection = () => {
     setOwnedPasses([...ownedPasses, passId]);
   };
 
-  const joinTournament = (tournamentId: string) => {
-    console.log(`Joining tournament: ${tournamentId}`);
+  const joinTournament = (tournament: typeof tournaments[0]) => {
+    if (!user) {
+      alert('Please sign in to join tournaments!');
+      return;
+    }
+
+    setActiveGame({
+      tournamentId: tournament.id,
+      gameType: tournament.gameType
+    });
+  };
+
+  const getGameIcon = (gameType: string) => {
+    switch (gameType) {
+      case 'tetris':
+        return '🧩';
+      case 'pacman':
+        return '👻';
+      case 'galaga':
+        return '🚀';
+      default:
+        return '🎮';
+    }
   };
 
   return (
     <div className="space-y-8">
+      {/* Active Game Interface */}
+      {activeGame && (
+        <TournamentGameInterface
+          tournamentId={activeGame.tournamentId}
+          gameType={activeGame.gameType}
+          onClose={() => setActiveGame(null)}
+        />
+      )}
+
       {/* Live Tournaments */}
       <Card className="arcade-frame">
         <CardHeader>
@@ -92,8 +131,8 @@ export const TournamentSection = () => {
               <Card key={tournament.id} className="vending-machine p-6 hover:scale-105 transition-transform">
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-display text-lg font-bold text-neon-pink">
-                      {tournament.title}
+                    <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
+                      {getGameIcon(tournament.gameType)} {tournament.title}
                     </h3>
                     <Badge className={`${tournament.status === 'live' ? 'bg-neon-green' : 'bg-neon-purple'} text-black`}>
                       {tournament.status.toUpperCase()}
@@ -121,14 +160,20 @@ export const TournamentSection = () => {
                         {tournament.passRequired.toUpperCase()}
                       </Badge>
                     </div>
+                    <div className="flex justify-between">
+                      <span>Game:</span>
+                      <span className="text-neon-cyan font-mono">
+                        {tournament.gameType.toUpperCase()}
+                      </span>
+                    </div>
                   </div>
 
                   {ownedPasses.includes(tournament.passRequired) ? (
                     <Button 
-                      onClick={() => joinTournament(tournament.id)}
+                      onClick={() => joinTournament(tournament)}
                       className="w-full cyber-button"
                     >
-                      🎮 JOIN TOURNAMENT
+                      🎮 PLAY NOW
                     </Button>
                   ) : (
                     <Button 
