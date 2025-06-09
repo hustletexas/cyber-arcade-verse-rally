@@ -90,11 +90,23 @@ export const useUserBalance = () => {
     try {
       const userId = targetUserId || user.id;
       
+      // First get current balance
+      const { data: currentBalance, error: fetchError } = await supabase
+        .from('user_balances')
+        .select('claimable_rewards')
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
       // Add to claimable rewards
+      const newClaimableRewards = (currentBalance?.claimable_rewards || 0) + amount;
+      
       const { error: updateError } = await supabase
         .from('user_balances')
         .update({
-          claimable_rewards: supabase.rpc('increment_claimable', { amount })
+          claimable_rewards: newClaimableRewards,
+          updated_at: new Date().toISOString()
         })
         .eq('user_id', userId);
 
