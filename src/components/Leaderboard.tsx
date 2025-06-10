@@ -35,55 +35,56 @@ export const Leaderboard = ({ tournamentId, gameType, limit = 10 }: LeaderboardP
 
   const fetchLeaderboard = async () => {
     try {
-      let query = supabase
+      // Fetch tournament participants
+      let participantsQuery = supabase
         .from('tournament_participants')
-        .select(`
-          user_id,
-          placement,
-          created_at,
-          profiles!tournament_participants_user_id_fkey(username, email, avatar_url)
-        `)
+        .select('user_id, placement, created_at')
         .not('placement', 'is', null)
         .order('placement', { ascending: false })
         .limit(limit);
 
       if (tournamentId) {
-        query = query.eq('tournament_id', tournamentId);
+        participantsQuery = participantsQuery.eq('tournament_id', tournamentId);
       }
 
-      const { data, error } = await query;
+      const { data: participantsData, error: participantsError } = await participantsQuery;
 
-      if (error) {
-        console.error('Supabase error:', error);
-        // Fallback: fetch data separately if join fails
-        const { data: participantsData, error: participantsError } = await supabase
-          .from('tournament_participants')
-          .select('user_id, placement, created_at')
-          .not('placement', 'is', null)
-          .order('placement', { ascending: false })
-          .limit(limit);
+      if (participantsError) {
+        console.error('Error fetching participants:', participantsError);
+        setLeaderboard([]);
+        return;
+      }
 
-        if (participantsError) throw participantsError;
+      if (!participantsData || participantsData.length === 0) {
+        setLeaderboard([]);
+        return;
+      }
 
-        // Fetch profiles separately
-        const userIds = participantsData?.map(p => p.user_id) || [];
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, username, email, avatar_url')
-          .in('id', userIds);
+      // Fetch profiles separately
+      const userIds = participantsData.map(p => p.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, email, avatar_url')
+        .in('id', userIds);
 
-        if (profilesError) throw profilesError;
-
-        // Merge the data
-        const mergedData = participantsData?.map(participant => ({
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Still show participants even without profile data
+        const entriesWithoutProfiles = participantsData.map(participant => ({
           ...participant,
-          profiles: profilesData?.find(profile => profile.id === participant.user_id) || null
-        })) || [];
-
-        setLeaderboard(mergedData);
-      } else {
-        setLeaderboard(data || []);
+          profiles: null
+        }));
+        setLeaderboard(entriesWithoutProfiles);
+        return;
       }
+
+      // Merge the data
+      const mergedData = participantsData.map(participant => ({
+        ...participant,
+        profiles: profilesData?.find(profile => profile.id === participant.user_id) || null
+      }));
+
+      setLeaderboard(mergedData);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       setLeaderboard([]);
