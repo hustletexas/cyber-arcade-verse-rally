@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Wallet } from 'lucide-react';
 interface WalletInfo {
   address: string;
   balance: number;
-  type: 'phantom' | 'metamask' | 'walletconnect';
+  type: 'phantom' | 'coinbase' | 'stellar';
 }
 
 interface WalletConnectorProps {
@@ -22,11 +22,50 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
   const [showFullConnector, setShowFullConnector] = useState(false);
   const { toast } = useToast();
 
+  // Check for existing wallet connections on mount
+  useEffect(() => {
+    checkExistingConnections();
+  }, []);
+
+  const checkExistingConnections = async () => {
+    // Check Phantom
+    if (window.solana?.isPhantom && window.solana.isConnected) {
+      try {
+        const publicKey = window.solana.publicKey;
+        if (publicKey) {
+          const balance = await window.solana.connection?.getBalance(publicKey) || 0;
+          setConnectedWallet({
+            address: publicKey.toString(),
+            balance: balance / 1000000000,
+            type: 'phantom'
+          });
+        }
+      } catch (error) {
+        console.log('Phantom auto-connect failed:', error);
+      }
+    }
+
+    // Check Coinbase
+    if (window.coinbaseSolana?.isConnected) {
+      try {
+        const accounts = await window.coinbaseSolana.getAccounts();
+        if (accounts.length > 0) {
+          setConnectedWallet({
+            address: accounts[0],
+            balance: 0, // Would need to fetch balance
+            type: 'coinbase'
+          });
+        }
+      } catch (error) {
+        console.log('Coinbase auto-connect failed:', error);
+      }
+    }
+  };
+
   const connectPhantom = async () => {
     setConnecting('phantom');
     try {
-      // Check if Phantom is installed
-      if (!window.solana || !window.solana.isPhantom) {
+      if (!window.solana?.isPhantom) {
         toast({
           title: "Phantom Wallet Not Found",
           description: "Please install Phantom wallet to continue",
@@ -36,22 +75,33 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
         return;
       }
 
-      // Connect to Phantom
       const response = await window.solana.connect();
-      const balance = await window.solana.getBalance();
+      console.log('Phantom connected:', response.publicKey.toString());
+      
+      // Get balance
+      let balance = 0;
+      try {
+        if (window.solana.connection) {
+          balance = await window.solana.connection.getBalance(response.publicKey);
+          balance = balance / 1000000000; // Convert lamports to SOL
+        }
+      } catch (balanceError) {
+        console.log('Could not fetch balance:', balanceError);
+      }
       
       setConnectedWallet({
         address: response.publicKey.toString(),
-        balance: balance / 1000000000, // Convert lamports to SOL
+        balance: balance,
         type: 'phantom'
       });
 
       toast({
-        title: "Phantom Connected!",
-        description: `Connected to ${response.publicKey.toString().slice(0, 8)}...`,
+        title: "Phantom Connected! 👻",
+        description: `Welcome to Cyber City Arcade!`,
       });
       setShowFullConnector(false);
     } catch (error) {
+      console.error('Phantom connection error:', error);
       toast({
         title: "Connection Failed",
         description: "Failed to connect to Phantom wallet",
@@ -62,46 +112,38 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
     }
   };
 
-  const connectMetaMask = async () => {
-    setConnecting('metamask');
+  const connectCoinbase = async () => {
+    setConnecting('coinbase');
     try {
-      // Check if MetaMask is installed
-      if (!window.ethereum) {
+      if (!window.coinbaseSolana) {
         toast({
-          title: "MetaMask Not Found",
-          description: "Please install MetaMask to continue",
+          title: "Coinbase Wallet Not Found",
+          description: "Please install Coinbase Wallet to continue",
           variant: "destructive",
         });
-        window.open('https://metamask.io/', '_blank');
+        window.open('https://www.coinbase.com/wallet', '_blank');
         return;
       }
 
-      // Request account access
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      // Get balance
-      const balance = await window.ethereum.request({
-        method: 'eth_getBalance',
-        params: [accounts[0], 'latest'],
-      });
-
+      const accounts = await window.coinbaseSolana.connect();
+      console.log('Coinbase connected:', accounts);
+      
       setConnectedWallet({
         address: accounts[0],
-        balance: parseFloat((parseInt(balance, 16) / Math.pow(10, 18)).toFixed(4)),
-        type: 'metamask'
+        balance: 0, // Would need to implement balance fetching for Coinbase
+        type: 'coinbase'
       });
 
       toast({
-        title: "MetaMask Connected!",
-        description: `Connected to ${accounts[0].slice(0, 8)}...`,
+        title: "Coinbase Connected! 🔵",
+        description: `Ready to compete in Cyber City Arcade!`,
       });
       setShowFullConnector(false);
     } catch (error) {
+      console.error('Coinbase connection error:', error);
       toast({
         title: "Connection Failed",
-        description: "Failed to connect to MetaMask",
+        description: "Failed to connect to Coinbase wallet",
         variant: "destructive",
       });
     } finally {
@@ -109,16 +151,26 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
     }
   };
 
-  const connectWalletConnect = () => {
-    setConnecting('walletconnect');
+  const connectStellar = () => {
+    setConnecting('stellar');
     toast({
-      title: "WalletConnect",
-      description: "WalletConnect integration coming soon!",
+      title: "Stellar Integration",
+      description: "Stellar wallet integration coming soon! 🚀",
     });
     setConnecting(null);
   };
 
-  const disconnect = () => {
+  const disconnect = async () => {
+    try {
+      if (connectedWallet?.type === 'phantom' && window.solana?.isPhantom) {
+        await window.solana.disconnect();
+      } else if (connectedWallet?.type === 'coinbase' && window.coinbaseSolana) {
+        await window.coinbaseSolana.disconnect();
+      }
+    } catch (error) {
+      console.error('Disconnect error:', error);
+    }
+    
     setConnectedWallet(null);
     toast({
       title: "Wallet Disconnected",
@@ -129,8 +181,8 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
   const getWalletIcon = (type: string) => {
     switch (type) {
       case 'phantom': return '👻';
-      case 'metamask': return '🦊';
-      case 'walletconnect': return '🔗';
+      case 'coinbase': return '🔵';
+      case 'stellar': return '⭐';
       default: return '💼';
     }
   };
@@ -138,7 +190,8 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
   const getCurrency = (type: string) => {
     switch (type) {
       case 'phantom': return 'SOL';
-      case 'metamask': return 'ETH';
+      case 'coinbase': return 'SOL';
+      case 'stellar': return 'XLM';
       default: return 'TOKEN';
     }
   };
@@ -198,7 +251,7 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
           <div className="border border-neon-cyan/30 rounded-lg p-4 bg-neon-cyan/5">
             <div className="text-sm text-neon-purple mb-1">Balance</div>
             <div className="text-2xl font-bold text-neon-green font-mono">
-              {connectedWallet.balance} {getCurrency(connectedWallet.type)}
+              {connectedWallet.balance.toFixed(4)} {getCurrency(connectedWallet.type)}
             </div>
           </div>
 
@@ -244,33 +297,33 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
           </Button>
 
           <Button 
-            onClick={connectMetaMask}
-            disabled={connecting === 'metamask'}
+            onClick={connectCoinbase}
+            disabled={connecting === 'coinbase'}
             variant="outline"
             className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black flex items-center gap-3 justify-start"
           >
-            <span className="text-2xl">🦊</span>
+            <span className="text-2xl">🔵</span>
             <div className="text-left">
-              <div className="font-bold">MetaMask</div>
-              <div className="text-xs opacity-80">Ethereum Network</div>
+              <div className="font-bold">Coinbase Wallet</div>
+              <div className="text-xs opacity-80">Multi-Chain Support</div>
             </div>
-            {connecting === 'metamask' && (
+            {connecting === 'coinbase' && (
               <div className="ml-auto animate-pulse">Connecting...</div>
             )}
           </Button>
 
           <Button 
-            onClick={connectWalletConnect}
-            disabled={connecting === 'walletconnect'}
+            onClick={connectStellar}
+            disabled={connecting === 'stellar'}
             variant="outline"
             className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black flex items-center gap-3 justify-start"
           >
-            <span className="text-2xl">🔗</span>
+            <span className="text-2xl">⭐</span>
             <div className="text-left">
-              <div className="font-bold">WalletConnect</div>
-              <div className="text-xs opacity-80">Multi-Chain Support</div>
+              <div className="font-bold">Stellar Wallet</div>
+              <div className="text-xs opacity-80">Stellar Network</div>
             </div>
-            {connecting === 'walletconnect' && (
+            {connecting === 'stellar' && (
               <div className="ml-auto animate-pulse">Connecting...</div>
             )}
           </Button>
@@ -280,16 +333,23 @@ export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
   );
 };
 
-// Add TypeScript declarations for wallet objects
+// Enhanced TypeScript declarations for wallet objects
 declare global {
   interface Window {
     solana?: {
       isPhantom: boolean;
+      isConnected: boolean;
+      publicKey: any;
+      connection: any;
       connect: () => Promise<{ publicKey: { toString: () => string } }>;
+      disconnect: () => Promise<void>;
       getBalance: () => Promise<number>;
     };
-    ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>;
+    coinbaseSolana?: {
+      isConnected: boolean;
+      connect: () => Promise<string[]>;
+      disconnect: () => Promise<void>;
+      getAccounts: () => Promise<string[]>;
     };
   }
 }
