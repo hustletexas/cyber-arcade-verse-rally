@@ -15,7 +15,7 @@ interface LeaderboardEntry {
     username: string;
     email: string;
     avatar_url: string;
-  };
+  } | null;
 }
 
 interface LeaderboardProps {
@@ -41,8 +41,9 @@ export const Leaderboard = ({ tournamentId, gameType, limit = 10 }: LeaderboardP
           user_id,
           placement,
           created_at,
-          profiles!inner(username, email, avatar_url)
+          profiles!tournament_participants_user_id_fkey(username, email, avatar_url)
         `)
+        .not('placement', 'is', null)
         .order('placement', { ascending: false })
         .limit(limit);
 
@@ -52,11 +53,40 @@ export const Leaderboard = ({ tournamentId, gameType, limit = 10 }: LeaderboardP
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        // Fallback: fetch data separately if join fails
+        const { data: participantsData, error: participantsError } = await supabase
+          .from('tournament_participants')
+          .select('user_id, placement, created_at')
+          .not('placement', 'is', null)
+          .order('placement', { ascending: false })
+          .limit(limit);
 
-      setLeaderboard(data || []);
+        if (participantsError) throw participantsError;
+
+        // Fetch profiles separately
+        const userIds = participantsData?.map(p => p.user_id) || [];
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, email, avatar_url')
+          .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Merge the data
+        const mergedData = participantsData?.map(participant => ({
+          ...participant,
+          profiles: profilesData?.find(profile => profile.id === participant.user_id) || null
+        })) || [];
+
+        setLeaderboard(mergedData);
+      } else {
+        setLeaderboard(data || []);
+      }
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      setLeaderboard([]);
     } finally {
       setLoading(false);
     }
@@ -116,7 +146,7 @@ export const Leaderboard = ({ tournamentId, gameType, limit = 10 }: LeaderboardP
             <TableBody>
               {leaderboard.map((entry, index) => (
                 <TableRow 
-                  key={entry.user_id} 
+                  key={`${entry.user_id}-${index}`}
                   className={`border-neon-cyan/20 hover:bg-neon-cyan/5 ${
                     entry.user_id === user?.id ? 'bg-neon-purple/10' : ''
                   }`}
@@ -132,14 +162,14 @@ export const Leaderboard = ({ tournamentId, gameType, limit = 10 }: LeaderboardP
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8 border border-neon-cyan">
-                        <AvatarImage src={entry.profiles.avatar_url} />
+                        <AvatarImage src={entry.profiles?.avatar_url || ''} />
                         <AvatarFallback className="bg-neon-purple text-black text-xs">
-                          {entry.profiles.username?.charAt(0) || entry.profiles.email?.charAt(0)}
+                          {entry.profiles?.username?.charAt(0) || entry.profiles?.email?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-bold text-neon-cyan">
-                          {entry.profiles.username || entry.profiles.email?.split('@')[0]}
+                          {entry.profiles?.username || entry.profiles?.email?.split('@')[0] || 'Anonymous'}
                         </div>
                         {entry.user_id === user?.id && (
                           <Badge className="bg-neon-pink text-black text-xs">YOU</Badge>
@@ -149,7 +179,7 @@ export const Leaderboard = ({ tournamentId, gameType, limit = 10 }: LeaderboardP
                   </TableCell>
                   <TableCell>
                     <span className="font-mono text-xl text-neon-green font-bold">
-                      {entry.placement.toLocaleString()}
+                      {entry.placement?.toLocaleString() || '0'}
                     </span>
                   </TableCell>
                   <TableCell>
