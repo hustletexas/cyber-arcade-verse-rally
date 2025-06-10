@@ -47,47 +47,54 @@ export const TopBar = () => {
 
           {/* Connection Status & User Info */}
           <div className="flex items-center gap-4">
-            {/* Wallet Connector */}
-            <div className="hidden lg:block">
-              <WalletConnector />
-            </div>
-
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
             ) : user ? (
-              <Card className="arcade-frame px-4 py-2">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-8 h-8 border-2 border-neon-cyan">
-                    <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-neon-purple text-black font-bold">
-                      {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-sm">
-                    <p className="font-bold text-neon-cyan">
-                      {user.user_metadata?.username || user.email?.split('@')[0]}
-                    </p>
-                    <p className="text-neon-purple text-xs">{user.email}</p>
-                  </div>
-                  <Badge className="bg-neon-green text-black">
-                    🔐 AUTHENTICATED
-                  </Badge>
-                  <Button 
-                    onClick={handleSignOut}
-                    variant="outline" 
-                    size="sm"
-                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
-                  >
-                    Logout
-                  </Button>
+              <div className="flex items-center gap-4">
+                {/* Wallet Connector for authenticated users */}
+                <div className="hidden lg:block">
+                  <WalletConnector compact />
                 </div>
-              </Card>
+                
+                <Card className="arcade-frame px-4 py-2">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-8 h-8 border-2 border-neon-cyan">
+                      <AvatarImage src={user.user_metadata?.avatar_url} />
+                      <AvatarFallback className="bg-neon-purple text-black font-bold">
+                        {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-sm">
+                      <p className="font-bold text-neon-cyan">
+                        {user.user_metadata?.username || user.email?.split('@')[0]}
+                      </p>
+                      <p className="text-neon-purple text-xs">{user.email}</p>
+                    </div>
+                    <Badge className="bg-neon-green text-black">
+                      🔐 AUTHENTICATED
+                    </Badge>
+                    <Button 
+                      onClick={handleSignOut}
+                      variant="outline" 
+                      size="sm"
+                      className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                    >
+                      Logout
+                    </Button>
+                  </div>
+                </Card>
+              </div>
             ) : (
               <div className="flex items-center gap-3">
+                {/* Wallet Connector for non-authenticated users */}
+                <div className="hidden lg:block">
+                  <WalletConnector compact />
+                </div>
+                
                 {/* Email Login */}
                 <Button 
                   onClick={() => navigate('/auth')}
-                  className="cyber-button flex items-center gap-2"
+                  className="cyber-button flex items-center gap-2 h-[42px]"
                 >
                   <span className="text-lg">🔐</span>
                   LOGIN / SIGNUP

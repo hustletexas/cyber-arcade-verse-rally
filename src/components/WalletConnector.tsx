@@ -12,9 +12,14 @@ interface WalletInfo {
   type: 'phantom' | 'metamask' | 'walletconnect';
 }
 
-export const WalletConnector = () => {
+interface WalletConnectorProps {
+  compact?: boolean;
+}
+
+export const WalletConnector = ({ compact = false }: WalletConnectorProps) => {
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [showFullConnector, setShowFullConnector] = useState(false);
   const { toast } = useToast();
 
   const connectPhantom = async () => {
@@ -45,6 +50,7 @@ export const WalletConnector = () => {
         title: "Phantom Connected!",
         description: `Connected to ${response.publicKey.toString().slice(0, 8)}...`,
       });
+      setShowFullConnector(false);
     } catch (error) {
       toast({
         title: "Connection Failed",
@@ -91,6 +97,7 @@ export const WalletConnector = () => {
         title: "MetaMask Connected!",
         description: `Connected to ${accounts[0].slice(0, 8)}...`,
       });
+      setShowFullConnector(false);
     } catch (error) {
       toast({
         title: "Connection Failed",
@@ -135,6 +142,33 @@ export const WalletConnector = () => {
       default: return 'TOKEN';
     }
   };
+
+  // Compact version for TopBar
+  if (compact) {
+    if (connectedWallet) {
+      return (
+        <Button 
+          variant="outline"
+          className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black h-[42px] px-4"
+          onClick={() => setShowFullConnector(!showFullConnector)}
+        >
+          <Wallet className="w-4 h-4 mr-2" />
+          {getWalletIcon(connectedWallet.type)} CONNECTED
+        </Button>
+      );
+    }
+
+    return (
+      <Button 
+        variant="outline"
+        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black h-[42px] px-4"
+        onClick={() => setShowFullConnector(!showFullConnector)}
+      >
+        <Wallet className="w-4 h-4 mr-2" />
+        CONNECT WALLET
+      </Button>
+    );
+  }
 
   if (connectedWallet) {
     return (
