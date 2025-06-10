@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { WalletConnector } from './WalletConnector';
 
 export const TopBar = () => {
   const { user, signOut, loading } = useAuth();
@@ -46,6 +47,11 @@ export const TopBar = () => {
 
           {/* Connection Status & User Info */}
           <div className="flex items-center gap-4">
+            {/* Wallet Connector */}
+            <div className="hidden lg:block">
+              <WalletConnector />
+            </div>
+
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
             ) : user ? (
