@@ -29,13 +29,6 @@ export const TopBar = () => {
     }
   };
 
-  const handleWalletConnect = (walletType: 'phantom' | 'metamask' | 'walletconnect') => {
-    toast({
-      title: "Wallet Connect",
-      description: `${walletType} integration coming soon!`,
-    });
-  };
-
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -93,31 +86,6 @@ export const TopBar = () => {
                   <span className="text-lg">🔐</span>
                   LOGIN / SIGNUP
                 </Button>
-
-                {/* Wallet Connect Options */}
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => handleWalletConnect('phantom')}
-                    variant="outline"
-                    className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
-                  >
-                    👻 PHANTOM
-                  </Button>
-                  <Button 
-                    onClick={() => handleWalletConnect('metamask')}
-                    variant="outline"
-                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                  >
-                    🦊 METAMASK
-                  </Button>
-                  <Button 
-                    onClick={() => handleWalletConnect('walletconnect')}
-                    variant="outline"
-                    className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
-                  >
-                    🔗 WALLET
-                  </Button>
-                </div>
               </div>
             )}
           </div>
