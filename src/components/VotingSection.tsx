@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,7 +66,7 @@ export const VotingSection = () => {
               {hasNFT ? '✅ ELIGIBLE' : '❌ NFT REQUIRED'}
             </Badge>
           </CardTitle>
-          <p className="text-muted-foreground">
+          <p className="text-gray-300">
             NFT holders shape the future of Cyber City Arcade through community governance
           </p>
         </CardHeader>
@@ -83,7 +82,7 @@ export const VotingSection = () => {
                   <CardTitle className="font-display text-xl text-neon-cyan">
                     {proposal.title}
                   </CardTitle>
-                  <p className="text-muted-foreground mt-2">{proposal.description}</p>
+                  <p className="text-gray-300 mt-2">{proposal.description}</p>
                 </div>
                 <div className="text-right">
                   <Badge className={`${proposal.status === 'active' ? 'bg-neon-green' : 'bg-neon-purple'} text-black`}>
@@ -110,14 +109,15 @@ export const VotingSection = () => {
                     </div>
                     <Progress value={option.percentage} className="mb-3" />
                     <div className="flex justify-between items-center">
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-gray-300">
                         {option.percentage}% of total votes
                       </div>
                       {proposal.status === 'active' && (
                         <Button
                           onClick={() => castVote(proposal.id, option.id)}
                           disabled={!hasNFT || votes[proposal.id] === option.id}
-                          className={`cyber-button text-sm ${votes[proposal.id] === option.id ? 'bg-neon-green' : ''}`}
+                          className={`bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 ${votes[proposal.id] === option.id ? 'bg-neon-green' : ''} border-2 border-neon-cyan shadow-lg shadow-neon-cyan/50`}
+                          size="sm"
                         >
                           {votes[proposal.id] === option.id ? '✅ VOTED' : '🗳️ VOTE'}
                         </Button>
@@ -130,10 +130,10 @@ export const VotingSection = () => {
               {!hasNFT && (
                 <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
                   <p className="text-neon-pink font-bold">🎟️ NFT Pass Required</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     You need to own a tournament NFT pass to participate in governance voting.
                   </p>
-                  <Button className="mt-2 cyber-button text-sm">
+                  <Button className="mt-2 bg-gradient-to-r from-neon-pink to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-pink shadow-lg shadow-neon-pink/50">
                     🔨 MINT NFT PASS
                   </Button>
                 </div>
@@ -148,19 +148,19 @@ export const VotingSection = () => {
         <Card className="holographic p-6 text-center">
           <h3 className="font-display text-lg text-neon-cyan mb-2">TOTAL VOTERS</h3>
           <div className="text-3xl font-black text-neon-green">8,247</div>
-          <p className="text-sm text-muted-foreground">Active Participants</p>
+          <p className="text-sm text-gray-300">Active Participants</p>
         </Card>
 
         <Card className="holographic p-6 text-center">
           <h3 className="font-display text-lg text-neon-pink mb-2">PROPOSALS</h3>
           <div className="text-3xl font-black text-neon-purple">23</div>
-          <p className="text-sm text-muted-foreground">Total Governance</p>
+          <p className="text-sm text-gray-300">Total Governance</p>
         </Card>
 
         <Card className="holographic p-6 text-center">
           <h3 className="font-display text-lg text-neon-purple mb-2">PARTICIPATION</h3>
           <div className="text-3xl font-black text-neon-cyan">87%</div>
-          <p className="text-sm text-muted-foreground">Average Turnout</p>
+          <p className="text-sm text-gray-300">Average Turnout</p>
         </Card>
       </div>
     </div>

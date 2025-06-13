@@ -13,6 +13,7 @@ import { PrizeSection } from '@/components/PrizeSection';
 import { BlockchainIntegration } from '@/components/BlockchainIntegration';
 import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
+import { ArcadeTetris } from '@/components/ArcadeTetris';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
@@ -38,17 +39,10 @@ const Index = () => {
       <TopBar />
 
       <main className="container mx-auto px-4 py-8 relative z-10">
-        {/* Enhanced Hero Section */}
+        {/* Enhanced Hero Section with Arcade Tetris */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <div className="p-6 w-full max-w-2xl">
-              <img 
-                src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-                alt="Cyber City Arcade" 
-                className="w-full h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300 opacity-90"
-                style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
-              />
-            </div>
+            <ArcadeTetris />
           </div>
           <p className="text-lg md:text-xl text-neon-purple mb-8 animate-neon-flicker">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
