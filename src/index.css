@@ -9,13 +9,13 @@
 
 @layer base {
   :root {
-    --background: 260 25% 8%;
+    --background: 240 15% 5%;
     --foreground: 300 100% 95%;
 
-    --card: 260 20% 12%;
+    --card: 240 20% 8%;
     --card-foreground: 300 100% 95%;
 
-    --popover: 260 20% 12%;
+    --popover: 240 20% 8%;
     --popover-foreground: 300 100% 95%;
 
     --primary: 315 100% 60%;
@@ -24,7 +24,7 @@
     --secondary: 280 100% 70%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 260 15% 20%;
+    --muted: 240 15% 15%;
     --muted-foreground: 280 20% 70%;
 
     --accent: 180 100% 50%;
@@ -34,7 +34,7 @@
     --destructive-foreground: 210 40% 98%;
 
     --border: 280 50% 30%;
-    --input: 260 20% 20%;
+    --input: 240 20% 15%;
     --ring: 315 100% 60%;
 
     --radius: 0.5rem;
@@ -44,8 +44,8 @@
     --neon-cyan: 180 100% 50%;
     --neon-purple: 280 100% 70%;
     --neon-green: 120 100% 50%;
-    --dark-bg: 260 25% 8%;
-    --card-bg: 260 20% 12%;
+    --dark-bg: 240 15% 5%;
+    --card-bg: 240 20% 8%;
   }
 }
 
@@ -57,11 +57,11 @@
   body {
     @apply bg-background text-foreground font-mono;
     background: linear-gradient(135deg, 
-      hsl(260 30% 6%) 0%, 
-      hsl(280 25% 8%) 25%,
-      hsl(315 20% 10%) 50%, 
-      hsl(260 25% 8%) 75%,
-      hsl(280 30% 6%) 100%);
+      hsl(240 25% 4%) 0%, 
+      hsl(260 30% 6%) 25%,
+      hsl(280 25% 8%) 50%, 
+      hsl(240 30% 5%) 75%,
+      hsl(220 25% 4%) 100%);
     min-height: 100vh;
   }
 
@@ -85,6 +85,154 @@
     box-shadow: 
       0 0 15px hsl(var(--neon-cyan) / 0.6),
       inset 0 0 15px hsl(var(--neon-cyan) / 0.2);
+  }
+
+  /* Arcade Cabinet Styles */
+  .arcade-cabinet {
+    background: linear-gradient(145deg, 
+      hsl(240 25% 10%) 0%,
+      hsl(260 20% 8%) 30%,
+      hsl(280 15% 6%) 70%,
+      hsl(240 20% 4%) 100%);
+    border: 4px solid hsl(var(--neon-cyan));
+    border-radius: 20px 20px 0 0;
+    box-shadow: 
+      0 0 50px hsl(var(--neon-cyan) / 0.5),
+      inset 0 0 50px hsl(var(--neon-cyan) / 0.1);
+    position: relative;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .arcade-cabinet-top {
+    text-align: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(90deg, transparent, hsl(var(--neon-purple) / 0.2), transparent);
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .arcade-screen-container {
+    background: linear-gradient(145deg, hsl(240 30% 5%), hsl(260 25% 8%));
+    border: 3px solid hsl(var(--neon-purple));
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 
+      0 0 30px hsl(var(--neon-purple) / 0.6),
+      inset 0 0 20px hsl(var(--neon-purple) / 0.1);
+    margin-bottom: 2rem;
+  }
+
+  .arcade-screen {
+    background: #000;
+    border: 2px solid hsl(var(--neon-cyan));
+    border-radius: 10px;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arcade-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(var(--neon-cyan) / 0.05) 2px,
+      hsl(var(--neon-cyan) / 0.05) 4px
+    );
+    pointer-events: none;
+    animation: scan-lines 0.1s linear infinite;
+  }
+
+  .arcade-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(145deg, hsl(240 20% 8%), hsl(260 15% 6%));
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 2px solid hsl(var(--neon-pink));
+    box-shadow: 0 0 25px hsl(var(--neon-pink) / 0.4);
+  }
+
+  .arcade-start-button {
+    background: linear-gradient(145deg, hsl(var(--neon-green)), hsl(120 100% 40%));
+    border: 3px solid hsl(var(--neon-green));
+    color: black;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px hsl(var(--neon-green) / 0.6);
+  }
+
+  .arcade-start-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px hsl(var(--neon-green));
+  }
+
+  .arcade-control-panel {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .control-stick {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(145deg, hsl(240 20% 15%), hsl(240 15% 10%));
+    border: 3px solid hsl(var(--neon-cyan));
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 15px hsl(var(--neon-cyan) / 0.5);
+  }
+
+  .control-stick::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: hsl(var(--neon-cyan));
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px hsl(var(--neon-cyan));
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .action-button {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, hsl(var(--neon-pink)), hsl(315 100% 50%));
+    border: 2px solid hsl(var(--neon-pink));
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 15px hsl(var(--neon-pink) / 0.5);
+  }
+
+  .action-button:hover {
+    transform: scale(0.95);
+    box-shadow: 0 0 20px hsl(var(--neon-pink));
   }
 
   .holographic {
@@ -133,9 +281,9 @@
   /* Enhanced Arcade Cabinet Styling */
   .arcade-frame {
     background: linear-gradient(145deg, 
-      hsl(260 25% 12%) 0%,
-      hsl(280 20% 10%) 50%,
-      hsl(260 20% 8%) 100%);
+      hsl(240 25% 12%) 0%,
+      hsl(260 20% 10%) 50%,
+      hsl(240 20% 8%) 100%);
     border: 3px solid hsl(var(--neon-cyan));
     border-radius: 12px;
     box-shadow: 
@@ -231,9 +379,9 @@
   /* Enhanced Marketplace Vending Machine */
   .vending-machine {
     background: linear-gradient(145deg, 
-      hsl(260 25% 12%) 0%,
-      hsl(280 20% 8%) 50%,
-      hsl(260 20% 6%) 100%);
+      hsl(240 25% 12%) 0%,
+      hsl(260 20% 8%) 50%,
+      hsl(240 20% 6%) 100%);
     border: 4px solid hsl(var(--neon-purple));
     border-radius: 20px;
     box-shadow: 
@@ -319,6 +467,15 @@
     }
   }
 
+  @keyframes scan-lines {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(4px);
+    }
+  }
+
   @keyframes neon-flicker {
     0%, 100% {
       opacity: 1;
@@ -346,6 +503,10 @@
 
   .animate-float {
     animation: float 3s ease-in-out infinite;
+  }
+
+  .bg-gradient-radial {
+    background: radial-gradient(var(--tw-gradient-stops));
   }
 
   .text-neon-pink {

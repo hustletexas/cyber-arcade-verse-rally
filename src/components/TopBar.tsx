@@ -126,55 +126,57 @@ export const TopBar = () => {
             ) : (
               <div className="flex items-center gap-3">
                 {/* Wallet Connection Section */}
-                {walletAddress ? (
-                  <Card className="arcade-frame px-4 py-2">
-                    <div className="flex items-center gap-3">
-                      <Badge className="bg-neon-green text-black">
-                        🔗 {walletType.toUpperCase()}
-                      </Badge>
-                      <div className="text-sm">
-                        <p className="font-bold text-neon-cyan">
-                          {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                        </p>
+                <div className="flex gap-2">
+                  {walletAddress ? (
+                    <Card className="arcade-frame px-4 py-2">
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-neon-green text-black">
+                          🔗 {walletType.toUpperCase()}
+                        </Badge>
+                        <div className="text-sm">
+                          <p className="font-bold text-neon-cyan">
+                            {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={handleDisconnectWallet}
+                          variant="outline" 
+                          size="sm"
+                          className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                        >
+                          Disconnect
+                        </Button>
                       </div>
+                    </Card>
+                  ) : (
+                    <>
                       <Button 
-                        onClick={handleDisconnectWallet}
-                        variant="outline" 
-                        size="sm"
-                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                        onClick={() => handleWalletConnect('phantom')}
+                        disabled={isConnecting}
+                        variant="outline"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black cyber-button"
                       >
-                        Disconnect
+                        👻 PHANTOM
                       </Button>
-                    </div>
-                  </Card>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={() => handleWalletConnect('phantom')}
-                      disabled={isConnecting}
-                      variant="outline"
-                      className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black cyber-button"
-                    >
-                      👻 PHANTOM
-                    </Button>
-                    <Button 
-                      onClick={() => handleWalletConnect('metamask')}
-                      disabled={isConnecting}
-                      variant="outline"
-                      className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black cyber-button"
-                    >
-                      🦊 METAMASK
-                    </Button>
-                    <Button 
-                      onClick={() => handleWalletConnect('walletconnect')}
-                      disabled={isConnecting}
-                      variant="outline"
-                      className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black cyber-button"
-                    >
-                      🔗 WALLET
-                    </Button>
-                  </div>
-                )}
+                      <Button 
+                        onClick={() => handleWalletConnect('metamask')}
+                        disabled={isConnecting}
+                        variant="outline"
+                        className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black cyber-button"
+                      >
+                        🦊 METAMASK
+                      </Button>
+                      <Button 
+                        onClick={() => handleWalletConnect('walletconnect')}
+                        disabled={isConnecting}
+                        variant="outline"
+                        className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black cyber-button"
+                      >
+                        🔗 WALLET
+                      </Button>
+                    </>
+                  )}
+                </div>
 
                 {/* User Authentication Section */}
                 {user ? (
