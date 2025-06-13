@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +13,8 @@ import { BlockchainIntegration } from '@/components/BlockchainIntegration';
 import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
+import { TourDates } from '@/components/TourDates';
+import { MusicPlayer } from '@/components/MusicPlayer';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
@@ -67,7 +68,7 @@ const Index = () => {
 
         {/* Main Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6 md:mb-8 arcade-frame p-2 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-7 mb-6 md:mb-8 arcade-frame p-2 gap-1">
             <TabsTrigger value="tournaments" className="cyber-button text-xs md:text-sm px-2">
               🏆 TOURNAMENTS
             </TabsTrigger>
@@ -85,6 +86,9 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="social" className="cyber-button text-xs md:text-sm px-2">
               📱 SOCIAL
+            </TabsTrigger>
+            <TabsTrigger value="tour" className="cyber-button text-xs md:text-sm px-2">
+              🗺️ TOUR
             </TabsTrigger>
           </TabsList>
 
@@ -111,6 +115,10 @@ const Index = () => {
           <TabsContent value="social" className="space-y-6">
             <SocialMediaHub />
           </TabsContent>
+
+          <TabsContent value="tour" className="space-y-6">
+            <TourDates />
+          </TabsContent>
         </Tabs>
 
         {/* New Sections */}
@@ -121,6 +129,9 @@ const Index = () => {
           <BlockchainIntegration />
         </div>
       </main>
+
+      {/* Music Player - Fixed at bottom */}
+      <MusicPlayer />
 
       {/* Footer */}
       <footer className="border-t border-neon-cyan/30 mt-12 md:mt-20 py-6 md:py-8">
