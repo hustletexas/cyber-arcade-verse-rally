@@ -1,9 +1,10 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Music, ExternalLink } from 'lucide-react';
+import { Music, ExternalLink, Play, Pause } from 'lucide-react';
 import { WalletIntegration } from './music/WalletIntegration';
 import { PlayerControls } from './music/PlayerControls';
 import { TrackInfo } from './music/TrackInfo';
