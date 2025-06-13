@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Joystick } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -43,7 +44,7 @@ export const TopBar = () => {
           {/* Logo */}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-neon-pink to-neon-purple rounded-lg flex items-center justify-center neon-glow">
-              <span className="text-xl font-black">🕹️</span>
+              <Joystick className="w-6 h-6 text-white" />
             </div>
             <div>
               <h2 className="font-display text-xl font-bold text-neon-cyan">CYBER CITY</h2>
