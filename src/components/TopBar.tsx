@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Joystick } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -43,8 +42,12 @@ export const TopBar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-neon-pink to-neon-purple rounded-lg flex items-center justify-center neon-glow">
-              <Joystick className="w-6 h-6 text-white" />
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow">
+              <img 
+                src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
+                alt="Cyber City Arcade Logo" 
+                className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+              />
             </div>
             <div>
               <h2 className="font-display text-xl font-bold text-neon-cyan">CYBER CITY</h2>
