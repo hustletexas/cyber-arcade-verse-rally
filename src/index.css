@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -15,15 +16,19 @@
 
 /* Cyberpunk Styles */
 .cyber-button {
-  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg group;
+  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg;
   background-color: #fff;
 }
 
 .cyber-button:before {
   content: '';
-  @apply absolute w-64 h-64 rounded-full transform scale-0 group-hover:scale-100;
+  @apply absolute w-64 h-64 rounded-full transform scale-0;
   background-image: radial-gradient(circle, rgba(0, 255, 255, 0.4), transparent);
   transition: transform 0.5s ease-out;
+}
+
+.cyber-button:hover:before {
+  transform: scale(1);
 }
 
 .cyber-button span {
@@ -41,7 +46,7 @@
 }
 
 .cyber-button:active {
-  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg group;
+  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg;
 }
 
 /* Neon Colors */
