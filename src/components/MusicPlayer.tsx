@@ -1,10 +1,13 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, ExternalLink, Wallet, Coins } from 'lucide-react';
+import { Music, ExternalLink } from 'lucide-react';
+import { WalletIntegration } from './music/WalletIntegration';
+import { PlayerControls } from './music/PlayerControls';
+import { TrackInfo } from './music/TrackInfo';
+import { RewardsSystem } from './music/RewardsSystem';
 
 interface Track {
   id: string;
@@ -92,7 +95,7 @@ export const MusicPlayer = () => {
         const response = await window.solana.connect();
         setWalletAddress(response.publicKey.toString());
         setIsWalletConnected(true);
-        setAudioRewards(Math.floor(Math.random() * 100) + 50); // Simulate $AUDIO tokens
+        setAudioRewards(Math.floor(Math.random() * 100) + 50);
         
         toast({
           title: "Wallet Connected!",
@@ -121,7 +124,7 @@ export const MusicPlayer = () => {
     if (isPlaying && isWalletConnected) {
       interval = setInterval(() => {
         setAudioRewards(prev => prev + 0.1);
-      }, 5000); // Earn 0.1 $AUDIO every 5 seconds
+      }, 5000);
     }
     return () => clearInterval(interval);
   }, [isPlaying, isWalletConnected]);
@@ -155,12 +158,10 @@ export const MusicPlayer = () => {
     const currentSong = playlist[currentTrack];
     
     if (!isPlaying) {
-      // Simulate Audius API call
       console.log(`🎵 Streaming from Audius: ${currentSong.audiusUrl}`);
       console.log(`📡 Audius Track ID: ${currentSong.audiusTrackId}`);
       console.log(`🔗 Solana Address: ${currentSong.solanaAddress}`);
       
-      // Notify about potential rewards
       if (isWalletConnected) {
         toast({
           title: "🎵 Now Playing",
@@ -210,7 +211,7 @@ export const MusicPlayer = () => {
       return;
     }
 
-    const tipAmount = 1; // 1 $AUDIO token
+    const tipAmount = 1;
     if (audioRewards >= tipAmount) {
       setAudioRewards(prev => prev - tipAmount);
       toast({
@@ -282,30 +283,14 @@ export const MusicPlayer = () => {
             {isPlaying && <Badge className="bg-neon-pink text-black text-xs animate-pulse">STREAMING</Badge>}
           </div>
           <div className="flex items-center gap-2">
-            {!isWalletConnected ? (
-              <Button
-                onClick={connectWallet}
-                size="sm"
-                className="cyber-button text-xs"
-              >
-                <Wallet size={16} className="mr-1" />
-                CONNECT
-              </Button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Badge className="bg-neon-green text-black text-xs">
-                  <Coins size={12} className="mr-1" />
-                  {audioRewards.toFixed(1)} $AUDIO
-                </Badge>
-                <Button
-                  onClick={tipArtist}
-                  size="sm"
-                  className="cyber-button text-xs"
-                >
-                  TIP ARTIST
-                </Button>
-              </div>
-            )}
+            <WalletIntegration
+              isWalletConnected={isWalletConnected}
+              walletAddress={walletAddress}
+              audioRewards={audioRewards}
+              onWalletConnect={connectWallet}
+              onTipArtist={tipArtist}
+              currentArtist={currentSong.artist}
+            />
             <Button
               onClick={openAudius}
               size="sm"
@@ -327,113 +312,31 @@ export const MusicPlayer = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-          {/* Track Info */}
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-neon-cyan text-sm md:text-base">{currentSong.title}</h4>
-            <p className="text-xs text-muted-foreground">{currentSong.artist}</p>
-            <div className="flex flex-wrap gap-1 mt-1 justify-center md:justify-start">
-              <Badge className="bg-neon-pink text-black text-xs">
-                {currentSong.genre}
-              </Badge>
-              <Badge className="bg-neon-purple text-white text-xs">
-                ID: {currentSong.audiusTrackId}
-              </Badge>
-              <Button
-                onClick={openAudius}
-                size="sm"
-                variant="ghost"
-                className="text-xs text-neon-purple hover:text-neon-pink h-5 px-1"
-              >
-                View on Audius
-              </Button>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handlePrevious}
-                size="sm"
-                className="cyber-button p-2"
-              >
-                <SkipBack size={16} />
-              </Button>
-              <Button
-                onClick={handlePlay}
-                className="cyber-button p-3 bg-neon-cyan text-black hover:bg-neon-pink"
-              >
-                {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-              </Button>
-              <Button
-                onClick={handleNext}
-                size="sm"
-                className="cyber-button p-2"
-              >
-                <SkipForward size={16} />
-              </Button>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="w-full max-w-md">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>{currentTime}</span>
-                <span>{currentSong.duration}</span>
-              </div>
-              <div className="w-full bg-gray-800 rounded-full h-1 cursor-pointer">
-                <div
-                  className="bg-neon-cyan h-1 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Volume Control */}
-          <div className="flex items-center justify-center md:justify-end gap-2">
-            <Button
-              onClick={handleVolumeToggle}
-              size="sm"
-              variant="ghost"
-              className="text-neon-cyan hover:text-neon-pink p-2"
-            >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            </Button>
-            <div className="w-16 bg-gray-800 rounded-full h-1 cursor-pointer">
-              <div
-                className="bg-neon-green h-1 rounded-full"
-                style={{ width: `${isMuted ? 0 : volume * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Audius & Blockchain Info */}
-        <div className="mt-3 space-y-2">
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground mb-1">
-              Track {currentTrack + 1} of {playlist.length} • Next: {playlist[(currentTrack + 1) % playlist.length].title}
-            </p>
-            <div className="flex flex-wrap justify-center gap-2 text-xs">
-              <span className="text-neon-purple">🎵 Powered by Audius Protocol</span>
-              <span className="text-neon-cyan">⛓️ Solana Blockchain</span>
-              {isWalletConnected && (
-                <span className="text-neon-green">💰 Earning $AUDIO Rewards</span>
-              )}
-            </div>
-          </div>
+          <TrackInfo track={currentSong} onOpenAudius={openAudius} />
           
-          {isWalletConnected && (
-            <div className="text-center p-2 bg-neon-purple/10 rounded border border-neon-purple/30">
-              <p className="text-xs text-neon-purple">
-                🔗 Connected: {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
-              </p>
-              <p className="text-xs text-neon-green mt-1">
-                Artist's Solana Address: {currentSong.solanaAddress?.slice(0, 8)}...{currentSong.solanaAddress?.slice(-8)}
-              </p>
-            </div>
-          )}
+          <PlayerControls
+            isPlaying={isPlaying}
+            volume={volume}
+            isMuted={isMuted}
+            progress={progress}
+            currentTime={currentTime}
+            duration={currentSong.duration}
+            onPlay={handlePlay}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            onVolumeToggle={handleVolumeToggle}
+          />
         </div>
+
+        <RewardsSystem
+          isWalletConnected={isWalletConnected}
+          walletAddress={walletAddress}
+          currentTrack={currentSong}
+          isPlaying={isPlaying}
+          currentTrackIndex={currentTrack}
+          totalTracks={playlist.length}
+          nextTrackTitle={playlist[(currentTrack + 1) % playlist.length].title}
+        />
       </CardContent>
     </Card>
   );
