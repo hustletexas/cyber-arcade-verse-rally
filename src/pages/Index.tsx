@@ -42,9 +42,13 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="font-display text-4xl md:text-6xl font-black mb-4 electric-title text-neon-cyan" data-text="CYBER CITY ARCADE">
-            CYBER CITY ARCADE
-          </h1>
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
+              alt="Cyber City Arcade" 
+              className="w-80 md:w-96 h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300"
+            />
+          </div>
           <p className="text-lg md:text-xl text-neon-purple mb-8 animate-neon-flicker">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
