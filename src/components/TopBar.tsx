@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import WalletConnectProvider from '@walletconnect/web3-provider';
 
 interface WalletState {
   address: string | null;
@@ -23,6 +23,7 @@ export const TopBar = () => {
     isConnected: false,
     walletType: null
   });
+  const [walletConnectProvider, setWalletConnectProvider] = useState<WalletConnectProvider | null>(null);
 
   // Check for existing wallet connections on component mount
   useEffect(() => {
@@ -134,16 +135,91 @@ export const TopBar = () => {
   };
 
   const connectWalletConnect = async () => {
-    toast({
-      title: "WalletConnect",
-      description: "WalletConnect integration coming soon! This requires additional setup.",
-    });
+    try {
+      // Create WalletConnect Provider
+      const provider = new WalletConnectProvider({
+        infuraId: "9aa3d95b3bc440fa88ea12eaa4456161", // Public Infura ID for testing
+        rpc: {
+          1: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+          137: "https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        },
+        chainId: 1,
+        qrcodeModal: {
+          open: (uri: string, cb: any) => {
+            console.log("WalletConnect URI:", uri);
+            // Show QR code modal or deep link
+            window.open(`https://metamask.app.link/wc?uri=${encodeURIComponent(uri)}`, '_blank');
+          },
+          close: () => {
+            console.log("QR Code modal closed");
+          }
+        }
+      });
+
+      setWalletConnectProvider(provider);
+
+      // Enable session (triggers QR Code modal)
+      await provider.enable();
+
+      // Get accounts
+      const accounts = provider.accounts;
+      if (accounts && accounts.length > 0) {
+        const address = accounts[0];
+        setWalletState({
+          address,
+          isConnected: true,
+          walletType: 'walletconnect'
+        });
+
+        toast({
+          title: "WalletConnect Connected!",
+          description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`,
+        });
+      }
+
+      // Subscribe to accounts change
+      provider.on("accountsChanged", (accounts: string[]) => {
+        if (accounts.length > 0) {
+          setWalletState(prev => ({
+            ...prev,
+            address: accounts[0]
+          }));
+        }
+      });
+
+      // Subscribe to chainId change
+      provider.on("chainChanged", (chainId: number) => {
+        console.log("Chain changed:", chainId);
+      });
+
+      // Subscribe to session disconnection
+      provider.on("disconnect", (code: number, reason: string) => {
+        console.log("WalletConnect disconnected:", code, reason);
+        setWalletState({
+          address: null,
+          isConnected: false,
+          walletType: null
+        });
+        setWalletConnectProvider(null);
+      });
+
+    } catch (error: any) {
+      console.error("WalletConnect connection error:", error);
+      toast({
+        title: "WalletConnect Failed",
+        description: error.message || "Failed to connect via WalletConnect",
+        variant: "destructive",
+      });
+    }
   };
 
   const disconnectWallet = async () => {
     try {
       if (walletState.walletType === 'phantom' && window.solana) {
         await window.solana.disconnect();
+      } else if (walletState.walletType === 'walletconnect' && walletConnectProvider) {
+        await walletConnectProvider.disconnect();
+        setWalletConnectProvider(null);
       }
       
       setWalletState({
@@ -214,7 +290,8 @@ export const TopBar = () => {
                   <Card className="arcade-frame px-3 py-2">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-neon-green text-black text-xs">
-                        {walletState.walletType === 'phantom' ? '👻' : '🦊'} CONNECTED
+                        {walletState.walletType === 'phantom' ? '👻' : 
+                         walletState.walletType === 'metamask' ? '🦊' : '🔗'} CONNECTED
                       </Badge>
                       <span className="text-neon-cyan text-xs font-mono">
                         {walletState.address?.slice(0, 4)}...{walletState.address?.slice(-4)}
