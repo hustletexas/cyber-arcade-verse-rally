@@ -1,4 +1,5 @@
 
+
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -102,12 +103,20 @@
 
 /* Arcade Frame Style */
 .arcade-frame {
-  @apply rounded-2xl border-4 border-neon-cyan/50 bg-card text-card-foreground shadow-xl;
+  border-radius: 1rem;
+  border: 4px solid rgba(0, 255, 255, 0.5);
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 /* Vending Machine Style */
 .vending-machine {
-  @apply rounded-xl border-2 border-neon-purple/50 bg-card text-card-foreground shadow-lg;
+  border-radius: 0.75rem;
+  border: 2px solid rgba(175, 95, 255, 0.5);
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 /* Arcade Cabinet Styles */

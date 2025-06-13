@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom neon colors
+				'neon-pink': '#ff40ff',
+				'neon-cyan': '#00ffff',
+				'neon-green': '#77ff77',
+				'neon-purple': '#af5fff'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
