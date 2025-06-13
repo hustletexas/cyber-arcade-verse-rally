@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, ExternalLink } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, ExternalLink, Wallet, Coins } from 'lucide-react';
 
 interface Track {
   id: string;
@@ -13,6 +14,8 @@ interface Track {
   genre: string;
   audiusUrl?: string;
   streamUrl?: string;
+  audiusTrackId?: string;
+  solanaAddress?: string;
 }
 
 const playlist: Track[] = [
@@ -23,7 +26,8 @@ const playlist: Track[] = [
     duration: '3:45',
     genre: 'Synthwave',
     audiusUrl: 'https://audius.co/cyberbeats/digital-dreams',
-    streamUrl: 'https://creatornode.audius.co/v1/tracks/stream'
+    audiusTrackId: 'x5pJ3Az',
+    solanaAddress: '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM'
   },
   {
     id: '2',
@@ -32,7 +36,8 @@ const playlist: Track[] = [
     duration: '4:12',
     genre: 'Chiptune',
     audiusUrl: 'https://audius.co/retrofuture/neon-arcade',
-    streamUrl: 'https://creatornode.audius.co/v1/tracks/stream'
+    audiusTrackId: 'D7KyD',
+    solanaAddress: '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk'
   },
   {
     id: '3',
@@ -41,7 +46,8 @@ const playlist: Track[] = [
     duration: '3:28',
     genre: 'Electronic',
     audiusUrl: 'https://audius.co/gamebeats/pixel-paradise',
-    streamUrl: 'https://creatornode.audius.co/v1/tracks/stream'
+    audiusTrackId: 'eP64B',
+    solanaAddress: '5TtLdRBVYETvRKZh6RGUddq3v6dpbfSjKg4P1X5XNPvs'
   },
   {
     id: '4',
@@ -50,7 +56,8 @@ const playlist: Track[] = [
     duration: '5:03',
     genre: 'Synthwave',
     audiusUrl: 'https://audius.co/synthwave/cyber-city-nights',
-    streamUrl: 'https://creatornode.audius.co/v1/tracks/stream'
+    audiusTrackId: 'mlvKP',
+    solanaAddress: '8FGH6ZAAb2EeCr1smsJaJQnEuNb3N2gkHgGN9aG5Pqr9'
   },
   {
     id: '5',
@@ -59,7 +66,8 @@ const playlist: Track[] = [
     duration: '3:55',
     genre: 'Chiptune',
     audiusUrl: 'https://audius.co/arcade-masters/retro-runner',
-    streamUrl: 'https://creatornode.audius.co/v1/tracks/stream'
+    audiusTrackId: 'DdcxZ',
+    solanaAddress: '7uPNeFb9GVCk2N8aP1FhBXcGsYN7z8YxSMvQ2KwBvKf3'
   }
 ];
 
@@ -71,8 +79,52 @@ export const MusicPlayer = () => {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState('0:00');
   const [isMinimized, setIsMinimized] = useState(false);
-  const [showAudiusLink, setShowAudiusLink] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [audioRewards, setAudioRewards] = useState(0);
+  const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Connect to Phantom Wallet for Solana integration
+  const connectWallet = async () => {
+    try {
+      if (typeof window !== 'undefined' && window.solana && window.solana.isPhantom) {
+        const response = await window.solana.connect();
+        setWalletAddress(response.publicKey.toString());
+        setIsWalletConnected(true);
+        setAudioRewards(Math.floor(Math.random() * 100) + 50); // Simulate $AUDIO tokens
+        
+        toast({
+          title: "Wallet Connected!",
+          description: `Connected to Audius via Solana. Earned ${audioRewards} $AUDIO tokens!`,
+        });
+      } else {
+        window.open('https://phantom.app/', '_blank');
+        toast({
+          title: "Phantom Wallet Required",
+          description: "Install Phantom to earn $AUDIO tokens while listening",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to Phantom wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Simulate streaming rewards
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying && isWalletConnected) {
+      interval = setInterval(() => {
+        setAudioRewards(prev => prev + 0.1);
+      }, 5000); // Earn 0.1 $AUDIO every 5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, isWalletConnected]);
 
   // Simulate audio progress for demo purposes
   useEffect(() => {
@@ -98,10 +150,29 @@ export const MusicPlayer = () => {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
     setIsPlaying(!isPlaying);
-    // In a real implementation, this would interact with Audius API
-    console.log(`${isPlaying ? 'Pausing' : 'Playing'} track from Audius:`, currentSong.audiusUrl);
+    const currentSong = playlist[currentTrack];
+    
+    if (!isPlaying) {
+      // Simulate Audius API call
+      console.log(`🎵 Streaming from Audius: ${currentSong.audiusUrl}`);
+      console.log(`📡 Audius Track ID: ${currentSong.audiusTrackId}`);
+      console.log(`🔗 Solana Address: ${currentSong.solanaAddress}`);
+      
+      // Notify about potential rewards
+      if (isWalletConnected) {
+        toast({
+          title: "🎵 Now Playing",
+          description: `Earning $AUDIO tokens while streaming "${currentSong.title}"`,
+        });
+      } else {
+        toast({
+          title: "🎵 Now Playing",
+          description: "Connect wallet to earn $AUDIO tokens while listening!",
+        });
+      }
+    }
   };
 
   const handleNext = () => {
@@ -121,10 +192,37 @@ export const MusicPlayer = () => {
   };
 
   const openAudius = () => {
+    const currentSong = playlist[currentTrack];
     if (currentSong.audiusUrl) {
       window.open(currentSong.audiusUrl, '_blank');
     } else {
       window.open('https://audius.co/', '_blank');
+    }
+  };
+
+  const tipArtist = async () => {
+    if (!isWalletConnected) {
+      toast({
+        title: "Wallet Required",
+        description: "Connect your wallet to tip artists",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const tipAmount = 1; // 1 $AUDIO token
+    if (audioRewards >= tipAmount) {
+      setAudioRewards(prev => prev - tipAmount);
+      toast({
+        title: "Artist Tipped! 🎤",
+        description: `Sent ${tipAmount} $AUDIO to ${playlist[currentTrack].artist}`,
+      });
+    } else {
+      toast({
+        title: "Insufficient Balance",
+        description: "Keep listening to earn more $AUDIO tokens",
+        variant: "destructive",
+      });
     }
   };
 
@@ -145,6 +243,11 @@ export const MusicPlayer = () => {
             <div className="text-xs text-neon-cyan min-w-0">
               <p className="truncate max-w-32">{currentSong.title}</p>
             </div>
+            {isWalletConnected && (
+              <Badge className="bg-neon-green text-black text-xs">
+                {audioRewards.toFixed(1)} $AUDIO
+              </Badge>
+            )}
             <Button
               onClick={openAudius}
               size="sm"
@@ -174,11 +277,35 @@ export const MusicPlayer = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Music className="text-neon-cyan" size={20} />
-            <span className="font-display text-neon-green">🎵 CYBER VIBES</span>
-            <Badge className="bg-neon-purple text-white text-xs">AUDIUS POWERED</Badge>
-            {isPlaying && <Badge className="bg-neon-pink text-black text-xs animate-pulse">LIVE</Badge>}
+            <span className="font-display text-neon-green">🎵 AUDIUS PLAYER</span>
+            <Badge className="bg-neon-purple text-white text-xs">SOLANA POWERED</Badge>
+            {isPlaying && <Badge className="bg-neon-pink text-black text-xs animate-pulse">STREAMING</Badge>}
           </div>
           <div className="flex items-center gap-2">
+            {!isWalletConnected ? (
+              <Button
+                onClick={connectWallet}
+                size="sm"
+                className="cyber-button text-xs"
+              >
+                <Wallet size={16} className="mr-1" />
+                CONNECT
+              </Button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Badge className="bg-neon-green text-black text-xs">
+                  <Coins size={12} className="mr-1" />
+                  {audioRewards.toFixed(1)} $AUDIO
+                </Badge>
+                <Button
+                  onClick={tipArtist}
+                  size="sm"
+                  className="cyber-button text-xs"
+                >
+                  TIP ARTIST
+                </Button>
+              </div>
+            )}
             <Button
               onClick={openAudius}
               size="sm"
@@ -207,6 +334,9 @@ export const MusicPlayer = () => {
             <div className="flex flex-wrap gap-1 mt-1 justify-center md:justify-start">
               <Badge className="bg-neon-pink text-black text-xs">
                 {currentSong.genre}
+              </Badge>
+              <Badge className="bg-neon-purple text-white text-xs">
+                ID: {currentSong.audiusTrackId}
               </Badge>
               <Button
                 onClick={openAudius}
@@ -278,14 +408,31 @@ export const MusicPlayer = () => {
           </div>
         </div>
 
-        {/* Playlist Preview & Audius Info */}
-        <div className="mt-3 text-center">
-          <p className="text-xs text-muted-foreground mb-1">
-            Track {currentTrack + 1} of {playlist.length} • Next: {playlist[(currentTrack + 1) % playlist.length].title}
-          </p>
-          <p className="text-xs text-neon-purple">
-            🎵 Streaming from Audius - Decentralized Music Platform
-          </p>
+        {/* Enhanced Audius & Blockchain Info */}
+        <div className="mt-3 space-y-2">
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground mb-1">
+              Track {currentTrack + 1} of {playlist.length} • Next: {playlist[(currentTrack + 1) % playlist.length].title}
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 text-xs">
+              <span className="text-neon-purple">🎵 Powered by Audius Protocol</span>
+              <span className="text-neon-cyan">⛓️ Solana Blockchain</span>
+              {isWalletConnected && (
+                <span className="text-neon-green">💰 Earning $AUDIO Rewards</span>
+              )}
+            </div>
+          </div>
+          
+          {isWalletConnected && (
+            <div className="text-center p-2 bg-neon-purple/10 rounded border border-neon-purple/30">
+              <p className="text-xs text-neon-purple">
+                🔗 Connected: {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
+              </p>
+              <p className="text-xs text-neon-green mt-1">
+                Artist's Solana Address: {currentSong.solanaAddress?.slice(0, 8)}...{currentSong.solanaAddress?.slice(-8)}
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
