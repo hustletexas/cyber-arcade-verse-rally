@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Bitcoin } from 'lucide-react';
 
 export const PaymentIntegration = () => {
   const { toast } = useToast();
@@ -70,7 +71,9 @@ export const PaymentIntegration = () => {
 
           <Card className="holographic p-6 text-center">
             <h3 className="font-bold text-neon-cyan mb-4">Crypto Payment</h3>
-            <div className="text-4xl mb-4">🪙</div>
+            <div className="flex justify-center mb-4">
+              <Bitcoin size={48} className="text-neon-cyan" />
+            </div>
             <p className="text-sm text-muted-foreground mb-4">
               Pay with SOL or USDC
             </p>
