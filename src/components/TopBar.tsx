@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +48,13 @@ export const TopBar = () => {
                 className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
               />
             </div>
+          </div>
+
+          {/* Centered Neon Text */}
+          <div className="flex-1 flex justify-center">
+            <h2 className="text-neon-cyan font-display text-xl md:text-2xl font-bold neon-glow animate-neon-flicker">
+              PLAY • EARN • HAVE FUN
+            </h2>
           </div>
 
           {/* Connection Status & User Info */}
