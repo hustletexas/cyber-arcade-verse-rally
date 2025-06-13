@@ -13,14 +13,12 @@ import { PrizeSection } from '@/components/PrizeSection';
 import { BlockchainIntegration } from '@/components/BlockchainIntegration';
 import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
-import { TetrisGame } from '@/components/games/TetrisGame';
-import { PacManGame } from '@/components/games/PacManGame';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
 
   return (
-    <div className="min-h-screen bg-background vhs-glitch">
+    <div className="min-h-screen bg-black vhs-glitch">
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -43,11 +41,13 @@ const Index = () => {
         {/* Enhanced Hero Section */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-              alt="Cyber City Arcade" 
-              className="w-80 md:w-96 h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300"
-            />
+            <div className="arcade-frame p-6 w-full max-w-md">
+              <img 
+                src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
+                alt="Cyber City Arcade" 
+                className="w-full h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300"
+              />
+            </div>
           </div>
           <p className="text-lg md:text-xl text-neon-purple mb-8 animate-neon-flicker">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
@@ -62,18 +62,6 @@ const Index = () => {
             <Badge className="bg-neon-green text-black px-3 md:px-4 py-2 text-xs md:text-sm font-bold neon-glow">
               🪙 $CCTR REWARDS
             </Badge>
-          </div>
-
-          {/* Quick Play Games */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
-            <div className="arcade-frame p-6">
-              <h3 className="font-display text-xl text-neon-pink mb-4">🧩 TETRIS CHALLENGE</h3>
-              <TetrisGame onGameEnd={(score) => console.log('Tetris score:', score)} isActive={false} />
-            </div>
-            <div className="arcade-frame p-6">
-              <h3 className="font-display text-xl text-neon-cyan mb-4">👻 PAC-MAN ARENA</h3>
-              <PacManGame onGameEnd={(score) => console.log('Pac-Man score:', score)} isActive={false} />
-            </div>
           </div>
         </div>
 
