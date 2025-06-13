@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TournamentGameInterface } from './TournamentGameInterface';
-import { Leaderboard } from './Leaderboard';
 import { useAuth } from '@/hooks/useAuth';
 
 export const TournamentSection = () => {
@@ -109,7 +107,7 @@ export const TournamentSection = () => {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-8">
       {/* Active Game Interface */}
       {activeGame && (
         <TournamentGameInterface
@@ -122,28 +120,28 @@ export const TournamentSection = () => {
       {/* Live Tournaments */}
       <Card className="arcade-frame">
         <CardHeader>
-          <CardTitle className="font-display text-xl md:text-2xl text-neon-cyan flex items-center gap-3">
+          <CardTitle className="font-display text-2xl text-neon-cyan flex items-center gap-3">
             🏆 ACTIVE TOURNAMENTS
             <Badge className="bg-neon-green text-black animate-pulse">LIVE</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tournaments.map((tournament) => (
-              <Card key={tournament.id} className="vending-machine p-4 md:p-6 hover:scale-105 transition-transform">
+              <Card key={tournament.id} className="vending-machine p-6 hover:scale-105 transition-transform">
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-display text-base md:text-lg font-bold text-neon-pink flex items-center gap-2">
+                    <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
                       {getGameIcon(tournament.gameType)} {tournament.title}
                     </h3>
-                    <Badge className={`${tournament.status === 'live' ? 'bg-neon-green' : 'bg-neon-purple'} text-black text-xs`}>
+                    <Badge className={`${tournament.status === 'live' ? 'bg-neon-green' : 'bg-neon-purple'} text-black`}>
                       {tournament.status.toUpperCase()}
                     </Badge>
                   </div>
                   
-                  <p className="text-muted-foreground text-xs md:text-sm">{tournament.description}</p>
+                  <p className="text-muted-foreground text-sm">{tournament.description}</p>
                   
-                  <div className="space-y-2 text-xs md:text-sm">
+                  <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Prize Pool:</span>
                       <span className="text-neon-green font-bold">{tournament.prize}</span>
@@ -173,7 +171,7 @@ export const TournamentSection = () => {
                   {ownedPasses.includes(tournament.passRequired) ? (
                     <Button 
                       onClick={() => joinTournament(tournament)}
-                      className="w-full cyber-button text-xs md:text-sm"
+                      className="w-full cyber-button"
                     >
                       🎮 PLAY NOW
                     </Button>
@@ -181,7 +179,7 @@ export const TournamentSection = () => {
                     <Button 
                       onClick={() => mintPass(tournament.passRequired)}
                       variant="outline"
-                      className="w-full border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black text-xs md:text-sm"
+                      className="w-full border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
                     >
                       🎟️ MINT {tournament.passRequired.toUpperCase()} PASS
                     </Button>
@@ -193,51 +191,34 @@ export const TournamentSection = () => {
         </CardContent>
       </Card>
 
-      {/* Leaderboards */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-xl md:text-2xl text-neon-purple flex items-center gap-3">
-            📊 LEADERBOARDS
-            <Badge className="bg-neon-cyan text-black">LIVE RANKINGS</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
-            <Leaderboard gameType="tetris" limit={10} />
-            <Leaderboard gameType="pacman" limit={10} />
-          </div>
-          <Leaderboard gameType="galaga" limit={15} />
-        </CardContent>
-      </Card>
-
       {/* NFT Tournament Passes */}
       <Card className="arcade-frame">
         <CardHeader>
-          <CardTitle className="font-display text-xl md:text-2xl text-neon-purple flex items-center gap-3">
+          <CardTitle className="font-display text-2xl text-neon-purple flex items-center gap-3">
             🎟️ TOURNAMENT NFT PASSES
             <Badge className="bg-neon-cyan text-black">MINT NOW</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {nftPasses.map((pass) => (
-              <Card key={pass.id} className={`holographic p-4 md:p-6 hover:scale-105 transition-all duration-300 ${ownedPasses.includes(pass.id) ? 'border-neon-green border-2' : ''}`}>
+              <Card key={pass.id} className={`holographic p-6 hover:scale-105 transition-all duration-300 ${ownedPasses.includes(pass.id) ? 'border-neon-green border-2' : ''}`}>
                 <div className="space-y-4">
                   <div className="text-center">
-                    <div className={`w-20 h-28 md:w-24 md:h-32 mx-auto bg-gradient-to-br ${pass.holographicColor} rounded-lg flex items-center justify-center mb-4 animate-float`}>
-                      <span className="text-3xl md:text-4xl">🎫</span>
+                    <div className={`w-24 h-32 mx-auto bg-gradient-to-br ${pass.holographicColor} rounded-lg flex items-center justify-center mb-4 animate-float`}>
+                      <span className="text-4xl">🎫</span>
                     </div>
-                    <h3 className="font-display text-lg md:text-xl font-bold text-neon-cyan">{pass.name}</h3>
+                    <h3 className="font-display text-xl font-bold text-neon-cyan">{pass.name}</h3>
                     <Badge className="bg-neon-purple text-black">{pass.rarity}</Badge>
                   </div>
 
                   <div className="text-center">
-                    <p className="text-xl md:text-2xl font-bold text-neon-green">{pass.price}</p>
+                    <p className="text-2xl font-bold text-neon-green">{pass.price}</p>
                   </div>
 
                   <div className="space-y-2">
                     {pass.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 text-xs md:text-sm">
+                      <div key={index} className="flex items-center gap-2 text-sm">
                         <span className="text-neon-green">✓</span>
                         <span>{feature}</span>
                       </div>
@@ -251,7 +232,7 @@ export const TournamentSection = () => {
                   ) : (
                     <Button 
                       onClick={() => mintPass(pass.id)}
-                      className="w-full cyber-button text-xs md:text-sm"
+                      className="w-full cyber-button"
                     >
                       🔨 MINT NFT PASS
                     </Button>

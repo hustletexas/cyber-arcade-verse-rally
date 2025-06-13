@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { WalletConnector } from './WalletConnector';
 
 export const TopBar = () => {
   const { user, signOut, loading } = useAuth();
@@ -30,6 +29,13 @@ export const TopBar = () => {
     }
   };
 
+  const handleWalletConnect = (walletType: 'phantom' | 'metamask' | 'walletconnect') => {
+    toast({
+      title: "Wallet Connect",
+      description: `${walletType} integration coming soon!`,
+    });
+  };
+
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -50,55 +56,68 @@ export const TopBar = () => {
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
             ) : user ? (
-              <div className="flex items-center gap-4">
-                {/* Wallet Connector for authenticated users */}
-                <div className="hidden lg:block">
-                  <WalletConnector compact />
-                </div>
-                
-                <Card className="arcade-frame px-4 py-2">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-8 h-8 border-2 border-neon-cyan">
-                      <AvatarImage src={user.user_metadata?.avatar_url} />
-                      <AvatarFallback className="bg-neon-purple text-black font-bold">
-                        {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-sm">
-                      <p className="font-bold text-neon-cyan">
-                        {user.user_metadata?.username || user.email?.split('@')[0]}
-                      </p>
-                      <p className="text-neon-purple text-xs">{user.email}</p>
-                    </div>
-                    <Badge className="bg-neon-green text-black">
-                      🔐 AUTHENTICATED
-                    </Badge>
-                    <Button 
-                      onClick={handleSignOut}
-                      variant="outline" 
-                      size="sm"
-                      className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
-                    >
-                      Logout
-                    </Button>
+              <Card className="arcade-frame px-4 py-2">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-8 h-8 border-2 border-neon-cyan">
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="bg-neon-purple text-black font-bold">
+                      {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-sm">
+                    <p className="font-bold text-neon-cyan">
+                      {user.user_metadata?.username || user.email?.split('@')[0]}
+                    </p>
+                    <p className="text-neon-purple text-xs">{user.email}</p>
                   </div>
-                </Card>
-              </div>
+                  <Badge className="bg-neon-green text-black">
+                    🔐 AUTHENTICATED
+                  </Badge>
+                  <Button 
+                    onClick={handleSignOut}
+                    variant="outline" 
+                    size="sm"
+                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                  >
+                    Logout
+                  </Button>
+                </div>
+              </Card>
             ) : (
               <div className="flex items-center gap-3">
-                {/* Wallet Connector for non-authenticated users */}
-                <div className="hidden lg:block">
-                  <WalletConnector compact />
-                </div>
-                
                 {/* Email Login */}
                 <Button 
                   onClick={() => navigate('/auth')}
-                  className="cyber-button flex items-center gap-2 h-[42px]"
+                  className="cyber-button flex items-center gap-2"
                 >
                   <span className="text-lg">🔐</span>
                   LOGIN / SIGNUP
                 </Button>
+
+                {/* Wallet Connect Options */}
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handleWalletConnect('phantom')}
+                    variant="outline"
+                    className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                  >
+                    👻 PHANTOM
+                  </Button>
+                  <Button 
+                    onClick={() => handleWalletConnect('metamask')}
+                    variant="outline"
+                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                  >
+                    🦊 METAMASK
+                  </Button>
+                  <Button 
+                    onClick={() => handleWalletConnect('walletconnect')}
+                    variant="outline"
+                    className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
+                  >
+                    🔗 WALLET
+                  </Button>
+                </div>
               </div>
             )}
           </div>
