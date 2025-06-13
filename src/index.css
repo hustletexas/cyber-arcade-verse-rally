@@ -1,5 +1,3 @@
-
-
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -17,19 +15,15 @@
 
 /* Cyberpunk Styles */
 .cyber-button {
-  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg;
+  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg group;
   background-color: #fff;
 }
 
 .cyber-button:before {
   content: '';
-  @apply absolute w-64 h-64 rounded-full transform scale-0;
+  @apply absolute w-64 h-64 rounded-full transform scale-0 group-hover:scale-100;
   background-image: radial-gradient(circle, rgba(0, 255, 255, 0.4), transparent);
   transition: transform 0.5s ease-out;
-}
-
-.cyber-button:hover:before {
-  transform: scale(1);
 }
 
 .cyber-button span {
@@ -47,7 +41,7 @@
 }
 
 .cyber-button:active {
-  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg;
+  @apply relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-mono font-medium tracking-tighter text-gray-800 bg-gray-300 rounded-lg group;
 }
 
 /* Neon Colors */
@@ -103,20 +97,12 @@
 
 /* Arcade Frame Style */
 .arcade-frame {
-  border-radius: 1rem;
-  border: 4px solid rgba(0, 255, 255, 0.5);
-  background-color: hsl(var(--card));
-  color: hsl(var(--card-foreground));
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  @apply rounded-2xl border-4 border-neon-cyan/50 bg-card text-card-foreground shadow-xl;
 }
 
 /* Vending Machine Style */
 .vending-machine {
-  border-radius: 0.75rem;
-  border: 2px solid rgba(175, 95, 255, 0.5);
-  background-color: hsl(var(--card));
-  color: hsl(var(--card-foreground));
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  @apply rounded-xl border-2 border-neon-purple/50 bg-card text-card-foreground shadow-lg;
 }
 
 /* Arcade Cabinet Styles */
