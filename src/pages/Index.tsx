@@ -13,11 +13,10 @@ import { PrizeSection } from '@/components/PrizeSection';
 import { BlockchainIntegration } from '@/components/BlockchainIntegration';
 import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
-import { TetrisGame } from '@/components/games/TetrisGame';
+import { ArcadeCabinetLogo } from '@/components/ArcadeCabinetLogo';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
-  const [tetrisActive, setTetrisActive] = useState(false);
 
   return (
     <div className="min-h-screen bg-background vhs-glitch">
@@ -44,13 +43,9 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-              alt="Cyber City Arcade" 
-              className="w-80 md:w-96 h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300"
-            />
-          </div>
+          {/* Arcade Cabinet Logo with Integrated Tetris */}
+          <ArcadeCabinetLogo />
+          
           <p className="text-lg md:text-xl text-neon-purple mb-8 animate-neon-flicker">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
@@ -64,46 +59,6 @@ const Index = () => {
             <Badge className="bg-neon-green text-black px-3 md:px-4 py-2 text-xs md:text-sm font-bold neon-glow">
               🪙 $CCTR REWARDS
             </Badge>
-          </div>
-
-          {/* Full-Size Arcade Cabinet with Tetris */}
-          <div className="max-w-6xl mx-auto mb-12">
-            <div className="arcade-cabinet">
-              <div className="arcade-cabinet-top">
-                <h2 className="font-display text-3xl text-neon-cyan mb-2 neon-glow">
-                  🕹️ CYBER ARCADE CABINET 🕹️
-                </h2>
-                <p className="text-neon-purple">Classic Games • Modern Blockchain • Real Rewards</p>
-              </div>
-              
-              <div className="arcade-screen-container">
-                <div className="arcade-screen">
-                  <TetrisGame 
-                    onGameEnd={(score) => {
-                      console.log('Tetris score:', score);
-                      setTetrisActive(false);
-                    }} 
-                    isActive={tetrisActive} 
-                  />
-                </div>
-              </div>
-
-              <div className="arcade-controls">
-                <button 
-                  onClick={() => setTetrisActive(!tetrisActive)}
-                  className="arcade-start-button"
-                >
-                  {tetrisActive ? 'PAUSE' : 'START'} TETRIS
-                </button>
-                <div className="arcade-control-panel">
-                  <div className="control-stick"></div>
-                  <div className="action-buttons">
-                    <div className="action-button"></div>
-                    <div className="action-button"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
