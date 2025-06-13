@@ -12,7 +12,7 @@ export const BlockchainIntegration = () => {
 
   const connectPhantom = async () => {
     try {
-      if (window.solana && window.solana.isPhantom) {
+      if (typeof window !== 'undefined' && window.solana && window.solana.isPhantom) {
         const response = await window.solana.connect();
         setWalletAddress(response.publicKey.toString());
         setIsConnected(true);
