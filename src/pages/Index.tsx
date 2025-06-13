@@ -21,22 +21,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background vhs-glitch">
-      {/* Enhanced Animated Background to match logo */}
-      <div className="fixed inset-0 opacity-25 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/15 via-neon-purple/20 to-neon-cyan/15 animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-neon-purple/10 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-neon-pink/8 rounded-full blur-2xl animate-pulse" />
-        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-neon-cyan/12 rounded-full blur-3xl animate-float" />
+      {/* Enhanced Animated Background */}
+      <div className="fixed inset-0 opacity-20 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
         
-        {/* Enhanced Gaming Icons Background */}
-        <div className="absolute top-10 left-10 text-4xl opacity-35 animate-float text-neon-pink">🕹️</div>
-        <div className="absolute top-20 right-20 text-3xl opacity-25 animate-pulse text-neon-cyan">🎮</div>
-        <div className="absolute bottom-20 left-20 text-3xl opacity-30 animate-bounce text-neon-purple">👾</div>
-        <div className="absolute bottom-10 right-10 text-4xl opacity-35 animate-float text-neon-green">🎯</div>
-        <div className="absolute top-1/3 left-1/4 text-2xl opacity-25 animate-pulse text-neon-pink">🏆</div>
-        <div className="absolute top-2/3 right-1/4 text-3xl opacity-30 animate-bounce text-neon-cyan">⚡</div>
-        <div className="absolute top-1/2 left-10 text-2xl opacity-25 animate-float text-neon-purple">🚀</div>
-        <div className="absolute top-1/4 right-1/3 text-3xl opacity-35 animate-pulse text-neon-green">💎</div>
+        {/* Gaming Icons Background */}
+        <div className="absolute top-10 left-10 text-4xl opacity-30 animate-float">🕹️</div>
+        <div className="absolute top-20 right-20 text-3xl opacity-20 animate-pulse">🎮</div>
+        <div className="absolute bottom-20 left-20 text-3xl opacity-25 animate-bounce">👾</div>
+        <div className="absolute bottom-10 right-10 text-4xl opacity-30 animate-float">🎯</div>
+        <div className="absolute top-1/3 left-1/4 text-2xl opacity-20 animate-pulse">🏆</div>
+        <div className="absolute top-2/3 right-1/4 text-3xl opacity-25 animate-bounce">⚡</div>
+        <div className="absolute top-1/2 left-10 text-2xl opacity-20 animate-float">🚀</div>
+        <div className="absolute top-1/4 right-1/3 text-3xl opacity-30 animate-pulse">💎</div>
       </div>
 
       <TopBar />
