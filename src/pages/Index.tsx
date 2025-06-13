@@ -13,13 +13,14 @@ import { PrizeSection } from '@/components/PrizeSection';
 import { BlockchainIntegration } from '@/components/BlockchainIntegration';
 import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
-import { ArcadeTetris } from '@/components/ArcadeTetris';
+import { TetrisGame } from '@/components/games/TetrisGame';
+import { PacManGame } from '@/components/games/PacManGame';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
 
   return (
-    <div className="min-h-screen bg-black text-white vhs-glitch">
+    <div className="min-h-screen bg-background vhs-glitch">
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -39,10 +40,14 @@ const Index = () => {
       <TopBar />
 
       <main className="container mx-auto px-4 py-8 relative z-10">
-        {/* Enhanced Hero Section with Arcade Tetris */}
+        {/* Enhanced Hero Section */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <ArcadeTetris />
+            <img 
+              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
+              alt="Cyber City Arcade" 
+              className="w-80 md:w-96 h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300"
+            />
           </div>
           <p className="text-lg md:text-xl text-neon-purple mb-8 animate-neon-flicker">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
@@ -58,39 +63,36 @@ const Index = () => {
               🪙 $CCTR REWARDS
             </Badge>
           </div>
+
+          {/* Quick Play Games */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
+            <div className="arcade-frame p-6">
+              <h3 className="font-display text-xl text-neon-pink mb-4">🧩 TETRIS CHALLENGE</h3>
+              <TetrisGame onGameEnd={(score) => console.log('Tetris score:', score)} isActive={false} />
+            </div>
+            <div className="arcade-frame p-6">
+              <h3 className="font-display text-xl text-neon-cyan mb-4">👻 PAC-MAN ARENA</h3>
+              <PacManGame onGameEnd={(score) => console.log('Pac-Man score:', score)} isActive={false} />
+            </div>
+          </div>
         </div>
 
         {/* Main Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8 bg-gray-900/80 backdrop-blur-sm border border-neon-cyan/30 p-2 rounded-lg">
-            <TabsTrigger 
-              value="tournaments" 
-              className="text-neon-cyan bg-transparent border border-neon-cyan/50 hover:bg-neon-cyan/20 data-[state=active]:bg-neon-cyan data-[state=active]:text-black font-bold text-xs md:text-sm"
-            >
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8 arcade-frame p-2">
+            <TabsTrigger value="tournaments" className="cyber-button text-xs md:text-sm">
               🏆 TOURNAMENTS
             </TabsTrigger>
-            <TabsTrigger 
-              value="dashboard" 
-              className="text-neon-pink bg-transparent border border-neon-pink/50 hover:bg-neon-pink/20 data-[state=active]:bg-neon-pink data-[state=active]:text-black font-bold text-xs md:text-sm"
-            >
+            <TabsTrigger value="dashboard" className="cyber-button text-xs md:text-sm">
               📊 DASHBOARD
             </TabsTrigger>
-            <TabsTrigger 
-              value="voting" 
-              className="text-neon-purple bg-transparent border border-neon-purple/50 hover:bg-neon-purple/20 data-[state=active]:bg-neon-purple data-[state=active]:text-black font-bold text-xs md:text-sm"
-            >
+            <TabsTrigger value="voting" className="cyber-button text-xs md:text-sm">
               🗳️ VOTING
             </TabsTrigger>
-            <TabsTrigger 
-              value="marketplace" 
-              className="text-neon-green bg-transparent border border-neon-green/50 hover:bg-neon-green/20 data-[state=active]:bg-neon-green data-[state=active]:text-black font-bold text-xs md:text-sm"
-            >
+            <TabsTrigger value="marketplace" className="cyber-button text-xs md:text-sm">
               🛒 MARKETPLACE
             </TabsTrigger>
-            <TabsTrigger 
-              value="social" 
-              className="text-neon-cyan bg-transparent border border-neon-cyan/50 hover:bg-neon-cyan/20 data-[state=active]:bg-neon-cyan data-[state=active]:text-black font-bold text-xs md:text-sm"
-            >
+            <TabsTrigger value="social" className="cyber-button text-xs md:text-sm">
               📱 SOCIAL
             </TabsTrigger>
           </TabsList>
@@ -126,12 +128,12 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neon-cyan/30 mt-20 py-8 bg-gray-900/50 backdrop-blur-sm">
+      <footer className="border-t border-neon-cyan/30 mt-20 py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-neon-purple font-mono text-sm md:text-base">
             © 2024 Cyber City Arcade • Powered by Solana Blockchain
           </p>
-          <div className="flex flex-wrap justify-center gap-2 md:gap-6 mt-4 text-xs md:text-sm text-neon-cyan/70">
+          <div className="flex flex-wrap justify-center gap-2 md:gap-6 mt-4 text-xs md:text-sm text-muted-foreground">
             <span>Solana Network</span>
             <span>•</span>
             <span>Magic Eden</span>

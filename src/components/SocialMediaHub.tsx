@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -112,7 +113,7 @@ export const SocialMediaHub = () => {
             📱 SOCIAL MEDIA HUB
             <Badge className="bg-neon-cyan text-black animate-neon-flicker">CONNECTED</Badge>
           </CardTitle>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground">
             Connect your streaming platforms and share your gaming achievements
           </p>
         </CardHeader>
@@ -130,7 +131,7 @@ export const SocialMediaHub = () => {
                 <CardContent className="p-4 text-center">
                   <div className="text-4xl mb-2">{platform.icon}</div>
                   <h3 className="font-bold text-neon-purple mb-1">{platform.name}</h3>
-                  <p className="text-xs text-gray-300 mb-3">{platform.description}</p>
+                  <p className="text-xs text-muted-foreground mb-3">{platform.description}</p>
                   
                   {connectedPlatforms.includes(platform.id) ? (
                     <div className="space-y-2">
@@ -142,7 +143,7 @@ export const SocialMediaHub = () => {
                         onClick={() => disconnectPlatform(platform.id)}
                         variant="outline"
                         size="sm"
-                        className="w-full border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black text-xs border-2 shadow-lg shadow-neon-pink/50"
+                        className="w-full border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black text-xs"
                       >
                         DISCONNECT
                       </Button>
@@ -150,7 +151,7 @@ export const SocialMediaHub = () => {
                   ) : (
                     <Button
                       onClick={() => connectPlatform(platform.id)}
-                      className="bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-cyan shadow-lg shadow-neon-cyan/50 w-full text-xs"
+                      className="cyber-button w-full text-xs"
                     >
                       CONNECT
                     </Button>
@@ -165,9 +166,9 @@ export const SocialMediaHub = () => {
       {/* Content Tabs */}
       <Tabs defaultValue="clips" className="w-full">
         <TabsList className="grid w-full grid-cols-3 arcade-frame p-2">
-          <TabsTrigger value="clips" className="bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold hover:scale-105 transition-all border-2 border-neon-cyan">🎬 CLIPS</TabsTrigger>
-          <TabsTrigger value="posts" className="bg-gradient-to-r from-neon-pink to-neon-purple text-black font-bold hover:scale-105 transition-all border-2 border-neon-pink">📝 POSTS</TabsTrigger>
-          <TabsTrigger value="analytics" className="bg-gradient-to-r from-neon-green to-neon-cyan text-black font-bold hover:scale-105 transition-all border-2 border-neon-green">📊 ANALYTICS</TabsTrigger>
+          <TabsTrigger value="clips" className="cyber-button">🎬 CLIPS</TabsTrigger>
+          <TabsTrigger value="posts" className="cyber-button">📝 POSTS</TabsTrigger>
+          <TabsTrigger value="analytics" className="cyber-button">📊 ANALYTICS</TabsTrigger>
         </TabsList>
 
         <TabsContent value="clips" className="space-y-6 mt-6">
@@ -190,20 +191,20 @@ export const SocialMediaHub = () => {
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-300">Views:</span>
+                      <span>Views:</span>
                       <span className="text-neon-cyan font-bold">{clip.views}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-300">Likes:</span>
+                      <span>Likes:</span>
                       <span className="text-neon-pink font-bold">{clip.likes}</span>
                     </div>
                   </div>
                   
                   <div className="flex gap-2 mt-4">
-                    <Button size="sm" className="bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-cyan shadow-lg shadow-neon-cyan/50 flex-1 text-xs">
+                    <Button size="sm" className="cyber-button flex-1 text-xs">
                       📺 WATCH
                     </Button>
-                    <Button size="sm" variant="outline" className="border-neon-cyan text-neon-cyan text-xs border-2 shadow-lg shadow-neon-cyan/50">
+                    <Button size="sm" variant="outline" className="border-neon-cyan text-neon-cyan text-xs">
                       📤 SHARE
                     </Button>
                   </div>
@@ -225,7 +226,7 @@ export const SocialMediaHub = () => {
                       </div>
                       <div>
                         <p className="font-bold text-neon-cyan">You</p>
-                        <p className="text-sm text-gray-300">{post.timestamp}</p>
+                        <p className="text-sm text-muted-foreground">{post.timestamp}</p>
                       </div>
                     </div>
                     <Badge className="bg-neon-purple text-black">
@@ -233,16 +234,16 @@ export const SocialMediaHub = () => {
                     </Badge>
                   </div>
                   
-                  <p className="text-gray-100 mb-4">{post.content}</p>
+                  <p className="text-foreground mb-4">{post.content}</p>
                   
                   <div className="flex gap-6 text-sm">
                     <div className="flex items-center gap-1">
                       <span className="text-neon-pink">❤️</span>
-                      <span className="text-gray-300">{post.likes}</span>
+                      <span>{post.likes}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-neon-green">🔄</span>
-                      <span className="text-gray-300">{post.retweets}</span>
+                      <span>{post.retweets}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -253,7 +254,7 @@ export const SocialMediaHub = () => {
           <Card className="arcade-frame">
             <CardContent className="p-6 text-center">
               <h3 className="font-display text-lg text-neon-purple mb-4">📝 CREATE NEW POST</h3>
-              <Button className="bg-gradient-to-r from-neon-purple to-neon-cyan text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-purple shadow-lg shadow-neon-purple/50">
+              <Button className="cyber-button">
                 ✨ COMPOSE POST
               </Button>
             </CardContent>
@@ -265,19 +266,19 @@ export const SocialMediaHub = () => {
             <Card className="holographic p-6 text-center">
               <h3 className="font-display text-lg text-neon-cyan mb-2">TOTAL FOLLOWERS</h3>
               <div className="text-3xl font-black text-neon-green">10.2K</div>
-              <p className="text-sm text-gray-300">Across all platforms</p>
+              <p className="text-sm text-muted-foreground">Across all platforms</p>
             </Card>
 
             <Card className="holographic p-6 text-center">
               <h3 className="font-display text-lg text-neon-pink mb-2">MONTHLY VIEWS</h3>
               <div className="text-3xl font-black text-neon-purple">247K</div>
-              <p className="text-sm text-gray-300">Content views</p>
+              <p className="text-sm text-muted-foreground">Content views</p>
             </Card>
 
             <Card className="holographic p-6 text-center">
               <h3 className="font-display text-lg text-neon-purple mb-2">ENGAGEMENT</h3>
               <div className="text-3xl font-black text-neon-cyan">8.4%</div>
-              <p className="text-sm text-gray-300">Average rate</p>
+              <p className="text-sm text-muted-foreground">Average rate</p>
             </Card>
           </div>
 
@@ -288,19 +289,19 @@ export const SocialMediaHub = () => {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Twitch Growth:</span>
+                  <span>Twitch Growth:</span>
                   <Badge className="bg-neon-green text-black">+15.2% this month</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">YouTube Growth:</span>
+                  <span>YouTube Growth:</span>
                   <Badge className="bg-neon-cyan text-black">+8.7% this month</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Best Content Type:</span>
+                  <span>Best Content Type:</span>
                   <Badge className="bg-neon-pink text-black">Tournament Highlights</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Peak Viewing Time:</span>
+                  <span>Peak Viewing Time:</span>
                   <Badge className="bg-neon-purple text-black">8-10 PM EST</Badge>
                 </div>
               </div>

@@ -67,16 +67,16 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white vhs-glitch flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background vhs-glitch flex items-center justify-center px-4">
       {/* Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
       </div>
 
-      <Card className="bg-gray-900/90 border border-neon-cyan/50 backdrop-blur-sm w-full max-w-md relative z-10 shadow-2xl shadow-neon-cyan/20">
+      <Card className="arcade-frame w-full max-w-md relative z-10">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-neon-pink to-neon-purple rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg shadow-neon-pink/50">
+          <div className="w-16 h-16 bg-gradient-to-br from-neon-pink to-neon-purple rounded-lg flex items-center justify-center neon-glow mx-auto mb-4">
             <span className="text-2xl font-black">🕹️</span>
           </div>
           <CardTitle className="font-display text-2xl text-neon-cyan">
@@ -90,20 +90,20 @@ const Auth = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-neon-cyan font-bold">Username</Label>
+                <Label htmlFor="username" className="text-neon-cyan">Username</Label>
                 <Input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter your username"
-                  className="bg-gray-800/80 border-neon-purple/50 text-white placeholder:text-gray-400 focus:border-neon-purple"
+                  className="bg-black/50 border-neon-purple text-white"
                 />
               </div>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-neon-cyan font-bold">Email</Label>
+              <Label htmlFor="email" className="text-neon-cyan">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -111,12 +111,12 @@ const Auth = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="bg-gray-800/80 border-neon-purple/50 text-white placeholder:text-gray-400 focus:border-neon-purple"
+                className="bg-black/50 border-neon-purple text-white"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-neon-cyan font-bold">Password</Label>
+              <Label htmlFor="password" className="text-neon-cyan">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -124,14 +124,14 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="bg-gray-800/80 border-neon-purple/50 text-white placeholder:text-gray-400 focus:border-neon-purple"
+                className="bg-black/50 border-neon-purple text-white"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold py-3 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-neon-cyan/50"
+              className="w-full cyber-button"
             >
               {loading ? '⏳ LOADING...' : (isLogin ? '🎮 LOGIN' : '🚀 SIGN UP')}
             </Button>
@@ -141,7 +141,7 @@ const Auth = () => {
             <Button
               variant="ghost"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-neon-purple hover:text-neon-cyan hover:bg-neon-purple/20 font-bold"
+              className="text-neon-purple hover:text-neon-cyan"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
             </Button>
@@ -149,8 +149,9 @@ const Auth = () => {
 
           <div className="mt-4 text-center">
             <Button
+              variant="outline"
               onClick={() => navigate('/')}
-              className="bg-neon-green/20 border border-neon-green text-neon-green hover:bg-neon-green hover:text-black font-bold transition-all duration-300"
+              className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
             >
               🏠 BACK TO ARCADE
             </Button>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,13 +102,13 @@ export const Marketplace = () => {
           <div className="flex gap-4 mt-4">
             <Button
               onClick={() => setPaymentMethod('crypto')}
-              className={`bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-cyan shadow-lg shadow-neon-cyan/50 ${paymentMethod === 'crypto' ? 'bg-neon-green' : ''}`}
+              className={`cyber-button ${paymentMethod === 'crypto' ? 'bg-neon-green' : ''}`}
             >
               🪙 CRYPTO PAYMENT
             </Button>
             <Button
               onClick={() => setPaymentMethod('paypal')}
-              className={`bg-gradient-to-r from-neon-pink to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-pink shadow-lg shadow-neon-pink/50 ${paymentMethod === 'paypal' ? 'bg-neon-green' : ''}`}
+              className={`cyber-button ${paymentMethod === 'paypal' ? 'bg-neon-green' : ''}`}
             >
               💳 PAYPAL PAYMENT
             </Button>
@@ -118,10 +119,10 @@ export const Marketplace = () => {
       {/* Marketplace Tabs */}
       <Tabs defaultValue="nfts" className="w-full">
         <TabsList className="grid w-full grid-cols-4 arcade-frame p-2">
-          <TabsTrigger value="nfts" className="bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold hover:scale-105 transition-all border-2 border-neon-cyan">🎨 NFT ITEMS</TabsTrigger>
-          <TabsTrigger value="badges" className="bg-gradient-to-r from-neon-pink to-neon-purple text-black font-bold hover:scale-105 transition-all border-2 border-neon-pink">🏆 BADGES</TabsTrigger>
-          <TabsTrigger value="powerups" className="bg-gradient-to-r from-neon-green to-neon-cyan text-black font-bold hover:scale-105 transition-all border-2 border-neon-green">⚡ POWER-UPS</TabsTrigger>
-          <TabsTrigger value="passes" className="bg-gradient-to-r from-neon-purple to-neon-cyan text-black font-bold hover:scale-105 transition-all border-2 border-neon-purple">🎟️ PASSES</TabsTrigger>
+          <TabsTrigger value="nfts" className="cyber-button">🎨 NFT ITEMS</TabsTrigger>
+          <TabsTrigger value="badges" className="cyber-button">🏆 BADGES</TabsTrigger>
+          <TabsTrigger value="powerups" className="cyber-button">⚡ POWER-UPS</TabsTrigger>
+          <TabsTrigger value="passes" className="cyber-button">🎟️ PASSES</TabsTrigger>
         </TabsList>
 
         <TabsContent value="nfts" className="space-y-6 mt-6">
@@ -143,12 +144,12 @@ export const Marketplace = () => {
                     </div>
                     
                     <div className="text-sm text-center">
-                      <p className="text-gray-300">Seller: {item.seller}</p>
+                      <p className="text-muted-foreground">Seller: {item.seller}</p>
                     </div>
                     
                     <Button 
                       onClick={() => buyItem(item.id, paymentMethod === 'crypto' ? item.price.crypto : item.price.fiat)}
-                      className="w-full bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-cyan shadow-lg shadow-neon-cyan/50"
+                      className="w-full cyber-button"
                     >
                       {paymentMethod === 'crypto' ? '🪙 BUY WITH CRYPTO' : '💳 BUY WITH PAYPAL'}
                     </Button>
@@ -167,7 +168,7 @@ export const Marketplace = () => {
                   <div className="text-center mb-4">
                     <div className="text-6xl mb-2">{badge.image}</div>
                     <h3 className="font-display text-lg font-bold text-neon-cyan">{badge.name}</h3>
-                    <p className="text-sm text-gray-300">{badge.description}</p>
+                    <p className="text-sm text-muted-foreground">{badge.description}</p>
                   </div>
                   
                   <div className="space-y-3">
@@ -179,7 +180,7 @@ export const Marketplace = () => {
                     
                     <Button 
                       onClick={() => buyItem(badge.id, paymentMethod === 'crypto' ? badge.price.crypto : badge.price.fiat)}
-                      className="w-full bg-gradient-to-r from-neon-pink to-neon-purple text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-pink shadow-lg shadow-neon-pink/50"
+                      className="w-full cyber-button"
                     >
                       🏆 PURCHASE BADGE
                     </Button>
@@ -198,7 +199,7 @@ export const Marketplace = () => {
                   <div className="text-center mb-4">
                     <div className="text-6xl mb-2">{powerUp.image}</div>
                     <h3 className="font-display text-lg font-bold text-neon-green">{powerUp.name}</h3>
-                    <p className="text-sm text-gray-300">{powerUp.description}</p>
+                    <p className="text-sm text-muted-foreground">{powerUp.description}</p>
                     <Badge className="bg-neon-cyan text-black mt-2">
                       Qty: {powerUp.quantity}
                     </Badge>
@@ -213,7 +214,7 @@ export const Marketplace = () => {
                     
                     <Button 
                       onClick={() => buyItem(powerUp.id, paymentMethod === 'crypto' ? powerUp.price.crypto : powerUp.price.fiat)}
-                      className="w-full bg-gradient-to-r from-neon-green to-neon-cyan text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-green shadow-lg shadow-neon-green/50"
+                      className="w-full cyber-button"
                     >
                       ⚡ BUY POWER-UP
                     </Button>
@@ -228,10 +229,10 @@ export const Marketplace = () => {
           <div className="text-center">
             <Card className="holographic p-8 max-w-md mx-auto">
               <h3 className="font-display text-xl text-neon-purple mb-4">🎟️ Tournament Passes</h3>
-              <p className="text-gray-300 mb-4">
+              <p className="text-muted-foreground mb-4">
                 Access the Tournament section to view and purchase NFT passes
               </p>
-              <Button className="bg-gradient-to-r from-neon-purple to-neon-cyan text-black font-bold hover:scale-105 transition-all duration-300 border-2 border-neon-purple shadow-lg shadow-neon-purple/50">
+              <Button className="cyber-button">
                 🏆 GO TO TOURNAMENTS
               </Button>
             </Card>

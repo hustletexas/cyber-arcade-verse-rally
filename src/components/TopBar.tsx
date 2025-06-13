@@ -37,17 +37,16 @@ export const TopBar = () => {
   };
 
   return (
-    <header className="border-b border-neon-cyan/30 bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50">
+    <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow">
               <img 
                 src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
                 alt="Cyber City Arcade Logo" 
                 className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-                style={{ filter: 'drop-shadow(0 0 10px rgba(0, 255, 255, 0.5))' }}
               />
             </div>
           </div>
@@ -55,13 +54,13 @@ export const TopBar = () => {
           {/* Connection Status & User Info */}
           <div className="flex items-center gap-4">
             {loading ? (
-              <div className="text-neon-cyan animate-pulse">Loading...</div>
+              <div className="text-neon-cyan">Loading...</div>
             ) : user ? (
-              <Card className="bg-gray-800/80 border border-neon-cyan/50 px-4 py-2 backdrop-blur-sm">
+              <Card className="arcade-frame px-4 py-2">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-8 h-8 border-2 border-neon-cyan">
                     <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-neon-purple text-white font-bold">
+                    <AvatarFallback className="bg-neon-purple text-black font-bold">
                       {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
@@ -71,15 +70,16 @@ export const TopBar = () => {
                     </p>
                     <p className="text-neon-purple text-xs">{user.email}</p>
                   </div>
-                  <Badge className="bg-neon-green text-black font-bold">
+                  <Badge className="bg-neon-green text-black">
                     🔐 AUTHENTICATED
                   </Badge>
                   <Button 
                     onClick={handleSignOut}
-                    className="bg-neon-pink/20 border border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black transition-all duration-300 font-bold"
+                    variant="outline" 
                     size="sm"
+                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
                   >
-                    LOGOUT
+                    Logout
                   </Button>
                 </div>
               </Card>
@@ -88,32 +88,32 @@ export const TopBar = () => {
                 {/* Email Login */}
                 <Button 
                   onClick={() => navigate('/auth')}
-                  className="bg-gradient-to-r from-neon-cyan to-neon-purple text-black font-bold px-6 py-3 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-neon-cyan/50"
+                  className="cyber-button flex items-center gap-2"
                 >
-                  <span className="text-lg mr-2">🔐</span>
+                  <span className="text-lg">🔐</span>
                   LOGIN / SIGNUP
                 </Button>
 
                 {/* Wallet Connect Options */}
-                <div className="hidden md:flex gap-2">
+                <div className="flex gap-2">
                   <Button 
                     onClick={() => handleWalletConnect('phantom')}
-                    className="bg-neon-purple/20 border border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black font-bold transition-all duration-300"
-                    size="sm"
+                    variant="outline"
+                    className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
                   >
                     👻 PHANTOM
                   </Button>
                   <Button 
                     onClick={() => handleWalletConnect('metamask')}
-                    className="bg-neon-cyan/20 border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black font-bold transition-all duration-300"
-                    size="sm"
+                    variant="outline"
+                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
                   >
                     🦊 METAMASK
                   </Button>
                   <Button 
                     onClick={() => handleWalletConnect('walletconnect')}
-                    className="bg-neon-green/20 border border-neon-green text-neon-green hover:bg-neon-green hover:text-black font-bold transition-all duration-300"
-                    size="sm"
+                    variant="outline"
+                    className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
                   >
                     🔗 WALLET
                   </Button>
