@@ -36,8 +36,8 @@ export const SocialFeatures = () => {
     window.open('https://discord.gg/cybercityarcade', '_blank');
   };
 
-  const handleTwitter = () => {
-    window.open('https://twitter.com/cybercityarcade', '_blank');
+  const handleX = () => {
+    window.open('https://x.com/cybercityarcade', '_blank');
   };
 
   return (
@@ -65,9 +65,9 @@ export const SocialFeatures = () => {
             <span className="text-sm">DISCORD</span>
           </Button>
           
-          <Button onClick={handleTwitter} className="cyber-button flex flex-col gap-2 h-20">
-            <span className="text-2xl">🐦</span>
-            <span className="text-sm">TWITTER</span>
+          <Button onClick={handleX} className="cyber-button flex flex-col gap-2 h-20">
+            <span className="text-2xl">𝕏</span>
+            <span className="text-sm">X.COM</span>
           </Button>
         </div>
       </CardContent>
