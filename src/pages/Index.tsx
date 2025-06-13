@@ -18,7 +18,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
 
   return (
-    <div className="min-h-screen bg-black vhs-glitch">
+    <div className="min-h-screen bg-black text-white vhs-glitch">
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -41,11 +41,12 @@ const Index = () => {
         {/* Enhanced Hero Section */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <div className="arcade-frame p-6 w-full max-w-md">
+            <div className="p-6 w-full max-w-2xl">
               <img 
                 src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
                 alt="Cyber City Arcade" 
-                className="w-full h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300"
+                className="w-full h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300 opacity-90"
+                style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
               />
             </div>
           </div>
@@ -67,20 +68,35 @@ const Index = () => {
 
         {/* Main Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8 arcade-frame p-2">
-            <TabsTrigger value="tournaments" className="cyber-button text-xs md:text-sm">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8 bg-gray-900/80 backdrop-blur-sm border border-neon-cyan/30 p-2 rounded-lg">
+            <TabsTrigger 
+              value="tournaments" 
+              className="text-neon-cyan bg-transparent border border-neon-cyan/50 hover:bg-neon-cyan/20 data-[state=active]:bg-neon-cyan data-[state=active]:text-black font-bold text-xs md:text-sm"
+            >
               🏆 TOURNAMENTS
             </TabsTrigger>
-            <TabsTrigger value="dashboard" className="cyber-button text-xs md:text-sm">
+            <TabsTrigger 
+              value="dashboard" 
+              className="text-neon-pink bg-transparent border border-neon-pink/50 hover:bg-neon-pink/20 data-[state=active]:bg-neon-pink data-[state=active]:text-black font-bold text-xs md:text-sm"
+            >
               📊 DASHBOARD
             </TabsTrigger>
-            <TabsTrigger value="voting" className="cyber-button text-xs md:text-sm">
+            <TabsTrigger 
+              value="voting" 
+              className="text-neon-purple bg-transparent border border-neon-purple/50 hover:bg-neon-purple/20 data-[state=active]:bg-neon-purple data-[state=active]:text-black font-bold text-xs md:text-sm"
+            >
               🗳️ VOTING
             </TabsTrigger>
-            <TabsTrigger value="marketplace" className="cyber-button text-xs md:text-sm">
+            <TabsTrigger 
+              value="marketplace" 
+              className="text-neon-green bg-transparent border border-neon-green/50 hover:bg-neon-green/20 data-[state=active]:bg-neon-green data-[state=active]:text-black font-bold text-xs md:text-sm"
+            >
               🛒 MARKETPLACE
             </TabsTrigger>
-            <TabsTrigger value="social" className="cyber-button text-xs md:text-sm">
+            <TabsTrigger 
+              value="social" 
+              className="text-neon-cyan bg-transparent border border-neon-cyan/50 hover:bg-neon-cyan/20 data-[state=active]:bg-neon-cyan data-[state=active]:text-black font-bold text-xs md:text-sm"
+            >
               📱 SOCIAL
             </TabsTrigger>
           </TabsList>
@@ -116,12 +132,12 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neon-cyan/30 mt-20 py-8">
+      <footer className="border-t border-neon-cyan/30 mt-20 py-8 bg-gray-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 text-center">
           <p className="text-neon-purple font-mono text-sm md:text-base">
             © 2024 Cyber City Arcade • Powered by Solana Blockchain
           </p>
-          <div className="flex flex-wrap justify-center gap-2 md:gap-6 mt-4 text-xs md:text-sm text-muted-foreground">
+          <div className="flex flex-wrap justify-center gap-2 md:gap-6 mt-4 text-xs md:text-sm text-neon-cyan/70">
             <span>Solana Network</span>
             <span>•</span>
             <span>Magic Eden</span>
