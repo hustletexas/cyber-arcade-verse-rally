@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -7,10 +8,162 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
+interface WalletState {
+  address: string | null;
+  isConnected: boolean;
+  walletType: 'phantom' | 'metamask' | 'walletconnect' | null;
+}
+
 export const TopBar = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [walletState, setWalletState] = useState<WalletState>({
+    address: null,
+    isConnected: false,
+    walletType: null
+  });
+
+  // Check for existing wallet connections on component mount
+  useEffect(() => {
+    checkExistingConnections();
+  }, []);
+
+  const checkExistingConnections = async () => {
+    // Check Phantom
+    if (window.solana?.isPhantom && window.solana.isConnected) {
+      try {
+        const response = await window.solana.connect({ onlyIfTrusted: true });
+        setWalletState({
+          address: response.publicKey.toString(),
+          isConnected: true,
+          walletType: 'phantom'
+        });
+      } catch (error) {
+        console.log('Phantom not auto-connected');
+      }
+    }
+
+    // Check MetaMask
+    if (window.ethereum?.isMetaMask) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          setWalletState({
+            address: accounts[0],
+            isConnected: true,
+            walletType: 'metamask'
+          });
+        }
+      } catch (error) {
+        console.log('MetaMask not auto-connected');
+      }
+    }
+  };
+
+  const connectPhantom = async () => {
+    try {
+      if (!window.solana) {
+        toast({
+          title: "Phantom Wallet Not Found",
+          description: "Please install Phantom wallet extension",
+          variant: "destructive",
+        });
+        window.open('https://phantom.app/', '_blank');
+        return;
+      }
+
+      const response = await window.solana.connect();
+      const address = response.publicKey.toString();
+      
+      setWalletState({
+        address,
+        isConnected: true,
+        walletType: 'phantom'
+      });
+
+      toast({
+        title: "Phantom Connected!",
+        description: `Connected to ${address.slice(0, 4)}...${address.slice(-4)}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect to Phantom wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const connectMetaMask = async () => {
+    try {
+      if (!window.ethereum) {
+        toast({
+          title: "MetaMask Not Found",
+          description: "Please install MetaMask extension",
+          variant: "destructive",
+        });
+        window.open('https://metamask.io/', '_blank');
+        return;
+      }
+
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      if (accounts.length > 0) {
+        const address = accounts[0];
+        setWalletState({
+          address,
+          isConnected: true,
+          walletType: 'metamask'
+        });
+
+        toast({
+          title: "MetaMask Connected!",
+          description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect to MetaMask",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const connectWalletConnect = async () => {
+    toast({
+      title: "WalletConnect",
+      description: "WalletConnect integration coming soon! This requires additional setup.",
+    });
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      if (walletState.walletType === 'phantom' && window.solana) {
+        await window.solana.disconnect();
+      }
+      
+      setWalletState({
+        address: null,
+        isConnected: false,
+        walletType: null
+      });
+
+      toast({
+        title: "Wallet Disconnected",
+        description: "Successfully disconnected from wallet",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Disconnect Failed",
+        description: error.message || "Failed to disconnect wallet",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -26,13 +179,6 @@ export const TopBar = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const handleWalletConnect = (walletType: 'phantom' | 'metamask' | 'walletconnect') => {
-    toast({
-      title: "Wallet Connect",
-      description: `${walletType} integration coming soon!`,
-    });
   };
 
   return (
@@ -61,69 +207,95 @@ export const TopBar = () => {
           <div className="flex items-center gap-4">
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
-            ) : user ? (
-              <Card className="arcade-frame px-4 py-2">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-8 h-8 border-2 border-neon-cyan">
-                    <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-neon-purple text-black font-bold">
-                      {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-sm">
-                    <p className="font-bold text-neon-cyan">
-                      {user.user_metadata?.username || user.email?.split('@')[0]}
-                    </p>
-                    <p className="text-neon-purple text-xs">{user.email}</p>
-                  </div>
-                  <Badge className="bg-neon-green text-black">
-                    🔐 AUTHENTICATED
-                  </Badge>
-                  <Button 
-                    onClick={handleSignOut}
-                    variant="outline" 
-                    size="sm"
-                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
-                  >
-                    Logout
-                  </Button>
-                </div>
-              </Card>
             ) : (
               <div className="flex items-center gap-3">
-                {/* Email Login */}
-                <Button 
-                  onClick={() => navigate('/auth')}
-                  className="cyber-button flex items-center gap-2"
-                >
-                  <span className="text-lg">🔐</span>
-                  LOGIN / SIGNUP
-                </Button>
+                {/* Wallet Connection Status */}
+                {walletState.isConnected && (
+                  <Card className="arcade-frame px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-neon-green text-black text-xs">
+                        {walletState.walletType === 'phantom' ? '👻' : '🦊'} CONNECTED
+                      </Badge>
+                      <span className="text-neon-cyan text-xs font-mono">
+                        {walletState.address?.slice(0, 4)}...{walletState.address?.slice(-4)}
+                      </span>
+                      <Button 
+                        onClick={disconnectWallet}
+                        variant="outline" 
+                        size="sm"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black text-xs px-2 py-1"
+                      >
+                        Disconnect
+                      </Button>
+                    </div>
+                  </Card>
+                )}
+
+                {/* User Authentication */}
+                {user ? (
+                  <Card className="arcade-frame px-4 py-2">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-8 h-8 border-2 border-neon-cyan">
+                        <AvatarImage src={user.user_metadata?.avatar_url} />
+                        <AvatarFallback className="bg-neon-purple text-black font-bold">
+                          {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-sm">
+                        <p className="font-bold text-neon-cyan">
+                          {user.user_metadata?.username || user.email?.split('@')[0]}
+                        </p>
+                        <p className="text-neon-purple text-xs">{user.email}</p>
+                      </div>
+                      <Badge className="bg-neon-green text-black">
+                        🔐 AUTHENTICATED
+                      </Badge>
+                      <Button 
+                        onClick={handleSignOut}
+                        variant="outline" 
+                        size="sm"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                      >
+                        Logout
+                      </Button>
+                    </div>
+                  </Card>
+                ) : (
+                  <Button 
+                    onClick={() => navigate('/auth')}
+                    className="cyber-button flex items-center gap-2"
+                  >
+                    <span className="text-lg">🔐</span>
+                    LOGIN / SIGNUP
+                  </Button>
+                )}
 
                 {/* Wallet Connect Options */}
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => handleWalletConnect('phantom')}
-                    variant="outline"
-                    className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
-                  >
-                    👻 PHANTOM
-                  </Button>
-                  <Button 
-                    onClick={() => handleWalletConnect('metamask')}
-                    variant="outline"
-                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                  >
-                    🦊 METAMASK
-                  </Button>
-                  <Button 
-                    onClick={() => handleWalletConnect('walletconnect')}
-                    variant="outline"
-                    className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
-                  >
-                    🔗 WALLET
-                  </Button>
-                </div>
+                {!walletState.isConnected && (
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={connectPhantom}
+                      variant="outline"
+                      className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                    >
+                      👻 PHANTOM
+                    </Button>
+                    <Button 
+                      onClick={connectMetaMask}
+                      variant="outline"
+                      className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                    >
+                      🦊 METAMASK
+                    </Button>
+                    <Button 
+                      onClick={connectWalletConnect}
+                      variant="outline"
+                      className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
+                    >
+                      🔗 WALLET
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
