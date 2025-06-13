@@ -13,19 +13,20 @@ import { PrizeSection } from '@/components/PrizeSection';
 import { BlockchainIntegration } from '@/components/BlockchainIntegration';
 import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
-import { ArcadeCabinetLogo } from '@/components/ArcadeCabinetLogo';
+import { TetrisGame } from '@/components/games/TetrisGame';
+import { PacManGame } from '@/components/games/PacManGame';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
 
   return (
     <div className="min-h-screen bg-background vhs-glitch">
-      {/* Enhanced Animated Background to match logo with deeper cyberpunk colors */}
-      <div className="fixed inset-0 opacity-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-indigo-900/50 to-cyan-500/30 animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-gradient-radial from-purple-600/20 via-indigo-600/15 to-transparent rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-radial from-cyan-400/15 via-blue-500/10 to-transparent rounded-full blur-2xl animate-pulse" />
-        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-pink-500/20 via-purple-600/15 to-transparent rounded-full blur-3xl animate-float" />
+      {/* Enhanced Animated Background to match logo */}
+      <div className="fixed inset-0 opacity-25 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/15 via-neon-purple/20 to-neon-cyan/15 animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-neon-purple/10 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-neon-pink/8 rounded-full blur-2xl animate-pulse" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-neon-cyan/12 rounded-full blur-3xl animate-float" />
         
         {/* Enhanced Gaming Icons Background */}
         <div className="absolute top-10 left-10 text-4xl opacity-35 animate-float text-neon-pink">🕹️</div>
@@ -43,9 +44,13 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-12">
-          {/* Arcade Cabinet Logo with Integrated Tetris */}
-          <ArcadeCabinetLogo />
-          
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
+              alt="Cyber City Arcade" 
+              className="w-80 md:w-96 h-auto object-contain neon-glow hover:scale-105 transition-transform duration-300"
+            />
+          </div>
           <p className="text-lg md:text-xl text-neon-purple mb-8 animate-neon-flicker">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
@@ -59,6 +64,18 @@ const Index = () => {
             <Badge className="bg-neon-green text-black px-3 md:px-4 py-2 text-xs md:text-sm font-bold neon-glow">
               🪙 $CCTR REWARDS
             </Badge>
+          </div>
+
+          {/* Quick Play Games */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
+            <div className="arcade-frame p-6">
+              <h3 className="font-display text-xl text-neon-pink mb-4">🧩 TETRIS CHALLENGE</h3>
+              <TetrisGame onGameEnd={(score) => console.log('Tetris score:', score)} isActive={false} />
+            </div>
+            <div className="arcade-frame p-6">
+              <h3 className="font-display text-xl text-neon-cyan mb-4">👻 PAC-MAN ARENA</h3>
+              <PacManGame onGameEnd={(score) => console.log('Pac-Man score:', score)} isActive={false} />
+            </div>
           </div>
         </div>
 
