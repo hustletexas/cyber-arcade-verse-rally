@@ -18,6 +18,14 @@ declare global {
       on: (event: string, callback: (...args: any[]) => void) => void;
       removeListener: (event: string, callback: (...args: any[]) => void) => void;
     };
+    // Lobstr Stellar wallet interface
+    stellar?: {
+      isLobstr?: boolean;
+      connect: () => Promise<{ address: string }>;
+      disconnect: () => Promise<void>;
+      signTransaction: (transaction: any) => Promise<any>;
+      getNetwork: () => Promise<string>;
+    };
   }
 }
 

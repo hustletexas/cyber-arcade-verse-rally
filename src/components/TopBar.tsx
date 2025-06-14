@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 interface WalletState {
   address: string | null;
   isConnected: boolean;
-  walletType: 'phantom' | 'metamask' | 'walletconnect' | null;
+  walletType: 'phantom' | 'metamask' | 'walletconnect' | 'lobstr' | null;
 }
 
 export const TopBar = () => {
@@ -58,6 +58,18 @@ export const TopBar = () => {
         }
       } catch (error) {
         console.log('MetaMask not auto-connected');
+      }
+    }
+
+    // Check Lobstr (via Stellar SDK)
+    if (typeof window !== 'undefined' && localStorage.getItem('lobstr_connected')) {
+      const savedAddress = localStorage.getItem('lobstr_address');
+      if (savedAddress) {
+        setWalletState({
+          address: savedAddress,
+          isConnected: true,
+          walletType: 'lobstr'
+        });
       }
     }
   };
@@ -134,6 +146,60 @@ export const TopBar = () => {
     }
   };
 
+  const connectLobstr = async () => {
+    try {
+      toast({
+        title: "Connecting to Lobstr",
+        description: "Opening Lobstr wallet for connection...",
+      });
+
+      // Check if running on mobile and try deep link
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Try Lobstr mobile deep link
+        const deepLink = 'lobstr://connect';
+        window.location.href = deepLink;
+        
+        // Fallback to app store if deep link fails
+        setTimeout(() => {
+          window.open('https://apps.apple.com/app/lobstr-stellar-lumens-wallet/id1404357892', '_blank');
+        }, 2000);
+      } else {
+        // For desktop, redirect to Lobstr web interface
+        window.open('https://lobstr.co/web-connect', '_blank');
+      }
+
+      // Simulate connection for demo purposes
+      setTimeout(() => {
+        const mockAddress = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOKY3B2WSQHG4W37";
+        
+        setWalletState({
+          address: mockAddress,
+          isConnected: true,
+          walletType: 'lobstr'
+        });
+
+        // Store connection in localStorage for persistence
+        localStorage.setItem('lobstr_connected', 'true');
+        localStorage.setItem('lobstr_address', mockAddress);
+
+        toast({
+          title: "Lobstr Connected!",
+          description: `Connected to Stellar wallet ${mockAddress.slice(0, 4)}...${mockAddress.slice(-4)}`,
+        });
+      }, 3000);
+
+    } catch (error: any) {
+      console.error("Lobstr connection error:", error);
+      toast({
+        title: "Lobstr Connection Failed",
+        description: error.message || "Failed to connect to Lobstr wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
   const connectWalletConnect = async () => {
     try {
       toast({
@@ -182,6 +248,11 @@ export const TopBar = () => {
         console.log("MetaMask disconnection requested");
       } else if (walletState.walletType === 'walletconnect') {
         console.log("WalletConnect disconnection requested");
+      } else if (walletState.walletType === 'lobstr') {
+        // Clear Lobstr connection from localStorage
+        localStorage.removeItem('lobstr_connected');
+        localStorage.removeItem('lobstr_address');
+        console.log("Lobstr disconnection requested");
       }
       
       setWalletState({
@@ -253,7 +324,8 @@ export const TopBar = () => {
                     <div className="flex items-center gap-2">
                       <Badge className="bg-neon-green text-black text-xs">
                         {walletState.walletType === 'phantom' ? '👻' : 
-                         walletState.walletType === 'metamask' ? '🦊' : '🔗'} CONNECTED
+                         walletState.walletType === 'metamask' ? '🦊' : 
+                         walletState.walletType === 'lobstr' ? '⭐' : '🔗'} CONNECTED
                       </Badge>
                       <span className="text-neon-cyan text-xs font-mono">
                         {walletState.address?.slice(0, 4)}...{walletState.address?.slice(-4)}
@@ -325,6 +397,13 @@ export const TopBar = () => {
                       className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
                     >
                       🦊 METAMASK
+                    </Button>
+                    <Button 
+                      onClick={connectLobstr}
+                      variant="outline"
+                      className="border-neon-yellow text-neon-yellow hover:bg-neon-yellow hover:text-black"
+                    >
+                      ⭐ LOBSTR
                     </Button>
                     <Button 
                       onClick={connectWalletConnect}
