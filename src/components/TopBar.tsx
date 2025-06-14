@@ -38,15 +38,20 @@ export const TopBar = () => {
       }
     }
 
-    // Check Coinbase wallet
-    if (window.ethereum && window.ethereum.isCoinbaseWallet) {
+    // Check Coinbase wallet (Base network compatible)
+    if (window.ethereum) {
       try {
+        // Check if it's specifically Coinbase Wallet or if we can connect to Base
         const accounts = await window.ethereum.request({ 
           method: 'eth_accounts' 
         });
         if (accounts && accounts.length > 0) {
-          setCoinbaseAddress(accounts[0]);
-          setCoinbaseConnected(true);
+          // Verify we're connected to Coinbase Wallet specifically
+          if (window.ethereum.isCoinbaseWallet) {
+            setCoinbaseAddress(accounts[0]);
+            setCoinbaseConnected(true);
+            console.log('Coinbase Wallet auto-connected:', accounts[0]);
+          }
         }
       } catch (error) {
         console.log('Coinbase wallet not auto-connected');
@@ -102,56 +107,105 @@ export const TopBar = () => {
 
   const connectCoinbase = async () => {
     try {
-      // Check if Coinbase Wallet is installed
-      if (window.ethereum && window.ethereum.isCoinbaseWallet) {
-        const accounts = await window.ethereum.request({ 
-          method: 'eth_requestAccounts' 
+      console.log('Attempting Coinbase Wallet connection...');
+      
+      // Check if any Ethereum provider is available
+      if (!window.ethereum) {
+        toast({
+          title: "No Wallet Found",
+          description: "Please install Coinbase Wallet extension",
+          variant: "destructive",
         });
-        if (accounts && accounts.length > 0) {
-          setCoinbaseAddress(accounts[0]);
-          setCoinbaseConnected(true);
-          toast({
-            title: "Coinbase Connected!",
-            description: `Connected to ${accounts[0].slice(0, 8)}...${accounts[0].slice(-4)}`,
-          });
-          
-          // Listen for account changes
-          window.ethereum.on('accountsChanged', (accounts: string[]) => {
-            if (accounts.length === 0) {
+        window.open('https://www.coinbase.com/wallet', '_blank');
+        return;
+      }
+
+      // Request account access
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
+
+      if (accounts && accounts.length > 0) {
+        const address = accounts[0];
+        setCoinbaseAddress(address);
+        setCoinbaseConnected(true);
+        
+        console.log('Connected to wallet:', address);
+        console.log('Is Coinbase Wallet:', window.ethereum.isCoinbaseWallet);
+        
+        toast({
+          title: "Base Wallet Connected!",
+          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
+        });
+
+        // Listen for account changes
+        if (window.ethereum.on) {
+          window.ethereum.on('accountsChanged', (newAccounts: string[]) => {
+            console.log('Account changed:', newAccounts);
+            if (newAccounts.length === 0) {
               disconnectCoinbase();
             } else {
-              setCoinbaseAddress(accounts[0]);
+              setCoinbaseAddress(newAccounts[0]);
               toast({
                 title: "Account Changed",
-                description: `Switched to ${accounts[0].slice(0, 8)}...${accounts[0].slice(-4)}`,
+                description: `Switched to ${newAccounts[0].slice(0, 8)}...${newAccounts[0].slice(-4)}`,
+              });
+            }
+          });
+
+          // Listen for chain changes
+          window.ethereum.on('chainChanged', (chainId: string) => {
+            console.log('Chain changed:', chainId);
+            // Base mainnet is 0x2105, Base testnet is 0x14a33
+            if (chainId === '0x2105' || chainId === '0x14a33') {
+              toast({
+                title: "Base Network Connected",
+                description: "Connected to Base network",
               });
             }
           });
         }
-      } else if (window.ethereum && !window.ethereum.isCoinbaseWallet) {
-        // MetaMask or other wallet detected
-        toast({
-          title: "Wrong Wallet",
-          description: "Please use Coinbase Wallet extension, not MetaMask",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Coinbase Wallet Not Found",
-          description: "Please install Coinbase Wallet extension",
-          variant: "destructive",
-        });
-        // Open Coinbase Wallet website
-        window.open('https://www.coinbase.com/wallet', '_blank');
+
+        // Try to switch to Base network if not already connected
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x2105' }], // Base mainnet
+          });
+        } catch (switchError: any) {
+          // If Base network is not added, add it
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x2105',
+                  chainName: 'Base',
+                  nativeCurrency: {
+                    name: 'Ethereum',
+                    symbol: 'ETH',
+                    decimals: 18,
+                  },
+                  rpcUrls: ['https://mainnet.base.org'],
+                  blockExplorerUrls: ['https://basescan.org'],
+                }],
+              });
+            } catch (addError) {
+              console.log('Could not add Base network:', addError);
+            }
+          }
+        }
       }
     } catch (error: any) {
       console.error('Coinbase connection error:', error);
-      let errorMessage = "Failed to connect to Coinbase wallet";
+      let errorMessage = "Failed to connect to Base wallet";
       
       if (error.code === 4001) {
         errorMessage = "Connection request was rejected";
       } else if (error.code === -32002) {
         errorMessage = "Connection request already pending";
+      } else if (error.code === -32603) {
+        errorMessage = "Internal error occurred";
       }
       
       toast({
@@ -190,11 +244,12 @@ export const TopBar = () => {
     // Remove event listeners
     if (window.ethereum && window.ethereum.removeListener) {
       window.ethereum.removeListener('accountsChanged', () => {});
+      window.ethereum.removeListener('chainChanged', () => {});
     }
     
     toast({
-      title: "Coinbase Disconnected",
-      description: "Successfully disconnected from Coinbase wallet",
+      title: "Base Wallet Disconnected",
+      description: "Successfully disconnected from Base wallet",
     });
   };
 
@@ -279,7 +334,7 @@ export const TopBar = () => {
                 </Button>
               )}
 
-              {/* Coinbase Wallet */}
+              {/* Coinbase/Base Wallet */}
               {coinbaseConnected ? (
                 <Button 
                   onClick={disconnectCoinbase}
@@ -295,7 +350,7 @@ export const TopBar = () => {
                   className="cyber-button flex items-center gap-2"
                   size="sm"
                 >
-                  🔵 COINBASE
+                  🔵 BASE WALLET
                 </Button>
               )}
             </div>
