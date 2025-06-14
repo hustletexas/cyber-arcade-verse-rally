@@ -79,7 +79,80 @@ export const TokenPurchase = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Tokenomics Section */}
+          <div className="space-y-6">
+            <Card className="holographic p-6">
+              <h3 className="font-display text-xl text-neon-cyan mb-4">📊 TOKENOMICS</h3>
+              <div className="space-y-4">
+                <div className="border-b border-neon-purple/30 pb-3">
+                  <h4 className="font-bold text-neon-pink mb-2">Total Supply</h4>
+                  <p className="text-2xl font-bold text-neon-green">1,000,000 $CCTR</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Public Sale:</span>
+                    <span className="text-neon-green font-bold">40% (400k)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm">Gaming Rewards:</span>
+                    <span className="text-neon-cyan font-bold">25% (250k)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm">Team & Dev:</span>
+                    <span className="text-neon-purple font-bold">15% (150k)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm">Liquidity:</span>
+                    <span className="text-neon-pink font-bold">10% (100k)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm">Marketing:</span>
+                    <span className="text-neon-yellow font-bold">10% (100k)</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-neon-cyan/30 pt-3">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm">Current Price:</span>
+                    <span className="text-neon-green font-bold">${tokenPrice}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm">Market Cap:</span>
+                    <span className="text-neon-cyan font-bold">$45,000</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="vending-machine p-6">
+              <h3 className="font-display text-xl text-neon-pink mb-4">🔥 Token Utility</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-neon-green">⚡</span>
+                  <span className="text-sm">Tournament Entry Fees</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-neon-cyan">🎫</span>
+                  <span className="text-sm">Raffle Participation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-neon-purple">🛒</span>
+                  <span className="text-sm">NFT Marketplace Trading</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-neon-pink">💎</span>
+                  <span className="text-sm">Staking Rewards</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-neon-yellow">🗳️</span>
+                  <span className="text-sm">Governance Voting</span>
+                </div>
+              </div>
+            </Card>
+          </div>
+
           {/* Purchase Form */}
           <div className="space-y-6">
             <div className="bg-black/30 rounded-lg p-6 border border-neon-purple/30">
@@ -134,11 +207,8 @@ export const TokenPurchase = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {paymentMethods.map((method) => (
-                    <SelectItem key={method.value} value={method.value}>
-                      {method.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="paypal">💳 PayPal</SelectItem>
+                  <SelectItem value="usdc">🪙 USDC</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -217,7 +287,7 @@ export const TokenPurchase = () => {
                   <div>
                     <h4 className="font-bold text-neon-pink">Staking Rewards</h4>
                     <p className="text-sm text-muted-foreground">
-                      Stake $CCTR to earn passive rewards (Coming Soon)
+                      Stake $CCTR to earn passive rewards
                     </p>
                   </div>
                 </div>

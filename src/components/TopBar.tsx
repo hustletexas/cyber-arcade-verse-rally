@@ -276,6 +276,46 @@ export const TopBar = () => {
     }, 3000);
   };
 
+  const createWallet = async () => {
+    try {
+      // Generate a new Solana keypair
+      const { Keypair } = await import('@solana/web3.js');
+      const newKeypair = Keypair.generate();
+      const publicKey = newKeypair.publicKey.toString();
+      const privateKey = Buffer.from(newKeypair.secretKey).toString('hex');
+      
+      // Store wallet info (in production, this should be more secure)
+      localStorage.setItem('cyberCityWallet', JSON.stringify({
+        publicKey,
+        privateKey
+      }));
+      
+      setPhantomAddress(publicKey);
+      setPhantomConnected(true);
+      
+      toast({
+        title: "Wallet Created!",
+        description: `New wallet created: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+      });
+      
+      // Show private key warning
+      setTimeout(() => {
+        toast({
+          title: "⚠️ Important",
+          description: "Wallet created! Keep your private key safe. This is just a demo wallet.",
+        });
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Wallet creation error:', error);
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create wallet. Install Solana wallet extension for full functionality.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -379,13 +419,21 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Mint Free Button */}
-          <Button 
-            onClick={mintFreeNFT}
-            className="cyber-button flex items-center gap-2"
-          >
-            🔨 MINT FREE NFT
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={createWallet}
+              className="cyber-button flex items-center gap-2"
+            >
+              ➕ CREATE WALLET
+            </Button>
+            <Button 
+              onClick={mintFreeNFT}
+              className="cyber-button flex items-center gap-2"
+            >
+              🔨 MINT FREE NFT
+            </Button>
+          </div>
         </div>
       </div>
     </header>
