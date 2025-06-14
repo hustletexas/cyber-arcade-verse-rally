@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -253,6 +252,30 @@ export const TopBar = () => {
     });
   };
 
+  const mintFreeNFT = async () => {
+    if (!phantomConnected && !coinbaseConnected) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Minting NFT",
+      description: "Free NFT mint in progress...",
+    });
+
+    // Simulate minting process
+    setTimeout(() => {
+      toast({
+        title: "NFT Minted Successfully!",
+        description: "Your free Cyber City Arcade NFT has been minted to your wallet",
+      });
+    }, 3000);
+  };
+
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -356,8 +379,13 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Empty space for balance */}
-          <div></div>
+          {/* Mint Free Button */}
+          <Button 
+            onClick={mintFreeNFT}
+            className="cyber-button flex items-center gap-2"
+          >
+            🔨 MINT FREE NFT
+          </Button>
         </div>
       </div>
     </header>
