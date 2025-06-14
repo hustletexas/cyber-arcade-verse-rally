@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -8,7 +7,7 @@ import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { PrizeSection } from '@/components/PrizeSection';
-import { BlockchainIntegration } from '@/components/BlockchainIntegration';
+import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { TourDates } from '@/components/TourDates';
@@ -121,6 +120,14 @@ const Index = () => {
             <Marketplace />
           </section>
 
+          {/* Merchandise Store Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🛍️ MERCHANDISE STORE
+            </h2>
+            <MerchandiseStore />
+          </section>
+
           {/* Tour Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -134,7 +141,6 @@ const Index = () => {
         <div className="space-y-6 md:space-y-8 mt-8 md:mt-12">
           <PrizeSection />
           <PaymentIntegration />
-          <BlockchainIntegration />
         </div>
       </main>
 
