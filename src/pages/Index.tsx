@@ -1,7 +1,7 @@
 
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TopBar } from '@/components/TopBar';
 import { TournamentSection } from '@/components/TournamentSection';
 import { TokenDashboard } from '@/components/TokenDashboard';
@@ -17,8 +17,6 @@ import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { TourDates } from '@/components/TourDates';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('tournaments');
-
   return (
     <div className="min-h-screen bg-black">
       {/* Enhanced Animated Background */}
@@ -66,62 +64,66 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Main Navigation Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-7 mb-6 md:mb-8 arcade-frame p-2 gap-1">
-            <TabsTrigger value="tournaments" className="cyber-button text-xs md:text-sm px-2">
+        {/* All Sections Stacked Vertically */}
+        <div className="space-y-12 md:space-y-16">
+          {/* Tournaments Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
               🏆 TOURNAMENTS
-            </TabsTrigger>
-            <TabsTrigger value="dashboard" className="cyber-button text-xs md:text-sm px-2">
-              📊 DASHBOARD
-            </TabsTrigger>
-            <TabsTrigger value="dex" className="cyber-button text-xs md:text-sm px-2">
-              📈 DEX
-            </TabsTrigger>
-            <TabsTrigger value="voting" className="cyber-button text-xs md:text-sm px-2">
-              🗳️ VOTING
-            </TabsTrigger>
-            <TabsTrigger value="marketplace" className="cyber-button text-xs md:text-sm px-2">
-              🛒 MARKETPLACE
-            </TabsTrigger>
-            <TabsTrigger value="social" className="cyber-button text-xs md:text-sm px-2">
-              📱 SOCIAL
-            </TabsTrigger>
-            <TabsTrigger value="tour" className="cyber-button text-xs md:text-sm px-2">
-              🗺️ TOUR
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="tournaments" className="space-y-6">
+            </h2>
             <TournamentSection />
-          </TabsContent>
+          </section>
 
-          <TabsContent value="dashboard" className="space-y-6">
+          {/* Dashboard Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              📊 DASHBOARD
+            </h2>
             <TokenDashboard />
-          </TabsContent>
+          </section>
 
-          <TabsContent value="dex" className="space-y-6">
+          {/* DEX Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              📈 DEX
+            </h2>
             <SolanaDexChart />
-          </TabsContent>
+          </section>
 
-          <TabsContent value="voting" className="space-y-6">
+          {/* Voting Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🗳️ VOTING
+            </h2>
             <VotingSection />
-          </TabsContent>
+          </section>
 
-          <TabsContent value="marketplace" className="space-y-6">
+          {/* Marketplace Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🛒 MARKETPLACE
+            </h2>
             <Marketplace />
-          </TabsContent>
+          </section>
 
-          <TabsContent value="social" className="space-y-6">
+          {/* Social Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              📱 SOCIAL
+            </h2>
             <SocialMediaHub />
-          </TabsContent>
+          </section>
 
-          <TabsContent value="tour" className="space-y-6">
+          {/* Tour Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🗺️ TOUR
+            </h2>
             <TourDates />
-          </TabsContent>
-        </Tabs>
+          </section>
+        </div>
 
-        {/* New Sections */}
+        {/* Additional Sections */}
         <div className="space-y-6 md:space-y-8 mt-8 md:mt-12">
           <PrizeSection />
           <SocialFeatures />
