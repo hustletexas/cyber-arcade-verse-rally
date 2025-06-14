@@ -39,6 +39,137 @@ export type Database = {
         }
         Relationships: []
       }
+      raffle_tickets: {
+        Row: {
+          id: string
+          purchased_at: string
+          raffle_id: string
+          ticket_number: number
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          purchased_at?: string
+          raffle_id: string
+          ticket_number: number
+          user_id: string
+        }
+        Update: {
+          id?: string
+          purchased_at?: string
+          raffle_id?: string
+          ticket_number?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_tickets_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffles: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          max_tickets: number
+          prize_image: string | null
+          prize_name: string
+          prize_type: string
+          prize_value: number
+          start_date: string
+          status: string
+          ticket_price: number
+          tickets_sold: number
+          title: string
+          updated_at: string
+          winner_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          max_tickets?: number
+          prize_image?: string | null
+          prize_name: string
+          prize_type: string
+          prize_value: number
+          start_date?: string
+          status?: string
+          ticket_price?: number
+          tickets_sold?: number
+          title: string
+          updated_at?: string
+          winner_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          max_tickets?: number
+          prize_image?: string | null
+          prize_name?: string
+          prize_type?: string
+          prize_value?: number
+          start_date?: string
+          status?: string
+          ticket_price?: number
+          tickets_sold?: number
+          title?: string
+          updated_at?: string
+          winner_user_id?: string | null
+        }
+        Relationships: []
+      }
+      token_purchases: {
+        Row: {
+          amount: number
+          created_at: string
+          crypto_transaction_hash: string | null
+          id: string
+          payment_amount: number
+          payment_currency: string
+          payment_method: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          crypto_transaction_hash?: string | null
+          id?: string
+          payment_amount: number
+          payment_currency?: string
+          payment_method: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          crypto_transaction_hash?: string | null
+          id?: string
+          payment_amount?: number
+          payment_currency?: string
+          payment_method?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       token_transactions: {
         Row: {
           amount: number
@@ -192,7 +323,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      draw_raffle_winner: {
+        Args: { raffle_id_param: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

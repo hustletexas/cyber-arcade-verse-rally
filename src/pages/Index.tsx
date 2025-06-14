@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -15,6 +13,8 @@ import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { TourDates } from '@/components/TourDates';
+import { RaffleSection } from '@/components/RaffleSection';
+import { TokenPurchase } from '@/components/TokenPurchase';
 
 const Index = () => {
   return (
@@ -80,6 +80,22 @@ const Index = () => {
               📊 DASHBOARD
             </h2>
             <TokenDashboard />
+          </section>
+
+          {/* Buy CCTR Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              💰 BUY $CCTR
+            </h2>
+            <TokenPurchase />
+          </section>
+
+          {/* Raffles Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🎫 RAFFLES
+            </h2>
+            <RaffleSection />
           </section>
 
           {/* DEX Section */}
