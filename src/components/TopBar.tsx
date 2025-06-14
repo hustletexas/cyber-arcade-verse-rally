@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -315,30 +314,6 @@ export const TopBar = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const mintFreeNFT = async () => {
-    if (!phantomConnected && !coinbaseConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Minting NFT",
-      description: "Free NFT mint in progress...",
-    });
-
-    // Simulate minting process
-    setTimeout(() => {
-      toast({
-        title: "NFT Minted Successfully!",
-        description: "Your free Cyber City Arcade NFT has been minted to your wallet",
-      });
-    }, 3000);
   };
 
   return (
