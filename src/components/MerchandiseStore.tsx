@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,13 +21,13 @@ interface MerchandiseItem {
 const merchandiseItems: MerchandiseItem[] = [
   {
     id: '1',
-    name: 'Cyber City Arcade Neon Logo Tee',
+    name: 'Cyber City Arcade Retro Gaming Tee',
     price: 19.99,
-    image: '/lovable-uploads/40d6a951-fd19-4d9f-b892-be71f6f300d5.png',
+    image: '/lovable-uploads/05befe90-0669-44d1-9093-c0aac4755a61.png',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black', 'Navy', 'Charcoal'],
-    description: 'Premium cotton tee featuring the iconic Cyber City Arcade design with neon aesthetic'
+    description: 'Premium cotton tee featuring the iconic Cyber City Arcade cabinet with neon cityscape design'
   },
   {
     id: '2',
