@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +59,16 @@ const merchandiseItems: MerchandiseItem[] = [
   },
   {
     id: '5',
+    name: 'Cyber City Arcade Premium Hoodie',
+    price: 49.99,
+    image: '/lovable-uploads/d02c55c8-cdcf-4072-814b-340278e7ba0d.png',
+    category: 'hoodie',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black', 'Dark Gray', 'Navy'],
+    description: 'Premium hoodie featuring the complete Cyber City Arcade design with neon cityscape and retro arcade cabinet'
+  },
+  {
+    id: '6',
     name: 'Cyber City Arcade Bomber Jacket',
     price: 89.99,
     image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
@@ -70,7 +78,7 @@ const merchandiseItems: MerchandiseItem[] = [
     description: 'Premium bomber jacket featuring the complete Cyber City Arcade design with neon cityscape'
   },
   {
-    id: '6',
+    id: '7',
     name: 'Cyber City Arcade Varsity Jacket',
     price: 89.99,
     image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
@@ -80,7 +88,7 @@ const merchandiseItems: MerchandiseItem[] = [
     description: 'Classic varsity style with the iconic Cyber City Arcade cabinet and neon elements'
   },
   {
-    id: '7',
+    id: '8',
     name: 'Cyber City Arcade Premium Poster',
     price: 9.99,
     image: '/lovable-uploads/1c936dec-1d29-4226-8876-e076e6a4d77a.png',
@@ -274,4 +282,3 @@ export const MerchandiseStore = () => {
     </Card>
   );
 };
-
