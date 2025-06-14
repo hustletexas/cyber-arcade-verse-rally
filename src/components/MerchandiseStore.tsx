@@ -20,63 +20,63 @@ interface MerchandiseItem {
 const merchandiseItems: MerchandiseItem[] = [
   {
     id: '1',
-    name: 'Cyber City Arcade Neon T-Shirt',
-    price: 29.99,
+    name: 'Cyber City Arcade Official T-Shirt',
+    price: 32.99,
     image: 'photo-1618160702438-9b02ab6515c9',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Neon Green', 'Purple'],
-    description: 'Classic cyber-themed t-shirt with glowing neon graphics'
+    colors: ['Cyber Black', 'Neon Cyan', 'Electric Purple'],
+    description: 'Official Cyber City Arcade tee with glowing logo and circuit board sleeve design'
   },
   {
     id: '2',
-    name: 'Gaming Legends Hoodie',
-    price: 59.99,
+    name: 'Cyber City Arcade Gaming Hoodie',
+    price: 67.99,
     image: 'photo-1721322800607-8c38375eef04',
     category: 'hoodie',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Dark Purple', 'Cyber Blue'],
-    description: 'Premium hoodie with arcade-inspired designs and LED accents'
+    colors: ['Matrix Black', 'Neon Green', 'Cyber Blue'],
+    description: 'Premium hoodie featuring the iconic Cyber City logo with holographic hood lining'
   },
   {
     id: '3',
-    name: 'Retro Arcade Bomber Jacket',
-    price: 89.99,
+    name: 'Cyber City Arcade Varsity Jacket',
+    price: 94.99,
     image: 'photo-1582562124811-c09040d0a901',
     category: 'jacket',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Neon Pink', 'Electric Blue'],
-    description: 'Stylish bomber jacket with retro gaming patches and holographic details'
+    colors: ['Midnight Black', 'Neon Pink Trim', 'Cyan Accent'],
+    description: 'Limited edition varsity jacket with embroidered Cyber City logo and LED accent strips'
   },
   {
     id: '4',
-    name: 'Pixel Warriors T-Shirt',
-    price: 24.99,
+    name: 'Cyber City Arcade Player Tee',
+    price: 28.99,
     image: 'photo-1618160702438-9b02ab6515c9',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['White', 'Black', 'Neon Yellow'],
-    description: 'Vintage pixel art design featuring classic gaming characters'
+    colors: ['Retro White', 'Arcade Black', 'Neon Yellow'],
+    description: 'Classic player tee with vintage Cyber City Arcade logo and "LEVEL UP" back print'
   },
   {
     id: '5',
-    name: 'Cyber Tech Hoodie',
-    price: 64.99,
+    name: 'Cyber City Arcade Tech Hoodie',
+    price: 72.99,
     image: 'photo-1721322800607-8c38375eef04',
     category: 'hoodie',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Charcoal', 'Neon Green', 'Electric Purple'],
-    description: 'Tech-inspired hoodie with circuit board patterns and glow-in-the-dark elements'
+    colors: ['Tech Gray', 'Matrix Green', 'Cyber Purple'],
+    description: 'Tech-wear inspired hoodie with QR code patterns and reflective Cyber City branding'
   },
   {
     id: '6',
-    name: 'Neon Nights Varsity Jacket',
-    price: 99.99,
+    name: 'Cyber City Arcade Champion Jacket',
+    price: 109.99,
     image: 'photo-1582562124811-c09040d0a901',
     category: 'jacket',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black/Pink', 'Black/Cyan', 'Purple/Green'],
-    description: 'Premium varsity jacket with embroidered logos and metallic accents'
+    colors: ['Champion Black', 'Gold Neon', 'Silver Chrome'],
+    description: 'Elite champion jacket with premium Cyber City logo embroidery and tournament badges'
   }
 ];
 
@@ -86,8 +86,8 @@ export const MerchandiseStore = () => {
   const [cart, setCart] = useState<{[key: string]: number}>({});
 
   const categories = [
-    { value: 'all', label: '🛍️ ALL ITEMS', icon: '🛍️' },
-    { value: 'shirt', label: '👕 SHIRTS', icon: '👕' },
+    { value: 'all', label: '🎮 ALL ITEMS', icon: '🎮' },
+    { value: 'shirt', label: '👕 TEES', icon: '👕' },
     { value: 'hoodie', label: '🧥 HOODIES', icon: '🧥' },
     { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' }
   ];
@@ -119,8 +119,8 @@ export const MerchandiseStore = () => {
     <Card className="arcade-frame">
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-green flex items-center gap-3">
-          🛍️ CYBER MERCHANDISE STORE
-          <Badge className="bg-neon-pink text-black">NEW ARRIVALS</Badge>
+          🎮 CYBER CITY ARCADE STORE
+          <Badge className="bg-neon-pink text-black">OFFICIAL MERCH</Badge>
           {getTotalItems() > 0 && (
             <Badge className="bg-neon-cyan text-black ml-auto">
               <ShoppingCart size={16} className="mr-1" />
@@ -158,7 +158,7 @@ export const MerchandiseStore = () => {
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
                 <Badge className="absolute top-2 right-2 bg-neon-purple text-black">
-                  {item.category.toUpperCase()}
+                  CYBER CITY
                 </Badge>
               </div>
               <CardContent className="p-4 space-y-4">
@@ -171,12 +171,12 @@ export const MerchandiseStore = () => {
                   <span className="text-2xl font-bold text-neon-green">${item.price}</span>
                   <Badge className="bg-neon-yellow text-black">
                     <Shirt size={14} className="mr-1" />
-                    {item.sizes.length} sizes
+                    OFFICIAL
                   </Badge>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-neon-purple">Available Colors:</p>
+                  <p className="text-xs text-neon-purple font-bold">CYBER COLORS:</p>
                   <div className="flex flex-wrap gap-1">
                     {item.colors.map((color, index) => (
                       <Badge key={index} variant="outline" className="text-xs border-neon-pink text-neon-pink">
@@ -187,7 +187,7 @@ export const MerchandiseStore = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-neon-cyan">Available Sizes:</p>
+                  <p className="text-xs text-neon-cyan font-bold">PLAYER SIZES:</p>
                   <div className="flex flex-wrap gap-1">
                     {item.sizes.map((size, index) => (
                       <Badge key={index} variant="outline" className="text-xs border-neon-green text-neon-green">
@@ -213,7 +213,7 @@ export const MerchandiseStore = () => {
         {getTotalItems() > 0 && (
           <Card className="holographic p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-display text-xl text-neon-pink">🛒 Shopping Cart</h3>
+              <h3 className="font-display text-xl text-neon-pink">🛒 Your Cyber Cart</h3>
               <div className="text-right">
                 <p className="text-neon-cyan">{getTotalItems()} items</p>
                 <p className="text-2xl font-bold text-neon-green">${getTotalPrice().toFixed(2)}</p>
@@ -221,7 +221,7 @@ export const MerchandiseStore = () => {
             </div>
             <div className="flex gap-4">
               <Button className="flex-1 cyber-button">
-                🚚 PROCEED TO CHECKOUT
+                🚀 PROCEED TO CHECKOUT
               </Button>
               <Button 
                 variant="outline" 
@@ -237,7 +237,7 @@ export const MerchandiseStore = () => {
         {/* Store Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <Card className="holographic p-4">
-            <h4 className="text-neon-green font-bold mb-2">🚚 FREE SHIPPING</h4>
+            <h4 className="text-neon-green font-bold mb-2">🚀 FREE SHIPPING</h4>
             <p className="text-sm text-muted-foreground">
               Free worldwide shipping on orders over $50
             </p>
@@ -245,13 +245,13 @@ export const MerchandiseStore = () => {
           <Card className="holographic p-4">
             <h4 className="text-neon-cyan font-bold mb-2">🔄 EASY RETURNS</h4>
             <p className="text-sm text-muted-foreground">
-              30-day return policy for all merchandise
+              30-day return policy for all official merch
             </p>
           </Card>
           <Card className="holographic p-4">
-            <h4 className="text-neon-pink font-bold mb-2">⭐ PREMIUM QUALITY</h4>
+            <h4 className="text-neon-pink font-bold mb-2">⭐ AUTHENTIC GEAR</h4>
             <p className="text-sm text-muted-foreground">
-              High-quality materials with cyber-tech designs
+              Official Cyber City Arcade merchandise only
             </p>
           </Card>
         </div>
