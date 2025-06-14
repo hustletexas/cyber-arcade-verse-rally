@@ -17,6 +17,43 @@ export const TopBar = () => {
   const [phantomAddress, setPhantomAddress] = useState('');
   const [coinbaseAddress, setCoinbaseAddress] = useState('');
 
+  // Check for existing wallet connections on component mount
+  useEffect(() => {
+    checkWalletConnections();
+  }, []);
+
+  const checkWalletConnections = async () => {
+    // Check Phantom wallet
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        if (window.solana.isConnected) {
+          const response = await window.solana.connect({ onlyIfTrusted: true });
+          if (response?.publicKey) {
+            setPhantomAddress(response.publicKey.toString());
+            setPhantomConnected(true);
+          }
+        }
+      } catch (error) {
+        console.log('Phantom wallet not auto-connected');
+      }
+    }
+
+    // Check Coinbase wallet
+    if (window.ethereum && window.ethereum.isCoinbaseWallet) {
+      try {
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_accounts' 
+        });
+        if (accounts && accounts.length > 0) {
+          setCoinbaseAddress(accounts[0]);
+          setCoinbaseConnected(true);
+        }
+      } catch (error) {
+        console.log('Coinbase wallet not auto-connected');
+      }
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -50,8 +87,11 @@ export const TopBar = () => {
           description: "Please install Phantom wallet extension",
           variant: "destructive",
         });
+        // Open Phantom website
+        window.open('https://phantom.app/', '_blank');
       }
     } catch (error) {
+      console.error('Phantom connection error:', error);
       toast({
         title: "Connection Failed",
         description: "Failed to connect to Phantom wallet",
@@ -62,29 +102,61 @@ export const TopBar = () => {
 
   const connectCoinbase = async () => {
     try {
+      // Check if Coinbase Wallet is installed
       if (window.ethereum && window.ethereum.isCoinbaseWallet) {
         const accounts = await window.ethereum.request({ 
           method: 'eth_requestAccounts' 
         });
-        if (accounts.length > 0) {
+        if (accounts && accounts.length > 0) {
           setCoinbaseAddress(accounts[0]);
           setCoinbaseConnected(true);
           toast({
             title: "Coinbase Connected!",
             description: `Connected to ${accounts[0].slice(0, 8)}...${accounts[0].slice(-4)}`,
           });
+          
+          // Listen for account changes
+          window.ethereum.on('accountsChanged', (accounts: string[]) => {
+            if (accounts.length === 0) {
+              disconnectCoinbase();
+            } else {
+              setCoinbaseAddress(accounts[0]);
+              toast({
+                title: "Account Changed",
+                description: `Switched to ${accounts[0].slice(0, 8)}...${accounts[0].slice(-4)}`,
+              });
+            }
+          });
         }
-      } else {
+      } else if (window.ethereum && !window.ethereum.isCoinbaseWallet) {
+        // MetaMask or other wallet detected
         toast({
-          title: "Coinbase Not Found",
-          description: "Please install Coinbase wallet extension",
+          title: "Wrong Wallet",
+          description: "Please use Coinbase Wallet extension, not MetaMask",
           variant: "destructive",
         });
+      } else {
+        toast({
+          title: "Coinbase Wallet Not Found",
+          description: "Please install Coinbase Wallet extension",
+          variant: "destructive",
+        });
+        // Open Coinbase Wallet website
+        window.open('https://www.coinbase.com/wallet', '_blank');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Coinbase connection error:', error);
+      let errorMessage = "Failed to connect to Coinbase wallet";
+      
+      if (error.code === 4001) {
+        errorMessage = "Connection request was rejected";
+      } else if (error.code === -32002) {
+        errorMessage = "Connection request already pending";
+      }
+      
       toast({
         title: "Connection Failed",
-        description: "Failed to connect to Coinbase wallet",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -102,6 +174,7 @@ export const TopBar = () => {
         });
       }
     } catch (error) {
+      console.error('Phantom disconnection error:', error);
       toast({
         title: "Disconnection Failed",
         description: "Failed to disconnect from Phantom wallet",
@@ -113,6 +186,12 @@ export const TopBar = () => {
   const disconnectCoinbase = () => {
     setCoinbaseConnected(false);
     setCoinbaseAddress('');
+    
+    // Remove event listeners
+    if (window.ethereum && window.ethereum.removeListener) {
+      window.ethereum.removeListener('accountsChanged', () => {});
+    }
+    
     toast({
       title: "Coinbase Disconnected",
       description: "Successfully disconnected from Coinbase wallet",
