@@ -20,63 +20,83 @@ interface MerchandiseItem {
 const merchandiseItems: MerchandiseItem[] = [
   {
     id: '1',
-    name: 'Cyber City Arcade Official T-Shirt',
-    price: 32.99,
+    name: 'Cyber City Arcade Classic Logo Tee',
+    price: 19.99,
     image: 'photo-1618160702438-9b02ab6515c9',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Cyber Black', 'Neon Cyan', 'Electric Purple'],
-    description: 'Official Cyber City Arcade tee with glowing logo and circuit board sleeve design'
+    colors: ['Black', 'Dark Navy', 'Charcoal Gray'],
+    description: 'Premium cotton tee featuring the iconic Cyber City Arcade logo in vibrant neon colors'
   },
   {
     id: '2',
-    name: 'Cyber City Arcade Gaming Hoodie',
-    price: 67.99,
-    image: 'photo-1721322800607-8c38375eef04',
-    category: 'hoodie',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Matrix Black', 'Neon Green', 'Cyber Blue'],
-    description: 'Premium hoodie featuring the iconic Cyber City logo with holographic hood lining'
-  },
-  {
-    id: '3',
-    name: 'Cyber City Arcade Varsity Jacket',
-    price: 94.99,
-    image: 'photo-1582562124811-c09040d0a901',
-    category: 'jacket',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Midnight Black', 'Neon Pink Trim', 'Cyan Accent'],
-    description: 'Limited edition varsity jacket with embroidered Cyber City logo and LED accent strips'
-  },
-  {
-    id: '4',
-    name: 'Cyber City Arcade Player Tee',
-    price: 28.99,
+    name: 'Cyber City Arcade Retro Gaming Shirt',
+    price: 19.99,
     image: 'photo-1618160702438-9b02ab6515c9',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Retro White', 'Arcade Black', 'Neon Yellow'],
-    description: 'Classic player tee with vintage Cyber City Arcade logo and "LEVEL UP" back print'
+    colors: ['Vintage Black', 'Midnight Blue', 'Forest Green'],
+    description: 'Retro-style gaming shirt with distressed Cyber City logo and vintage arcade graphics'
   },
   {
-    id: '5',
-    name: 'Cyber City Arcade Tech Hoodie',
-    price: 72.99,
+    id: '3',
+    name: 'Cyber City Arcade Neon Streets Tee',
+    price: 19.99,
+    image: 'photo-1618160702438-9b02ab6515c9',
+    category: 'shirt',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Jet Black', 'Electric Blue', 'Cyber Purple'],
+    description: 'Cyberpunk-inspired design featuring neon street aesthetics and the Cyber City logo'
+  },
+  {
+    id: '4',
+    name: 'Cyber City Arcade Official Hoodie',
+    price: 49.99,
     image: 'photo-1721322800607-8c38375eef04',
     category: 'hoodie',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Tech Gray', 'Matrix Green', 'Cyber Purple'],
-    description: 'Tech-wear inspired hoodie with QR code patterns and reflective Cyber City branding'
+    colors: ['Stealth Black', 'Carbon Gray', 'Deep Navy'],
+    description: 'Premium fleece hoodie with embroidered Cyber City logo and kangaroo pocket'
+  },
+  {
+    id: '5',
+    name: 'Cyber City Arcade Gaming Hoodie',
+    price: 49.99,
+    image: 'photo-1721322800607-8c38375eef04',
+    category: 'hoodie',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Matrix Black', 'Cyber Green', 'Neon Blue'],
+    description: 'Cozy gaming hoodie perfect for long arcade sessions, featuring premium materials'
   },
   {
     id: '6',
-    name: 'Cyber City Arcade Champion Jacket',
-    price: 109.99,
+    name: 'Cyber City Arcade Varsity Jacket',
+    price: 89.99,
     image: 'photo-1582562124811-c09040d0a901',
     category: 'jacket',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Champion Black', 'Gold Neon', 'Silver Chrome'],
-    description: 'Elite champion jacket with premium Cyber City logo embroidery and tournament badges'
+    colors: ['Classic Black/White', 'Navy/Silver', 'Black/Neon Green'],
+    description: 'Premium varsity jacket with embroidered patches and leather sleeves'
+  },
+  {
+    id: '7',
+    name: 'Cyber City Arcade Tech Jacket',
+    price: 89.99,
+    image: 'photo-1582562124811-c09040d0a901',
+    category: 'jacket',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Cyberpunk Black', 'Tech Gray', 'Future Blue'],
+    description: 'Water-resistant tech jacket with reflective details and multiple pockets'
+  },
+  {
+    id: '8',
+    name: 'Cyber City Arcade Bomber Jacket',
+    price: 89.99,
+    image: 'photo-1582562124811-c09040d0a901',
+    category: 'jacket',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Stealth Black', 'Olive Drab', 'Metallic Silver'],
+    description: 'Classic bomber style with Cyber City patches and premium satin lining'
   }
 ];
 
@@ -87,7 +107,7 @@ export const MerchandiseStore = () => {
 
   const categories = [
     { value: 'all', label: '🎮 ALL ITEMS', icon: '🎮' },
-    { value: 'shirt', label: '👕 TEES', icon: '👕' },
+    { value: 'shirt', label: '👕 T-SHIRTS', icon: '👕' },
     { value: 'hoodie', label: '🧥 HOODIES', icon: '🧥' },
     { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' }
   ];
@@ -119,8 +139,8 @@ export const MerchandiseStore = () => {
     <Card className="arcade-frame">
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-green flex items-center gap-3">
-          🎮 CYBER CITY ARCADE STORE
-          <Badge className="bg-neon-pink text-black">OFFICIAL MERCH</Badge>
+          🎮 CYBER CITY ARCADE OFFICIAL STORE
+          <Badge className="bg-neon-pink text-black">AUTHENTIC MERCH</Badge>
           {getTotalItems() > 0 && (
             <Badge className="bg-neon-cyan text-black ml-auto">
               <ShoppingCart size={16} className="mr-1" />
@@ -158,7 +178,10 @@ export const MerchandiseStore = () => {
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
                 <Badge className="absolute top-2 right-2 bg-neon-purple text-black">
-                  CYBER CITY
+                  OFFICIAL
+                </Badge>
+                <Badge className="absolute top-2 left-2 bg-neon-green text-black font-bold">
+                  ${item.price}
                 </Badge>
               </div>
               <CardContent className="p-4 space-y-4">
@@ -171,12 +194,12 @@ export const MerchandiseStore = () => {
                   <span className="text-2xl font-bold text-neon-green">${item.price}</span>
                   <Badge className="bg-neon-yellow text-black">
                     <Shirt size={14} className="mr-1" />
-                    OFFICIAL
+                    AUTHENTIC
                   </Badge>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-neon-purple font-bold">CYBER COLORS:</p>
+                  <p className="text-xs text-neon-purple font-bold">AVAILABLE COLORS:</p>
                   <div className="flex flex-wrap gap-1">
                     {item.colors.map((color, index) => (
                       <Badge key={index} variant="outline" className="text-xs border-neon-pink text-neon-pink">
@@ -187,7 +210,7 @@ export const MerchandiseStore = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-neon-cyan font-bold">PLAYER SIZES:</p>
+                  <p className="text-xs text-neon-cyan font-bold">AVAILABLE SIZES:</p>
                   <div className="flex flex-wrap gap-1">
                     {item.sizes.map((size, index) => (
                       <Badge key={index} variant="outline" className="text-xs border-neon-green text-neon-green">
@@ -213,7 +236,7 @@ export const MerchandiseStore = () => {
         {getTotalItems() > 0 && (
           <Card className="holographic p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-display text-xl text-neon-pink">🛒 Your Cyber Cart</h3>
+              <h3 className="font-display text-xl text-neon-pink">🛒 Your Cart</h3>
               <div className="text-right">
                 <p className="text-neon-cyan">{getTotalItems()} items</p>
                 <p className="text-2xl font-bold text-neon-green">${getTotalPrice().toFixed(2)}</p>
@@ -239,19 +262,19 @@ export const MerchandiseStore = () => {
           <Card className="holographic p-4">
             <h4 className="text-neon-green font-bold mb-2">🚀 FREE SHIPPING</h4>
             <p className="text-sm text-muted-foreground">
-              Free worldwide shipping on orders over $50
+              Free shipping on orders over $75
             </p>
           </Card>
           <Card className="holographic p-4">
             <h4 className="text-neon-cyan font-bold mb-2">🔄 EASY RETURNS</h4>
             <p className="text-sm text-muted-foreground">
-              30-day return policy for all official merch
+              30-day return policy on all items
             </p>
           </Card>
           <Card className="holographic p-4">
-            <h4 className="text-neon-pink font-bold mb-2">⭐ AUTHENTIC GEAR</h4>
+            <h4 className="text-neon-pink font-bold mb-2">⭐ PREMIUM QUALITY</h4>
             <p className="text-sm text-muted-foreground">
-              Official Cyber City Arcade merchandise only
+              High-quality materials and printing
             </p>
           </Card>
         </div>
