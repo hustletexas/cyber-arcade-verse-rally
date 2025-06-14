@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +15,6 @@ import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { TourDates } from '@/components/TourDates';
-import { MusicPlayer } from '@/components/MusicPlayer';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
@@ -130,9 +130,6 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Music Player - Fixed at bottom */}
-      <MusicPlayer />
-
       {/* Footer */}
       <footer className="border-t border-neon-cyan/30 mt-12 md:mt-20 py-6 md:py-8">
         <div className="container mx-auto px-4 text-center">
@@ -152,6 +149,8 @@ const Index = () => {
             <span>PayPal Integration</span>
             <span>•</span>
             <span>Phantom Wallet</span>
+            <span>•</span>
+            <span>Coinbase Wallet</span>
           </div>
         </div>
       </footer>

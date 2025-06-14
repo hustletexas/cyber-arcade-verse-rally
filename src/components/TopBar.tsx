@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 interface WalletState {
   address: string | null;
   isConnected: boolean;
-  walletType: 'phantom' | 'metamask' | 'walletconnect' | 'lobstr' | null;
+  walletType: 'phantom' | 'metamask' | 'walletconnect' | 'coinbase' | null;
 }
 
 export const TopBar = () => {
@@ -23,7 +23,6 @@ export const TopBar = () => {
     isConnected: false,
     walletType: null
   });
-  const [walletConnectProvider, setWalletConnectProvider] = useState<any | null>(null);
 
   // Check for existing wallet connections on component mount
   useEffect(() => {
@@ -61,15 +60,19 @@ export const TopBar = () => {
       }
     }
 
-    // Check Lobstr (via Stellar SDK)
-    if (typeof window !== 'undefined' && localStorage.getItem('lobstr_connected')) {
-      const savedAddress = localStorage.getItem('lobstr_address');
-      if (savedAddress) {
-        setWalletState({
-          address: savedAddress,
-          isConnected: true,
-          walletType: 'lobstr'
-        });
+    // Check Coinbase Wallet
+    if (window.ethereum?.isCoinbaseWallet) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          setWalletState({
+            address: accounts[0],
+            isConnected: true,
+            walletType: 'coinbase'
+          });
+        }
+      } catch (error) {
+        console.log('Coinbase Wallet not auto-connected');
       }
     }
   };
@@ -110,7 +113,7 @@ export const TopBar = () => {
 
   const connectMetaMask = async () => {
     try {
-      if (!window.ethereum) {
+      if (!window.ethereum?.isMetaMask) {
         toast({
           title: "MetaMask Not Found",
           description: "Please install MetaMask extension",
@@ -146,55 +149,61 @@ export const TopBar = () => {
     }
   };
 
-  const connectLobstr = async () => {
+  const connectCoinbase = async () => {
     try {
-      toast({
-        title: "Connecting to Lobstr",
-        description: "Opening Lobstr wallet for connection...",
-      });
-
-      // Check if running on mobile and try deep link
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // Try Lobstr mobile deep link
-        const deepLink = 'lobstr://connect';
-        window.location.href = deepLink;
-        
-        // Fallback to app store if deep link fails
-        setTimeout(() => {
-          window.open('https://apps.apple.com/app/lobstr-stellar-lumens-wallet/id1404357892', '_blank');
-        }, 2000);
-      } else {
-        // For desktop, redirect to Lobstr web interface
-        window.open('https://lobstr.co/web-connect', '_blank');
+      if (!window.ethereum) {
+        toast({
+          title: "Coinbase Wallet Not Found",
+          description: "Please install Coinbase Wallet extension",
+          variant: "destructive",
+        });
+        window.open('https://www.coinbase.com/wallet', '_blank');
+        return;
       }
 
-      // Simulate connection for demo purposes
-      setTimeout(() => {
-        const mockAddress = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOKY3B2WSQHG4W37";
-        
-        setWalletState({
-          address: mockAddress,
-          isConnected: true,
-          walletType: 'lobstr'
+      // Check if it's specifically Coinbase Wallet
+      if (!window.ethereum.isCoinbaseWallet) {
+        // Try to connect anyway as it might be available
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
         });
 
-        // Store connection in localStorage for persistence
-        localStorage.setItem('lobstr_connected', 'true');
-        localStorage.setItem('lobstr_address', mockAddress);
+        if (accounts.length > 0) {
+          const address = accounts[0];
+          setWalletState({
+            address,
+            isConnected: true,
+            walletType: 'coinbase'
+          });
 
-        toast({
-          title: "Lobstr Connected!",
-          description: `Connected to Stellar wallet ${mockAddress.slice(0, 4)}...${mockAddress.slice(-4)}`,
+          toast({
+            title: "Coinbase Wallet Connected!",
+            description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`,
+          });
+        }
+      } else {
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
         });
-      }, 3000);
 
+        if (accounts.length > 0) {
+          const address = accounts[0];
+          setWalletState({
+            address,
+            isConnected: true,
+            walletType: 'coinbase'
+          });
+
+          toast({
+            title: "Coinbase Wallet Connected!",
+            description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`,
+          });
+        }
+      }
     } catch (error: any) {
-      console.error("Lobstr connection error:", error);
       toast({
-        title: "Lobstr Connection Failed",
-        description: error.message || "Failed to connect to Lobstr wallet",
+        title: "Connection Failed",
+        description: error.message || "Failed to connect to Coinbase Wallet",
         variant: "destructive",
       });
     }
@@ -246,13 +255,11 @@ export const TopBar = () => {
       } else if (walletState.walletType === 'metamask') {
         // MetaMask doesn't have a programmatic disconnect, just clear state
         console.log("MetaMask disconnection requested");
+      } else if (walletState.walletType === 'coinbase') {
+        // Coinbase Wallet doesn't have a programmatic disconnect, just clear state
+        console.log("Coinbase Wallet disconnection requested");
       } else if (walletState.walletType === 'walletconnect') {
         console.log("WalletConnect disconnection requested");
-      } else if (walletState.walletType === 'lobstr') {
-        // Clear Lobstr connection from localStorage
-        localStorage.removeItem('lobstr_connected');
-        localStorage.removeItem('lobstr_address');
-        console.log("Lobstr disconnection requested");
       }
       
       setWalletState({
@@ -325,7 +332,7 @@ export const TopBar = () => {
                       <Badge className="bg-neon-green text-black text-xs">
                         {walletState.walletType === 'phantom' ? '👻' : 
                          walletState.walletType === 'metamask' ? '🦊' : 
-                         walletState.walletType === 'lobstr' ? '⭐' : '🔗'} CONNECTED
+                         walletState.walletType === 'coinbase' ? '🔵' : '🔗'} CONNECTED
                       </Badge>
                       <span className="text-neon-cyan text-xs font-mono">
                         {walletState.address?.slice(0, 4)}...{walletState.address?.slice(-4)}
@@ -399,11 +406,11 @@ export const TopBar = () => {
                       🦊 METAMASK
                     </Button>
                     <Button 
-                      onClick={connectLobstr}
+                      onClick={connectCoinbase}
                       variant="outline"
-                      className="border-neon-yellow text-neon-yellow hover:bg-neon-yellow hover:text-black"
+                      className="border-neon-blue text-neon-blue hover:bg-neon-blue hover:text-black"
                     >
-                      ⭐ LOBSTR
+                      🔵 COINBASE
                     </Button>
                     <Button 
                       onClick={connectWalletConnect}
