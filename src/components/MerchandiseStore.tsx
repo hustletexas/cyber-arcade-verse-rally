@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,83 +19,63 @@ interface MerchandiseItem {
 const merchandiseItems: MerchandiseItem[] = [
   {
     id: '1',
-    name: 'Cyber City Arcade Classic Logo Tee',
+    name: 'Cyber City Arcade Neon Logo Tee',
     price: 19.99,
-    image: 'photo-1618160702438-9b02ab6515c9',
+    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Dark Navy', 'Charcoal Gray'],
-    description: 'Premium cotton tee featuring the iconic Cyber City Arcade logo in vibrant neon colors'
+    colors: ['Black', 'Navy', 'Charcoal'],
+    description: 'Premium cotton tee featuring the iconic Cyber City Arcade design with neon aesthetic'
   },
   {
     id: '2',
     name: 'Cyber City Arcade Retro Gaming Shirt',
     price: 19.99,
-    image: 'photo-1618160702438-9b02ab6515c9',
+    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Vintage Black', 'Midnight Blue', 'Forest Green'],
-    description: 'Retro-style gaming shirt with distressed Cyber City logo and vintage arcade graphics'
+    colors: ['Black', 'Dark Blue', 'Purple'],
+    description: 'Comfortable gaming shirt with the classic Cyber City Arcade cabinet design'
   },
   {
     id: '3',
-    name: 'Cyber City Arcade Neon Streets Tee',
-    price: 19.99,
-    image: 'photo-1618160702438-9b02ab6515c9',
-    category: 'shirt',
+    name: 'Cyber City Arcade Official Hoodie',
+    price: 49.99,
+    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
+    category: 'hoodie',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Jet Black', 'Electric Blue', 'Cyber Purple'],
-    description: 'Cyberpunk-inspired design featuring neon street aesthetics and the Cyber City logo'
+    colors: ['Black', 'Navy', 'Charcoal'],
+    description: 'Premium fleece hoodie with the full Cyber City Arcade neon design'
   },
   {
     id: '4',
-    name: 'Cyber City Arcade Official Hoodie',
+    name: 'Cyber City Arcade Gaming Hoodie',
     price: 49.99,
-    image: 'photo-1721322800607-8c38375eef04',
+    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
     category: 'hoodie',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Stealth Black', 'Carbon Gray', 'Deep Navy'],
-    description: 'Premium fleece hoodie with embroidered Cyber City logo and kangaroo pocket'
+    colors: ['Black', 'Dark Purple', 'Midnight Blue'],
+    description: 'Cozy gaming hoodie perfect for arcade sessions with cyberpunk styling'
   },
   {
     id: '5',
-    name: 'Cyber City Arcade Gaming Hoodie',
-    price: 49.99,
-    image: 'photo-1721322800607-8c38375eef04',
-    category: 'hoodie',
+    name: 'Cyber City Arcade Bomber Jacket',
+    price: 89.99,
+    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
+    category: 'jacket',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Matrix Black', 'Cyber Green', 'Neon Blue'],
-    description: 'Cozy gaming hoodie perfect for long arcade sessions, featuring premium materials'
+    colors: ['Black', 'Navy', 'Charcoal'],
+    description: 'Premium bomber jacket featuring the complete Cyber City Arcade design with neon cityscape'
   },
   {
     id: '6',
     name: 'Cyber City Arcade Varsity Jacket',
     price: 89.99,
-    image: 'photo-1582562124811-c09040d0a901',
+    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
     category: 'jacket',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Classic Black/White', 'Navy/Silver', 'Black/Neon Green'],
-    description: 'Premium varsity jacket with embroidered patches and leather sleeves'
-  },
-  {
-    id: '7',
-    name: 'Cyber City Arcade Tech Jacket',
-    price: 89.99,
-    image: 'photo-1582562124811-c09040d0a901',
-    category: 'jacket',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Cyberpunk Black', 'Tech Gray', 'Future Blue'],
-    description: 'Water-resistant tech jacket with reflective details and multiple pockets'
-  },
-  {
-    id: '8',
-    name: 'Cyber City Arcade Bomber Jacket',
-    price: 89.99,
-    image: 'photo-1582562124811-c09040d0a901',
-    category: 'jacket',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Stealth Black', 'Olive Drab', 'Metallic Silver'],
-    description: 'Classic bomber style with Cyber City patches and premium satin lining'
+    colors: ['Black/Pink', 'Black/Cyan', 'Black/Purple'],
+    description: 'Classic varsity style with the iconic Cyber City Arcade cabinet and neon elements'
   }
 ];
 
@@ -173,7 +152,7 @@ export const MerchandiseStore = () => {
             <Card key={item.id} className="vending-machine hover:scale-105 transition-transform duration-300">
               <div className="relative">
                 <img 
-                  src={`https://images.unsplash.com/${item.image}?w=400&h=300&fit=crop`}
+                  src={item.image}
                   alt={item.name}
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
