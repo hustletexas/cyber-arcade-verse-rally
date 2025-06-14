@@ -1,11 +1,10 @@
-
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Shirt } from 'lucide-react';
+import { ShoppingCart, Shirt, Eye } from 'lucide-react';
 
 interface MerchandiseItem {
   id: string;
@@ -55,6 +54,7 @@ export const MerchandiseStore = () => {
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [cart, setCart] = useState<{[key: string]: number}>({});
+  const [selectedItem, setSelectedItem] = useState<MerchandiseItem | null>(null);
 
   const categories = [
     { value: 'all', label: '🎮 ALL ITEMS', icon: '🎮' },
@@ -126,7 +126,8 @@ export const MerchandiseStore = () => {
                 <img 
                   src={item.image}
                   alt={item.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
+                  className="w-full h-48 object-cover rounded-t-lg cursor-pointer"
+                  onClick={() => setSelectedItem(item)}
                 />
                 <Badge className="absolute top-2 right-2 bg-neon-purple text-black">
                   OFFICIAL
@@ -134,11 +135,18 @@ export const MerchandiseStore = () => {
                 <Badge className="absolute top-2 left-2 bg-neon-green text-black font-bold">
                   ${item.price}
                 </Badge>
+                <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center"
+                     onClick={() => setSelectedItem(item)}>
+                  <Eye size={32} className="text-white" />
+                </div>
               </div>
               <CardContent className="p-4 space-y-4">
                 <div>
-                  <h3 className="font-bold text-neon-cyan text-lg">{item.name}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="font-bold text-neon-cyan text-lg cursor-pointer hover:text-neon-pink transition-colors"
+                      onClick={() => setSelectedItem(item)}>
+                    {item.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -171,17 +179,106 @@ export const MerchandiseStore = () => {
                   </div>
                 </div>
 
-                <Button 
-                  onClick={() => addToCart(item.id, item.name)}
-                  className="w-full cyber-button flex items-center gap-2"
-                >
-                  <ShoppingCart size={16} />
-                  ADD TO CART
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => addToCart(item.id, item.name)}
+                    className="flex-1 cyber-button flex items-center gap-2"
+                  >
+                    <ShoppingCart size={16} />
+                    ADD TO CART
+                  </Button>
+                  <Button 
+                    onClick={() => setSelectedItem(item)}
+                    variant="outline"
+                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                  >
+                    <Eye size={16} />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Item Detail Dialog */}
+        <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+          <DialogContent className="max-w-4xl arcade-frame">
+            {selectedItem && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-2xl text-neon-cyan font-display">
+                    {selectedItem.name}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <img 
+                      src={selectedItem.image}
+                      alt={selectedItem.name}
+                      className="w-full h-96 object-cover rounded-lg"
+                    />
+                    <div className="flex justify-center">
+                      <Badge className="bg-neon-green text-black text-xl px-4 py-2 font-bold">
+                        ${selectedItem.price}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-bold text-neon-purple mb-2">DESCRIPTION</h3>
+                      <p className="text-foreground leading-relaxed">{selectedItem.description}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-bold text-neon-purple mb-3">AVAILABLE COLORS</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedItem.colors.map((color, index) => (
+                          <Badge key={index} className="bg-neon-pink text-black px-3 py-1">
+                            {color}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold text-neon-purple mb-3">AVAILABLE SIZES</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedItem.sizes.map((size, index) => (
+                          <Badge key={index} className="bg-neon-cyan text-black px-3 py-1 text-base">
+                            {size}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-neon-yellow text-black">
+                          <Shirt size={14} className="mr-1" />
+                          AUTHENTIC MERCH
+                        </Badge>
+                        <Badge className="bg-neon-purple text-black">
+                          OFFICIAL CYBER CITY
+                        </Badge>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => {
+                          addToCart(selectedItem.id, selectedItem.name);
+                          setSelectedItem(null);
+                        }}
+                        className="w-full cyber-button flex items-center gap-2 text-lg py-3"
+                      >
+                        <ShoppingCart size={20} />
+                        ADD TO CART - ${selectedItem.price}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Cart Summary */}
         {getTotalItems() > 0 && (
