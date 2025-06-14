@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -316,11 +317,35 @@ export const TopBar = () => {
     }
   };
 
+  const mintFreeNFT = async () => {
+    if (!phantomConnected && !coinbaseConnected) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Minting NFT",
+      description: "Free NFT mint in progress...",
+    });
+
+    // Simulate minting process
+    setTimeout(() => {
+      toast({
+        title: "NFT Minted Successfully!",
+        description: "Your free Cyber City Arcade NFT has been minted to your wallet",
+      });
+    }, 3000);
+  };
+
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo, Authentication, and Wallet Section */}
+          {/* Logo Section */}
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
               <img 
@@ -329,7 +354,10 @@ export const TopBar = () => {
                 className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
               />
             </div>
+          </div>
 
+          {/* Center Section - Authentication and Wallet Actions */}
+          <div className="flex items-center gap-4">
             {/* User Authentication */}
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
@@ -375,6 +403,14 @@ export const TopBar = () => {
               </div>
             )}
 
+            {/* Create Wallet Button - Now next to login */}
+            <Button 
+              onClick={createWallet}
+              className="cyber-button flex items-center gap-2"
+            >
+              ➕ CREATE WALLET
+            </Button>
+
             {/* Wallet Integration Buttons */}
             <div className="flex items-center gap-2">
               {/* Phantom Wallet */}
@@ -419,14 +455,8 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Right Section - Mint NFT Button */}
           <div className="flex items-center gap-3">
-            <Button 
-              onClick={createWallet}
-              className="cyber-button flex items-center gap-2"
-            >
-              ➕ CREATE WALLET
-            </Button>
             <Button 
               onClick={mintFreeNFT}
               className="cyber-button flex items-center gap-2"
