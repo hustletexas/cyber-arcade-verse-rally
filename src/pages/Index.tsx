@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +14,7 @@ import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SocialFeatures } from '@/components/SocialFeatures';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { TourDates } from '@/components/TourDates';
+import { ArcadeScreenAnimation } from '@/components/ArcadeScreenAnimation';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
@@ -42,13 +42,15 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-8 md:mb-12">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 relative">
             <img 
               src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
               alt="Cyber City Arcade" 
               className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300"
               style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
             />
+            {/* Arcade Screen Animation Overlay */}
+            <ArcadeScreenAnimation />
           </div>
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
