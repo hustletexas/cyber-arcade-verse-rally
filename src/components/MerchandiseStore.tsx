@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ interface MerchandiseItem {
   name: string;
   price: number;
   image: string;
-  category: 'shirt' | 'hoodie' | 'jacket';
+  category: 'shirt' | 'hoodie' | 'jacket' | 'poster';
   sizes: string[];
   colors: string[];
   description: string;
@@ -77,6 +78,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black/Pink', 'Black/Cyan', 'Black/Purple'],
     description: 'Classic varsity style with the iconic Cyber City Arcade cabinet and neon elements'
+  },
+  {
+    id: '7',
+    name: 'Cyber City Arcade Premium Poster',
+    price: 9.99,
+    image: '/lovable-uploads/1c936dec-1d29-4226-8876-e076e6a4d77a.png',
+    category: 'poster',
+    sizes: ['18x24"', '24x36"'],
+    colors: ['Full Color'],
+    description: 'High-quality premium poster featuring the complete Cyber City Arcade design with neon cityscape and retro arcade cabinet'
   }
 ];
 
@@ -89,7 +100,8 @@ export const MerchandiseStore = () => {
     { value: 'all', label: '🎮 ALL ITEMS', icon: '🎮' },
     { value: 'shirt', label: '👕 T-SHIRTS', icon: '👕' },
     { value: 'hoodie', label: '🧥 HOODIES', icon: '🧥' },
-    { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' }
+    { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' },
+    { value: 'poster', label: '🖼️ POSTERS', icon: '🖼️' }
   ];
 
   const filteredItems = selectedCategory === 'all' 
@@ -190,7 +202,7 @@ export const MerchandiseStore = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-neon-cyan font-bold">AVAILABLE SIZES:</p>
+                  <p className="text-xs text-neon-cyan font-bold">{item.category === 'poster' ? 'AVAILABLE SIZES:' : 'AVAILABLE SIZES:'}</p>
                   <div className="flex flex-wrap gap-1">
                     {item.sizes.map((size, index) => (
                       <Badge key={index} variant="outline" className="text-xs border-neon-green text-neon-green">
@@ -262,3 +274,4 @@ export const MerchandiseStore = () => {
     </Card>
   );
 };
+
