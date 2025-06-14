@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ interface MerchandiseItem {
   name: string;
   price: number;
   image: string;
-  category: 'shirt' | 'hoodie' | 'jacket' | 'poster';
+  category: 'shirt' | 'hoodie' | 'jacket';
   sizes: string[];
   colors: string[];
   description: string;
@@ -29,36 +30,6 @@ const merchandiseItems: MerchandiseItem[] = [
   },
   {
     id: '2',
-    name: 'Cyber City Arcade Retro Gaming Shirt',
-    price: 19.99,
-    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
-    category: 'shirt',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Dark Blue', 'Purple'],
-    description: 'Comfortable gaming shirt with the classic Cyber City Arcade cabinet design'
-  },
-  {
-    id: '3',
-    name: 'Cyber City Arcade Official Hoodie',
-    price: 49.99,
-    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
-    category: 'hoodie',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Navy', 'Charcoal'],
-    description: 'Premium fleece hoodie with the full Cyber City Arcade neon design'
-  },
-  {
-    id: '4',
-    name: 'Cyber City Arcade Gaming Hoodie',
-    price: 49.99,
-    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
-    category: 'hoodie',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Dark Purple', 'Midnight Blue'],
-    description: 'Cozy gaming hoodie perfect for arcade sessions with cyberpunk styling'
-  },
-  {
-    id: '5',
     name: 'Cyber City Arcade Premium Hoodie',
     price: 49.99,
     image: '/lovable-uploads/d02c55c8-cdcf-4072-814b-340278e7ba0d.png',
@@ -68,7 +39,7 @@ const merchandiseItems: MerchandiseItem[] = [
     description: 'Premium hoodie featuring the complete Cyber City Arcade design with neon cityscape and retro arcade cabinet'
   },
   {
-    id: '6',
+    id: '3',
     name: 'Cyber City Arcade Bomber Jacket',
     price: 89.99,
     image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
@@ -76,26 +47,6 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black', 'Navy', 'Charcoal'],
     description: 'Premium bomber jacket featuring the complete Cyber City Arcade design with neon cityscape'
-  },
-  {
-    id: '7',
-    name: 'Cyber City Arcade Varsity Jacket',
-    price: 89.99,
-    image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
-    category: 'jacket',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black/Pink', 'Black/Cyan', 'Black/Purple'],
-    description: 'Classic varsity style with the iconic Cyber City Arcade cabinet and neon elements'
-  },
-  {
-    id: '8',
-    name: 'Cyber City Arcade Premium Poster',
-    price: 9.99,
-    image: '/lovable-uploads/1c936dec-1d29-4226-8876-e076e6a4d77a.png',
-    category: 'poster',
-    sizes: ['18x24"', '24x36"'],
-    colors: ['Full Color'],
-    description: 'High-quality premium poster featuring the complete Cyber City Arcade design with neon cityscape and retro arcade cabinet'
   }
 ];
 
@@ -108,8 +59,7 @@ export const MerchandiseStore = () => {
     { value: 'all', label: '🎮 ALL ITEMS', icon: '🎮' },
     { value: 'shirt', label: '👕 T-SHIRTS', icon: '👕' },
     { value: 'hoodie', label: '🧥 HOODIES', icon: '🧥' },
-    { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' },
-    { value: 'poster', label: '🖼️ POSTERS', icon: '🖼️' }
+    { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' }
   ];
 
   const filteredItems = selectedCategory === 'all' 
@@ -210,7 +160,7 @@ export const MerchandiseStore = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-neon-cyan font-bold">{item.category === 'poster' ? 'AVAILABLE SIZES:' : 'AVAILABLE SIZES:'}</p>
+                  <p className="text-xs text-neon-cyan font-bold">AVAILABLE SIZES:</p>
                   <div className="flex flex-wrap gap-1">
                     {item.sizes.map((size, index) => (
                       <Badge key={index} variant="outline" className="text-xs border-neon-green text-neon-green">
