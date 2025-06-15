@@ -15,32 +15,11 @@ export const TopBar = () => {
   const [coinbaseConnected, setCoinbaseConnected] = useState(false);
   const [phantomAddress, setPhantomAddress] = useState('');
   const [coinbaseAddress, setCoinbaseAddress] = useState('');
-  const [mintedNFTs, setMintedNFTs] = useState<string[]>([]);
-  const [isMinting, setIsMinting] = useState(false);
 
   // Check for existing wallet connections on component mount
   useEffect(() => {
     checkWalletConnections();
-    loadMintedNFTs();
   }, []);
-
-  const loadMintedNFTs = () => {
-    const stored = localStorage.getItem('cyberCityMintedNFTs');
-    if (stored) {
-      setMintedNFTs(JSON.parse(stored));
-    }
-  };
-
-  const saveMintedNFT = (walletAddress: string, mintAddress: string) => {
-    const newMinted = [...mintedNFTs, walletAddress];
-    setMintedNFTs(newMinted);
-    localStorage.setItem('cyberCityMintedNFTs', JSON.stringify(newMinted));
-    localStorage.setItem(`nft_${walletAddress}`, mintAddress);
-  };
-
-  const hasAlreadyMinted = (walletAddress: string) => {
-    return mintedNFTs.includes(walletAddress);
-  };
 
   const checkWalletConnections = async () => {
     // Check Phantom wallet
@@ -274,12 +253,6 @@ export const TopBar = () => {
   };
 
   const mintFreeNFT = async () => {
-    console.log('Mint button clicked!');
-    console.log('Phantom connected:', phantomConnected);
-    console.log('Coinbase connected:', coinbaseConnected);
-    console.log('Phantom address:', phantomAddress);
-    console.log('Coinbase address:', coinbaseAddress);
-
     if (!phantomConnected && !coinbaseConnected) {
       toast({
         title: "Wallet Required",
@@ -289,58 +262,18 @@ export const TopBar = () => {
       return;
     }
 
-    const currentWallet = phantomConnected ? phantomAddress : coinbaseAddress;
-    console.log('Current wallet:', currentWallet);
-    
-    if (hasAlreadyMinted(currentWallet)) {
+    toast({
+      title: "Minting NFT",
+      description: "Free NFT mint in progress...",
+    });
+
+    // Simulate minting process
+    setTimeout(() => {
       toast({
-        title: "Already Minted",
-        description: "You have already minted your free Cyber City Arcade NFT",
-        variant: "destructive",
+        title: "NFT Minted Successfully!",
+        description: "Your free Cyber City Arcade NFT has been minted to your wallet",
       });
-      return;
-    }
-
-    setIsMinting(true);
-
-    try {
-      toast({
-        title: "🔨 Minting NFT",
-        description: "Creating your exclusive Cyber City Arcade NFT...",
-      });
-
-      // Simulate NFT minting process
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Generate a mock mint address for demo (in production, use actual Solana minting)
-      const mockMintAddress = `mint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Save minted NFT info
-      saveMintedNFT(currentWallet, mockMintAddress);
-
-      toast({
-        title: "🎉 NFT Minted Successfully!",
-        description: `Your rare Cyber City Arcade NFT has been minted! Mint: ${mockMintAddress.slice(0, 8)}...`,
-      });
-
-      // Show additional success info
-      setTimeout(() => {
-        toast({
-          title: "✨ Congratulations!",
-          description: "You now own an exclusive Cyber City Arcade NFT. Check your wallet to view it!",
-        });
-      }, 2000);
-
-    } catch (error) {
-      console.error('NFT minting error:', error);
-      toast({
-        title: "Minting Failed",
-        description: "Failed to mint NFT. Please try again or check your wallet connection.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsMinting(false);
-    }
+    }, 3000);
   };
 
   const createWallet = async () => {
@@ -382,14 +315,6 @@ export const TopBar = () => {
       });
     }
   };
-
-  const getCurrentWallet = () => phantomConnected ? phantomAddress : coinbaseAddress;
-  const isWalletConnected = phantomConnected || coinbaseConnected;
-  const currentWallet = getCurrentWallet();
-
-  console.log('Render - isWalletConnected:', isWalletConnected);
-  console.log('Render - currentWallet:', currentWallet);
-  console.log('Render - hasAlreadyMinted:', currentWallet ? hasAlreadyMinted(currentWallet) : false);
 
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -505,39 +430,14 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Right Section - Mint NFT Button with status */}
+          {/* Right Section - Mint NFT Button */}
           <div className="flex items-center gap-3">
             <Button 
-              onClick={() => {
-                console.log('Button clicked - about to call mintFreeNFT');
-                mintFreeNFT();
-              }}
-              disabled={!isWalletConnected || isMinting || (isWalletConnected && hasAlreadyMinted(currentWallet))}
-              className={`cyber-button flex items-center gap-2 ${
-                isWalletConnected && hasAlreadyMinted(currentWallet) 
-                  ? 'opacity-50 cursor-not-allowed' 
-                  : ''
-              }`}
+              onClick={mintFreeNFT}
+              className="cyber-button flex items-center gap-2"
             >
-              {isMinting ? (
-                <>
-                  ⏳ MINTING...
-                </>
-              ) : isWalletConnected && hasAlreadyMinted(currentWallet) ? (
-                <>
-                  ✅ NFT MINTED
-                </>
-              ) : (
-                <>
-                  🔨 MINT FREE NFT
-                </>
-              )}
+              🔨 MINT FREE NFT
             </Button>
-            {isWalletConnected && hasAlreadyMinted(currentWallet) && (
-              <Badge className="bg-neon-green text-black">
-                RARE NFT OWNED
-              </Badge>
-            )}
           </div>
         </div>
       </div>
