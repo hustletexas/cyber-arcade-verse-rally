@@ -22,36 +22,12 @@ export const PrizeSection = () => {
       rarity: 'Epic'
     },
     {
-      id: 'xbox',
-      name: 'Xbox Series X',
-      value: '$500',
-      requirement: '5,000 CCTR',
-      image: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400&h=300&fit=crop',
-      rarity: 'Epic'
-    },
-    {
       id: 'vr-headset',
       name: 'Meta Quest 3',
       value: '$800',
       requirement: '7,500 CCTR',
       image: '/lovable-uploads/417bfaf1-3a05-43dd-915a-3fce29eac484.png',
       rarity: 'Epic'
-    },
-    {
-      id: 'gaming-chair',
-      name: 'Gaming Chair',
-      value: '$400',
-      requirement: '3,000 CCTR',
-      image: '/lovable-uploads/29ba2fef-23a8-4456-933b-1d8ab31c0a99.png',
-      rarity: 'Rare'
-    },
-    {
-      id: 'mechanical-keyboard',
-      name: 'Mechanical Keyboard',
-      value: '$200',
-      requirement: '1,500 CCTR',
-      image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&h=300&fit=crop',
-      rarity: 'Common'
     }
   ];
 
