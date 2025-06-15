@@ -64,14 +64,6 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
-          {/* Tournaments Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🏆 TOURNAMENTS
-            </h2>
-            <TournamentSection />
-          </section>
-
           {/* Dashboard Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -96,7 +88,7 @@ const Index = () => {
             <MerchandiseStore />
           </section>
 
-          {/* NFT Marketplace Section - Moved under Merchandise Store */}
+          {/* NFT Marketplace Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
               🛒 NFT MARKETPLACE
@@ -104,7 +96,15 @@ const Index = () => {
             <Marketplace />
           </section>
 
-          {/* Prize Pool Section - Moved under NFT Marketplace */}
+          {/* Tournaments Section - Moved under NFT Marketplace */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🏆 TOURNAMENTS
+            </h2>
+            <TournamentSection />
+          </section>
+
+          {/* Prize Pool Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
               🏆 PRIZE POOL
