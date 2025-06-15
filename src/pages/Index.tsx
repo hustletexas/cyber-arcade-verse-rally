@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
+import { TournamentSection } from '@/components/TournamentSection';
 import { TokenDashboard } from '@/components/TokenDashboard';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
@@ -9,7 +10,6 @@ import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { PrizeSection } from '@/components/PrizeSection';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
-import { TourDates } from '@/components/TourDates';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
 
@@ -95,6 +95,14 @@ const Index = () => {
             <TokenPurchase />
           </section>
 
+          {/* Tournaments Section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🏆 TOURNAMENTS
+            </h2>
+            <TournamentSection />
+          </section>
+
           {/* Prize Pool Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -125,14 +133,6 @@ const Index = () => {
               🗳️ VOTING
             </h2>
             <VotingSection />
-          </section>
-
-          {/* Tour Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🗺️ TOUR
-            </h2>
-            <TourDates />
           </section>
         </div>
       </main>
