@@ -10,7 +10,7 @@ export const PrizeSection = () => {
       name: 'Gaming PC RTX 4090',
       value: '$3,000',
       requirement: '10,000 CCTR',
-      image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop',
+      image: '/lovable-uploads/3fc5f3c0-2b28-4cff-acdc-7c3896ee635b.png',
       rarity: 'Legendary'
     },
     {
