@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { ArrowUpDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const mockPriceData = [
@@ -64,6 +66,37 @@ const solanaAssets = [
 
 export const SolanaDexChart = () => {
   const [selectedAsset, setSelectedAsset] = useState('CCTR');
+  const [swapFromToken, setSwapFromToken] = useState('SOL');
+  const [swapToToken, setSwapToToken] = useState('CCTR');
+  const [swapAmount, setSwapAmount] = useState('');
+  const [estimatedOutput, setEstimatedOutput] = useState('0.00');
+
+  const handleSwapTokens = () => {
+    const temp = swapFromToken;
+    setSwapFromToken(swapToToken);
+    setSwapToToken(temp);
+  };
+
+  const handleSwap = () => {
+    console.log(`Swapping ${swapAmount} ${swapFromToken} for ${swapToToken}`);
+    // Jupiter swap integration would go here
+    window.open('https://jup.ag/', '_blank');
+  };
+
+  const calculateEstimate = (amount: string) => {
+    if (!amount) return '0.00';
+    const fromAsset = solanaAssets.find(a => a.symbol === swapFromToken);
+    const toAsset = solanaAssets.find(a => a.symbol === swapToToken);
+    if (fromAsset && toAsset) {
+      const estimate = (parseFloat(amount) * fromAsset.price) / toAsset.price;
+      return estimate.toFixed(6);
+    }
+    return '0.00';
+  };
+
+  React.useEffect(() => {
+    setEstimatedOutput(calculateEstimate(swapAmount));
+  }, [swapAmount, swapFromToken, swapToToken]);
 
   return (
     <Card className="arcade-frame">
@@ -115,8 +148,9 @@ export const SolanaDexChart = () => {
             </div>
           </Card>
 
-          {/* Chart */}
+          {/* Chart and Swap Interface */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Chart */}
             <Card className="vending-machine p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-neon-cyan">📊 {selectedAsset} Price Chart</h3>
@@ -167,39 +201,125 @@ export const SolanaDexChart = () => {
               </div>
             </Card>
 
-            {/* Trading Interface */}
+            {/* Enhanced Swap Interface */}
             <Card className="holographic p-6">
-              <h3 className="font-bold text-neon-pink mb-4">⚡ Quick Trade</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Button className="cyber-button h-16 text-lg">
-                  📈 BUY {selectedAsset}
-                </Button>
-                <Button variant="outline" className="border-neon-pink text-neon-pink h-16 text-lg">
-                  📉 SELL {selectedAsset}
-                </Button>
-              </div>
+              <h3 className="font-bold text-neon-pink mb-6 flex items-center gap-2">
+                🔄 TOKEN SWAP
+                <Badge className="bg-neon-green text-black text-xs">JUPITER POWERED</Badge>
+              </h3>
               
-              <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                <div className="text-center">
-                  <p className="text-muted-foreground">24h High</p>
-                  <p className="font-bold text-neon-green">
-                    ${(solanaAssets.find(a => a.symbol === selectedAsset)?.price * 1.12)?.toFixed(4)}
-                  </p>
+              <div className="space-y-4">
+                {/* From Token */}
+                <div className="p-4 rounded-lg border border-neon-cyan/30 bg-neon-cyan/5">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm text-muted-foreground">From</label>
+                    <span className="text-xs text-neon-green">Balance: 12.45 {swapFromToken}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={swapAmount}
+                      onChange={(e) => setSwapAmount(e.target.value)}
+                      className="flex-1 bg-black border-neon-cyan/50 text-neon-cyan"
+                    />
+                    <select 
+                      value={swapFromToken}
+                      onChange={(e) => setSwapFromToken(e.target.value)}
+                      className="bg-black border border-neon-cyan/50 rounded-md px-3 py-2 text-neon-cyan min-w-[80px]"
+                    >
+                      {solanaAssets.map(asset => (
+                        <option key={asset.symbol} value={asset.symbol}>{asset.symbol}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-muted-foreground">24h Low</p>
-                  <p className="font-bold text-neon-pink">
-                    ${(solanaAssets.find(a => a.symbol === selectedAsset)?.price * 0.88)?.toFixed(4)}
-                  </p>
+
+                {/* Swap Button */}
+                <div className="flex justify-center">
+                  <Button
+                    onClick={handleSwapTokens}
+                    size="sm"
+                    className="cyber-button rounded-full w-10 h-10 p-0"
+                  >
+                    <ArrowUpDown size={16} />
+                  </Button>
                 </div>
-                <div className="text-center">
-                  <p className="text-muted-foreground">Volume</p>
-                  <p className="font-bold text-neon-cyan">
-                    {solanaAssets.find(a => a.symbol === selectedAsset)?.volume}
-                  </p>
+
+                {/* To Token */}
+                <div className="p-4 rounded-lg border border-neon-purple/30 bg-neon-purple/5">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm text-muted-foreground">To</label>
+                    <span className="text-xs text-neon-green">Balance: 8.92 {swapToToken}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <Input
+                      type="text"
+                      placeholder="0.00"
+                      value={estimatedOutput}
+                      readOnly
+                      className="flex-1 bg-black border-neon-purple/50 text-neon-purple"
+                    />
+                    <select 
+                      value={swapToToken}
+                      onChange={(e) => setSwapToToken(e.target.value)}
+                      className="bg-black border border-neon-purple/50 rounded-md px-3 py-2 text-neon-purple min-w-[80px]"
+                    >
+                      {solanaAssets.map(asset => (
+                        <option key={asset.symbol} value={asset.symbol}>{asset.symbol}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+
+                {/* Swap Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Rate:</span>
+                    <span className="text-neon-cyan">1 {swapFromToken} = {calculateEstimate('1')} {swapToToken}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Slippage:</span>
+                    <span className="text-neon-green">0.5%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Network Fee:</span>
+                    <span className="text-neon-yellow">~0.0001 SOL</span>
+                  </div>
+                </div>
+
+                {/* Swap Button */}
+                <Button 
+                  onClick={handleSwap}
+                  disabled={!swapAmount || parseFloat(swapAmount) <= 0}
+                  className="cyber-button w-full h-12 text-lg"
+                >
+                  🚀 SWAP VIA JUPITER
+                </Button>
               </div>
             </Card>
+
+            {/* Market Stats */}
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="text-center">
+                <p className="text-muted-foreground">24h High</p>
+                <p className="font-bold text-neon-green">
+                  ${(solanaAssets.find(a => a.symbol === selectedAsset)?.price * 1.12)?.toFixed(4)}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-muted-foreground">24h Low</p>
+                <p className="font-bold text-neon-pink">
+                  ${(solanaAssets.find(a => a.symbol === selectedAsset)?.price * 0.88)?.toFixed(4)}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-muted-foreground">Volume</p>
+                <p className="font-bold text-neon-cyan">
+                  {solanaAssets.find(a => a.symbol === selectedAsset)?.volume}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
