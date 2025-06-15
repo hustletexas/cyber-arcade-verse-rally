@@ -22,6 +22,7 @@ interface Raffle {
   tickets_sold: number;
   end_date: string;
   status: string;
+  rarity: string;
 }
 
 export const RaffleSection = () => {
@@ -33,67 +34,71 @@ export const RaffleSection = () => {
   const [purchasing, setPurchasing] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
-    // Instead of fetching from database, use demo raffles for now
-    const demoRaffles: Raffle[] = [
+    // Treasure chest raffles with random prizes
+    const treasureChests: Raffle[] = [
       {
         id: '1',
-        title: 'Rare Cyber Punk NFT',
-        description: 'Exclusive limited edition NFT with unique artwork',
-        prize_type: 'nft',
-        prize_name: 'Cyber Punk Hero #001',
-        prize_value: 50000, // $500
-        prize_image: '',
-        ticket_price: 100,
-        max_tickets: 1000,
-        tickets_sold: 450,
-        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active'
+        title: 'Common Treasure Chest',
+        description: 'Basic loot with surprise rewards',
+        prize_type: 'random',
+        prize_name: 'Random Prize: Merch, Small CCTR, or Common NFT',
+        prize_value: 5000, // $50
+        prize_image: '/lovable-uploads/08a3dde3-268a-45e6-9985-248775e6cb58.png',
+        ticket_price: 50,
+        max_tickets: 2000,
+        tickets_sold: 1240,
+        end_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'active',
+        rarity: 'Common'
       },
       {
         id: '2',
-        title: 'Gaming Hardware Bundle',
-        description: 'High-end gaming mouse, keyboard, and headset',
-        prize_type: 'physical',
-        prize_name: 'Pro Gamer Setup',
-        prize_value: 120000, // $1200
-        prize_image: '',
+        title: 'Rare Treasure Chest',
+        description: 'Valuable rewards with better odds',
+        prize_type: 'random',
+        prize_name: 'Random Prize: Premium Merch, CCTR Bundle, or Rare NFT',
+        prize_value: 15000, // $150
+        prize_image: '/lovable-uploads/6347bc0d-7044-4d7c-8264-0d89f8640c08.png',
         ticket_price: 150,
-        max_tickets: 800,
-        tickets_sold: 320,
-        end_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active'
+        max_tickets: 1000,
+        tickets_sold: 560,
+        end_date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'active',
+        rarity: 'Rare'
       },
       {
         id: '3',
-        title: '$CCTR Token Jackpot',
-        description: 'Win a massive amount of CCTR tokens',
-        prize_type: 'token',
-        prize_name: '50,000 $CCTR Tokens',
-        prize_value: 225000, // $2250
-        prize_image: '',
-        ticket_price: 200,
+        title: 'Epic Treasure Chest',
+        description: 'High-tier loot for serious collectors',
+        prize_type: 'random',
+        prize_name: 'Random Prize: Exclusive Merch, Large CCTR, Epic NFT, or USDC',
+        prize_value: 40000, // $400
+        prize_image: '/lovable-uploads/7b8388cc-637c-4b0e-9a7e-d1fda1b2a279.png',
+        ticket_price: 400,
         max_tickets: 500,
-        tickets_sold: 125,
-        end_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active'
+        tickets_sold: 178,
+        end_date: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'active',
+        rarity: 'Epic'
       },
       {
         id: '4',
-        title: 'Legendary Arcade NFT',
-        description: 'Ultra-rare retro arcade game NFT collectible',
-        prize_type: 'nft',
-        prize_name: 'Retro Arcade Legend',
-        prize_value: 80000, // $800
-        prize_image: '',
-        ticket_price: 120,
-        max_tickets: 1200,
-        tickets_sold: 890,
-        end_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active'
+        title: 'Legendary Treasure Chest',
+        description: 'Ultimate prize pool with maximum rewards',
+        prize_type: 'random',
+        prize_name: 'Random Prize: Limited Merch, Massive CCTR, Legendary NFT, or Big USDC',
+        prize_value: 100000, // $1000
+        prize_image: '/lovable-uploads/89628fec-79c5-4251-b4cb-915cceb7e9b0.png',
+        ticket_price: 1000,
+        max_tickets: 200,
+        tickets_sold: 45,
+        end_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'active',
+        rarity: 'Legendary'
       }
     ];
     
-    setRaffles(demoRaffles);
+    setRaffles(treasureChests);
     setLoading(false);
   }, []);
 
@@ -115,7 +120,7 @@ export const RaffleSection = () => {
       setTimeout(() => {
         toast({
           title: "🎫 Tickets Purchased!",
-          description: `Successfully purchased ${ticketCount} ticket(s). Good luck!`,
+          description: `Successfully purchased ${ticketCount} ticket(s). Good luck opening your treasure chest!`,
         });
         
         // Update local state
@@ -139,13 +144,18 @@ export const RaffleSection = () => {
     }
   };
 
-  const getPrizeIcon = (prizeType: string) => {
-    switch (prizeType) {
-      case 'nft': return '🖼️';
-      case 'physical': return '📦';
-      case 'token': return '🪙';
-      default: return '🎁';
+  const getRarityColor = (rarity: string) => {
+    switch (rarity) {
+      case 'Legendary': return 'bg-yellow-500';
+      case 'Epic': return 'bg-purple-500';
+      case 'Rare': return 'bg-blue-500';
+      case 'Common': return 'bg-green-500';
+      default: return 'bg-gray-500';
     }
+  };
+
+  const getPrizeIcon = (prizeType: string) => {
+    return '🎁'; // Treasure chest always shows gift icon
   };
 
   const formatTimeLeft = (endDate: string) => {
@@ -166,7 +176,7 @@ export const RaffleSection = () => {
     return (
       <Card className="arcade-frame">
         <CardContent className="p-8 text-center">
-          <div className="text-neon-cyan">Loading raffles...</div>
+          <div className="text-neon-cyan">Loading treasure chests...</div>
         </CardContent>
       </Card>
     );
@@ -174,13 +184,18 @@ export const RaffleSection = () => {
 
   return (
     <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h3 className="text-xl font-bold text-neon-pink mb-2">🏴‍☠️ MYSTERY TREASURE CHESTS</h3>
+        <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {raffles.map((raffle) => (
-          <Card key={raffle.id} className="holographic overflow-hidden">
+          <Card key={raffle.id} className="holographic overflow-hidden relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between mb-2">
-                <Badge className="bg-neon-pink text-black">
-                  {getPrizeIcon(raffle.prize_type)} {raffle.prize_type.toUpperCase()}
+                <Badge className={`${getRarityColor(raffle.rarity)} text-white font-bold`}>
+                  {raffle.rarity.toUpperCase()}
                 </Badge>
                 <Badge variant="outline" className="border-neon-cyan text-neon-cyan">
                   <Clock size={12} className="mr-1" />
@@ -188,18 +203,25 @@ export const RaffleSection = () => {
                 </Badge>
               </div>
               <CardTitle className="text-lg text-neon-cyan">{raffle.title}</CardTitle>
-              {raffle.description && (
-                <p className="text-sm text-muted-foreground">{raffle.description}</p>
-              )}
+              <p className="text-sm text-muted-foreground">{raffle.description}</p>
             </CardHeader>
             
             <CardContent className="space-y-4">
+              {/* Treasure Chest Image */}
+              <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 rounded-lg overflow-hidden">
+                <img 
+                  src={raffle.prize_image} 
+                  alt={raffle.title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform"
+                />
+              </div>
+
               {/* Prize Details */}
               <div className="bg-black/30 rounded-lg p-4 border border-neon-purple/30">
-                <h4 className="font-bold text-neon-green mb-2">🏆 Prize</h4>
-                <p className="text-neon-cyan font-semibold">{raffle.prize_name}</p>
-                <p className="text-sm text-neon-purple">
-                  Value: ${(raffle.prize_value / 100).toFixed(2)}
+                <h4 className="font-bold text-neon-green mb-2">🎁 Random Prize</h4>
+                <p className="text-neon-cyan text-sm font-semibold">{raffle.prize_name}</p>
+                <p className="text-sm text-neon-purple mt-1">
+                  Max Value: ${(raffle.prize_value / 100).toFixed(2)}
                 </p>
               </div>
 
@@ -222,7 +244,12 @@ export const RaffleSection = () => {
               {/* Progress Bar */}
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
-                  className="bg-gradient-to-r from-neon-pink to-neon-cyan h-2 rounded-full transition-all duration-300"
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    raffle.rarity === 'Legendary' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
+                    raffle.rarity === 'Epic' ? 'bg-gradient-to-r from-purple-400 to-purple-600' :
+                    raffle.rarity === 'Rare' ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
+                    'bg-gradient-to-r from-green-400 to-green-600'
+                  }`}
                   style={{ width: `${(raffle.tickets_sold / raffle.max_tickets) * 100}%` }}
                 />
               </div>
@@ -258,7 +285,7 @@ export const RaffleSection = () => {
                     ) : raffle.tickets_sold >= raffle.max_tickets ? (
                       "🚫 SOLD OUT"
                     ) : (
-                      "🎫 BUY TICKETS"
+                      "🎫 OPEN CHEST"
                     )}
                   </Button>
                 </div>
@@ -267,10 +294,10 @@ export const RaffleSection = () => {
               {!user && (
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Login required to purchase tickets
+                    Login required to open treasure chests
                   </p>
                   <Button variant="outline" size="sm" className="border-neon-cyan text-neon-cyan">
-                    Login to Participate
+                    Login to Play
                   </Button>
                 </div>
               )}
