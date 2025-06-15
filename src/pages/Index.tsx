@@ -72,14 +72,6 @@ const Index = () => {
             <TokenDashboard />
           </section>
 
-          {/* Buy CCTR Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              💰 BUY $CCTR
-            </h2>
-            <TokenPurchase />
-          </section>
-
           {/* Merchandise Store Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -96,7 +88,15 @@ const Index = () => {
             <Marketplace />
           </section>
 
-          {/* Tournaments Section - Moved under NFT Marketplace */}
+          {/* Buy CCTR Section - Moved under NFT Marketplace */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              💰 BUY $CCTR
+            </h2>
+            <TokenPurchase />
+          </section>
+
+          {/* Tournaments Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
               🏆 TOURNAMENTS
