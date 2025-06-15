@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -119,20 +118,20 @@ const Index = () => {
             <RaffleSection />
           </section>
 
-          {/* DEX Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              📈 DEX
-            </h2>
-            <SolanaDexChart />
-          </section>
-
           {/* Voting Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
               🗳️ VOTING
             </h2>
             <VotingSection />
+          </section>
+
+          {/* DEX Section - Moved under Voting */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              📈 DEX
+            </h2>
+            <SolanaDexChart />
           </section>
         </div>
       </main>
