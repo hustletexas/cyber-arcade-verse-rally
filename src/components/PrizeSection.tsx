@@ -10,7 +10,7 @@ export const PrizeSection = () => {
       name: 'Gaming PC RTX 4090',
       value: '$3,000',
       requirement: '10,000 CCTR',
-      image: 'https://images.unsplash.com/photo-1587831990711-23ca6441447b?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop',
       rarity: 'Legendary'
     },
     {
@@ -34,7 +34,7 @@ export const PrizeSection = () => {
       name: 'Meta Quest 3',
       value: '$800',
       requirement: '7,500 CCTR',
-      image: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=400&h=300&fit=crop',
       rarity: 'Epic'
     },
     {
@@ -42,7 +42,7 @@ export const PrizeSection = () => {
       name: 'Gaming Chair',
       value: '$400',
       requirement: '3,000 CCTR',
-      image: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=300&fit=crop',
       rarity: 'Rare'
     },
     {
