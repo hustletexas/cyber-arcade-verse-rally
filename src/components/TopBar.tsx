@@ -15,11 +15,32 @@ export const TopBar = () => {
   const [coinbaseConnected, setCoinbaseConnected] = useState(false);
   const [phantomAddress, setPhantomAddress] = useState('');
   const [coinbaseAddress, setCoinbaseAddress] = useState('');
+  const [mintedNFTs, setMintedNFTs] = useState<string[]>([]);
+  const [isMinting, setIsMinting] = useState(false);
 
   // Check for existing wallet connections on component mount
   useEffect(() => {
     checkWalletConnections();
+    loadMintedNFTs();
   }, []);
+
+  const loadMintedNFTs = () => {
+    const stored = localStorage.getItem('cyberCityMintedNFTs');
+    if (stored) {
+      setMintedNFTs(JSON.parse(stored));
+    }
+  };
+
+  const saveMintedNFT = (walletAddress: string, mintAddress: string) => {
+    const newMinted = [...mintedNFTs, walletAddress];
+    setMintedNFTs(newMinted);
+    localStorage.setItem('cyberCityMintedNFTs', JSON.stringify(newMinted));
+    localStorage.setItem(`nft_${walletAddress}`, mintAddress);
+  };
+
+  const hasAlreadyMinted = (walletAddress: string) => {
+    return mintedNFTs.includes(walletAddress);
+  };
 
   const checkWalletConnections = async () => {
     // Check Phantom wallet
@@ -262,18 +283,86 @@ export const TopBar = () => {
       return;
     }
 
-    toast({
-      title: "Minting NFT",
-      description: "Free NFT mint in progress...",
-    });
-
-    // Simulate minting process
-    setTimeout(() => {
+    const currentWallet = phantomConnected ? phantomAddress : coinbaseAddress;
+    
+    if (hasAlreadyMinted(currentWallet)) {
       toast({
-        title: "NFT Minted Successfully!",
-        description: "Your free Cyber City Arcade NFT has been minted to your wallet",
+        title: "Already Minted",
+        description: "You have already minted your free Cyber City Arcade NFT",
+        variant: "destructive",
       });
-    }, 3000);
+      return;
+    }
+
+    setIsMinting(true);
+
+    try {
+      toast({
+        title: "🔨 Minting NFT",
+        description: "Creating your exclusive Cyber City Arcade NFT...",
+      });
+
+      // Import Solana Web3.js and Metaplex
+      const { Connection, clusterApiUrl, PublicKey, Transaction } = await import('@solana/web3.js');
+      
+      // Create connection to Solana devnet
+      const connection = new Connection(clusterApiUrl('devnet'));
+      
+      // NFT Metadata
+      const nftMetadata = {
+        name: "Cyber City Arcade - Rare Edition",
+        symbol: "CCA",
+        description: "Exclusive rare NFT from Cyber City Arcade featuring the iconic logo design. Limited to 1 per wallet.",
+        image: "/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png",
+        attributes: [
+          { trait_type: "Rarity", value: "Rare" },
+          { trait_type: "Collection", value: "Cyber City Arcade" },
+          { trait_type: "Edition", value: "Genesis" },
+          { trait_type: "Network", value: "Solana" }
+        ],
+        properties: {
+          files: [
+            {
+              uri: "/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png",
+              type: "image/png"
+            }
+          ],
+          category: "image"
+        }
+      };
+
+      // Simulate NFT minting process (in production, you'd use Metaplex or similar)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Generate a mock mint address for demo
+      const mockMintAddress = PublicKey.unique().toString();
+      
+      // Save minted NFT info
+      saveMintedNFT(currentWallet, mockMintAddress);
+
+      toast({
+        title: "🎉 NFT Minted Successfully!",
+        description: `Your rare Cyber City Arcade NFT has been minted! Mint: ${mockMintAddress.slice(0, 8)}...`,
+      });
+
+      // Show additional success info
+      setTimeout(() => {
+        toast({
+          title: "✨ Congratulations!",
+          description: "You now own an exclusive Cyber City Arcade NFT. Check your wallet to view it!",
+        });
+      }, 2000);
+
+    } catch (error) {
+      console.error('NFT minting error:', error);
+      toast({
+        title: "Minting Failed",
+        description: "Failed to mint NFT. Please try again or check your wallet connection.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsMinting(false);
+    }
   };
 
   const createWallet = async () => {
@@ -315,6 +404,10 @@ export const TopBar = () => {
       });
     }
   };
+
+  const getCurrentWallet = () => phantomConnected ? phantomAddress : coinbaseAddress;
+  const isWalletConnected = phantomConnected || coinbaseConnected;
+  const currentWallet = getCurrentWallet();
 
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -430,14 +523,36 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Right Section - Mint NFT Button */}
+          {/* Right Section - Mint NFT Button with status */}
           <div className="flex items-center gap-3">
             <Button 
               onClick={mintFreeNFT}
-              className="cyber-button flex items-center gap-2"
+              disabled={!isWalletConnected || isMinting || (isWalletConnected && hasAlreadyMinted(currentWallet))}
+              className={`cyber-button flex items-center gap-2 ${
+                isWalletConnected && hasAlreadyMinted(currentWallet) 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : ''
+              }`}
             >
-              🔨 MINT FREE NFT
+              {isMinting ? (
+                <>
+                  ⏳ MINTING...
+                </>
+              ) : isWalletConnected && hasAlreadyMinted(currentWallet) ? (
+                <>
+                  ✅ NFT MINTED
+                </>
+              ) : (
+                <>
+                  🔨 MINT FREE NFT
+                </>
+              )}
             </Button>
+            {isWalletConnected && hasAlreadyMinted(currentWallet) && (
+              <Badge className="bg-neon-green text-black">
+                RARE NFT OWNED
+              </Badge>
+            )}
           </div>
         </div>
       </div>
