@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,10 +58,11 @@ export const Marketplace = () => {
     }, 2000);
   };
 
-  const connectPlatform = (platform: string) => {
+  const connectPlatform = (platform: string, url: string) => {
+    window.open(url, '_blank');
     toast({
-      title: `${platform} Connected!`,
-      description: `Successfully connected to ${platform} marketplace`,
+      title: `${platform} Opened!`,
+      description: `Redirecting to ${platform} marketplace`,
     });
   };
 
@@ -92,25 +94,25 @@ export const Marketplace = () => {
             <h3 className="font-bold text-neon-cyan mb-4">🔗 Platform Connections</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Button 
-                onClick={() => connectPlatform('Magic Eden')}
+                onClick={() => connectPlatform('Magic Eden', 'https://magiceden.io/')}
                 className="cyber-button flex items-center gap-2"
               >
                 🪄 Magic Eden
               </Button>
               <Button 
-                onClick={() => connectPlatform('OpenSea')}
+                onClick={() => connectPlatform('OpenSea', 'https://opensea.io/')}
                 className="cyber-button flex items-center gap-2"
               >
                 🌊 OpenSea
               </Button>
               <Button 
-                onClick={() => connectPlatform('Tensor')}
+                onClick={() => connectPlatform('Tensor', 'https://tensor.trade/')}
                 className="cyber-button flex items-center gap-2"
               >
                 ⚡ Tensor
               </Button>
               <Button 
-                onClick={() => connectPlatform('Solanart')}
+                onClick={() => connectPlatform('Solanart', 'https://solanart.io/')}
                 className="cyber-button flex items-center gap-2"
               >
                 🎨 Solanart
