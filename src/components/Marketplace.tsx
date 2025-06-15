@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,6 +69,15 @@ const mockNFTs = [
     rarity: "Legendary",
     seller: "CyberMotors",
     description: "Ultra-rare cyberpunk DeLorean in neon cityscape - the ultimate collector's ride"
+  },
+  {
+    id: 8,
+    name: "Cyber City Console",
+    price: { cctr: 4200, sol: 2.1, usdc: 189 },
+    image: "/lovable-uploads/adc51b6f-7d82-44cc-86b5-e984bc74d2d3.png",
+    rarity: "Legendary",
+    seller: "ArcadeMaster",
+    description: "Ultimate cyberpunk arcade console with holographic city display - grants access to all premium games"
   }
 ];
 
