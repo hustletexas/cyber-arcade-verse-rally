@@ -36,7 +36,7 @@ export const PrizeSection = () => {
     {
       id: 'vr-headset',
       name: 'Meta Quest 3',
-      value: '$800',
+      value: '$400',
       requirement: '7,500 CCTR',
       cctrCost: 7500,
       usdcCost: 337.5,
