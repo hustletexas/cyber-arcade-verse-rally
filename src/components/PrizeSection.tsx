@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +22,6 @@ export const PrizeSection = () => {
       usdcCost: 450, // $0.045 per CCTR
       solCost: 5.5, // approximate SOL equivalent
       image: '/lovable-uploads/3fc5f3c0-2b28-4cff-acdc-7c3896ee635b.png',
-      rarity: 'Legendary'
     },
     {
       id: 'ps5',
@@ -34,7 +32,6 @@ export const PrizeSection = () => {
       usdcCost: 225,
       solCost: 2.7,
       image: '/lovable-uploads/8820a165-f5a8-4d8a-b9d4-8dca31666e27.png',
-      rarity: 'Epic'
     },
     {
       id: 'vr-headset',
@@ -45,7 +42,6 @@ export const PrizeSection = () => {
       usdcCost: 337.5,
       solCost: 4.1,
       image: '/lovable-uploads/5fbf2609-10c6-421a-a9dc-34513c43cea0.png',
-      rarity: 'Epic'
     }
   ];
 
@@ -148,9 +144,6 @@ export const PrizeSection = () => {
                   <h3 className="font-display text-lg font-bold text-neon-pink mb-2">
                     {prize.name}
                   </h3>
-                  <Badge className={`${getRarityColor(prize.rarity)} text-white mb-3`}>
-                    {prize.rarity}
-                  </Badge>
                   <div className="space-y-2">
                     <p className="text-xl font-bold text-neon-green">{prize.value}</p>
                   </div>
