@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -60,6 +59,15 @@ const mockNFTs = [
     rarity: "Rare",
     seller: "TechGuru",
     description: "Advanced terminal for accessing the digital underground"
+  },
+  {
+    id: 7,
+    name: "Retro Future Ride",
+    price: { cctr: 3500, sol: 1.75, usdc: 157 },
+    image: "/lovable-uploads/1131ab8a-f1c5-43a1-bc8a-bbbe7f2f9fd1.png",
+    rarity: "Legendary",
+    seller: "CyberMotors",
+    description: "Ultra-rare cyberpunk DeLorean in neon cityscape - the ultimate collector's ride"
   }
 ];
 
@@ -205,8 +213,16 @@ export const Marketplace = () => {
             {filteredNFTs.map((nft) => (
               <Card key={nft.id} className="vending-machine overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center text-6xl">
-                    {nft.image}
+                  <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center">
+                    {nft.image.startsWith('/') ? (
+                      <img 
+                        src={nft.image} 
+                        alt={nft.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-6xl">{nft.image}</span>
+                    )}
                   </div>
                   <div className="p-4 space-y-3">
                     <div className="flex justify-between items-start">
