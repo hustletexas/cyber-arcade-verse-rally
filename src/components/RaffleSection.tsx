@@ -144,7 +144,9 @@ export const RaffleSection = () => {
     }
   };
 
-  const getRarityColor = (rarity: string) => {
+  const getRarityColor = (rarity: string | undefined) => {
+    if (!rarity) return 'bg-gray-500';
+    
     switch (rarity) {
       case 'Legendary': return 'bg-yellow-500';
       case 'Epic': return 'bg-purple-500';
@@ -195,7 +197,7 @@ export const RaffleSection = () => {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between mb-2">
                 <Badge className={`${getRarityColor(raffle.rarity)} text-white font-bold`}>
-                  {raffle.rarity.toUpperCase()}
+                  {raffle.rarity ? raffle.rarity.toUpperCase() : 'UNKNOWN'}
                 </Badge>
                 <Badge variant="outline" className="border-neon-cyan text-neon-cyan">
                   <Clock size={12} className="mr-1" />
