@@ -274,6 +274,12 @@ export const TopBar = () => {
   };
 
   const mintFreeNFT = async () => {
+    console.log('Mint button clicked!');
+    console.log('Phantom connected:', phantomConnected);
+    console.log('Coinbase connected:', coinbaseConnected);
+    console.log('Phantom address:', phantomAddress);
+    console.log('Coinbase address:', coinbaseAddress);
+
     if (!phantomConnected && !coinbaseConnected) {
       toast({
         title: "Wallet Required",
@@ -284,6 +290,7 @@ export const TopBar = () => {
     }
 
     const currentWallet = phantomConnected ? phantomAddress : coinbaseAddress;
+    console.log('Current wallet:', currentWallet);
     
     if (hasAlreadyMinted(currentWallet)) {
       toast({
@@ -302,40 +309,11 @@ export const TopBar = () => {
         description: "Creating your exclusive Cyber City Arcade NFT...",
       });
 
-      // Import Solana Web3.js and Metaplex
-      const { Connection, clusterApiUrl, PublicKey, Transaction } = await import('@solana/web3.js');
-      
-      // Create connection to Solana devnet
-      const connection = new Connection(clusterApiUrl('devnet'));
-      
-      // NFT Metadata
-      const nftMetadata = {
-        name: "Cyber City Arcade - Rare Edition",
-        symbol: "CCA",
-        description: "Exclusive rare NFT from Cyber City Arcade featuring the iconic logo design. Limited to 1 per wallet.",
-        image: "/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png",
-        attributes: [
-          { trait_type: "Rarity", value: "Rare" },
-          { trait_type: "Collection", value: "Cyber City Arcade" },
-          { trait_type: "Edition", value: "Genesis" },
-          { trait_type: "Network", value: "Solana" }
-        ],
-        properties: {
-          files: [
-            {
-              uri: "/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png",
-              type: "image/png"
-            }
-          ],
-          category: "image"
-        }
-      };
-
-      // Simulate NFT minting process (in production, you'd use Metaplex or similar)
+      // Simulate NFT minting process
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Generate a mock mint address for demo
-      const mockMintAddress = PublicKey.unique().toString();
+      // Generate a mock mint address for demo (in production, use actual Solana minting)
+      const mockMintAddress = `mint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
       // Save minted NFT info
       saveMintedNFT(currentWallet, mockMintAddress);
@@ -408,6 +386,10 @@ export const TopBar = () => {
   const getCurrentWallet = () => phantomConnected ? phantomAddress : coinbaseAddress;
   const isWalletConnected = phantomConnected || coinbaseConnected;
   const currentWallet = getCurrentWallet();
+
+  console.log('Render - isWalletConnected:', isWalletConnected);
+  console.log('Render - currentWallet:', currentWallet);
+  console.log('Render - hasAlreadyMinted:', currentWallet ? hasAlreadyMinted(currentWallet) : false);
 
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -526,7 +508,10 @@ export const TopBar = () => {
           {/* Right Section - Mint NFT Button with status */}
           <div className="flex items-center gap-3">
             <Button 
-              onClick={mintFreeNFT}
+              onClick={() => {
+                console.log('Button clicked - about to call mintFreeNFT');
+                mintFreeNFT();
+              }}
               disabled={!isWalletConnected || isMinting || (isWalletConnected && hasAlreadyMinted(currentWallet))}
               className={`cyber-button flex items-center gap-2 ${
                 isWalletConnected && hasAlreadyMinted(currentWallet) 
