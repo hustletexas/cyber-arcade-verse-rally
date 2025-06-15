@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -305,18 +306,12 @@ export const MerchandiseStore = () => {
           </Card>
         )}
 
-        {/* Store Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+        {/* Store Info - Updated without Easy Returns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
           <Card className="holographic p-4">
             <h4 className="text-neon-green font-bold mb-2">🚀 FREE SHIPPING</h4>
             <p className="text-sm text-muted-foreground">
               Free shipping on orders over $75
-            </p>
-          </Card>
-          <Card className="holographic p-4">
-            <h4 className="text-neon-cyan font-bold mb-2">🔄 EASY RETURNS</h4>
-            <p className="text-sm text-muted-foreground">
-              30-day return policy on all items
             </p>
           </Card>
           <Card className="holographic p-4">
