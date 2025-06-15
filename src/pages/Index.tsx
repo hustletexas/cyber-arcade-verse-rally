@@ -104,6 +104,14 @@ const Index = () => {
             <Marketplace />
           </section>
 
+          {/* Prize Pool Section - Moved under NFT Marketplace */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🏆 PRIZE POOL
+            </h2>
+            <PrizeSection />
+          </section>
+
           {/* Raffles Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -135,11 +143,6 @@ const Index = () => {
             </h2>
             <TourDates />
           </section>
-        </div>
-
-        {/* Additional Section - Only Prize Section now */}
-        <div className="space-y-6 md:space-y-8 mt-8 md:mt-12">
-          <PrizeSection />
         </div>
       </main>
 
