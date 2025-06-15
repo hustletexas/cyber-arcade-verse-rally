@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,18 +30,6 @@ export const VotingSection = () => {
       options: [
         { id: 'approve-rules', name: 'Approve New Rules', votes: 2100, percentage: 75 },
         { id: 'reject-rules', name: 'Reject Changes', votes: 700, percentage: 25 }
-      ]
-    },
-    {
-      id: 'tournament-schedule',
-      title: 'TOURNAMENT SCHEDULE',
-      description: 'Select the preferred tournament timing',
-      endDate: '2024-12-25',
-      status: 'upcoming',
-      options: [
-        { id: 'weekend-only', name: 'Weekend Only', votes: 850, percentage: 40 },
-        { id: 'weekday-evening', name: 'Weekday Evenings', votes: 680, percentage: 32 },
-        { id: 'mixed-schedule', name: 'Mixed Schedule', votes: 595, percentage: 28 }
       ]
     }
   ];
