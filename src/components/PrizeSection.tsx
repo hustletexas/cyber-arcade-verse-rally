@@ -15,7 +15,6 @@ export const PrizeSection = () => {
     {
       id: 'gaming-pc',
       name: 'Gaming PC RTX 4090',
-      value: '$3,000',
       requirement: '10,000 CCTR',
       cctrCost: 10000,
       image: '/lovable-uploads/3fc5f3c0-2b28-4cff-acdc-7c3896ee635b.png',
@@ -23,7 +22,6 @@ export const PrizeSection = () => {
     {
       id: 'ps5',
       name: 'PlayStation 5',
-      value: '$500',
       requirement: '5,000 CCTR',
       cctrCost: 5000,
       image: '/lovable-uploads/8820a165-f5a8-4d8a-b9d4-8dca31666e27.png',
@@ -31,7 +29,6 @@ export const PrizeSection = () => {
     {
       id: 'vr-headset',
       name: 'Meta Quest 3',
-      value: '$400',
       requirement: '7,500 CCTR',
       cctrCost: 7500,
       image: '/lovable-uploads/5fbf2609-10c6-421a-a9dc-34513c43cea0.png',
@@ -103,9 +100,8 @@ export const PrizeSection = () => {
                     {prize.name}
                   </h3>
                   <div className="space-y-2">
-                    <p className="text-xl font-bold text-neon-green">{prize.value}</p>
-                    <p className="text-sm text-neon-cyan font-bold">
-                      Cost: {prize.cctrCost.toLocaleString()} $CCTR
+                    <p className="text-xl font-bold text-neon-cyan">
+                      {prize.cctrCost.toLocaleString()} $CCTR
                     </p>
                   </div>
 
