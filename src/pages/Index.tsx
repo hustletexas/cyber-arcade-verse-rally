@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
-import { TournamentSection } from '@/components/TournamentSection';
 import { TokenDashboard } from '@/components/TokenDashboard';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
@@ -94,14 +93,6 @@ const Index = () => {
               💰 BUY $CCTR
             </h2>
             <TokenPurchase />
-          </section>
-
-          {/* Tournaments Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🏆 TOURNAMENTS
-            </h2>
-            <TournamentSection />
           </section>
 
           {/* Prize Pool Section */}
