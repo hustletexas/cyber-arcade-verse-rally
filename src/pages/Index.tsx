@@ -9,7 +9,6 @@ import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { PrizeSection } from '@/components/PrizeSection';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
-import { PaymentIntegration } from '@/components/PaymentIntegration';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { TourDates } from '@/components/TourDates';
 import { RaffleSection } from '@/components/RaffleSection';
@@ -89,12 +88,20 @@ const Index = () => {
             <TokenPurchase />
           </section>
 
-          {/* Merchandise Store Section - Moved here */}
+          {/* Merchandise Store Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
               🛍️ MERCHANDISE STORE
             </h2>
             <MerchandiseStore />
+          </section>
+
+          {/* NFT Marketplace Section - Moved under Merchandise Store */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🛒 NFT MARKETPLACE
+            </h2>
+            <Marketplace />
           </section>
 
           {/* Raffles Section */}
@@ -121,14 +128,6 @@ const Index = () => {
             <VotingSection />
           </section>
 
-          {/* Marketplace Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🛒 MARKETPLACE
-            </h2>
-            <Marketplace />
-          </section>
-
           {/* Tour Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -138,10 +137,9 @@ const Index = () => {
           </section>
         </div>
 
-        {/* Additional Sections */}
+        {/* Additional Section - Only Prize Section now */}
         <div className="space-y-6 md:space-y-8 mt-8 md:mt-12">
           <PrizeSection />
-          <PaymentIntegration />
         </div>
       </main>
 
