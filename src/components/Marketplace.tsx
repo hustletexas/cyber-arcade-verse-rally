@@ -9,111 +9,57 @@ import { useToast } from '@/hooks/use-toast';
 const mockNFTs = [
   {
     id: 1,
-    name: "Cyber City Arcade Cabinet #001",
+    name: "Cyber Punk Avatar #001",
     price: { cctr: 2500, sol: 1.2, usdc: 108 },
-    image: "🕹️",
+    image: "🤖",
     rarity: "Legendary",
-    seller: "CyberArcade",
-    description: "The legendary first arcade cabinet from Cyber City, featuring neon-lit retro gaming with quantum processors"
+    seller: "CyberCollector",
+    description: "Rare cyberpunk avatar with neon implants and digital consciousness"
   },
   {
     id: 2,
-    name: "Neon City Skyline #042",
+    name: "Neon City Landscape",
     price: { cctr: 1800, sol: 0.9, usdc: 81 },
     image: "🌆",
     rarity: "Epic",
-    seller: "CityBuilder",
-    description: "Stunning cyberpunk cityscape with holographic billboards and flying vehicles from the Cyber City universe"
+    seller: "DigitalArtist",
+    description: "Stunning neon-lit cityscape from the future"
   },
   {
     id: 3,
-    name: "Digital Warrior Avatar #099",
+    name: "Arcade Token #042",
     price: { cctr: 1500, sol: 0.75, usdc: 67 },
-    image: "🤖",
+    image: "🪙",
     rarity: "Epic",
-    seller: "AvatarForge",
-    description: "Elite cyber warrior avatar with advanced neural implants and plasma weapons from Cyber City battles"
+    seller: "TokenMaster",
+    description: "Collectible arcade token with special gaming privileges"
   },
   {
     id: 4,
-    name: "Arcade Token Master #007",
+    name: "Digital Sword of Power",
     price: { cctr: 800, sol: 0.4, usdc: 36 },
-    image: "🪙",
+    image: "⚔️",
     rarity: "Rare",
-    seller: "TokenVault",
-    description: "Rare collectible arcade token with embedded smart contracts and bonus gaming privileges"
+    seller: "WeaponForge",
+    description: "Legendary sword that deals massive damage in tournaments"
   },
   {
     id: 5,
-    name: "Cyber Pet Dragon #123",
+    name: "Cyber Pet Dragon",
     price: { cctr: 1200, sol: 0.6, usdc: 54 },
     image: "🐉",
     rarity: "Epic",
-    seller: "DigitalPets",
-    description: "Loyal cyber dragon companion with fire-breathing abilities and blockchain DNA from Cyber City labs"
+    seller: "PetBreeder",
+    description: "Loyal digital companion with fire-breathing abilities"
   },
   {
     id: 6,
-    name: "Hacker Terminal #056",
+    name: "Hacker's Terminal",
     price: { cctr: 900, sol: 0.45, usdc: 40 },
     image: "💻",
     rarity: "Rare",
-    seller: "TechMaster",
-    description: "Advanced hacking terminal with quantum encryption and access to Cyber City's digital underground"
-  },
-  {
-    id: 7,
-    name: "Neon Sword of Power",
-    price: { cctr: 3000, sol: 1.5, usdc: 135 },
-    image: "⚔️",
-    rarity: "Mythic",
-    seller: "WeaponForge",
-    description: "Legendary plasma sword forged in the digital foundries of Cyber City, deals 1000+ damage in tournaments"
-  },
-  {
-    id: 8,
-    name: "Cyber City Badge #001",
-    price: { cctr: 600, sol: 0.3, usdc: 27 },
-    image: "🏆",
-    rarity: "Rare",
-    seller: "BadgeCollector",
-    description: "Official Cyber City Arcade achievement badge, proves completion of the legendary Ghost in the Machine quest"
-  },
-  {
-    id: 9,
-    name: "Holographic Cube #333",
-    price: { cctr: 1100, sol: 0.55, usdc: 49 },
-    image: "📦",
-    rarity: "Epic",
-    seller: "HoloTech",
-    description: "Mysterious holographic data cube containing encrypted memories from the original Cyber City founders"
-  },
-  {
-    id: 10,
-    name: "Arcade Master Key #001",
-    price: { cctr: 4500, sol: 2.2, usdc: 198 },
-    image: "🗝️",
-    rarity: "Mythic",
-    seller: "KeyKeeper",
-    description: "The ultimate master key that unlocks all arcade cabinets in Cyber City and grants access to hidden game modes"
-  },
-  {
-    id: 11,
-    name: "Cyber Helmet #088",
-    price: { cctr: 700, sol: 0.35, usdc: 31 },
-    image: "⛑️",
-    rarity: "Rare",
-    seller: "GearCraft",
-    description: "Advanced neural interface helmet with AR display and direct brain-to-game connection technology"
-  },
-  {
-    id: 12,
-    name: "Digital Phoenix #005",
-    price: { cctr: 2200, sol: 1.1, usdc: 99 },
-    image: "🔥",
-    rarity: "Legendary",
-    seller: "MythicBeasts",
-    description: "Rare digital phoenix that respawns players instantly in tournaments and provides +50% CCTR rewards"
+    seller: "TechGuru",
+    description: "Advanced terminal for accessing the digital underground"
   }
 ];
 
@@ -163,7 +109,7 @@ export const Marketplace = () => {
     <Card className="arcade-frame">
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
-          🛒 CYBER CITY ARCADE NFT MARKETPLACE
+          🛒 NFT MARKETPLACE
           <Badge className="bg-neon-cyan text-black">LIVE</Badge>
         </CardTitle>
       </CardHeader>
@@ -211,14 +157,6 @@ export const Marketplace = () => {
                   className={filter === 'all' ? 'cyber-button' : 'border-neon-cyan text-neon-cyan'}
                 >
                   All
-                </Button>
-                <Button
-                  size="sm"
-                  variant={filter === 'mythic' ? 'default' : 'outline'}
-                  onClick={() => setFilter('mythic')}
-                  className={filter === 'mythic' ? 'cyber-button' : 'border-neon-yellow text-neon-yellow'}
-                >
-                  Mythic
                 </Button>
                 <Button
                   size="sm"
@@ -274,7 +212,6 @@ export const Marketplace = () => {
                     <div className="flex justify-between items-start">
                       <h3 className="font-bold text-neon-cyan">{nft.name}</h3>
                       <Badge className={`${
-                        nft.rarity === 'Mythic' ? 'bg-neon-yellow text-black' :
                         nft.rarity === 'Legendary' ? 'bg-neon-purple text-white' :
                         nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
                         'bg-neon-green text-black'
