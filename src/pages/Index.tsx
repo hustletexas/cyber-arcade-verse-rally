@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -88,6 +89,14 @@ const Index = () => {
             <TokenPurchase />
           </section>
 
+          {/* Merchandise Store Section - Moved here */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🛍️ MERCHANDISE STORE
+            </h2>
+            <MerchandiseStore />
+          </section>
+
           {/* Raffles Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -118,14 +127,6 @@ const Index = () => {
               🛒 MARKETPLACE
             </h2>
             <Marketplace />
-          </section>
-
-          {/* Merchandise Store Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🛍️ MERCHANDISE STORE
-            </h2>
-            <MerchandiseStore />
           </section>
 
           {/* Tour Section */}
