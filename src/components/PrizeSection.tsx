@@ -18,7 +18,7 @@ export const PrizeSection = () => {
       name: 'PlayStation 5',
       value: '$500',
       requirement: '5,000 CCTR',
-      image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&h=300&fit=crop',
+      image: '/lovable-uploads/8820a165-f5a8-4d8a-b9d4-8dca31666e27.png',
       rarity: 'Epic'
     },
     {
