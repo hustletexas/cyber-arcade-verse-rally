@@ -13,6 +13,7 @@ import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { TourDates } from '@/components/TourDates';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
+import { WalletConnect } from '@/components/WalletConnect';
 
 const Index = () => {
   return (
@@ -64,6 +65,14 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
+          {/* Wallet Connect Section - Prominently placed first */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              👛 WALLET CONNECTION
+            </h2>
+            <WalletConnect />
+          </section>
+
           {/* Dashboard Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
