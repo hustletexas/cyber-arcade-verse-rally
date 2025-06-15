@@ -42,7 +42,7 @@ export const PrizeSection = () => {
       name: 'Gaming Chair',
       value: '$400',
       requirement: '3,000 CCTR',
-      image: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=400&h=300&fit=crop',
+      image: 'https://images.unsplash.com/photo-1541558869434-2840d308329a?w=400&h=300&fit=crop',
       rarity: 'Rare'
     },
     {
