@@ -26,7 +26,7 @@ export const PrizeSection = () => {
       name: 'Meta Quest 3',
       value: '$800',
       requirement: '7,500 CCTR',
-      image: '/lovable-uploads/417bfaf1-3a05-43dd-915a-3fce29eac484.png',
+      image: '/lovable-uploads/5fbf2609-10c6-421a-a9dc-34513c43cea0.png',
       rarity: 'Epic'
     }
   ];
