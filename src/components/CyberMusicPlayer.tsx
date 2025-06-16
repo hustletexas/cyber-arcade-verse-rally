@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -180,28 +181,21 @@ export const CyberMusicPlayer = () => {
       <CardContent className="p-4 relative">
         <FloatingNotes />
 
-        {/* Animated Title with Rotation */}
+        {/* Static Title - No Animation */}
         <div className="text-center mb-4">
           <h2 
-            className={`text-xl font-bold text-neon-pink transition-all duration-300 ${
-              isPlaying ? 'animate-pulse' : ''
-            }`}
+            className="text-xl font-bold text-neon-pink"
             style={{
               fontFamily: 'Orbitron, monospace',
-              textShadow: isPlaying 
-                ? '0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff'
-                : '0 0 5px #ff00ff, 0 0 10px #ff00ff',
-              filter: isPlaying 
-                ? 'drop-shadow(0 0 8px #ff00ff) hue-rotate(10deg)'
-                : 'drop-shadow(0 0 3px #ff00ff)',
-              transform: isPlaying ? 'perspective(1000px) rotateX(5deg)' : 'none'
+              textShadow: '0 0 10px #ff00ff, 0 0 20px #ff00ff',
+              filter: 'drop-shadow(0 0 8px #ff00ff)'
             }}
           >
             🎶 CYBER CITY RADIO
           </h2>
         </div>
 
-        {/* Track Info with Enhanced Animation */}
+        {/* Track Info - Static Text */}
         <div 
           className={`flex items-center justify-between mb-4 p-3 rounded-lg bg-black/50 border transition-all duration-300 ${
             isPlaying 
@@ -219,15 +213,11 @@ export const CyberMusicPlayer = () => {
               <EqualizerBars />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className={`text-neon-cyan font-bold text-sm truncate transition-all duration-300 ${
-                isPlaying ? 'animate-pulse' : ''
-              }`}>{track.title}</h3>
+              <h3 className="text-neon-cyan font-bold text-sm truncate">{track.title}</h3>
               <p className="text-neon-purple text-xs truncate">{track.artist}</p>
             </div>
           </div>
-          <div className={`text-neon-pink text-xs transition-all duration-300 ${
-            isPlaying ? 'text-shadow-glow' : ''
-          }`}>
+          <div className="text-neon-pink text-xs">
             {formatTime(currentTime)}
           </div>
         </div>
@@ -308,7 +298,7 @@ export const CyberMusicPlayer = () => {
           </Button>
         </div>
 
-        {/* Volume Control with Animation */}
+        {/* Volume Control */}
         <div className="flex items-center gap-3">
           <Button
             onClick={() => setIsMuted(!isMuted)}
