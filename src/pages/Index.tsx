@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -43,7 +42,7 @@ const Index = () => {
           {/* Logo and Music Player Container */}
           <div className="flex justify-center items-center mb-6 relative gap-8">
             {/* Music Player - Left of Logo */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block" style={{ transform: 'translateX(-3in) translateY(-1in)' }}>
               <div className="w-full max-w-sm">
                 <CyberMusicPlayer />
               </div>
