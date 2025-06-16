@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -39,7 +40,16 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-8 md:mb-12">
-          <div className="flex justify-center mb-6 relative">
+          {/* Logo and Music Player Container */}
+          <div className="flex justify-center items-center mb-6 relative gap-8">
+            {/* Music Player - Left of Logo */}
+            <div className="hidden lg:block">
+              <div className="w-full max-w-sm">
+                <CyberMusicPlayer />
+              </div>
+            </div>
+            
+            {/* Main Logo */}
             <img 
               src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
               alt="Cyber City Arcade" 
@@ -47,6 +57,14 @@ const Index = () => {
               style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
             />
           </div>
+
+          {/* Mobile Music Player - Below logo on smaller screens */}
+          <div className="lg:hidden flex justify-center mb-6">
+            <div className="w-full max-w-md">
+              <CyberMusicPlayer />
+            </div>
+          </div>
+
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
@@ -60,13 +78,6 @@ const Index = () => {
             <Badge className="bg-neon-green text-black px-2 md:px-4 py-1 md:py-2 text-xs md:text-sm font-bold neon-glow">
               🪙 $CCTR REWARDS
             </Badge>
-          </div>
-
-          {/* Music Player - Centered below badges */}
-          <div className="flex justify-center mb-8 md:mb-12">
-            <div className="w-full max-w-md">
-              <CyberMusicPlayer />
-            </div>
           </div>
         </div>
 
