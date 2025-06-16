@@ -135,10 +135,11 @@ export const CommunityHub = () => {
     <section className="w-full">
       <div className="text-center mb-8">
         <h2 
-          className="text-3xl md:text-4xl font-bold font-display bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent mb-4"
+          className="text-xl font-bold text-neon-pink"
           style={{
-            textShadow: '0 0 10px #00ffcc, 0 0 20px #ff00ff',
-            filter: 'drop-shadow(0 0 5px #00ffcc)',
+            fontFamily: 'Orbitron, monospace',
+            textShadow: '0 0 10px #ff00ff, 0 0 20px #ff00ff',
+            filter: 'drop-shadow(0 0 8px #ff00ff)'
           }}
         >
           🕹️ CYBER CITY COMMUNITY HQ
