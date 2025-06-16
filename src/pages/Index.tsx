@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -11,6 +12,7 @@ import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
+import { LiveTournaments } from '@/components/LiveTournaments';
 
 const Index = () => {
   return (
@@ -62,6 +64,14 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
+          {/* Live Tournaments Section - Added as first section */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🔴 LIVE TOURNAMENTS
+            </h2>
+            <LiveTournaments />
+          </section>
+
           {/* Dashboard Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
