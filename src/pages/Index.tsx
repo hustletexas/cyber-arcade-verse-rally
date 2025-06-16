@@ -13,6 +13,7 @@ import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
 import { LiveTournaments } from '@/components/LiveTournaments';
+import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 
 const Index = () => {
   return (
@@ -64,6 +65,11 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
+          {/* Music Player Section */}
+          <section>
+            <CyberMusicPlayer />
+          </section>
+
           {/* Dashboard Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
