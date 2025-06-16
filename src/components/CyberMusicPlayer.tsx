@@ -150,11 +150,11 @@ export const CyberMusicPlayer = () => {
         {/* Title */}
         <div className="text-center mb-4">
           <h2 
-            className="text-xl font-bold bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent"
+            className="text-xl font-bold text-neon-pink"
             style={{
               fontFamily: 'Orbitron, monospace',
-              textShadow: '0 0 5px #00ffcc, 0 0 10px #ff00ff',
-              filter: 'drop-shadow(0 0 3px #00ffcc)',
+              textShadow: '0 0 5px #ff00ff, 0 0 10px #ff00ff',
+              filter: 'drop-shadow(0 0 3px #ff00ff)',
             }}
           >
             🎶 CYBER CITY RADIO
