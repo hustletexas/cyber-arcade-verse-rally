@@ -64,14 +64,6 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
-          {/* Live Tournaments Section - Added as first section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🔴 LIVE TOURNAMENTS
-            </h2>
-            <LiveTournaments />
-          </section>
-
           {/* Dashboard Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
@@ -86,6 +78,14 @@ const Index = () => {
               🛍️ MERCHANDISE STORE
             </h2>
             <MerchandiseStore />
+          </section>
+
+          {/* Live Tournaments Section - Moved under Store */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🔴 LIVE TOURNAMENTS
+            </h2>
+            <LiveTournaments />
           </section>
 
           {/* NFT Marketplace Section */}
