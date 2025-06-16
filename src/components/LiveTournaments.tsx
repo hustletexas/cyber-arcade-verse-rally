@@ -11,13 +11,13 @@ export const LiveTournaments = () => {
   const { toast } = useToast();
   const [selectedTournament, setSelectedTournament] = useState('fortnite-championship');
 
-  // Updated tournament data with the three requested games and their images
+  // Updated tournament data with the three requested games and their correct images
   const tournaments = [
     {
       id: 'fortnite-championship',
       name: 'FORTNITE BATTLE ROYALE',
       game: '🎯',
-      image: '/lovable-uploads/05befe90-0669-44d1-9093-c0aac4755a61.png',
+      image: '/lovable-uploads/d02c55c8-cdcf-4072-814b-340278e7ba0d.png',
       status: 'live',
       participants: 72,
       prize: '100,000 $CCTR',
@@ -28,7 +28,7 @@ export const LiveTournaments = () => {
       id: 'mario-kart-grand-prix',
       name: 'MARIO KART GRAND PRIX',
       game: '🏎️',
-      image: '/lovable-uploads/08a3dde3-268a-45e6-9985-248775e6cb58.png',
+      image: '/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png',
       status: 'live',
       participants: 64,
       prize: '75,000 $CCTR',
@@ -39,7 +39,7 @@ export const LiveTournaments = () => {
       id: 'call-of-duty-warzone',
       name: 'CALL OF DUTY WARZONE',
       game: '🔫',
-      image: '/lovable-uploads/1131ab8a-f1c5-43a1-bc8a-bbbe7f2f9fd1.png',
+      image: '/lovable-uploads/adc51b6f-7d82-44cc-86b5-e984bc74d2d3.png',
       status: 'upcoming',
       participants: 80,
       prize: '120,000 $CCTR',
