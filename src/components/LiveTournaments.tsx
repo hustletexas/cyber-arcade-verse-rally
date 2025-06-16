@@ -11,12 +11,13 @@ export const LiveTournaments = () => {
   const { toast } = useToast();
   const [selectedTournament, setSelectedTournament] = useState('fortnite-championship');
 
-  // Updated tournament data with the three requested games
+  // Updated tournament data with the three requested games and their images
   const tournaments = [
     {
       id: 'fortnite-championship',
       name: 'FORTNITE BATTLE ROYALE',
       game: '🎯',
+      image: '/lovable-uploads/05befe90-0669-44d1-9093-c0aac4755a61.png',
       status: 'live',
       participants: 72,
       prize: '100,000 $CCTR',
@@ -27,6 +28,7 @@ export const LiveTournaments = () => {
       id: 'mario-kart-grand-prix',
       name: 'MARIO KART GRAND PRIX',
       game: '🏎️',
+      image: '/lovable-uploads/08a3dde3-268a-45e6-9985-248775e6cb58.png',
       status: 'live',
       participants: 64,
       prize: '75,000 $CCTR',
@@ -37,6 +39,7 @@ export const LiveTournaments = () => {
       id: 'call-of-duty-warzone',
       name: 'CALL OF DUTY WARZONE',
       game: '🔫',
+      image: '/lovable-uploads/1131ab8a-f1c5-43a1-bc8a-bbbe7f2f9fd1.png',
       status: 'upcoming',
       participants: 80,
       prize: '120,000 $CCTR',
@@ -83,6 +86,15 @@ export const LiveTournaments = () => {
                 onClick={() => setSelectedTournament(tournament.id)}
               >
                 <div className="space-y-3">
+                  {/* Game Image */}
+                  <div className="w-full h-32 rounded-lg overflow-hidden mb-3">
+                    <img 
+                      src={tournament.image} 
+                      alt={tournament.name}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
                       {tournament.game} {tournament.name}
