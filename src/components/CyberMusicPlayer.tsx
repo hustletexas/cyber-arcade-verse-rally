@@ -113,17 +113,17 @@ export const CyberMusicPlayer = () => {
   const progress = duration ? (currentTime / duration) * 100 : 0;
   const track = defaultTracks[currentTrack];
 
-  // Animated equalizer bars
+  // Compact animated equalizer bars
   const EqualizerBars = () => (
-    <div className="flex items-end gap-1 h-8">
-      {[...Array(5)].map((_, i) => (
+    <div className="flex items-end gap-0.5 h-4">
+      {[...Array(3)].map((_, i) => (
         <div
           key={i}
-          className={`w-1 bg-gradient-to-t from-neon-cyan to-neon-pink rounded-full transition-all duration-300 ${
+          className={`w-0.5 bg-gradient-to-t from-neon-cyan to-neon-pink rounded-full transition-all duration-300 ${
             isPlaying ? 'animate-pulse' : ''
           }`}
           style={{
-            height: isPlaying ? `${20 + Math.sin(Date.now() * 0.01 + i) * 15}px` : '4px',
+            height: isPlaying ? `${8 + Math.sin(Date.now() * 0.01 + i) * 6}px` : '2px',
             animationDelay: `${i * 0.1}s`,
             animationDuration: `${0.5 + i * 0.1}s`
           }}
@@ -134,127 +134,125 @@ export const CyberMusicPlayer = () => {
 
   return (
     <Card 
-      className="w-full max-w-2xl mx-auto overflow-hidden"
+      className="w-80 overflow-hidden fixed top-4 right-4 z-50"
       style={{ 
         background: '#0f0f0f',
-        border: '2px solid #00ffcc',
-        borderRadius: '16px',
+        border: '1px solid #00ffcc',
+        borderRadius: '12px',
         boxShadow: `
-          0 0 20px #00ffcc50,
-          0 0 40px #ff00ff30,
-          inset 0 0 20px #00ffcc10
+          0 0 15px #00ffcc30,
+          0 0 30px #ff00ff20,
+          inset 0 0 15px #00ffcc05
         `
       }}
     >
-      <CardContent className="p-6">
-        {/* Title */}
-        <div className="text-center mb-6">
+      <CardContent className="p-4">
+        {/* Compact Title */}
+        <div className="text-center mb-3">
           <h2 
-            className="text-3xl font-bold bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent"
+            className="text-lg font-bold bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent"
             style={{
               fontFamily: 'Orbitron, monospace',
-              textShadow: '0 0 10px #00ffcc, 0 0 20px #ff00ff',
-              filter: 'drop-shadow(0 0 5px #00ffcc)',
+              textShadow: '0 0 5px #00ffcc, 0 0 10px #ff00ff',
+              filter: 'drop-shadow(0 0 3px #00ffcc)',
             }}
           >
             🎶 CYBER CITY RADIO
           </h2>
         </div>
 
-        {/* Track Info */}
-        <div className="flex items-center justify-between mb-6 p-4 rounded-lg bg-black/50 border border-neon-purple/30">
-          <div className="flex items-center gap-4">
+        {/* Compact Track Info */}
+        <div className="flex items-center justify-between mb-3 p-2 rounded-lg bg-black/50 border border-neon-purple/30">
+          <div className="flex items-center gap-2">
             <EqualizerBars />
-            <div>
-              <h3 className="text-neon-cyan font-bold text-lg">{track.title}</h3>
-              <p className="text-neon-purple text-sm">{track.artist}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-neon-cyan font-bold text-sm truncate">{track.title}</h3>
+              <p className="text-neon-purple text-xs truncate">{track.artist}</p>
             </div>
           </div>
-          <div className="text-neon-pink text-sm">
-            {formatTime(currentTime)} / {formatTime(duration)}
+          <div className="text-neon-pink text-xs">
+            {formatTime(currentTime)}
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-6">
+        {/* Compact Progress Bar */}
+        <div className="mb-3">
           <Slider
             value={[progress]}
             onValueChange={handleSeek}
             max={100}
             step={0.1}
-            className="w-full cyber-slider"
+            className="w-full h-1"
           />
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center justify-center gap-4 mb-6">
+        {/* Compact Controls */}
+        <div className="flex items-center justify-center gap-2 mb-3">
           <Button
             onClick={handlePrevious}
             size="sm"
-            className="cyber-button-small"
+            className="h-8 w-8 p-0"
             style={{
               background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
-              border: '2px solid #00ffcc',
-              borderRadius: '8px',
-              boxShadow: '0 0 10px #00ffcc50'
+              border: '1px solid #00ffcc',
+              borderRadius: '6px',
+              boxShadow: '0 0 5px #00ffcc30'
             }}
           >
-            <SkipBack size={16} />
+            <SkipBack size={12} />
           </Button>
 
           <Button
             onClick={handlePlayPause}
-            size="lg"
-            className="cyber-button-main"
+            size="sm"
+            className="h-10 w-10 p-0"
             style={{
               background: isPlaying 
                 ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
                 : 'linear-gradient(45deg, #00ffcc, #0088aa)',
-              border: `2px solid ${isPlaying ? '#ff00ff' : '#00ffcc'}`,
-              borderRadius: '12px',
-              boxShadow: `0 0 20px ${isPlaying ? '#ff00ff' : '#00ffcc'}50`,
-              width: '60px',
-              height: '60px'
+              border: `1px solid ${isPlaying ? '#ff00ff' : '#00ffcc'}`,
+              borderRadius: '8px',
+              boxShadow: `0 0 10px ${isPlaying ? '#ff00ff' : '#00ffcc'}30`
             }}
           >
-            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
           </Button>
 
           <Button
             onClick={handleNext}
             size="sm"
-            className="cyber-button-small"
+            className="h-8 w-8 p-0"
             style={{
               background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
-              border: '2px solid #00ffcc',
-              borderRadius: '8px',
-              boxShadow: '0 0 10px #00ffcc50'
+              border: '1px solid #00ffcc',
+              borderRadius: '6px',
+              boxShadow: '0 0 5px #00ffcc30'
             }}
           >
-            <SkipForward size={16} />
+            <SkipForward size={12} />
           </Button>
         </div>
 
-        {/* Volume Control */}
-        <div className="flex items-center gap-3">
+        {/* Compact Volume Control */}
+        <div className="flex items-center gap-2">
           <Button
             onClick={() => setIsMuted(!isMuted)}
             size="sm"
             variant="ghost"
-            className="text-neon-cyan hover:text-neon-pink p-2"
+            className="text-neon-cyan hover:text-neon-pink p-1 h-6 w-6"
           >
-            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
           </Button>
-          <div className="flex-1 max-w-32">
+          <div className="flex-1">
             <Slider
               value={[volume]}
               onValueChange={(value) => setVolume(value[0])}
               max={100}
               step={1}
-              className="cyber-slider"
+              className="h-1"
             />
           </div>
-          <span className="text-neon-purple text-sm w-8">{volume}%</span>
+          <span className="text-neon-purple text-xs w-8">{volume}%</span>
         </div>
 
         {/* Hidden Audio Element */}
@@ -266,7 +264,7 @@ export const CyberMusicPlayer = () => {
 
         {/* Visual Effects */}
         <div 
-          className="absolute inset-0 pointer-events-none opacity-20"
+          className="absolute inset-0 pointer-events-none opacity-10"
           style={{
             background: `
               radial-gradient(circle at 20% 50%, #00ffcc20 0%, transparent 50%),
@@ -276,20 +274,6 @@ export const CyberMusicPlayer = () => {
           }}
         />
       </CardContent>
-
-      <style jsx>{`
-        .cyber-slider .slider-track {
-          background: #333;
-        }
-        .cyber-slider .slider-range {
-          background: linear-gradient(90deg, #00ffcc, #ff00ff);
-        }
-        .cyber-slider .slider-thumb {
-          background: #00ffcc;
-          border: 2px solid #fff;
-          box-shadow: 0 0 10px #00ffcc;
-        }
-      `}</style>
     </Card>
   );
 };

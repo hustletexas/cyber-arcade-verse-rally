@@ -35,6 +35,7 @@ const Index = () => {
       </div>
 
       <TopBar />
+      <CyberMusicPlayer />
 
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
@@ -65,11 +66,6 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
-          {/* Music Player Section */}
-          <section>
-            <CyberMusicPlayer />
-          </section>
-
           {/* Dashboard Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
