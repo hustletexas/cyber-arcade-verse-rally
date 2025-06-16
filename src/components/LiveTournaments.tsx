@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,12 @@ export const LiveTournaments = () => {
   const { toast } = useToast();
   const [selectedTournament, setSelectedTournament] = useState('fortnite-championship');
 
-  // Updated tournament data with the three requested games and their correct images
+  // Updated tournament data with the three requested games
   const tournaments = [
     {
       id: 'fortnite-championship',
       name: 'FORTNITE BATTLE ROYALE',
       game: '🎯',
-      image: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=400&h=300&fit=crop',
       status: 'live',
       participants: 72,
       prize: '100,000 $CCTR',
@@ -27,7 +27,6 @@ export const LiveTournaments = () => {
       id: 'mario-kart-grand-prix',
       name: 'MARIO KART GRAND PRIX',
       game: '🏎️',
-      image: '/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png',
       status: 'live',
       participants: 64,
       prize: '75,000 $CCTR',
@@ -38,7 +37,6 @@ export const LiveTournaments = () => {
       id: 'call-of-duty-warzone',
       name: 'CALL OF DUTY WARZONE',
       game: '🔫',
-      image: '/lovable-uploads/adc51b6f-7d82-44cc-86b5-e984bc74d2d3.png',
       status: 'upcoming',
       participants: 80,
       prize: '120,000 $CCTR',
@@ -85,15 +83,6 @@ export const LiveTournaments = () => {
                 onClick={() => setSelectedTournament(tournament.id)}
               >
                 <div className="space-y-3">
-                  {/* Game Image */}
-                  <div className="w-full h-32 rounded-lg overflow-hidden mb-3">
-                    <img 
-                      src={tournament.image} 
-                      alt={tournament.name}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                    />
-                  </div>
-
                   <div className="flex items-center justify-between">
                     <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
                       {tournament.game} {tournament.name}
