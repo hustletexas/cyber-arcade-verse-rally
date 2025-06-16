@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -113,90 +112,157 @@ export const CyberMusicPlayer = () => {
   const progress = duration ? (currentTime / duration) * 100 : 0;
   const track = defaultTracks[currentTrack];
 
-  // Compact animated equalizer bars
+  // Enhanced animated equalizer bars with more dynamic movement
   const EqualizerBars = () => (
-    <div className="flex items-end gap-0.5 h-4">
-      {[...Array(3)].map((_, i) => (
+    <div className="flex items-end gap-0.5 h-6">
+      {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className={`w-0.5 bg-gradient-to-t from-neon-cyan to-neon-pink rounded-full transition-all duration-300 ${
+          className={`w-1 bg-gradient-to-t from-neon-cyan via-neon-purple to-neon-pink rounded-full transition-all duration-150 ${
             isPlaying ? 'animate-pulse' : ''
           }`}
           style={{
-            height: isPlaying ? `${8 + Math.sin(Date.now() * 0.01 + i) * 6}px` : '2px',
+            height: isPlaying 
+              ? `${12 + Math.sin(Date.now() * 0.005 + i * 0.8) * 12}px` 
+              : '4px',
             animationDelay: `${i * 0.1}s`,
-            animationDuration: `${0.5 + i * 0.1}s`
+            animationDuration: `${0.3 + i * 0.1}s`,
+            transform: isPlaying ? `scaleY(${1 + Math.sin(Date.now() * 0.003 + i) * 0.5})` : 'scaleY(1)'
           }}
         />
       ))}
     </div>
   );
 
+  // Floating music notes animation
+  const FloatingNotes = () => (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {isPlaying && [...Array(3)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute text-neon-pink opacity-60 animate-float"
+          style={{
+            left: `${20 + i * 30}%`,
+            top: `${20 + i * 15}%`,
+            animationDelay: `${i * 0.5}s`,
+            animationDuration: `${2 + i * 0.5}s`,
+            fontSize: `${12 + i * 2}px`
+          }}
+        >
+          ♪
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <Card 
-      className="w-full max-w-sm mx-auto overflow-hidden"
+      className={`w-full max-w-sm mx-auto overflow-hidden relative transition-all duration-300 ${
+        isPlaying ? 'scale-105' : 'scale-100'
+      }`}
       style={{ 
         background: '#0f0f0f',
-        border: '1px solid #00ffcc',
+        border: `1px solid ${isPlaying ? '#ff00ff' : '#00ffcc'}`,
         borderRadius: '12px',
-        boxShadow: `
-          0 0 15px #00ffcc30,
-          0 0 30px #ff00ff20,
-          inset 0 0 15px #00ffcc05
-        `
+        boxShadow: isPlaying 
+          ? `
+            0 0 25px #ff00ff50,
+            0 0 50px #00ffcc30,
+            inset 0 0 25px #ff00ff10
+          `
+          : `
+            0 0 15px #00ffcc30,
+            0 0 30px #ff00ff20,
+            inset 0 0 15px #00ffcc05
+          `
       }}
     >
-      <CardContent className="p-4">
-        {/* Title */}
+      <CardContent className="p-4 relative">
+        <FloatingNotes />
+
+        {/* Animated Title with Rotation */}
         <div className="text-center mb-4">
           <h2 
-            className="text-xl font-bold text-neon-pink"
+            className={`text-xl font-bold text-neon-pink transition-all duration-300 ${
+              isPlaying ? 'animate-pulse' : ''
+            }`}
             style={{
               fontFamily: 'Orbitron, monospace',
-              textShadow: '0 0 5px #ff00ff, 0 0 10px #ff00ff',
-              filter: 'drop-shadow(0 0 3px #ff00ff)',
+              textShadow: isPlaying 
+                ? '0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff'
+                : '0 0 5px #ff00ff, 0 0 10px #ff00ff',
+              filter: isPlaying 
+                ? 'drop-shadow(0 0 8px #ff00ff) hue-rotate(10deg)'
+                : 'drop-shadow(0 0 3px #ff00ff)',
+              transform: isPlaying ? 'perspective(1000px) rotateX(5deg)' : 'none'
             }}
           >
             🎶 CYBER CITY RADIO
           </h2>
         </div>
 
-        {/* Track Info */}
-        <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-black/50 border border-neon-purple/30">
+        {/* Track Info with Enhanced Animation */}
+        <div 
+          className={`flex items-center justify-between mb-4 p-3 rounded-lg bg-black/50 border transition-all duration-300 ${
+            isPlaying 
+              ? 'border-neon-pink/50 shadow-lg shadow-neon-pink/20' 
+              : 'border-neon-purple/30'
+          }`}
+          style={{
+            background: isPlaying 
+              ? 'linear-gradient(45deg, rgba(255,0,255,0.1), rgba(0,255,255,0.1))'
+              : 'rgba(0,0,0,0.5)'
+          }}
+        >
           <div className="flex items-center gap-3">
-            <EqualizerBars />
+            <div className={`transition-transform duration-300 ${isPlaying ? 'scale-110' : 'scale-100'}`}>
+              <EqualizerBars />
+            </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-neon-cyan font-bold text-sm truncate">{track.title}</h3>
+              <h3 className={`text-neon-cyan font-bold text-sm truncate transition-all duration-300 ${
+                isPlaying ? 'animate-pulse' : ''
+              }`}>{track.title}</h3>
               <p className="text-neon-purple text-xs truncate">{track.artist}</p>
             </div>
           </div>
-          <div className="text-neon-pink text-xs">
+          <div className={`text-neon-pink text-xs transition-all duration-300 ${
+            isPlaying ? 'text-shadow-glow' : ''
+          }`}>
             {formatTime(currentTime)}
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar with Glow Effect */}
         <div className="mb-4">
           <Slider
             value={[progress]}
             onValueChange={handleSeek}
             max={100}
             step={0.1}
-            className="w-full h-2"
+            className={`w-full h-2 transition-all duration-300 ${
+              isPlaying ? 'drop-shadow-lg' : ''
+            }`}
+            style={{
+              filter: isPlaying ? 'drop-shadow(0 0 5px #00ffcc)' : 'none'
+            }}
           />
         </div>
 
-        {/* Controls */}
+        {/* Enhanced Controls with Rotation Animation */}
         <div className="flex items-center justify-center gap-3 mb-4">
           <Button
             onClick={handlePrevious}
             size="sm"
-            className="h-10 w-10 p-0"
+            className={`h-10 w-10 p-0 transition-all duration-300 ${
+              isPlaying ? 'animate-pulse hover:rotate-12' : 'hover:rotate-6'
+            }`}
             style={{
               background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
               border: '1px solid #00ffcc',
               borderRadius: '8px',
-              boxShadow: '0 0 5px #00ffcc30'
+              boxShadow: isPlaying 
+                ? '0 0 15px #00ffcc50, 0 0 30px #00ffcc30'
+                : '0 0 5px #00ffcc30'
             }}
           >
             <SkipBack size={16} />
@@ -205,14 +271,19 @@ export const CyberMusicPlayer = () => {
           <Button
             onClick={handlePlayPause}
             size="sm"
-            className="h-12 w-12 p-0"
+            className={`h-12 w-12 p-0 transition-all duration-300 ${
+              isPlaying ? 'animate-bounce hover:scale-110' : 'hover:scale-105'
+            }`}
             style={{
               background: isPlaying 
                 ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
                 : 'linear-gradient(45deg, #00ffcc, #0088aa)',
               border: `1px solid ${isPlaying ? '#ff00ff' : '#00ffcc'}`,
               borderRadius: '10px',
-              boxShadow: `0 0 10px ${isPlaying ? '#ff00ff' : '#00ffcc'}30`
+              boxShadow: isPlaying
+                ? '0 0 20px #ff00ff60, 0 0 40px #ff00ff30'
+                : '0 0 10px #00ffcc30',
+              transform: isPlaying ? 'scale(1.05)' : 'scale(1)'
             }}
           >
             {isPlaying ? <Pause size={20} /> : <Play size={20} />}
@@ -221,25 +292,31 @@ export const CyberMusicPlayer = () => {
           <Button
             onClick={handleNext}
             size="sm"
-            className="h-10 w-10 p-0"
+            className={`h-10 w-10 p-0 transition-all duration-300 ${
+              isPlaying ? 'animate-pulse hover:-rotate-12' : 'hover:-rotate-6'
+            }`}
             style={{
               background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
               border: '1px solid #00ffcc',
               borderRadius: '8px',
-              boxShadow: '0 0 5px #00ffcc30'
+              boxShadow: isPlaying 
+                ? '0 0 15px #00ffcc50, 0 0 30px #00ffcc30'
+                : '0 0 5px #00ffcc30'
             }}
           >
             <SkipForward size={16} />
           </Button>
         </div>
 
-        {/* Volume Control */}
+        {/* Volume Control with Animation */}
         <div className="flex items-center gap-3">
           <Button
             onClick={() => setIsMuted(!isMuted)}
             size="sm"
             variant="ghost"
-            className="text-neon-cyan hover:text-neon-pink p-2 h-8 w-8"
+            className={`text-neon-cyan hover:text-neon-pink p-2 h-8 w-8 transition-all duration-300 ${
+              isPlaying ? 'animate-pulse' : ''
+            }`}
           >
             {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </Button>
@@ -252,7 +329,9 @@ export const CyberMusicPlayer = () => {
               className="h-2"
             />
           </div>
-          <span className="text-neon-purple text-sm w-10 text-right">{volume}%</span>
+          <span className={`text-neon-purple text-sm w-10 text-right transition-all duration-300 ${
+            isPlaying ? 'text-neon-pink' : ''
+          }`}>{volume}%</span>
         </div>
 
         {/* Hidden Audio Element */}
@@ -262,17 +341,39 @@ export const CyberMusicPlayer = () => {
           preload="metadata"
         />
 
-        {/* Visual Effects */}
+        {/* Enhanced Visual Effects with Rotation */}
         <div 
-          className="absolute inset-0 pointer-events-none opacity-10"
+          className={`absolute inset-0 pointer-events-none transition-all duration-300 ${
+            isPlaying ? 'opacity-20' : 'opacity-10'
+          }`}
           style={{
             background: `
-              radial-gradient(circle at 20% 50%, #00ffcc20 0%, transparent 50%),
-              radial-gradient(circle at 80% 50%, #ff00ff20 0%, transparent 50%)
+              radial-gradient(circle at 20% 50%, #00ffcc30 0%, transparent 50%),
+              radial-gradient(circle at 80% 50%, #ff00ff30 0%, transparent 50%)
             `,
-            animation: isPlaying ? 'pulse 2s ease-in-out infinite' : 'none'
+            animation: isPlaying ? 'pulse 1.5s ease-in-out infinite, float 3s ease-in-out infinite' : 'none',
+            transform: isPlaying ? 'rotate(2deg) scale(1.02)' : 'none'
           }}
         />
+
+        {/* Spinning Border Effect */}
+        {isPlaying && (
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `conic-gradient(from 0deg, #ff00ff, #00ffcc, #ff00ff)`,
+              borderRadius: '12px',
+              padding: '1px',
+              animation: 'spin 4s linear infinite',
+              opacity: 0.3
+            }}
+          >
+            <div 
+              className="w-full h-full rounded-lg"
+              style={{ background: '#0f0f0f' }}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
