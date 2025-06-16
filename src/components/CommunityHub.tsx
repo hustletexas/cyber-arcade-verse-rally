@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Users, Zap } from 'lucide-react';
+import { Send, Users, Zap, Move } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -70,6 +69,12 @@ export const CommunityHub = () => {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // New state for drag functionality
+  const [isDragging, setIsDragging] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const chatRef = useRef<HTMLDivElement>(null);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -77,6 +82,43 @@ export const CommunityHub = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Drag functionality
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!chatRef.current) return;
+    
+    const rect = chatRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    setIsDragging(true);
+  };
 
   const handleLogin = () => {
     if (username.trim()) {
@@ -97,13 +139,11 @@ export const CommunityHub = () => {
       setMessages(prev => [...prev, newMessage]);
       setCurrentMessage('');
       
-      // Play arcade beep sound (optional)
       playArcadeBeep();
     }
   };
 
   const playArcadeBeep = () => {
-    // Create a simple beep sound using Web Audio API
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -196,9 +236,10 @@ export const CommunityHub = () => {
           </CardContent>
         </Card>
 
-        {/* RIGHT PANEL: Live Chat */}
+        {/* RIGHT PANEL: Live Chat - Now Draggable */}
         <Card 
-          className="overflow-hidden"
+          ref={chatRef}
+          className={`overflow-hidden ${isDragging ? 'cursor-grabbing z-50' : 'cursor-grab'}`}
           style={{ 
             background: '#0f0f0f',
             border: '2px solid #ff00ff',
@@ -207,10 +248,24 @@ export const CommunityHub = () => {
               0 0 20px #ff00ff30,
               0 0 40px #00ffcc20,
               inset 0 0 20px #ff00ff05
-            `
+            `,
+            position: 'fixed',
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            width: '384px',
+            maxWidth: '384px',
+            zIndex: isDragging ? 1000 : 10,
+            userSelect: 'none'
           }}
+          onMouseDown={handleMouseDown}
         >
           <CardHeader>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-neon-cyan">
+                <Move size={16} className="opacity-60" />
+                <span className="text-xs font-mono opacity-60">DRAG TO MOVE</span>
+              </div>
+            </div>
             <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
               💬 LIVE CHAT
               <div className="flex items-center gap-1 text-sm text-neon-green">
