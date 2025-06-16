@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -14,6 +13,7 @@ import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
 import { LiveTournaments } from '@/components/LiveTournaments';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
+import { CommunityHub } from '@/components/CommunityHub';
 
 const Index = () => {
   return (
@@ -78,6 +78,11 @@ const Index = () => {
               📊 DASHBOARD
             </h2>
             <TokenDashboard />
+          </section>
+
+          {/* Community Hub Section - Added after Dashboard */}
+          <section>
+            <CommunityHub />
           </section>
 
           {/* Merchandise Store Section */}
