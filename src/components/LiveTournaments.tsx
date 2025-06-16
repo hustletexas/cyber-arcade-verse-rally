@@ -17,7 +17,7 @@ export const LiveTournaments = () => {
       id: 'fortnite-championship',
       name: 'FORTNITE BATTLE ROYALE',
       game: '🎯',
-      image: '/lovable-uploads/d02c55c8-cdcf-4072-814b-340278e7ba0d.png',
+      image: '/lovable-uploads/114fd628-dccf-45c6-ab13-1f49fb075c47.png',
       status: 'live',
       participants: 72,
       prize: '100,000 $CCTR',
