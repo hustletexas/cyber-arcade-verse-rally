@@ -40,21 +40,23 @@ const Index = () => {
         {/* Enhanced Hero Section */}
         <div className="text-center mb-8 md:mb-12">
           {/* Logo and Music Player Container */}
-          <div className="flex justify-center items-center mb-6 relative gap-8">
-            {/* Music Player - Left of Logo */}
-            <div className="hidden lg:block" style={{ transform: 'translateX(-3in) translateY(-1in)' }}>
+          <div className="relative flex justify-center items-center mb-6">
+            {/* Music Player - Positioned to the left of the centered logo */}
+            <div className="hidden lg:block absolute left-0" style={{ transform: 'translateX(-3in) translateY(-1in)' }}>
               <div className="w-full max-w-sm">
                 <CyberMusicPlayer />
               </div>
             </div>
             
-            {/* Main Logo */}
-            <img 
-              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-              alt="Cyber City Arcade" 
-              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300"
-              style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
-            />
+            {/* Main Logo - Centered */}
+            <div className="flex justify-center">
+              <img 
+                src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
+                alt="Cyber City Arcade" 
+                className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300"
+                style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
+              />
+            </div>
           </div>
 
           {/* Mobile Music Player - Below logo on smaller screens */}
