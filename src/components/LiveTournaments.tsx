@@ -11,11 +11,11 @@ export const LiveTournaments = () => {
   const { toast } = useToast();
   const [selectedTournament, setSelectedTournament] = useState('fortnite-championship');
 
-  // Mock tournament data
+  // Updated tournament data with the three requested games
   const tournaments = [
     {
       id: 'fortnite-championship',
-      name: 'FORTNITE CHAMPIONSHIP',
+      name: 'FORTNITE BATTLE ROYALE',
       game: '🎯',
       status: 'live',
       participants: 72,
@@ -24,24 +24,24 @@ export const LiveTournaments = () => {
       nextMatch: '2 minutes'
     },
     {
-      id: 'valorant-masters',
-      name: 'VALORANT MASTERS',
-      game: '💥',
+      id: 'mario-kart-grand-prix',
+      name: 'MARIO KART GRAND PRIX',
+      game: '🏎️',
       status: 'live',
-      participants: 72,
+      participants: 64,
       prize: '75,000 $CCTR',
       currentRound: 'Quarterfinals',
-      nextMatch: '15 minutes'
+      nextMatch: '8 minutes'
     },
     {
-      id: 'rocket-league-grand-prix',
-      name: 'ROCKET LEAGUE GRAND PRIX',
-      game: '⚽',
+      id: 'call-of-duty-warzone',
+      name: 'CALL OF DUTY WARZONE',
+      game: '🔫',
       status: 'upcoming',
-      participants: 72,
-      prize: '50,000 $CCTR',
+      participants: 80,
+      prize: '120,000 $CCTR',
       currentRound: 'Registration Open',
-      nextMatch: '45 minutes'
+      nextMatch: '25 minutes'
     }
   ];
 
@@ -55,9 +55,10 @@ export const LiveTournaments = () => {
       return;
     }
 
+    const tournament = tournaments.find(t => t.id === tournamentId);
     toast({
-      title: "Joined Tournament!",
-      description: "You've been registered for the next tournament",
+      title: "Tournament Joined!",
+      description: `You've successfully joined ${tournament?.name}. Check your email for details.`,
     });
   };
 
@@ -110,17 +111,15 @@ export const LiveTournaments = () => {
                     </div>
                   </div>
 
-                  {tournament.status === 'upcoming' && (
-                    <Button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        joinTournament(tournament.id);
-                      }}
-                      className="w-full cyber-button text-xs"
-                    >
-                      🎮 JOIN TOURNAMENT
-                    </Button>
-                  )}
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      joinTournament(tournament.id);
+                    }}
+                    className="w-full cyber-button text-xs"
+                  >
+                    🎮 JOIN TOURNAMENT
+                  </Button>
                 </div>
               </Card>
             ))}
@@ -142,7 +141,7 @@ export const LiveTournaments = () => {
             </Card>
             <Card className="holographic p-4 text-center">
               <h4 className="text-neon-pink font-bold mb-2">💰 TOTAL PRIZES</h4>
-              <div className="text-2xl font-black text-neon-pink">225K $CCTR</div>
+              <div className="text-2xl font-black text-neon-pink">295K $CCTR</div>
               <div className="text-xs text-muted-foreground">Across all tournaments</div>
             </Card>
             <Card className="holographic p-4 text-center">
