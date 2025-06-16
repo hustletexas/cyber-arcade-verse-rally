@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -39,20 +40,19 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-8 md:mb-12">
-          {/* Logo and Music Player Container */}
-          <div className="flex justify-center items-center mb-6 relative gap-8">
-            {/* Music Player - Left of Logo */}
-            <div className="hidden lg:block" style={{ transform: 'translateX(-3in) translateY(-1in)' }}>
-              <div className="w-full max-w-sm">
-                <CyberMusicPlayer />
-              </div>
+          {/* Music Player - Positioned left of logo on desktop */}
+          <div className="hidden lg:block absolute left-1/2 top-0" style={{ transform: 'translateX(-3in) translateY(-1in)' }}>
+            <div className="w-full max-w-sm">
+              <CyberMusicPlayer />
             </div>
-            
-            {/* Main Logo */}
+          </div>
+          
+          {/* Main Logo - Centered */}
+          <div className="flex justify-center mb-6">
             <img 
               src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
               alt="Cyber City Arcade" 
-              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300"
+              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300 mx-auto"
               style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
             />
           </div>
