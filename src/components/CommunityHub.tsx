@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Users, Zap, Move, Wallet } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Send, Users, Zap, Move } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -69,13 +69,6 @@ export const CommunityHub = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  // Wallet connection state
-  const [phantomConnected, setPhantomConnected] = useState(false);
-  const [coinbaseConnected, setCoinbaseConnected] = useState(false);
-  const [phantomAddress, setPhantomAddress] = useState('');
-  const [coinbaseAddress, setCoinbaseAddress] = useState('');
 
   // New state for drag functionality
   const [isDragging, setIsDragging] = useState(false);
@@ -83,113 +76,6 @@ export const CommunityHub = () => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const chatRef = useRef<HTMLDivElement>(null);
 
-  // Check for existing wallet connections on component mount
-  useEffect(() => {
-    checkWalletConnections();
-  }, []);
-
-  const checkWalletConnections = async () => {
-    // Check Phantom wallet
-    if (window.solana && window.solana.isPhantom) {
-      try {
-        if (window.solana.isConnected) {
-          const response = await window.solana.connect({ onlyIfTrusted: true });
-          if (response?.publicKey) {
-            setPhantomAddress(response.publicKey.toString());
-            setPhantomConnected(true);
-          }
-        }
-      } catch (error) {
-        console.log('Phantom wallet not auto-connected');
-      }
-    }
-
-    // Check Coinbase wallet
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ 
-          method: 'eth_accounts' 
-        });
-        if (accounts && accounts.length > 0) {
-          if (window.ethereum.isCoinbaseWallet) {
-            setCoinbaseAddress(accounts[0]);
-            setCoinbaseConnected(true);
-          }
-        }
-      } catch (error) {
-        console.log('Coinbase wallet not auto-connected');
-      }
-    }
-  };
-
-  const connectPhantom = async () => {
-    try {
-      if (window.solana && window.solana.isPhantom) {
-        const response = await window.solana.connect();
-        const address = response.publicKey.toString();
-        setPhantomAddress(address);
-        setPhantomConnected(true);
-        toast({
-          title: "Phantom Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
-      } else {
-        toast({
-          title: "Phantom Not Found",
-          description: "Please install Phantom wallet extension",
-          variant: "destructive",
-        });
-        window.open('https://phantom.app/', '_blank');
-      }
-    } catch (error) {
-      console.error('Phantom connection error:', error);
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Phantom wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const connectCoinbase = async () => {
-    try {
-      if (!window.ethereum) {
-        toast({
-          title: "No Wallet Found",
-          description: "Please install Coinbase Wallet extension",
-          variant: "destructive",
-        });
-        window.open('https://www.coinbase.com/wallet', '_blank');
-        return;
-      }
-
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      });
-
-      if (accounts && accounts.length > 0) {
-        const address = accounts[0];
-        setCoinbaseAddress(address);
-        setCoinbaseConnected(true);
-        
-        toast({
-          title: "Base Wallet Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
-      }
-    } catch (error: any) {
-      console.error('Coinbase connection error:', error);
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Base wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const isWalletConnected = phantomConnected || coinbaseConnected;
-
-  // Scroll functionality
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -236,35 +122,10 @@ export const CommunityHub = () => {
   };
 
   const handleLogin = () => {
-    if (!isWalletConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet first to join the chat",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (username.trim()) {
       setIsLoggedIn(true);
       setShowLoginForm(false);
-      toast({
-        title: "Welcome to Chat!",
-        description: `Joined as ${username} with connected wallet`,
-      });
     }
-  };
-
-  const handleJoinChat = () => {
-    if (!isWalletConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Connect your wallet to join the community chat",
-        variant: "destructive",
-      });
-      return;
-    }
-    setShowLoginForm(true);
   };
 
   const handleSendMessage = () => {
@@ -406,20 +267,6 @@ export const CommunityHub = () => {
               <Move size={16} className="opacity-60" />
               <span className="text-xs font-mono opacity-60">DRAG TO MOVE</span>
             </div>
-            {/* Wallet Status Indicator */}
-            <div className="flex items-center gap-1">
-              {isWalletConnected ? (
-                <div className="flex items-center gap-1 text-xs text-neon-green">
-                  <Wallet size={12} />
-                  <span>CONNECTED</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 text-xs text-neon-purple">
-                  <Wallet size={12} />
-                  <span>DISCONNECTED</span>
-                </div>
-              )}
-            </div>
           </div>
           <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
             💬 LIVE CHAT
@@ -461,51 +308,19 @@ export const CommunityHub = () => {
           {!isLoggedIn ? (
             <div className="space-y-3">
               {!showLoginForm ? (
-                <div className="space-y-2">
-                  <Button 
-                    onClick={handleJoinChat}
-                    className="w-full"
-                    style={{
-                      background: isWalletConnected 
-                        ? 'linear-gradient(45deg, #00ffcc, #0088aa)'
-                        : 'linear-gradient(45deg, #666, #444)',
-                      border: `1px solid ${isWalletConnected ? '#00ffcc' : '#666'}`,
-                      color: isWalletConnected ? 'black' : 'white',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    <Zap size={16} className="mr-2" />
-                    {isWalletConnected ? 'JOIN CHAT' : 'CONNECT WALLET TO JOIN'}
-                  </Button>
-                  
-                  {/* Wallet Connection Buttons */}
-                  {!isWalletConnected && (
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={connectPhantom}
-                        className="flex-1 text-xs"
-                        style={{
-                          background: 'linear-gradient(45deg, #9945FF, #7B3FF2)',
-                          border: '1px solid #9945FF',
-                          color: 'white'
-                        }}
-                      >
-                        👻 PHANTOM
-                      </Button>
-                      <Button 
-                        onClick={connectCoinbase}
-                        className="flex-1 text-xs"
-                        style={{
-                          background: 'linear-gradient(45deg, #0052FF, #0041CC)',
-                          border: '1px solid #0052FF',
-                          color: 'white'
-                        }}
-                      >
-                        🔵 BASE
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                <Button 
+                  onClick={() => setShowLoginForm(true)}
+                  className="w-full"
+                  style={{
+                    background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                    border: '1px solid #00ffcc',
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  <Zap size={16} className="mr-2" />
+                  JOIN CHAT
+                </Button>
               ) : (
                 <div className="space-y-2">
                   <Input
@@ -519,13 +334,10 @@ export const CommunityHub = () => {
                     <Button 
                       onClick={handleLogin}
                       className="flex-1"
-                      disabled={!isWalletConnected}
                       style={{
-                        background: isWalletConnected 
-                          ? 'linear-gradient(45deg, #00ffcc, #0088aa)'
-                          : 'linear-gradient(45deg, #666, #444)',
-                        border: `1px solid ${isWalletConnected ? '#00ffcc' : '#666'}`,
-                        color: isWalletConnected ? 'black' : 'white',
+                        background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                        border: '1px solid #00ffcc',
+                        color: 'black',
                         fontWeight: 'bold'
                       }}
                     >
