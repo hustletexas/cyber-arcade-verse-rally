@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -186,8 +187,8 @@ export const CommunityHub = () => {
         </h2>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
-        {/* LEFT PANEL: Community Info */}
+      {/* Community Updates - Now takes full width */}
+      <div className="max-w-4xl mx-auto">
         <Card 
           className="overflow-hidden"
           style={{ 
@@ -208,7 +209,7 @@ export const CommunityHub = () => {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-96 pr-4">
-              <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {announcements.map((announcement) => (
                   <div 
                     key={announcement.id}
@@ -235,150 +236,150 @@ export const CommunityHub = () => {
             </ScrollArea>
           </CardContent>
         </Card>
+      </div>
 
-        {/* RIGHT PANEL: Live Chat - Now Draggable */}
-        <Card 
-          ref={chatRef}
-          className={`overflow-hidden ${isDragging ? 'cursor-grabbing z-50' : 'cursor-grab'}`}
-          style={{ 
-            background: '#0f0f0f',
-            border: '2px solid #ff00ff',
-            borderRadius: '12px',
-            boxShadow: `
-              0 0 20px #ff00ff30,
-              0 0 40px #00ffcc20,
-              inset 0 0 20px #ff00ff05
-            `,
-            position: 'fixed',
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-            width: '384px',
-            maxWidth: '384px',
-            zIndex: isDragging ? 1000 : 10,
-            userSelect: 'none'
-          }}
-          onMouseDown={handleMouseDown}
-        >
-          <CardHeader>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2 text-neon-cyan">
-                <Move size={16} className="opacity-60" />
-                <span className="text-xs font-mono opacity-60">DRAG TO MOVE</span>
-              </div>
+      {/* Live Chat - Now Draggable and Fixed Position */}
+      <Card 
+        ref={chatRef}
+        className={`overflow-hidden ${isDragging ? 'cursor-grabbing z-50' : 'cursor-grab'}`}
+        style={{ 
+          background: '#0f0f0f',
+          border: '2px solid #ff00ff',
+          borderRadius: '12px',
+          boxShadow: `
+            0 0 20px #ff00ff30,
+            0 0 40px #00ffcc20,
+            inset 0 0 20px #ff00ff05
+          `,
+          position: 'fixed',
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          width: '384px',
+          maxWidth: '384px',
+          zIndex: isDragging ? 1000 : 10,
+          userSelect: 'none'
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        <CardHeader>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-neon-cyan">
+              <Move size={16} className="opacity-60" />
+              <span className="text-xs font-mono opacity-60">DRAG TO MOVE</span>
             </div>
-            <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
-              💬 LIVE CHAT
-              <div className="flex items-center gap-1 text-sm text-neon-green">
-                <Users size={16} />
-                <span>{messages.length > 0 ? Math.floor(Math.random() * 50) + 10 : 0}</span>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col h-96">
-            {/* Chat Messages */}
-            <ScrollArea className="flex-1 mb-4 pr-2">
-              <div className="space-y-3">
-                {messages.map((message) => (
-                  <div 
-                    key={message.id}
-                    className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
-                    style={{ boxShadow: '0 0 5px #00ffcc15' }}
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
-                        {message.username}
-                        {!message.isGuest && <span className="text-neon-cyan ml-1">👑</span>}
-                      </span>
-                      <span className="text-neon-purple text-xs">
-                        {formatTime(message.timestamp)}
-                      </span>
-                    </div>
-                    <p className="text-gray-200 text-sm">
-                      {message.message}
-                    </p>
+          </div>
+          <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
+            💬 LIVE CHAT
+            <div className="flex items-center gap-1 text-sm text-neon-green">
+              <Users size={16} />
+              <span>{messages.length > 0 ? Math.floor(Math.random() * 50) + 10 : 0}</span>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col h-96">
+          {/* Chat Messages */}
+          <ScrollArea className="flex-1 mb-4 pr-2">
+            <div className="space-y-3">
+              {messages.map((message) => (
+                <div 
+                  key={message.id}
+                  className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
+                  style={{ boxShadow: '0 0 5px #00ffcc15' }}
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
+                      {message.username}
+                      {!message.isGuest && <span className="text-neon-cyan ml-1">👑</span>}
+                    </span>
+                    <span className="text-neon-purple text-xs">
+                      {formatTime(message.timestamp)}
+                    </span>
                   </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
+                  <p className="text-gray-200 text-sm">
+                    {message.message}
+                  </p>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
 
-            {/* Login Form or Chat Input */}
-            {!isLoggedIn ? (
-              <div className="space-y-3">
-                {!showLoginForm ? (
-                  <Button 
-                    onClick={() => setShowLoginForm(true)}
-                    className="w-full"
-                    style={{
-                      background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
-                      border: '1px solid #00ffcc',
-                      color: 'black',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    <Zap size={16} className="mr-2" />
-                    JOIN CHAT
-                  </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Enter your username..."
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                      className="bg-black/50 border-neon-cyan text-white placeholder-gray-400"
-                    />
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleLogin}
-                        className="flex-1"
-                        style={{
-                          background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
-                          border: '1px solid #00ffcc',
-                          color: 'black',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        LOGIN
-                      </Button>
-                      <Button 
-                        onClick={() => setShowLoginForm(false)}
-                        variant="outline"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple/10"
-                      >
-                        CANCEL
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Type your message..."
-                  value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  className="flex-1 bg-black/50 border-neon-pink text-white placeholder-gray-400"
-                />
+          {/* Login Form or Chat Input */}
+          {!isLoggedIn ? (
+            <div className="space-y-3">
+              {!showLoginForm ? (
                 <Button 
-                  onClick={handleSendMessage}
-                  disabled={!currentMessage.trim()}
+                  onClick={() => setShowLoginForm(true)}
+                  className="w-full"
                   style={{
-                    background: currentMessage.trim() 
-                      ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
-                      : 'gray',
-                    border: '1px solid #ff00ff',
-                    color: 'white'
+                    background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                    border: '1px solid #00ffcc',
+                    color: 'black',
+                    fontWeight: 'bold'
                   }}
                 >
-                  <Send size={16} />
+                  <Zap size={16} className="mr-2" />
+                  JOIN CHAT
                 </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              ) : (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Enter your username..."
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                    className="bg-black/50 border-neon-cyan text-white placeholder-gray-400"
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleLogin}
+                      className="flex-1"
+                      style={{
+                        background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                        border: '1px solid #00ffcc',
+                        color: 'black',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      LOGIN
+                    </Button>
+                    <Button 
+                      onClick={() => setShowLoginForm(false)}
+                      variant="outline"
+                      className="border-neon-purple text-neon-purple hover:bg-neon-purple/10"
+                    >
+                      CANCEL
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                placeholder="Type your message..."
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="flex-1 bg-black/50 border-neon-pink text-white placeholder-gray-400"
+              />
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!currentMessage.trim()}
+                style={{
+                  background: currentMessage.trim() 
+                    ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
+                    : 'gray',
+                  border: '1px solid #ff00ff',
+                  color: 'white'
+                }}
+              >
+                <Send size={16} />
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </section>
   );
 };
