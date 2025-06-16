@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,7 @@ export const LiveTournaments = () => {
       id: 'fortnite-championship',
       name: 'FORTNITE BATTLE ROYALE',
       game: '🎯',
-      image: '/lovable-uploads/114fd628-dccf-45c6-ab13-1f49fb075c47.png',
+      image: '/lovable-uploads/29ba2fef-23a8-4456-933b-1d8ab31c0a99.png',
       status: 'live',
       participants: 72,
       prize: '100,000 $CCTR',
