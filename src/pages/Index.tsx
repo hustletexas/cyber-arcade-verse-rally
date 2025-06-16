@@ -35,7 +35,6 @@ const Index = () => {
       </div>
 
       <TopBar />
-      <CyberMusicPlayer />
 
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
@@ -61,6 +60,13 @@ const Index = () => {
             <Badge className="bg-neon-green text-black px-2 md:px-4 py-1 md:py-2 text-xs md:text-sm font-bold neon-glow">
               🪙 $CCTR REWARDS
             </Badge>
+          </div>
+
+          {/* Music Player - Centered below badges */}
+          <div className="flex justify-center mb-8 md:mb-12">
+            <div className="w-full max-w-md">
+              <CyberMusicPlayer />
+            </div>
           </div>
         </div>
 

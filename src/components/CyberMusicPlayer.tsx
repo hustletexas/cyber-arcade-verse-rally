@@ -134,7 +134,7 @@ export const CyberMusicPlayer = () => {
 
   return (
     <Card 
-      className="w-80 overflow-hidden fixed top-4 right-4 z-50"
+      className="w-full max-w-sm mx-auto overflow-hidden"
       style={{ 
         background: '#0f0f0f',
         border: '1px solid #00ffcc',
@@ -147,10 +147,10 @@ export const CyberMusicPlayer = () => {
       }}
     >
       <CardContent className="p-4">
-        {/* Compact Title */}
-        <div className="text-center mb-3">
+        {/* Title */}
+        <div className="text-center mb-4">
           <h2 
-            className="text-lg font-bold bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent"
+            className="text-xl font-bold bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent"
             style={{
               fontFamily: 'Orbitron, monospace',
               textShadow: '0 0 5px #00ffcc, 0 0 10px #ff00ff',
@@ -161,9 +161,9 @@ export const CyberMusicPlayer = () => {
           </h2>
         </div>
 
-        {/* Compact Track Info */}
-        <div className="flex items-center justify-between mb-3 p-2 rounded-lg bg-black/50 border border-neon-purple/30">
-          <div className="flex items-center gap-2">
+        {/* Track Info */}
+        <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-black/50 border border-neon-purple/30">
+          <div className="flex items-center gap-3">
             <EqualizerBars />
             <div className="min-w-0 flex-1">
               <h3 className="text-neon-cyan font-bold text-sm truncate">{track.title}</h3>
@@ -175,73 +175,73 @@ export const CyberMusicPlayer = () => {
           </div>
         </div>
 
-        {/* Compact Progress Bar */}
-        <div className="mb-3">
+        {/* Progress Bar */}
+        <div className="mb-4">
           <Slider
             value={[progress]}
             onValueChange={handleSeek}
             max={100}
             step={0.1}
-            className="w-full h-1"
+            className="w-full h-2"
           />
         </div>
 
-        {/* Compact Controls */}
-        <div className="flex items-center justify-center gap-2 mb-3">
+        {/* Controls */}
+        <div className="flex items-center justify-center gap-3 mb-4">
           <Button
             onClick={handlePrevious}
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-10 w-10 p-0"
             style={{
               background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
               border: '1px solid #00ffcc',
-              borderRadius: '6px',
+              borderRadius: '8px',
               boxShadow: '0 0 5px #00ffcc30'
             }}
           >
-            <SkipBack size={12} />
+            <SkipBack size={16} />
           </Button>
 
           <Button
             onClick={handlePlayPause}
             size="sm"
-            className="h-10 w-10 p-0"
+            className="h-12 w-12 p-0"
             style={{
               background: isPlaying 
                 ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
                 : 'linear-gradient(45deg, #00ffcc, #0088aa)',
               border: `1px solid ${isPlaying ? '#ff00ff' : '#00ffcc'}`,
-              borderRadius: '8px',
+              borderRadius: '10px',
               boxShadow: `0 0 10px ${isPlaying ? '#ff00ff' : '#00ffcc'}30`
             }}
           >
-            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            {isPlaying ? <Pause size={20} /> : <Play size={20} />}
           </Button>
 
           <Button
             onClick={handleNext}
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-10 w-10 p-0"
             style={{
               background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
               border: '1px solid #00ffcc',
-              borderRadius: '6px',
+              borderRadius: '8px',
               boxShadow: '0 0 5px #00ffcc30'
             }}
           >
-            <SkipForward size={12} />
+            <SkipForward size={16} />
           </Button>
         </div>
 
-        {/* Compact Volume Control */}
-        <div className="flex items-center gap-2">
+        {/* Volume Control */}
+        <div className="flex items-center gap-3">
           <Button
             onClick={() => setIsMuted(!isMuted)}
             size="sm"
             variant="ghost"
-            className="text-neon-cyan hover:text-neon-pink p-1 h-6 w-6"
+            className="text-neon-cyan hover:text-neon-pink p-2 h-8 w-8"
           >
-            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </Button>
           <div className="flex-1">
             <Slider
@@ -249,10 +249,10 @@ export const CyberMusicPlayer = () => {
               onValueChange={(value) => setVolume(value[0])}
               max={100}
               step={1}
-              className="h-1"
+              className="h-2"
             />
           </div>
-          <span className="text-neon-purple text-xs w-8">{volume}%</span>
+          <span className="text-neon-purple text-sm w-10 text-right">{volume}%</span>
         </div>
 
         {/* Hidden Audio Element */}
