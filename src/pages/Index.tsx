@@ -108,14 +108,6 @@ const Index = () => {
             <Marketplace />
           </section>
 
-          {/* Buy CCTR Section - Moved under NFT Marketplace */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              💰 BUY $CCTR
-            </h2>
-            <TokenPurchase />
-          </section>
-
           {/* Tournaments Section */}
           <section>
             
@@ -152,6 +144,14 @@ const Index = () => {
               📈 DEX
             </h2>
             <SolanaDexChart />
+          </section>
+
+          {/* Buy CCTR Section - Moved under DEX */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              💰 BUY $CCTR
+            </h2>
+            <TokenPurchase />
           </section>
         </div>
       </main>
