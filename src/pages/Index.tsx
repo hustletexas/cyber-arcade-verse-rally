@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -16,10 +14,8 @@ import { TokenPurchase } from '@/components/TokenPurchase';
 import { LiveTournaments } from '@/components/LiveTournaments';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
-
 const Index = () => {
-  return (
-    <div className="min-h-screen bg-black">
+  return <div className="min-h-screen bg-black">
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -43,12 +39,9 @@ const Index = () => {
         <div className="text-center mb-8 md:mb-12">
           {/* Main Logo - Centered */}
           <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-              alt="Cyber City Arcade" 
-              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300"
-              style={{ filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))' }}
-            />
+            <img src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" alt="Cyber City Arcade" className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" style={{
+            filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
+          }} />
           </div>
 
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
@@ -80,9 +73,8 @@ const Index = () => {
           {/* Music Player Section - Added under Dashboard */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🎶 CYBER CITY RADIO
-            </h2>
-            <div className="flex justify-center">
+          </h2>
+            <div className="flex justify-center mx-0 px-0">
               <CyberMusicPlayer />
             </div>
           </section>
@@ -175,10 +167,7 @@ const Index = () => {
           <div className="flex flex-wrap justify-center gap-2 md:gap-6 text-xs md:text-sm text-muted-foreground">
             <span>Solana Network</span>
             <span>•</span>
-            <button 
-              onClick={() => window.open('https://magiceden.io/', '_blank')}
-              className="hover:text-neon-cyan transition-colors cursor-pointer"
-            >
+            <button onClick={() => window.open('https://magiceden.io/', '_blank')} className="hover:text-neon-cyan transition-colors cursor-pointer">
               Magic Eden
             </button>
             <span>•</span>
@@ -190,8 +179,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
