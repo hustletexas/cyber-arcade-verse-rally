@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Users, Zap } from 'lucide-react';
+import { Send, Users, Zap, MessageCircle } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -250,6 +250,21 @@ export const CommunityHub = () => {
             {/* Login Form or Chat Input */}
             {!isLoggedIn ? (
               <div className="space-y-3">
+                {/* Discord Connect Button */}
+                <Button 
+                  onClick={() => window.open('https://discord.gg/cybercityarcade', '_blank')}
+                  className="w-full"
+                  style={{
+                    background: 'linear-gradient(45deg, #5865F2, #4752C4)',
+                    border: '1px solid #5865F2',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  <MessageCircle size={16} className="mr-2" />
+                  CONNECT TO DISCORD
+                </Button>
+                
                 {!showLoginForm ? (
                   <Button 
                     onClick={() => setShowLoginForm(true)}
