@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useWallet } from '@/hooks/useWallet';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { supabase } from '@/integrations/supabase/client';
 
 const mockNFTs = [
   {
@@ -38,24 +42,165 @@ const mockNFTs = [
 
 export const Marketplace = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { isWalletConnected, getConnectedWallet } = useWallet();
+  const { balance, refetch: refreshBalance } = useUserBalance();
   const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('cctr');
   const [filter, setFilter] = useState('all');
+  const [purchasing, setPurchasing] = useState<number | null>(null);
 
-  const handlePurchase = (nft: any) => {
-    const price = nft.price[selectedCurrency];
-    const currencySymbol = selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency === 'sol' ? 'SOL' : selectedCurrency === 'usdc' ? 'USDC' : 'PYUSD';
-    
-    toast({
-      title: "🛒 Purchase Initiated",
-      description: `Buying ${nft.name} for ${price} ${currencySymbol}`,
-    });
+  const simulateTransaction = async (currency: string, amount: number): Promise<string> => {
+    // Simulate blockchain transaction
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return `0x${Math.random().toString(16).slice(2, 42)}`;
+  };
 
-    setTimeout(() => {
+  const handlePurchase = async (nft: any) => {
+    if (!user) {
       toast({
-        title: "✅ Purchase Successful!",
-        description: `${nft.name} has been added to your wallet`,
+        title: "Authentication Required",
+        description: "Please log in to make a purchase",
+        variant: "destructive"
       });
-    }, 2000);
+      return;
+    }
+
+    if (!isWalletConnected()) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to make a purchase",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const connectedWallet = getConnectedWallet();
+    if (!connectedWallet) {
+      toast({
+        title: "No Wallet Found",
+        description: "Please connect a wallet to proceed",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const price = nft.price[selectedCurrency];
+    const currencySymbol = selectedCurrency === 'cctr' ? '$CCTR' : 
+                          selectedCurrency === 'sol' ? 'SOL' : 
+                          selectedCurrency === 'usdc' ? 'USDC' : 'PYUSD';
+
+    // Check CCTR balance if paying with CCTR
+    if (selectedCurrency === 'cctr' && balance.cctr_balance < price) {
+      toast({
+        title: "Insufficient Balance",
+        description: `You need ${price} $CCTR but only have ${balance.cctr_balance} $CCTR`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setPurchasing(nft.id);
+
+    try {
+      toast({
+        title: "🔄 Processing Purchase",
+        description: `Buying ${nft.name} for ${price} ${currencySymbol}...`,
+      });
+
+      // Simulate transaction based on currency
+      let transactionHash = '';
+      if (selectedCurrency === 'cctr') {
+        // For CCTR, simulate internal transfer
+        transactionHash = `cctr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      } else {
+        // For crypto currencies, simulate blockchain transaction
+        transactionHash = await simulateTransaction(selectedCurrency, price);
+      }
+
+      // Store purchase in database
+      const { error: purchaseError } = await supabase
+        .from('nft_purchases')
+        .insert({
+          user_id: user.id,
+          nft_id: nft.id.toString(),
+          nft_name: nft.name,
+          price: price,
+          currency: selectedCurrency,
+          wallet_address: connectedWallet.address,
+          transaction_hash: transactionHash,
+          status: 'completed'
+        });
+
+      if (purchaseError) {
+        console.error('Purchase storage error:', purchaseError);
+        toast({
+          title: "Purchase Failed",
+          description: "Failed to record purchase. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Update user balance if paying with CCTR
+      if (selectedCurrency === 'cctr') {
+        // Deduct CCTR balance
+        const newBalance = balance.cctr_balance - price;
+        const { error: balanceError } = await supabase
+          .from('user_balances')
+          .update({
+            cctr_balance: newBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+
+        if (balanceError) {
+          console.error('Balance update error:', balanceError);
+          toast({
+            title: "Payment Failed",
+            description: "Failed to process CCTR payment. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Record the transaction
+        const { error: transactionError } = await supabase
+          .from('token_transactions')
+          .insert({
+            user_id: user.id,
+            amount: -price,
+            transaction_type: 'purchase',
+            description: `NFT Purchase: ${nft.name}`
+          });
+
+        if (transactionError) {
+          console.error('Transaction record error:', transactionError);
+        }
+
+        await refreshBalance();
+      }
+
+      toast({
+        title: "🎉 Purchase Successful!",
+        description: `${nft.name} has been transferred to your wallet: ${connectedWallet.address.slice(0, 6)}...${connectedWallet.address.slice(-4)}`,
+      });
+
+      // Show transaction details
+      toast({
+        title: "📋 Transaction Details",
+        description: `Transaction Hash: ${transactionHash.slice(0, 10)}...`,
+      });
+
+    } catch (error) {
+      console.error('Purchase error:', error);
+      toast({
+        title: "Purchase Failed",
+        description: "Something went wrong with your purchase. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setPurchasing(null);
+    }
   };
 
   const connectPlatform = (platform: string, url: string) => {
@@ -219,9 +364,17 @@ export const Marketplace = () => {
                       
                       <Button
                         onClick={() => handlePurchase(nft)}
+                        disabled={purchasing === nft.id}
                         className="w-full cyber-button"
                       >
-                        🛒 BUY NOW
+                        {purchasing === nft.id ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            PROCESSING...
+                          </div>
+                        ) : (
+                          "🛒 BUY NOW"
+                        )}
                       </Button>
                     </div>
                   </div>

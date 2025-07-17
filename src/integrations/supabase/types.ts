@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      nft_purchases: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          nft_id: string
+          nft_name: string
+          price: number
+          status: string
+          transaction_hash: string | null
+          updated_at: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          currency: string
+          id?: string
+          nft_id: string
+          nft_name: string
+          price: number
+          status?: string
+          transaction_hash?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          nft_id?: string
+          nft_name?: string
+          price?: number
+          status?: string
+          transaction_hash?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
