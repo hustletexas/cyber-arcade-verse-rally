@@ -145,18 +145,6 @@ export const TournamentSection = () => {
       {/* Solana Tournament Bracket System */}
       <SolanaTournamentBracket />
 
-      {/* Tournament Bracket */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-xl md:text-2xl text-neon-cyan text-center">
-            🏆 Cyber City Arcade Tournament Bracket
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TournamentBracket />
-        </CardContent>
-      </Card>
-
       {/* Live Tournaments */}
       <Card className="arcade-frame">
         <CardHeader>
@@ -235,6 +223,18 @@ export const TournamentSection = () => {
               </Card>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Tournament Bracket */}
+      <Card className="arcade-frame">
+        <CardHeader>
+          <CardTitle className="font-display text-xl md:text-2xl text-neon-cyan text-center">
+            🏆 Cyber City Arcade Tournament Bracket
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TournamentBracket />
         </CardContent>
       </Card>
     </div>
