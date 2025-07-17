@@ -142,9 +142,6 @@ export const TournamentSection = () => {
         />
       )}
 
-      {/* Solana Tournament Bracket System */}
-      <SolanaTournamentBracket />
-
       {/* Live Tournaments */}
       <Card className="arcade-frame">
         <CardHeader>
