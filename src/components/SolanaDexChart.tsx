@@ -30,7 +30,10 @@ const tokenMapping = {
   'jito-governance-token': { symbol: 'JTO', mintAddress: 'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL', color: 'neon-green' },
   'pyth-network': { symbol: 'PYTH', mintAddress: 'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3', color: 'neon-cyan' },
   'jupiter-exchange-solana': { symbol: 'JUP', mintAddress: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', color: 'neon-purple' },
-  'orca': { symbol: 'ORCA', mintAddress: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', color: 'neon-blue' }
+  'orca': { symbol: 'ORCA', mintAddress: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', color: 'neon-blue' },
+  'helium': { symbol: 'HNT', mintAddress: 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux', color: 'neon-green' },
+  'helium-iot': { symbol: 'IOT', mintAddress: 'iotE9N7GH8QW8AzR2qJ2Y6Cqww1MeB6wNvS7n7qAyZz', color: 'neon-cyan' },
+  'helium-mobile': { symbol: 'MOBILE', mintAddress: 'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6', color: 'neon-pink' }
 };
 
 const CCTR_TOKEN = {
