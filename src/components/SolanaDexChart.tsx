@@ -1,73 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 
-const mockPriceData = [
-  { time: '09:00', CCTR: 0.045, SOL: 85.23, USDC: 1.00, RAY: 1.45, BONK: 0.0000089 },
-  { time: '10:00', CCTR: 0.047, SOL: 86.15, USDC: 1.00, RAY: 1.52, BONK: 0.0000092 },
-  { time: '11:00', CCTR: 0.044, SOL: 84.85, USDC: 0.999, RAY: 1.48, BONK: 0.0000088 },
-  { time: '12:00', CCTR: 0.048, SOL: 87.42, USDC: 1.001, RAY: 1.58, BONK: 0.0000095 },
-  { time: '13:00', CCTR: 0.052, SOL: 89.18, USDC: 1.00, RAY: 1.63, BONK: 0.0000098 },
-  { time: '14:00', CCTR: 0.049, SOL: 88.56, USDC: 1.00, RAY: 1.59, BONK: 0.0000094 },
-];
+interface TokenData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: string;
+  changePercent: number;
+  volume: string;
+  marketCap: string;
+  color: string;
+  mintAddress: string;
+  sparklineData: Array<{ time: string; price: number }>;
+}
 
-const solanaAssets = [
-  { 
-    symbol: 'CCTR', 
-    name: 'Cyber City Token', 
-    price: 0.052, 
-    change: '+15.5%', 
-    volume: '$45,000',
-    marketCap: '$52,000',
-    color: 'neon-green',
-    mintAddress: 'CCTRxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' // Mock address
-  },
-  { 
-    symbol: 'SOL', 
-    name: 'Solana', 
-    price: 88.56, 
-    change: '+3.9%', 
-    volume: '$2.8B',
-    marketCap: '$42.1B',
-    color: 'neon-purple',
-    mintAddress: 'So11111111111111111111111111111111111111112'
-  },
-  { 
-    symbol: 'RAY', 
-    name: 'Raydium', 
-    price: 1.59, 
-    change: '+9.6%', 
-    volume: '$125M',
-    marketCap: '$523M',
-    color: 'neon-cyan',
-    mintAddress: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'
-  },
-  { 
-    symbol: 'BONK', 
-    name: 'Bonk', 
-    price: 0.0000094, 
-    change: '+5.6%', 
-    volume: '$89M',
-    marketCap: '$621M',
-    color: 'neon-pink',
-    mintAddress: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'
-  },
-  { 
-    symbol: 'USDC', 
-    name: 'USD Coin', 
-    price: 1.00, 
-    change: '0.0%', 
-    volume: '$4.2B',
-    marketCap: '$32.8B',
-    color: 'neon-yellow',
-    mintAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-  }
-];
+const tokenMapping = {
+  'solana': { symbol: 'SOL', mintAddress: 'So11111111111111111111111111111111111111112', color: 'neon-purple' },
+  'raydium': { symbol: 'RAY', mintAddress: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R', color: 'neon-cyan' },
+  'bonk': { symbol: 'BONK', mintAddress: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263', color: 'neon-pink' },
+  'usd-coin': { symbol: 'USDC', mintAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', color: 'neon-yellow' },
+  'jito-governance-token': { symbol: 'JTO', mintAddress: 'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL', color: 'neon-green' },
+  'pyth-network': { symbol: 'PYTH', mintAddress: 'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3', color: 'neon-cyan' },
+  'jupiter-exchange-solana': { symbol: 'JUP', mintAddress: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', color: 'neon-purple' },
+  'orca': { symbol: 'ORCA', mintAddress: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', color: 'neon-blue' }
+};
+
+const CCTR_TOKEN = {
+  symbol: 'CCTR',
+  name: 'Cyber City Token',
+  price: 0.052,
+  change: '+15.5%',
+  changePercent: 15.5,
+  volume: '$45,000',
+  marketCap: '$52,000',
+  color: 'neon-green',
+  mintAddress: 'CCTRxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  sparklineData: [
+    { time: '09:00', price: 0.045 },
+    { time: '10:00', price: 0.047 },
+    { time: '11:00', price: 0.044 },
+    { time: '12:00', price: 0.048 },
+    { time: '13:00', price: 0.052 },
+    { time: '14:00', price: 0.049 },
+  ]
+};
 
 export const SolanaDexChart = () => {
   const [selectedAsset, setSelectedAsset] = useState('CCTR');
@@ -76,7 +58,88 @@ export const SolanaDexChart = () => {
   const [swapAmount, setSwapAmount] = useState('');
   const [estimatedOutput, setEstimatedOutput] = useState('0.00');
   const [isSwapping, setIsSwapping] = useState(false);
+  const [solanaAssets, setSolanaAssets] = useState<TokenData[]>([CCTR_TOKEN]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const { toast } = useToast();
+
+  const fetchLiveTokenData = async () => {
+    setIsLoading(true);
+    try {
+      const tokenIds = Object.keys(tokenMapping).join(',');
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${tokenIds}&order=market_cap_desc&per_page=20&page=1&sparkline=true&price_change_percentage=24h`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch token data');
+      }
+      
+      const data = await response.json();
+      
+      const formattedTokens: TokenData[] = data.map((token: any) => {
+        const mapping = tokenMapping[token.id as keyof typeof tokenMapping];
+        if (!mapping) return null;
+        
+        // Create sparkline data from the last 24 hours
+        const sparklineData = token.sparkline_in_7d?.price?.slice(-24)?.map((price: number, index: number) => ({
+          time: `${index}:00`,
+          price: price
+        })) || [];
+        
+        return {
+          symbol: mapping.symbol,
+          name: token.name,
+          price: token.current_price,
+          change: token.price_change_percentage_24h > 0 
+            ? `+${token.price_change_percentage_24h.toFixed(1)}%`
+            : `${token.price_change_percentage_24h.toFixed(1)}%`,
+          changePercent: token.price_change_percentage_24h,
+          volume: formatVolume(token.total_volume),
+          marketCap: formatVolume(token.market_cap),
+          color: mapping.color,
+          mintAddress: mapping.mintAddress,
+          sparklineData: sparklineData
+        };
+      }).filter(Boolean);
+      
+      // Sort by 24h change percentage to show top gainers first
+      const sortedTokens = formattedTokens.sort((a, b) => b.changePercent - a.changePercent);
+      
+      // Always include CCTR token at the top
+      setSolanaAssets([CCTR_TOKEN, ...sortedTokens]);
+      setLastUpdate(new Date());
+      
+    } catch (error) {
+      console.error('Error fetching live token data:', error);
+      toast({
+        title: "Data Fetch Error",
+        description: "Unable to fetch live token data. Using cached data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatVolume = (volume: number): string => {
+    if (volume >= 1e9) return `$${(volume / 1e9).toFixed(1)}B`;
+    if (volume >= 1e6) return `$${(volume / 1e6).toFixed(1)}M`;
+    if (volume >= 1e3) return `$${(volume / 1e3).toFixed(1)}K`;
+    return `$${volume.toFixed(0)}`;
+  };
+
+  useEffect(() => {
+    fetchLiveTokenData();
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchLiveTokenData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getCurrentTokenData = () => {
+    const token = solanaAssets.find(a => a.symbol === selectedAsset);
+    return token ? token.sparklineData : [];
+  };
 
   const handleSwapTokens = () => {
     const temp = swapFromToken;
@@ -238,17 +301,40 @@ export const SolanaDexChart = () => {
             {/* Chart */}
             <Card className="vending-machine p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-neon-cyan">📊 {selectedAsset} Price Chart</h3>
+                <h3 className="font-bold text-neon-cyan flex items-center gap-2">
+                  📊 {selectedAsset} Price Chart
+                  {isLoading && <RefreshCw className="animate-spin" size={16} />}
+                </h3>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="border-neon-green text-neon-green">1H</Button>
+                  <Button 
+                    size="sm" 
+                    onClick={fetchLiveTokenData}
+                    className="cyber-button text-xs"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? '⏳' : '🔄'} REFRESH
+                  </Button>
                   <Button size="sm" className="cyber-button">24H</Button>
-                  <Button size="sm" variant="outline" className="border-neon-purple text-neon-purple">7D</Button>
+                </div>
+              </div>
+
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-neon-green text-black text-xs">
+                    🔥 TOP GAINERS TODAY
+                  </Badge>
+                  <Badge className="bg-neon-cyan text-black text-xs">
+                    Last Updated: {lastUpdate.toLocaleTimeString()}
+                  </Badge>
+                </div>
+                <div className="text-sm text-neon-purple">
+                  {solanaAssets.filter(a => a.changePercent > 0).length} gainers • {solanaAssets.filter(a => a.changePercent < 0).length} losers
                 </div>
               </div>
               
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={mockPriceData}>
+                  <AreaChart data={getCurrentTokenData()}>
                     <defs>
                       <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#00FFFF" stopOpacity={0.3}/>
@@ -275,7 +361,7 @@ export const SolanaDexChart = () => {
                     />
                     <Area
                       type="monotone"
-                      dataKey={selectedAsset}
+                      dataKey="price"
                       stroke="#00FFFF"
                       strokeWidth={2}
                       fillOpacity={1}
