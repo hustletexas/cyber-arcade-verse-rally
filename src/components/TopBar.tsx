@@ -320,10 +320,12 @@ export const TopBar = () => {
       });
 
       // Generate a new Solana keypair
-      const { Keypair, Connection, PublicKey } = await import('@solana/web3.js');
+      const { Keypair } = await import('@solana/web3.js');
+      const bs58 = await import('bs58');
+      
       const newKeypair = Keypair.generate();
       const publicKey = newKeypair.publicKey.toString();
-      const privateKey = Buffer.from(newKeypair.secretKey).toString('hex');
+      const privateKey = bs58.default.encode(newKeypair.secretKey);
       
       const walletData = { publicKey, privateKey };
       
