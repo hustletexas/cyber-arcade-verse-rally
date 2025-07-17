@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { ArrowUpDown, RefreshCw, TrendingUp, TrendingDown, Search } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
-import { CCTRStaking } from './CCTRStaking';
 
 interface TokenData {
   symbol: string;
@@ -383,9 +382,6 @@ export const SolanaDexChart = () => {
                 )}
               </div>
             </Card>
-
-            {/* CCTR Staking Component */}
-            <CCTRStaking />
           </div>
 
           {/* Chart and Swap Interface */}

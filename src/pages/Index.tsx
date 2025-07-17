@@ -12,12 +12,15 @@ import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
+import { CCTRStaking } from '@/components/CCTRStaking';
 import { LiveTournaments } from '@/components/LiveTournaments';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
+
 const Index = () => {
-  return <div className="min-h-screen bg-black">
+  return (
+    <div className="min-h-screen bg-black">
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -41,9 +44,14 @@ const Index = () => {
         <div className="text-center mb-8 md:mb-12">
           {/* Main Logo - Centered */}
           <div className="flex justify-center mb-6">
-            <img src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" alt="Cyber City Arcade" className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" style={{
-            filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
-          }} />
+            <img 
+              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
+              alt="Cyber City Arcade" 
+              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" 
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
+              }} 
+            />
           </div>
 
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
@@ -75,7 +83,7 @@ const Index = () => {
           {/* Music Player Section - Added under Dashboard */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-          </h2>
+            </h2>
             <div className="flex justify-center mx-0 px-0">
               <CyberMusicPlayer />
             </div>
@@ -112,7 +120,6 @@ const Index = () => {
 
           {/* Tournaments Section */}
           <section>
-            
             <TournamentSection />
           </section>
 
@@ -155,6 +162,14 @@ const Index = () => {
             </h2>
             <TokenPurchase />
           </section>
+
+          {/* CCTR Staking Section - Moved under Buy CCTR */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🔒 CCTR STAKING
+            </h2>
+            <CCTRStaking />
+          </section>
         </div>
       </main>
 
@@ -182,6 +197,8 @@ const Index = () => {
       
       {/* Cart Drawer */}
       <CartDrawer />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
