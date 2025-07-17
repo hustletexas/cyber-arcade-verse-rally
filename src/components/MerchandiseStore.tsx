@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart, Shirt, Eye } from 'lucide-react';
 
 interface MerchandiseItem {
@@ -53,9 +54,11 @@ const merchandiseItems: MerchandiseItem[] = [
 
 export const MerchandiseStore = () => {
   const { toast } = useToast();
+  const { addToCart, getTotalItems, getTotalPrice, setIsOpen } = useCart();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [cart, setCart] = useState<{[key: string]: number}>({});
   const [selectedItem, setSelectedItem] = useState<MerchandiseItem | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
 
   const categories = [
     { value: 'all', label: '🎮 ALL ITEMS', icon: '🎮' },
@@ -68,23 +71,44 @@ export const MerchandiseStore = () => {
     ? merchandiseItems 
     : merchandiseItems.filter(item => item.category === selectedCategory);
 
-  const addToCart = (itemId: string, itemName: string) => {
-    setCart(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
+  const handleAddToCart = (item: MerchandiseItem) => {
+    if (!selectedSize) {
+      toast({
+        title: "Please Select Size",
+        description: "Choose a size before adding to cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedColor) {
+      toast({
+        title: "Please Select Color",
+        description: "Choose a color before adding to cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      category: item.category,
+      selectedSize,
+      selectedColor
+    });
+
     toast({
       title: "Added to Cart! 🛒",
-      description: `${itemName} has been added to your cart`,
+      description: `${item.name} (${selectedSize}, ${selectedColor}) added to cart`,
     });
-  };
 
-  const getTotalItems = () => {
-    return Object.values(cart).reduce((sum, count) => sum + count, 0);
-  };
-
-  const getTotalPrice = () => {
-    return Object.entries(cart).reduce((total, [itemId, count]) => {
-      const item = merchandiseItems.find(i => i.id === itemId);
-      return total + (item ? item.price * count : 0);
-    }, 0);
+    // Reset selections
+    setSelectedSize('');
+    setSelectedColor('');
+    setSelectedItem(null);
   };
 
   return (
@@ -94,10 +118,13 @@ export const MerchandiseStore = () => {
           🎮 CYBER CITY ARCADE OFFICIAL STORE
           <Badge className="bg-neon-pink text-black">AUTHENTIC MERCH</Badge>
           {getTotalItems() > 0 && (
-            <Badge className="bg-neon-cyan text-black ml-auto">
-              <ShoppingCart size={16} className="mr-1" />
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="bg-neon-cyan text-black ml-auto hover:bg-neon-cyan/80 flex items-center gap-2"
+            >
+              <ShoppingCart size={16} />
               {getTotalItems()} items - ${getTotalPrice().toFixed(2)}
-            </Badge>
+            </Button>
           )}
         </CardTitle>
       </CardHeader>
@@ -182,7 +209,7 @@ export const MerchandiseStore = () => {
 
                 <div className="flex gap-2">
                   <Button 
-                    onClick={() => addToCart(item.id, item.name)}
+                    onClick={() => setSelectedItem(item)}
                     className="flex-1 cyber-button flex items-center gap-2"
                   >
                     <ShoppingCart size={16} />
@@ -242,12 +269,41 @@ export const MerchandiseStore = () => {
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-bold text-neon-purple mb-3">AVAILABLE SIZES</h3>
-                      <div className="flex flex-wrap gap-2">
+                      <h3 className="text-lg font-bold text-neon-purple mb-3">SELECT SIZE</h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
                         {selectedItem.sizes.map((size, index) => (
-                          <Badge key={index} className="bg-neon-cyan text-black px-3 py-1 text-base">
+                          <Button
+                            key={index}
+                            variant={selectedSize === size ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedSize(size)}
+                            className={selectedSize === size 
+                              ? "bg-neon-cyan text-black" 
+                              : "border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                            }
+                          >
                             {size}
-                          </Badge>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold text-neon-purple mb-3">SELECT COLOR</h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {selectedItem.colors.map((color, index) => (
+                          <Button
+                            key={index}
+                            variant={selectedColor === color ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedColor(color)}
+                            className={selectedColor === color 
+                              ? "bg-neon-pink text-black" 
+                              : "border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                            }
+                          >
+                            {color}
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -264,10 +320,8 @@ export const MerchandiseStore = () => {
                       </div>
                       
                       <Button 
-                        onClick={() => {
-                          addToCart(selectedItem.id, selectedItem.name);
-                          setSelectedItem(null);
-                        }}
+                        onClick={() => handleAddToCart(selectedItem)}
+                        disabled={!selectedSize || !selectedColor}
                         className="w-full cyber-button flex items-center gap-2 text-lg py-3"
                       >
                         <ShoppingCart size={20} />
@@ -281,7 +335,7 @@ export const MerchandiseStore = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Cart Summary */}
+        {/* Quick Cart Access */}
         {getTotalItems() > 0 && (
           <Card className="holographic p-6">
             <div className="flex justify-between items-center mb-4">
@@ -292,15 +346,11 @@ export const MerchandiseStore = () => {
               </div>
             </div>
             <div className="flex gap-4">
-              <Button className="flex-1 cyber-button">
-                🚀 PROCEED TO CHECKOUT
-              </Button>
               <Button 
-                variant="outline" 
-                className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
-                onClick={() => setCart({})}
+                onClick={() => setIsOpen(true)}
+                className="flex-1 cyber-button"
               >
-                🗑️ CLEAR CART
+                🚀 VIEW CART & CHECKOUT
               </Button>
             </div>
           </Card>

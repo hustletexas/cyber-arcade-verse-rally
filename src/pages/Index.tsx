@@ -14,6 +14,7 @@ import { TokenPurchase } from '@/components/TokenPurchase';
 import { LiveTournaments } from '@/components/LiveTournaments';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
+import { CartDrawer } from '@/components/CartDrawer';
 const Index = () => {
   return <div className="min-h-screen bg-black">
       {/* Enhanced Animated Background */}
@@ -177,6 +178,9 @@ const Index = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Cart Drawer */}
+      <CartDrawer />
     </div>;
 };
 export default Index;
