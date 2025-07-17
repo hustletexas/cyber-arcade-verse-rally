@@ -505,25 +505,6 @@ export const TopBar = () => {
                 </Button>
               )}
 
-              {/* Coinbase/Base Wallet */}
-              {coinbaseConnected ? (
-                <Button 
-                  onClick={disconnectCoinbase}
-                  variant="outline"
-                  size="sm"
-                  className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                >
-                  🔵 {coinbaseAddress.slice(0, 6)}...
-                </Button>
-              ) : (
-                <Button 
-                  onClick={connectCoinbase}
-                  className="cyber-button flex items-center gap-2"
-                  size="sm"
-                >
-                  🔵 BASE WALLET
-                </Button>
-              )}
             </div>
           </div>
 
