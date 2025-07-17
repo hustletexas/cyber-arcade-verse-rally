@@ -36,7 +36,7 @@ export const TokenPurchase = () => {
         body: {
           amount: amount,
           payment_method: paymentMethod,
-          payment_currency: paymentMethod === 'usdc' ? 'USDC' : 'USD'
+          payment_currency: getPaymentCurrency(paymentMethod)
         }
       });
 
@@ -63,9 +63,24 @@ export const TokenPurchase = () => {
     }
   };
 
+  const getPaymentCurrency = (method: string) => {
+    switch (method) {
+      case 'usdc':
+        return 'USDC';
+      case 'pyusd':
+        return 'PYUSD';
+      case 'solana':
+        return 'SOL';
+      default:
+        return 'USD';
+    }
+  };
+
   const paymentMethods = [
     { value: 'paypal', label: '💳 PayPal', icon: '💳' },
-    { value: 'usdc', label: '🪙 USDC', icon: '🪙' }
+    { value: 'usdc', label: '🪙 USDC', icon: '🪙' },
+    { value: 'pyusd', label: '💰 PYUSD', icon: '💰' },
+    { value: 'solana', label: '⚡ Solana', icon: '⚡' }
   ];
 
   const presetAmounts = [500, 1000, 2500, 5000, 10000];
@@ -209,6 +224,8 @@ export const TokenPurchase = () => {
                 <SelectContent>
                   <SelectItem value="paypal">💳 PayPal</SelectItem>
                   <SelectItem value="usdc">🪙 USDC</SelectItem>
+                  <SelectItem value="pyusd">💰 PYUSD</SelectItem>
+                  <SelectItem value="solana">⚡ Solana</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -224,7 +241,7 @@ export const TokenPurchase = () => {
                 <div className="flex justify-between">
                   <span>Total Cost:</span>
                   <span className="text-neon-green font-bold">
-                    ${(amount * tokenPrice).toFixed(2)} {paymentMethod === 'usdc' ? 'USDC' : 'USD'}
+                    ${(amount * tokenPrice).toFixed(2)} {getPaymentCurrency(paymentMethod)}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
@@ -303,7 +320,7 @@ export const TokenPurchase = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-neon-green">✅</span>
-                  <span className="text-sm">USDC Cryptocurrency Support</span>
+                  <span className="text-sm">Multi-Currency Support</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-neon-green">✅</span>
