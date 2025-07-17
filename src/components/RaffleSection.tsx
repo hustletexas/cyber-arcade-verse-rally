@@ -6,8 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { useWallet } from '@/hooks/useWallet';
 import { supabase } from '@/integrations/supabase/client';
-import { Gift, Trophy, Ticket, Users, Clock } from 'lucide-react';
+import { Gift, Trophy, Ticket, Users, Clock, Wallet } from 'lucide-react';
 
 interface Raffle {
   id: string;
@@ -28,78 +30,110 @@ interface Raffle {
 export const RaffleSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { balance, loading: balanceLoading, refetch: refetchBalance } = useUserBalance();
+  const { isWalletConnected, getConnectedWallet } = useWallet();
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [loading, setLoading] = useState(true);
   const [ticketCounts, setTicketCounts] = useState<{[key: string]: number}>({});
   const [purchasing, setPurchasing] = useState<{[key: string]: boolean}>({});
 
-  useEffect(() => {
-    // Treasure chest raffles with random prizes
-    const treasureChests: Raffle[] = [
-      {
-        id: '1',
-        title: 'Common Treasure Chest',
-        description: 'Basic loot with surprise rewards',
-        prize_type: 'random',
-        prize_name: 'Random Prize: Merch, Small CCTR, or Common NFT',
-        prize_value: 5000, // $50
-        prize_image: '/lovable-uploads/08a3dde3-268a-45e6-9985-248775e6cb58.png',
-        ticket_price: 50,
-        max_tickets: 2000,
-        tickets_sold: 1240,
-        end_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active',
-        rarity: 'Common'
-      },
-      {
-        id: '2',
-        title: 'Rare Treasure Chest',
-        description: 'Valuable rewards with better odds',
-        prize_type: 'random',
-        prize_name: 'Random Prize: Premium Merch, CCTR Bundle, or Rare NFT',
-        prize_value: 15000, // $150
-        prize_image: '/lovable-uploads/6347bc0d-7044-4d7c-8264-0d89f8640c08.png',
-        ticket_price: 150,
-        max_tickets: 1000,
-        tickets_sold: 560,
-        end_date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active',
-        rarity: 'Rare'
-      },
-      {
-        id: '3',
-        title: 'Epic Treasure Chest',
-        description: 'High-tier loot for serious collectors',
-        prize_type: 'random',
-        prize_name: 'Random Prize: Exclusive Merch, Large CCTR, Epic NFT, or USDC',
-        prize_value: 40000, // $400
-        prize_image: '/lovable-uploads/7b8388cc-637c-4b0e-9a7e-d1fda1b2a279.png',
-        ticket_price: 400,
-        max_tickets: 500,
-        tickets_sold: 178,
-        end_date: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active',
-        rarity: 'Epic'
-      },
-      {
-        id: '4',
-        title: 'Legendary Treasure Chest',
-        description: 'Ultimate prize pool with maximum rewards',
-        prize_type: 'random',
-        prize_name: 'Random Prize: Limited Merch, Massive CCTR, Legendary NFT, or Big USDC',
-        prize_value: 100000, // $1000
-        prize_image: '/lovable-uploads/89628fec-79c5-4251-b4cb-915cceb7e9b0.png',
-        ticket_price: 1000,
-        max_tickets: 200,
-        tickets_sold: 45,
-        end_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active',
-        rarity: 'Legendary'
+  const fetchRaffles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('raffles')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        // If no raffles in database, use mock data
+        const treasureChests: Raffle[] = [
+          {
+            id: '1',
+            title: 'Common Treasure Chest',
+            description: 'Basic loot with surprise rewards',
+            prize_type: 'random',
+            prize_name: 'Random Prize: Merch, Small CCTR, or Common NFT',
+            prize_value: 5000,
+            prize_image: '/lovable-uploads/08a3dde3-268a-45e6-9985-248775e6cb58.png',
+            ticket_price: 50,
+            max_tickets: 2000,
+            tickets_sold: 1240,
+            end_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            rarity: 'Common'
+          },
+          {
+            id: '2',
+            title: 'Rare Treasure Chest',
+            description: 'Valuable rewards with better odds',
+            prize_type: 'random',
+            prize_name: 'Random Prize: Premium Merch, CCTR Bundle, or Rare NFT',
+            prize_value: 15000,
+            prize_image: '/lovable-uploads/6347bc0d-7044-4d7c-8264-0d89f8640c08.png',
+            ticket_price: 150,
+            max_tickets: 1000,
+            tickets_sold: 560,
+            end_date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            rarity: 'Rare'
+          },
+          {
+            id: '3',
+            title: 'Epic Treasure Chest',
+            description: 'High-tier loot for serious collectors',
+            prize_type: 'random',
+            prize_name: 'Random Prize: Exclusive Merch, Large CCTR, Epic NFT, or USDC',
+            prize_value: 40000,
+            prize_image: '/lovable-uploads/7b8388cc-637c-4b0e-9a7e-d1fda1b2a279.png',
+            ticket_price: 400,
+            max_tickets: 500,
+            tickets_sold: 178,
+            end_date: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            rarity: 'Epic'
+          },
+          {
+            id: '4',
+            title: 'Legendary Treasure Chest',
+            description: 'Ultimate prize pool with maximum rewards',
+            prize_type: 'random',
+            prize_name: 'Random Prize: Limited Merch, Massive CCTR, Legendary NFT, or Big USDC',
+            prize_value: 100000,
+            prize_image: '/lovable-uploads/89628fec-79c5-4251-b4cb-915cceb7e9b0.png',
+            ticket_price: 1000,
+            max_tickets: 200,
+            tickets_sold: 45,
+            end_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            rarity: 'Legendary'
+          }
+        ];
+        setRaffles(treasureChests);
+      } else {
+        // Map database data to include rarity based on ticket price
+        const rafflesWithRarity = data.map(raffle => ({
+          ...raffle,
+          rarity: raffle.ticket_price >= 1000 ? 'Legendary' :
+                  raffle.ticket_price >= 400 ? 'Epic' :
+                  raffle.ticket_price >= 150 ? 'Rare' : 'Common'
+        }));
+        setRaffles(rafflesWithRarity);
       }
-    ];
-    
-    setRaffles(treasureChests);
-    setLoading(false);
+    } catch (error) {
+      console.error('Error fetching raffles:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load raffles",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRaffles();
   }, []);
 
   const handlePurchaseTickets = async (raffleId: string) => {
@@ -112,27 +146,62 @@ export const RaffleSection = () => {
       return;
     }
 
+    if (!isWalletConnected()) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to purchase tickets",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const ticketCount = ticketCounts[raffleId] || 1;
+    const raffle = raffles.find(r => r.id === raffleId);
+    if (!raffle) return;
+
+    const totalCost = ticketCount * raffle.ticket_price;
+    
+    if (balance.cctr_balance < totalCost) {
+      toast({
+        title: "Insufficient Balance",
+        description: `You need ${totalCost} CCTR tokens to purchase ${ticketCount} ticket(s)`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setPurchasing(prev => ({ ...prev, [raffleId]: true }));
 
     try {
-      // Simulate purchase process
-      setTimeout(() => {
-        toast({
-          title: "🎫 Tickets Purchased!",
-          description: `Successfully purchased ${ticketCount} ticket(s). Good luck opening your treasure chest!`,
-        });
-        
-        // Update local state
-        setRaffles(prev => prev.map(raffle => 
-          raffle.id === raffleId 
-            ? { ...raffle, tickets_sold: raffle.tickets_sold + ticketCount }
-            : raffle
-        ));
-        
-        setTicketCounts(prev => ({ ...prev, [raffleId]: 1 }));
-        setPurchasing(prev => ({ ...prev, [raffleId]: false }));
-      }, 2000);
+      const connectedWallet = getConnectedWallet();
+      
+      // Call edge function to handle purchase
+      const { data, error } = await supabase.functions.invoke('purchase-raffle-ticket', {
+        body: {
+          raffle_id: raffleId,
+          ticket_count: ticketCount,
+          wallet_address: connectedWallet?.address
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "🎫 Tickets Purchased!",
+        description: `Successfully purchased ${ticketCount} ticket(s). Good luck opening your treasure chest!`,
+      });
+
+      // Update local state
+      setRaffles(prev => prev.map(r => 
+        r.id === raffleId 
+          ? { ...r, tickets_sold: r.tickets_sold + ticketCount }
+          : r
+      ));
+      
+      setTicketCounts(prev => ({ ...prev, [raffleId]: 1 }));
+      
+      // Refresh balance
+      refetchBalance();
 
     } catch (error: any) {
       toast({
@@ -140,6 +209,7 @@ export const RaffleSection = () => {
         description: error.message || "Failed to purchase tickets",
         variant: "destructive",
       });
+    } finally {
       setPurchasing(prev => ({ ...prev, [raffleId]: false }));
     }
   };
@@ -298,9 +368,43 @@ export const RaffleSection = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     Login required to open treasure chests
                   </p>
-                  <Button variant="outline" size="sm" className="border-neon-cyan text-neon-cyan">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-neon-cyan text-neon-cyan"
+                    onClick={() => window.location.href = '/auth'}
+                  >
+                    <Wallet className="w-4 h-4 mr-2" />
                     Login to Play
                   </Button>
+                </div>
+              )}
+
+              {user && !isWalletConnected() && (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Connect wallet to purchase tickets
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-neon-purple text-neon-purple"
+                    onClick={() => window.location.href = '/auth'}
+                  >
+                    <Wallet className="w-4 h-4 mr-2" />
+                    Connect Wallet
+                  </Button>
+                </div>
+              )}
+
+              {user && isWalletConnected() && balance.cctr_balance < raffle.ticket_price && (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Insufficient CCTR balance
+                  </p>
+                  <Badge variant="outline" className="border-neon-orange text-neon-orange">
+                    Need {raffle.ticket_price} CCTR
+                  </Badge>
                 </div>
               )}
             </CardContent>
