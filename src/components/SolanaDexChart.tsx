@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowUpDown, RefreshCw, TrendingUp, TrendingDown, Search } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
+import { CCTRStaking } from './CCTRStaking';
 
 interface TokenData {
   symbol: string;
@@ -323,64 +324,69 @@ export const SolanaDexChart = () => {
       <CardContent>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Asset List */}
-          <Card className="holographic p-6">
-            <h3 className="font-bold text-neon-pink mb-4">🪙 SOLANA ASSETS</h3>
-            
-            {/* Search Input */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neon-cyan h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search assets..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-black border-neon-cyan/50 text-neon-cyan placeholder:text-neon-cyan/50 focus:border-neon-cyan"
-              />
-            </div>
+          <div className="space-y-6">
+            <Card className="holographic p-6">
+              <h3 className="font-bold text-neon-pink mb-4">🪙 SOLANA ASSETS</h3>
+              
+              {/* Search Input */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neon-cyan h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Search assets..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-black border-neon-cyan/50 text-neon-cyan placeholder:text-neon-cyan/50 focus:border-neon-cyan"
+                />
+              </div>
 
-            {/* Asset List */}
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {filteredAssets.length === 0 ? (
-                <div className="text-center py-8 text-neon-cyan/60">
-                  No assets found matching "{searchQuery}"
-                </div>
-              ) : (
-                filteredAssets.map((asset) => (
-                  <div 
-                    key={asset.symbol}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                      selectedAsset === asset.symbol 
-                        ? 'border-neon-cyan bg-neon-cyan/10' 
-                        : 'border-neon-purple/30 hover:border-neon-purple hover:bg-neon-purple/5'
-                    }`}
-                    onClick={() => setSelectedAsset(asset.symbol)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className={`font-bold text-${asset.color}`}>{asset.symbol}</h4>
-                        <p className="text-xs text-muted-foreground">{asset.name}</p>
-                      </div>
-                      <Badge className={`bg-${asset.change.startsWith('+') ? 'neon-green' : 'red-500'} text-black text-xs`}>
-                        {asset.change}
-                      </Badge>
-                    </div>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span>Price:</span>
-                        <span className="font-bold text-neon-cyan">
-                          ${asset.price < 0.01 ? asset.price.toFixed(8) : asset.price.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Volume:</span>
-                        <span className="text-neon-purple">{asset.volume}</span>
-                      </div>
-                    </div>
+              {/* Asset List */}
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {filteredAssets.length === 0 ? (
+                  <div className="text-center py-8 text-neon-cyan/60">
+                    No assets found matching "{searchQuery}"
                   </div>
-                ))
-              )}
-            </div>
-          </Card>
+                ) : (
+                  filteredAssets.map((asset) => (
+                    <div 
+                      key={asset.symbol}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        selectedAsset === asset.symbol 
+                          ? 'border-neon-cyan bg-neon-cyan/10' 
+                          : 'border-neon-purple/30 hover:border-neon-purple hover:bg-neon-purple/5'
+                      }`}
+                      onClick={() => setSelectedAsset(asset.symbol)}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className={`font-bold text-${asset.color}`}>{asset.symbol}</h4>
+                          <p className="text-xs text-muted-foreground">{asset.name}</p>
+                        </div>
+                        <Badge className={`bg-${asset.change.startsWith('+') ? 'neon-green' : 'red-500'} text-black text-xs`}>
+                          {asset.change}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Price:</span>
+                          <span className="font-bold text-neon-cyan">
+                            ${asset.price < 0.01 ? asset.price.toFixed(8) : asset.price.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Volume:</span>
+                          <span className="text-neon-purple">{asset.volume}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </Card>
+
+            {/* CCTR Staking Component */}
+            <CCTRStaking />
+          </div>
 
           {/* Chart and Swap Interface */}
           <div className="lg:col-span-2 space-y-6">
