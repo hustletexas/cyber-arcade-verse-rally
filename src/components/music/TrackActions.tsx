@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, MessageCircle, Share2, RotateCcw } from 'lucide-react';
 import { Track } from '@/types/music';
@@ -143,13 +142,6 @@ export const TrackActions: React.FC<TrackActionsProps> = ({
           <RotateCcw size={14} />
           <span className="text-xs">Replay</span>
         </Button>
-
-        {/* NFT Badge */}
-        {track.nft && (
-          <Badge className="bg-gradient-to-r from-neon-purple to-neon-pink text-white text-xs">
-            NFT #{track.nft.tokenId}
-          </Badge>
-        )}
       </div>
 
       {/* Comment Input */}
