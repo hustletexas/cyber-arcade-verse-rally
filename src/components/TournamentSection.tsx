@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TournamentGameInterface } from './TournamentGameInterface';
+import { TournamentBracket } from './TournamentBracket';
 import { SolanaTournamentBracket } from './SolanaTournamentBracket';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -152,16 +153,7 @@ export const TournamentSection = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="w-full overflow-x-auto border-2 border-neon-cyan rounded-lg p-2 md:p-4 bg-black/50">
-            <iframe 
-              src="https://challonge.com/YOUR_BRACKET_LINK/embed"
-              width="100%" 
-              height="700" 
-              className="border-none rounded"
-              style={{ border: 'none' }}
-              title="Tournament Bracket"
-            />
-          </div>
+          <TournamentBracket />
         </CardContent>
       </Card>
 
