@@ -200,9 +200,9 @@ export const CyberMusicPlayer = () => {
   return (
     <Card 
       ref={playerRef}
-      className={`w-full max-w-sm mx-auto overflow-hidden relative transition-all duration-300 ${
+      className={`w-full max-w-md mx-auto overflow-hidden relative transition-all duration-300 ${
         isPlaying ? 'scale-105' : 'scale-100'
-      } ${isDragging ? 'cursor-grabbing z-50' : 'cursor-grab'}`}
+      }`}
       style={{ 
         background: '#0f0f0f',
         border: `1px solid ${isPlaying ? '#ff00ff' : '#00ffcc'}`,
@@ -218,24 +218,12 @@ export const CyberMusicPlayer = () => {
             0 0 30px #ff00ff20,
             inset 0 0 15px #00ffcc05
           `,
-        position: 'fixed',
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        zIndex: isDragging ? 1000 : 10,
         userSelect: 'none'
       }}
-      onMouseDown={handleMouseDown}
     >
       <CardContent className="p-4 relative">
         <FloatingNotes />
 
-        {/* Drag Handle */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 text-neon-cyan">
-            <Move size={16} className="opacity-60" />
-            <span className="text-xs font-mono opacity-60">DRAG TO MOVE</span>
-          </div>
-        </div>
 
         {/* Static Title - No Animation */}
         <div className="text-center mb-4">

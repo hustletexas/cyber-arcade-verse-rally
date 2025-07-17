@@ -38,9 +38,6 @@ const Index = () => {
 
       <TopBar />
 
-      {/* Draggable Music Player - Fixed positioned overlay */}
-      <CyberMusicPlayer />
-
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-8 md:mb-12">
@@ -78,6 +75,16 @@ const Index = () => {
               📊 DASHBOARD
             </h2>
             <TokenDashboard />
+          </section>
+
+          {/* Music Player Section - Added under Dashboard */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🎶 CYBER CITY RADIO
+            </h2>
+            <div className="flex justify-center">
+              <CyberMusicPlayer />
+            </div>
           </section>
 
           {/* Community Hub Section - Added after Dashboard */}
