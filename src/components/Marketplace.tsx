@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
 
 const mockNFTs = [
+  // Legendary NFTs
   {
     id: 1,
     name: "Retro Future Ride",
@@ -37,6 +37,34 @@ const mockNFTs = [
     rarity: "Legendary",
     seller: "RetroMaster",
     description: "Iconic Cyber City arcade building with neon signage - the heart of the digital gaming universe"
+  },
+  // Epic NFTs
+  {
+    id: 4,
+    name: "Solana Arcade Champion",
+    price: { cctr: 2800, sol: 1.4, usdc: 126, pyusd: 126 },
+    image: "/lovable-uploads/ad465959-8a2b-40c4-bb3d-512e3b2246dc.png",
+    rarity: "Epic",
+    seller: "SolanaGaming",
+    description: "Elite cyberpunk gamer with VR headset exploring the neon-lit Solana blockchain arcade district"
+  },
+  {
+    id: 5,
+    name: "Neon Arcade Portal",
+    price: { cctr: 3200, sol: 1.6, usdc: 144, pyusd: 144 },
+    image: "/lovable-uploads/f7fdd876-ef2a-4140-9a9e-961af057b14c.png",
+    rarity: "Epic",
+    seller: "PortalMaster",
+    description: "Mystical arcade portal gateway to the digital realm - witness the birth of virtual reality gaming"
+  },
+  {
+    id: 6,
+    name: "Cyber City Genesis #001",
+    price: { cctr: 4000, sol: 2.0, usdc: 180, pyusd: 180 },
+    image: "/lovable-uploads/e0346804-3303-4132-accf-7a80c53b7b8c.png",
+    rarity: "Epic",
+    seller: "GenesisCollection",
+    description: "Genesis edition arcade cabinet from the original Cyber City collection - limited first edition piece"
   }
 ];
 
