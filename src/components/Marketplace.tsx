@@ -10,7 +10,7 @@ const mockNFTs = [
   {
     id: 1,
     name: "Retro Future Ride",
-    price: { cctr: 3500, sol: 1.75, usdc: 157 },
+    price: { cctr: 3500, sol: 1.75, usdc: 157, pyusd: 157 },
     image: "/lovable-uploads/1131ab8a-f1c5-43a1-bc8a-bbbe7f2f9fd1.png",
     rarity: "Legendary",
     seller: "CyberMotors",
@@ -19,7 +19,7 @@ const mockNFTs = [
   {
     id: 2,
     name: "Cyber City Console",
-    price: { cctr: 4200, sol: 2.1, usdc: 189 },
+    price: { cctr: 4200, sol: 2.1, usdc: 189, pyusd: 189 },
     image: "/lovable-uploads/adc51b6f-7d82-44cc-86b5-e984bc74d2d3.png",
     rarity: "Legendary",
     seller: "ArcadeMaster",
@@ -28,7 +28,7 @@ const mockNFTs = [
   {
     id: 3,
     name: "Cyber City Arcade",
-    price: { cctr: 5000, sol: 2.5, usdc: 225 },
+    price: { cctr: 5000, sol: 2.5, usdc: 225, pyusd: 225 },
     image: "/lovable-uploads/25b4f405-8edd-4c52-9b77-0d270d1b6c90.png",
     rarity: "Legendary",
     seller: "RetroMaster",
@@ -38,12 +38,12 @@ const mockNFTs = [
 
 export const Marketplace = () => {
   const { toast } = useToast();
-  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc'>('cctr');
+  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('cctr');
   const [filter, setFilter] = useState('all');
 
   const handlePurchase = (nft: any) => {
     const price = nft.price[selectedCurrency];
-    const currencySymbol = selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency === 'sol' ? 'SOL' : 'USDC';
+    const currencySymbol = selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency === 'sol' ? 'SOL' : selectedCurrency === 'usdc' ? 'USDC' : 'PYUSD';
     
     toast({
       title: "🛒 Purchase Initiated",
@@ -75,6 +75,7 @@ export const Marketplace = () => {
       case 'cctr': return '$CCTR';
       case 'sol': return 'SOL';
       case 'usdc': return 'USDC';
+      case 'pyusd': return 'PYUSD';
       default: return '$CCTR';
     }
   };
@@ -161,7 +162,7 @@ export const Marketplace = () => {
 
             <div className="flex items-center gap-2">
               <span className="text-neon-cyan font-bold">Pay with:</span>
-              <Select value={selectedCurrency} onValueChange={(value: 'cctr' | 'sol' | 'usdc') => setSelectedCurrency(value)}>
+              <Select value={selectedCurrency} onValueChange={(value: 'cctr' | 'sol' | 'usdc' | 'pyusd') => setSelectedCurrency(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -169,6 +170,7 @@ export const Marketplace = () => {
                   <SelectItem value="cctr">💎 $CCTR</SelectItem>
                   <SelectItem value="sol">☀️ SOL</SelectItem>
                   <SelectItem value="usdc">💵 USDC</SelectItem>
+                  <SelectItem value="pyusd">💰 PYUSD</SelectItem>
                 </SelectContent>
               </Select>
             </div>
