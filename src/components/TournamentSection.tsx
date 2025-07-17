@@ -226,17 +226,6 @@ export const TournamentSection = () => {
         </CardContent>
       </Card>
 
-      {/* Tournament Bracket */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-xl md:text-2xl text-neon-cyan text-center">
-            🏆 Cyber City Arcade Tournament Bracket
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TournamentBracket />
-        </CardContent>
-      </Card>
     </div>
   );
 };
