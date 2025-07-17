@@ -1,12 +1,22 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useWallet } from '@/hooks/useWallet';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { supabase } from '@/integrations/supabase/client';
 
 export const VotingSection = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { isWalletConnected } = useWallet();
+  const { balance, refetch } = useUserBalance();
   const [votes, setVotes] = useState<{[key: string]: string}>({});
-  const [hasNFT, setHasNFT] = useState(true); // Mock NFT ownership
+  const [votingInProgress, setVotingInProgress] = useState<{[key: string]: boolean}>({});
 
   const proposals = [
     {
@@ -34,13 +44,84 @@ export const VotingSection = () => {
     }
   ];
 
-  const castVote = (proposalId: string, optionId: string) => {
-    if (!hasNFT) {
-      console.log('NFT required to vote');
+  const castVote = async (proposalId: string, optionId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to vote on proposals",
+        variant: "destructive"
+      });
       return;
     }
-    setVotes({ ...votes, [proposalId]: optionId });
-    console.log(`Voted for ${optionId} in proposal ${proposalId}`);
+
+    if (!isWalletConnected()) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to vote",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (balance.cctr_balance < 1) {
+      toast({
+        title: "Insufficient CCTR",
+        description: "You need at least 1 CCTR to cast a vote",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVotingInProgress(prev => ({ ...prev, [proposalId]: true }));
+
+    try {
+      // Deduct 1 CCTR from user's balance
+      const newBalance = balance.cctr_balance - 1;
+      
+      const { error: balanceError } = await supabase
+        .from('user_balances')
+        .update({
+          cctr_balance: newBalance,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (balanceError) throw balanceError;
+
+      // Record the transaction
+      const { error: transactionError } = await supabase
+        .from('token_transactions')
+        .insert({
+          user_id: user.id,
+          amount: -1,
+          transaction_type: 'vote',
+          description: `Vote cast for ${optionId} in ${proposalId}`
+        });
+
+      if (transactionError) throw transactionError;
+
+      // Update local state
+      setVotes({ ...votes, [proposalId]: optionId });
+      
+      // Refresh balance
+      await refetch();
+
+      toast({
+        title: "Vote Cast Successfully!",
+        description: `Your vote for "${proposals.find(p => p.id === proposalId)?.options.find(o => o.id === optionId)?.name}" has been recorded. 1 CCTR deducted.`,
+        variant: "default"
+      });
+
+    } catch (error) {
+      console.error('Error casting vote:', error);
+      toast({
+        title: "Voting Failed",
+        description: "There was an error processing your vote. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setVotingInProgress(prev => ({ ...prev, [proposalId]: false }));
+    }
   };
 
   return (
@@ -50,13 +131,20 @@ export const VotingSection = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-purple flex items-center gap-3">
             🗳️ GOVERNANCE & VOTING
-            <Badge className={`${hasNFT ? 'bg-neon-green' : 'bg-neon-pink'} text-black`}>
-              {hasNFT ? '✅ ELIGIBLE' : '❌ NFT REQUIRED'}
+            <Badge className={`${user && isWalletConnected() ? 'bg-neon-green' : 'bg-neon-pink'} text-black`}>
+              {user && isWalletConnected() ? '✅ ELIGIBLE' : '❌ LOGIN & WALLET REQUIRED'}
             </Badge>
           </CardTitle>
           <p className="text-muted-foreground">
-            NFT holders shape the future of Cyber City Arcade through community governance
+            Cast your vote on community proposals. Each vote costs 1 CCTR token.
           </p>
+          {user && isWalletConnected() && (
+            <div className="flex items-center gap-2 mt-2">
+              <Badge className="bg-neon-cyan text-black">
+                💰 {balance.cctr_balance} CCTR Available
+              </Badge>
+            </div>
+          )}
         </CardHeader>
       </Card>
 
@@ -103,10 +191,12 @@ export const VotingSection = () => {
                       {proposal.status === 'active' && (
                         <Button
                           onClick={() => castVote(proposal.id, option.id)}
-                          disabled={!hasNFT || votes[proposal.id] === option.id}
+                          disabled={!user || !isWalletConnected() || balance.cctr_balance < 1 || votes[proposal.id] === option.id || votingInProgress[proposal.id]}
                           className={`cyber-button text-sm ${votes[proposal.id] === option.id ? 'bg-neon-green' : ''}`}
                         >
-                          {votes[proposal.id] === option.id ? '✅ VOTED' : '🗳️ VOTE'}
+                          {votingInProgress[proposal.id] ? '⏳ VOTING...' : 
+                           votes[proposal.id] === option.id ? '✅ VOTED' : 
+                           '🗳️ VOTE (1 CCTR)'}
                         </Button>
                       )}
                     </div>
@@ -114,15 +204,21 @@ export const VotingSection = () => {
                 ))}
               </div>
 
-              {!hasNFT && (
+              {(!user || !isWalletConnected()) && (
                 <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
-                  <p className="text-neon-pink font-bold">🎟️ NFT Pass Required</p>
+                  <p className="text-neon-pink font-bold">🔐 Login & Wallet Required</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    You need to own a tournament NFT pass to participate in governance voting.
+                    You need to be logged in and have a connected wallet to participate in governance voting.
                   </p>
-                  <Button className="mt-2 cyber-button text-sm">
-                    🔨 MINT NFT PASS
-                  </Button>
+                </div>
+              )}
+
+              {user && isWalletConnected() && balance.cctr_balance < 1 && (
+                <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
+                  <p className="text-neon-pink font-bold">💰 Insufficient CCTR</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    You need at least 1 CCTR token to cast a vote. Purchase more CCTR to participate.
+                  </p>
                 </div>
               )}
             </CardContent>
