@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowUpDown, RefreshCw, TrendingUp, TrendingDown, Search } from 'lucide-react';
+import { ArrowUpDown, RefreshCw, TrendingUp, TrendingDown, Search, Eye, Flame, ArrowUp, ArrowDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,6 +18,18 @@ interface TokenData {
   color: string;
   mintAddress: string;
   sparklineData: Array<{ time: string; price: number }>;
+}
+
+interface TopTokenData {
+  symbol: string;
+  name: string;
+  price: number;
+  changePercent: number;
+  volume: string;
+  marketCap: string;
+  color: string;
+  views?: number;
+  trending_score?: number;
 }
 
 type TimePeriod = '24H' | '7D' | '30D';
@@ -69,7 +81,72 @@ export const SolanaDexChart = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('24H');
+  const [topGainers, setTopGainers] = useState<TopTokenData[]>([]);
+  const [topLosers, setTopLosers] = useState<TopTokenData[]>([]);
+  const [trendingTokens, setTrendingTokens] = useState<TopTokenData[]>([]);
+  const [mostViewedTokens, setMostViewedTokens] = useState<TopTokenData[]>([]);
   const { toast } = useToast();
+
+  const fetchTopTokensData = async () => {
+    try {
+      const tokenIds = Object.keys(tokenMapping).join(',');
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${tokenIds}&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch top tokens data');
+      }
+      
+      const data = await response.json();
+      
+      const formattedTokens: TopTokenData[] = data.map((token: any) => {
+        const mapping = tokenMapping[token.id as keyof typeof tokenMapping];
+        if (!mapping) return null;
+        
+        return {
+          symbol: mapping.symbol,
+          name: token.name,
+          price: token.current_price,
+          changePercent: token.price_change_percentage_24h || 0,
+          volume: formatVolume(token.total_volume),
+          marketCap: formatVolume(token.market_cap),
+          color: mapping.color,
+          views: Math.floor(Math.random() * 10000) + 1000, // Simulated views
+          trending_score: Math.floor(Math.random() * 100) + 1 // Simulated trending score
+        };
+      }).filter(Boolean);
+
+      // Add CCTR token to the mix
+      const cctrToken: TopTokenData = {
+        symbol: 'CCTR',
+        name: 'Cyber City Token',
+        price: 0.052,
+        changePercent: 15.5,
+        volume: '$45,000',
+        marketCap: '$52,000',
+        color: 'neon-green',
+        views: Math.floor(Math.random() * 5000) + 2000,
+        trending_score: Math.floor(Math.random() * 80) + 20
+      };
+
+      const allTokens = [cctrToken, ...formattedTokens];
+      
+      // Sort for different categories
+      const gainers = allTokens.filter(t => t.changePercent > 0).sort((a, b) => b.changePercent - a.changePercent).slice(0, 5);
+      const losers = allTokens.filter(t => t.changePercent < 0).sort((a, b) => a.changePercent - b.changePercent).slice(0, 5);
+      const trending = allTokens.sort((a, b) => (b.trending_score || 0) - (a.trending_score || 0)).slice(0, 5);
+      const mostViewed = allTokens.sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+
+      setTopGainers(gainers);
+      setTopLosers(losers);
+      setTrendingTokens(trending);
+      setMostViewedTokens(mostViewed);
+
+    } catch (error) {
+      console.error('Error fetching top tokens data:', error);
+    }
+  };
 
   const fetchLiveTokenData = async (period: TimePeriod = timePeriod) => {
     setIsLoading(true);
@@ -140,6 +217,9 @@ export const SolanaDexChart = () => {
       
       setSolanaAssets([updatedCCTR, ...sortedTokens]);
       setLastUpdate(new Date());
+      
+      // Also fetch top tokens data
+      await fetchTopTokensData();
       
     } catch (error) {
       console.error('Error fetching live token data:', error);
@@ -312,6 +392,28 @@ export const SolanaDexChart = () => {
     setEstimatedOutput(calculateEstimate(swapAmount));
   }, [swapAmount, swapFromToken, swapToToken]);
 
+  const TokenCard = ({ token, rank }: { token: TopTokenData; rank: number }) => (
+    <div className="flex items-center justify-between p-3 rounded-lg border border-neon-purple/30 hover:border-neon-purple hover:bg-neon-purple/5 transition-all">
+      <div className="flex items-center gap-3">
+        <div className="w-6 h-6 rounded-full bg-neon-cyan/20 flex items-center justify-center text-xs font-bold text-neon-cyan">
+          {rank}
+        </div>
+        <div>
+          <div className="font-bold text-neon-cyan">{token.symbol}</div>
+          <div className="text-xs text-muted-foreground">{token.name}</div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="font-bold text-neon-purple">
+          ${token.price < 0.01 ? token.price.toFixed(8) : token.price.toFixed(2)}
+        </div>
+        <div className={`text-sm ${token.changePercent > 0 ? 'text-neon-green' : 'text-red-500'}`}>
+          {token.changePercent > 0 ? '+' : ''}{token.changePercent.toFixed(1)}%
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <Card className="arcade-frame">
       <CardHeader>
@@ -380,6 +482,32 @@ export const SolanaDexChart = () => {
                     </div>
                   ))
                 )}
+              </div>
+            </Card>
+
+            {/* Top Gainers */}
+            <Card className="holographic p-6">
+              <h3 className="font-bold text-neon-green mb-4 flex items-center gap-2">
+                <ArrowUp className="h-5 w-5" />
+                🚀 TOP GAINERS
+              </h3>
+              <div className="space-y-3">
+                {topGainers.map((token, index) => (
+                  <TokenCard key={token.symbol} token={token} rank={index + 1} />
+                ))}
+              </div>
+            </Card>
+
+            {/* Top Losers */}
+            <Card className="holographic p-6">
+              <h3 className="font-bold text-red-500 mb-4 flex items-center gap-2">
+                <ArrowDown className="h-5 w-5" />
+                📉 TOP LOSERS
+              </h3>
+              <div className="space-y-3">
+                {topLosers.map((token, index) => (
+                  <TokenCard key={token.symbol} token={token} rank={index + 1} />
+                ))}
               </div>
             </Card>
           </div>
@@ -477,6 +605,50 @@ export const SolanaDexChart = () => {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {/* Trending Tokens */}
+            <Card className="holographic p-6">
+              <h3 className="font-bold text-neon-yellow mb-4 flex items-center gap-2">
+                <Flame className="h-5 w-5" />
+                🔥 TRENDING TOKENS
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {trendingTokens.map((token, index) => (
+                  <TokenCard key={token.symbol} token={token} rank={index + 1} />
+                ))}
+              </div>
+            </Card>
+
+            {/* Most Viewed Tokens */}
+            <Card className="holographic p-6">
+              <h3 className="font-bold text-neon-pink mb-4 flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                👀 MOST VIEWED
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {mostViewedTokens.map((token, index) => (
+                  <div key={token.symbol} className="flex items-center justify-between p-3 rounded-lg border border-neon-purple/30 hover:border-neon-purple hover:bg-neon-purple/5 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-neon-pink/20 flex items-center justify-center text-xs font-bold text-neon-pink">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="font-bold text-neon-cyan">{token.symbol}</div>
+                        <div className="text-xs text-muted-foreground">{token.name}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-neon-purple">
+                        ${token.price < 0.01 ? token.price.toFixed(8) : token.price.toFixed(2)}
+                      </div>
+                      <div className="text-xs text-neon-pink">
+                        {token.views?.toLocaleString()} views
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
 
