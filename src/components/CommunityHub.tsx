@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Users, Zap, MessageCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   id: string;
@@ -23,6 +24,8 @@ interface Announcement {
 }
 
 export const CommunityHub = () => {
+  const { user, loading } = useAuth();
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -65,10 +68,14 @@ export const CommunityHub = () => {
   ]);
 
   const [currentMessage, setCurrentMessage] = useState('');
-  const [username, setUsername] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get username from authenticated user or fallback
+  const getDisplayName = () => {
+    if (user?.user_metadata?.username) return user.user_metadata.username;
+    if (user?.email) return user.email.split('@')[0];
+    return 'Anonymous';
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,18 +85,11 @@ export const CommunityHub = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleLogin = () => {
-    if (username.trim()) {
-      setIsLoggedIn(true);
-      setShowLoginForm(false);
-    }
-  };
-
   const handleSendMessage = () => {
-    if (currentMessage.trim() && isLoggedIn) {
+    if (currentMessage.trim() && user) {
       const newMessage: Message = {
         id: Date.now().toString(),
-        username,
+        username: getDisplayName(),
         message: currentMessage.trim(),
         timestamp: new Date(),
         isGuest: true
@@ -248,7 +248,7 @@ export const CommunityHub = () => {
             </ScrollArea>
 
             {/* Login Form or Chat Input */}
-            {!isLoggedIn ? (
+            {!user ? (
               <div className="space-y-3">
                 {/* Discord Connect Button */}
                 <Button 
@@ -265,52 +265,20 @@ export const CommunityHub = () => {
                   CONNECT TO DISCORD
                 </Button>
                 
-                {!showLoginForm ? (
-                  <Button 
-                    onClick={() => setShowLoginForm(true)}
-                    className="w-full"
-                    style={{
-                      background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
-                      border: '1px solid #00ffcc',
-                      color: 'black',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    <Zap size={16} className="mr-2" />
-                    JOIN CHAT
-                  </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Enter your username..."
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                      className="bg-black/50 border-neon-cyan text-white placeholder-gray-400"
-                    />
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleLogin}
-                        className="flex-1"
-                        style={{
-                          background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
-                          border: '1px solid #00ffcc',
-                          color: 'black',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        LOGIN
-                      </Button>
-                      <Button 
-                        onClick={() => setShowLoginForm(false)}
-                        variant="outline"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple/10"
-                      >
-                        CANCEL
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                <Button 
+                  onClick={() => window.location.href = '/auth'}
+                  className="w-full"
+                  style={{
+                    background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                    border: '1px solid #00ffcc',
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}
+                  disabled={loading}
+                >
+                  <Zap size={16} className="mr-2" />
+                  {loading ? 'LOADING...' : 'CONNECT WALLET TO JOIN CHAT'}
+                </Button>
               </div>
             ) : (
               <div className="flex gap-2">
