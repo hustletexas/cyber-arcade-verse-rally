@@ -3,23 +3,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Move } from 'lucide-react';
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  url: string;
-}
-
-const defaultTracks: Track[] = [
-  {
-    id: '1',
-    title: 'Cyber Dreams',
-    artist: 'Neon Synthwave',
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-  }
-];
+import { useToast } from '@/hooks/use-toast';
+import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Move, List, X } from 'lucide-react';
+import { Track, Playlist } from '@/types/music';
+import { cyberDreamsPlaylist } from '@/data/musicPlaylist';
+import { TrackActions } from '@/components/music/TrackActions';
+import { PlaylistView } from '@/components/music/PlaylistView';
 
 export const CyberMusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -29,11 +18,12 @@ export const CyberMusicPlayer = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [showPlaylist, setShowPlaylist] = useState(false);
+  const [playlist] = useState<Playlist>(cyberDreamsPlaylist);
+  const [tracks, setTracks] = useState<Track[]>(cyberDreamsPlaylist.tracks);
   const audioRef = useRef<HTMLAudioElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Auto-pause when tab is not visible
   useEffect(() => {
@@ -77,43 +67,6 @@ export const CyberMusicPlayer = () => {
     }
   }, [volume, isMuted]);
 
-  // Drag functionality
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-      
-      setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y
-      });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, dragOffset]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!playerRef.current) return;
-    
-    const rect = playerRef.current.getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-    setIsDragging(true);
-  };
-
   const handlePlayPause = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -127,12 +80,17 @@ export const CyberMusicPlayer = () => {
   };
 
   const handleNext = () => {
-    setCurrentTrack((prev) => (prev + 1) % defaultTracks.length);
+    setCurrentTrack((prev) => (prev + 1) % tracks.length);
     setCurrentTime(0);
   };
 
   const handlePrevious = () => {
-    setCurrentTrack((prev) => (prev - 1 + defaultTracks.length) % defaultTracks.length);
+    setCurrentTrack((prev) => (prev - 1 + tracks.length) % tracks.length);
+    setCurrentTime(0);
+  };
+
+  const handleTrackSelect = (index: number) => {
+    setCurrentTrack(index);
     setCurrentTime(0);
   };
 
@@ -145,6 +103,75 @@ export const CyberMusicPlayer = () => {
     }
   };
 
+  const handleLike = () => {
+    setTracks(prev => prev.map((track, index) => 
+      index === currentTrack 
+        ? { 
+            ...track, 
+            isLiked: !track.isLiked,
+            likes: track.isLiked ? track.likes - 1 : track.likes + 1
+          }
+        : track
+    ));
+    
+    toast({
+      title: tracks[currentTrack].isLiked ? "Removed from favorites" : "Added to favorites",
+      description: `${tracks[currentTrack].title} ${tracks[currentTrack].isLiked ? 'removed from' : 'added to'} your favorites`,
+    });
+  };
+
+  const handleComment = () => {
+    toast({
+      title: "Comments Coming Soon",
+      description: "Comment functionality will be available in the next update",
+    });
+  };
+
+  const handleShare = () => {
+    const track = tracks[currentTrack];
+    if (navigator.share) {
+      navigator.share({
+        title: track.title,
+        text: `Check out "${track.title}" by ${track.artist} on Cyber City Radio`,
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link Copied!",
+        description: `Share "${track.title}" with friends`,
+      });
+    }
+  };
+
+  const handleReplay = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = 0;
+      setCurrentTime(0);
+      if (!isPlaying) {
+        audio.play();
+        setIsPlaying(true);
+      }
+    }
+    
+    toast({
+      title: "Replaying Track",
+      description: `"${tracks[currentTrack].title}" started from beginning`,
+    });
+  };
+
+  const handlePurchaseNFT = () => {
+    const track = tracks[currentTrack];
+    if (track.nft) {
+      toast({
+        title: "NFT Purchase",
+        description: `Initiating purchase of "${track.title}" NFT for ${track.nft.price} SOL`,
+      });
+      // Here you would integrate with Solana wallet and marketplace
+    }
+  };
+
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -152,7 +179,7 @@ export const CyberMusicPlayer = () => {
   };
 
   const progress = duration ? (currentTime / duration) * 100 : 0;
-  const track = defaultTracks[currentTrack];
+  const track = tracks[currentTrack];
 
   // Enhanced animated equalizer bars with more dynamic movement
   const EqualizerBars = () => (
@@ -200,7 +227,7 @@ export const CyberMusicPlayer = () => {
   return (
     <Card 
       ref={playerRef}
-      className={`w-full max-w-md mx-auto overflow-hidden relative transition-all duration-300 ${
+      className={`w-full max-w-2xl mx-auto overflow-hidden relative transition-all duration-300 ${
         isPlaying ? 'scale-105' : 'scale-100'
       }`}
       style={{ 
@@ -224,9 +251,8 @@ export const CyberMusicPlayer = () => {
       <CardContent className="p-4 relative">
         <FloatingNotes />
 
-
-        {/* Static Title - No Animation */}
-        <div className="text-center mb-4">
+        {/* Header with Title and Playlist Toggle */}
+        <div className="flex items-center justify-between mb-4">
           <h2 
             className="text-xl font-bold text-neon-pink"
             style={{
@@ -237,9 +263,22 @@ export const CyberMusicPlayer = () => {
           >
             🎶 CYBER CITY RADIO
           </h2>
+          
+          <Button
+            onClick={() => setShowPlaylist(!showPlaylist)}
+            size="sm"
+            variant="ghost"
+            className={`h-8 w-8 p-0 transition-all duration-300 ${
+              showPlaylist 
+                ? 'text-neon-pink bg-neon-pink/20' 
+                : 'text-neon-cyan hover:text-neon-pink'
+            }`}
+          >
+            {showPlaylist ? <X size={16} /> : <List size={16} />}
+          </Button>
         </div>
 
-        {/* Track Info - Static Text */}
+        {/* Track Info */}
         <div 
           className={`flex items-center justify-between mb-4 p-3 rounded-lg bg-black/50 border transition-all duration-300 ${
             isPlaying 
@@ -259,14 +298,15 @@ export const CyberMusicPlayer = () => {
             <div className="min-w-0 flex-1">
               <h3 className="text-neon-cyan font-bold text-sm truncate">{track.title}</h3>
               <p className="text-neon-purple text-xs truncate">{track.artist}</p>
+              <p className="text-neon-green text-xs">{track.genre}</p>
             </div>
           </div>
           <div className="text-neon-pink text-xs">
-            {formatTime(currentTime)}
+            {formatTime(currentTime)} / {formatTime(duration)}
           </div>
         </div>
 
-        {/* Progress Bar with Glow Effect */}
+        {/* Progress Bar */}
         <div className="mb-4">
           <Slider
             value={[progress]}
@@ -282,7 +322,7 @@ export const CyberMusicPlayer = () => {
           />
         </div>
 
-        {/* Enhanced Controls with Rotation Animation */}
+        {/* Enhanced Controls */}
         <div className="flex items-center justify-center gap-3 mb-4">
           <Button
             onClick={handlePrevious}
@@ -342,8 +382,18 @@ export const CyberMusicPlayer = () => {
           </Button>
         </div>
 
+        {/* Track Actions */}
+        <TrackActions
+          track={track}
+          onLike={handleLike}
+          onComment={handleComment}
+          onShare={handleShare}
+          onReplay={handleReplay}
+          onPurchaseNFT={handlePurchaseNFT}
+        />
+
         {/* Volume Control */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mt-4">
           <Button
             onClick={() => setIsMuted(!isMuted)}
             size="sm"
@@ -368,6 +418,17 @@ export const CyberMusicPlayer = () => {
           }`}>{volume}%</span>
         </div>
 
+        {/* Playlist View */}
+        {showPlaylist && (
+          <PlaylistView
+            tracks={tracks}
+            currentTrackIndex={currentTrack}
+            isPlaying={isPlaying}
+            onTrackSelect={handleTrackSelect}
+            onPlayPause={handlePlayPause}
+          />
+        )}
+
         {/* Hidden Audio Element */}
         <audio
           ref={audioRef}
@@ -375,7 +436,7 @@ export const CyberMusicPlayer = () => {
           preload="metadata"
         />
 
-        {/* Enhanced Visual Effects with Rotation */}
+        {/* Enhanced Visual Effects */}
         <div 
           className={`absolute inset-0 pointer-events-none transition-all duration-300 ${
             isPlaying ? 'opacity-20' : 'opacity-10'
