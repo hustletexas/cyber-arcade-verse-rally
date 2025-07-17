@@ -56,6 +56,45 @@ export type Database = {
         }
         Relationships: []
       }
+      prizes: {
+        Row: {
+          contract_address: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          metadata_uri: string | null
+          name: string
+          prize_type: string
+          updated_at: string
+        }
+        Insert: {
+          contract_address?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          metadata_uri?: string | null
+          name: string
+          prize_type?: string
+          updated_at?: string
+        }
+        Update: {
+          contract_address?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          metadata_uri?: string | null
+          name?: string
+          prize_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -346,6 +385,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_prizes: {
+        Row: {
+          created_at: string
+          id: string
+          prize_id: string
+          redeemed_at: string | null
+          redemption_status: string
+          redemption_transaction_hash: string | null
+          shipping_address: string | null
+          source_id: string
+          source_type: string
+          updated_at: string
+          user_id: string
+          wallet_address: string | null
+          won_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prize_id: string
+          redeemed_at?: string | null
+          redemption_status?: string
+          redemption_transaction_hash?: string | null
+          shipping_address?: string | null
+          source_id: string
+          source_type: string
+          updated_at?: string
+          user_id: string
+          wallet_address?: string | null
+          won_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prize_id?: string
+          redeemed_at?: string | null
+          redemption_status?: string
+          redemption_transaction_hash?: string | null
+          shipping_address?: string | null
+          source_id?: string
+          source_type?: string
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string | null
+          won_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_prizes_prize_id_fkey"
+            columns: ["prize_id"]
+            isOneToOne: false
+            referencedRelation: "prizes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wallets: {
         Row: {

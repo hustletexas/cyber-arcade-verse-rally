@@ -6,8 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/hooks/useWallet';
+import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, Trophy, Ticket, Users, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Raffle {
   id: string;
@@ -28,6 +31,9 @@ interface Raffle {
 export const RaffleSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { isWalletConnected } = useWallet();
+  const { balance, refetch: refetchBalance } = useUserBalance();
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [loading, setLoading] = useState(true);
   const [ticketCounts, setTicketCounts] = useState<{[key: string]: number}>({});
@@ -102,6 +108,10 @@ export const RaffleSection = () => {
     setLoading(false);
   }, []);
 
+  const handleLoginToPlay = () => {
+    navigate('/auth');
+  };
+
   const handlePurchaseTickets = async (raffleId: string) => {
     if (!user) {
       toast({
@@ -112,34 +122,73 @@ export const RaffleSection = () => {
       return;
     }
 
+    if (!isWalletConnected()) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your Solana wallet to purchase tickets",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const ticketCount = ticketCounts[raffleId] || 1;
+    const raffle = raffles.find(r => r.id === raffleId);
+    
+    if (!raffle) return;
+
+    const totalCost = ticketCount * raffle.ticket_price;
+
+    // Check if user has enough CCTR tokens
+    if (balance.cctr_balance < totalCost) {
+      toast({
+        title: "Insufficient CCTR Tokens",
+        description: `You need ${totalCost} CCTR tokens but only have ${balance.cctr_balance}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setPurchasing(prev => ({ ...prev, [raffleId]: true }));
 
     try {
-      // Simulate purchase process
-      setTimeout(() => {
-        toast({
-          title: "🎫 Tickets Purchased!",
-          description: `Successfully purchased ${ticketCount} ticket(s). Good luck opening your treasure chest!`,
-        });
-        
-        // Update local state
-        setRaffles(prev => prev.map(raffle => 
-          raffle.id === raffleId 
-            ? { ...raffle, tickets_sold: raffle.tickets_sold + ticketCount }
-            : raffle
-        ));
-        
-        setTicketCounts(prev => ({ ...prev, [raffleId]: 1 }));
-        setPurchasing(prev => ({ ...prev, [raffleId]: false }));
-      }, 2000);
+      // Call the purchase raffle ticket edge function
+      const { data, error } = await supabase.functions.invoke('purchase-raffle-ticket', {
+        body: {
+          raffleId: raffleId,
+          ticketCount: ticketCount,
+          totalCost: totalCost
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "🎫 Tickets Purchased!",
+        description: `Successfully purchased ${ticketCount} ticket(s) for ${totalCost} CCTR tokens. Good luck!`,
+      });
+      
+      // Update local state
+      setRaffles(prev => prev.map(raffle => 
+        raffle.id === raffleId 
+          ? { ...raffle, tickets_sold: raffle.tickets_sold + ticketCount }
+          : raffle
+      ));
+      
+      // Refresh user balance
+      await refetchBalance();
+      
+      setTicketCounts(prev => ({ ...prev, [raffleId]: 1 }));
 
     } catch (error: any) {
+      console.error('Purchase error:', error);
       toast({
         title: "Purchase Failed",
         description: error.message || "Failed to purchase tickets",
         variant: "destructive",
       });
+    } finally {
       setPurchasing(prev => ({ ...prev, [raffleId]: false }));
     }
   };
@@ -189,6 +238,11 @@ export const RaffleSection = () => {
       <div className="text-center mb-6">
         <h3 className="text-xl font-bold text-neon-pink mb-2">🏴‍☠️ MYSTERY TREASURE CHESTS</h3>
         <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
+        {user && (
+          <p className="text-neon-green mt-2">
+            Your Balance: {balance.cctr_balance.toLocaleString()} CCTR tokens
+          </p>
+        )}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -231,7 +285,7 @@ export const RaffleSection = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
                   <Ticket className="mx-auto text-neon-pink mb-1" size={20} />
-                  <p className="text-neon-pink font-bold">{raffle.ticket_price} $CCTR</p>
+                  <p className="text-neon-pink font-bold">{raffle.ticket_price} CCTR</p>
                   <p className="text-muted-foreground">Per Ticket</p>
                 </div>
                 <div className="text-center">
@@ -257,7 +311,7 @@ export const RaffleSection = () => {
               </div>
 
               {/* Purchase Section */}
-              {user && (
+              {user && isWalletConnected() ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Input
@@ -273,7 +327,7 @@ export const RaffleSection = () => {
                       placeholder="Tickets"
                     />
                     <span className="text-sm text-neon-purple whitespace-nowrap">
-                      {((ticketCounts[raffle.id] || 1) * raffle.ticket_price)} $CCTR
+                      {((ticketCounts[raffle.id] || 1) * raffle.ticket_price)} CCTR
                     </span>
                   </div>
                   
@@ -291,15 +345,18 @@ export const RaffleSection = () => {
                     )}
                   </Button>
                 </div>
-              )}
-
-              {!user && (
+              ) : (
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Login required to open treasure chests
+                    {!user ? "Login and connect wallet to open treasure chests" : "Connect your Solana wallet to play"}
                   </p>
-                  <Button variant="outline" size="sm" className="border-neon-cyan text-neon-cyan">
-                    Login to Play
+                  <Button 
+                    onClick={handleLoginToPlay}
+                    variant="outline" 
+                    size="sm" 
+                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                  >
+                    {!user ? "Login to Play" : "Connect Wallet"}
                   </Button>
                 </div>
               )}
