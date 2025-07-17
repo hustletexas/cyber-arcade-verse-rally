@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TournamentGameInterface } from './TournamentGameInterface';
+import { SolanaTournamentBracket } from './SolanaTournamentBracket';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -139,6 +140,9 @@ export const TournamentSection = () => {
           onClose={() => setActiveGame(null)}
         />
       )}
+
+      {/* Solana Tournament Bracket System */}
+      <SolanaTournamentBracket />
 
       {/* Tournament Bracket */}
       <Card className="arcade-frame">
