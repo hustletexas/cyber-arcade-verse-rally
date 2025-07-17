@@ -23,7 +23,7 @@ const merchandiseItems: MerchandiseItem[] = [
   {
     id: '1',
     name: 'Cyber City Arcade Retro Gaming Tee',
-    price: 19.99,
+    price: 29.99,
     image: '/lovable-uploads/05befe90-0669-44d1-9093-c0aac4755a61.png',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
