@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TopBar } from '@/components/TopBar';
@@ -115,20 +116,20 @@ const Index = () => {
             <TournamentSection />
           </section>
 
-          {/* Prize Pool Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🏆 PRIZE POOL
-            </h2>
-            <PrizeSection />
-          </section>
-
           {/* Raffles Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
               🎫 RAFFLES
             </h2>
             <RaffleSection />
+          </section>
+
+          {/* Prize Pool Section - Moved after Raffles */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🏆 PRIZE POOL
+            </h2>
+            <PrizeSection />
           </section>
 
           {/* Voting Section */}
