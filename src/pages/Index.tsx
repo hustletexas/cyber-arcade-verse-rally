@@ -113,9 +113,7 @@ const Index = () => {
 
           {/* NFT Marketplace Section */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🛒 NFT MARKETPLACE
-            </h2>
+            
             <Marketplace />
           </section>
 
