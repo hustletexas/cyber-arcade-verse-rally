@@ -15,7 +15,6 @@ import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
 import { CCTRStaking } from '@/components/CCTRStaking';
-import { LiveTournaments } from '@/components/LiveTournaments';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -150,17 +149,12 @@ const Index = () => {
             <MerchandiseStore />
           </section>
 
-          {/* Live Tournaments Section - Moved under Store */}
-          <section>
-            <LiveTournaments />
-          </section>
-
           {/* NFT Marketplace Section */}
           <section>
             <Marketplace />
           </section>
 
-          {/* Tournaments Section */}
+          {/* Tournaments Section - Now includes Live Tournaments and Statistics */}
           <section>
             <TournamentSection />
           </section>
