@@ -20,10 +20,28 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/hooks/useWallet';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { toast } = useToast();
   const { isWalletConnected } = useWallet();
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const [createdWallet, setCreatedWallet] = useState<{publicKey: string, privateKey: string} | null>(null);
+
+  // Load stored wallet on component mount
+  React.useEffect(() => {
+    try {
+      const storedWallet = localStorage.getItem('cyberCityWallet');
+      if (storedWallet) {
+        const wallet = JSON.parse(storedWallet);
+        setCreatedWallet(wallet);
+      }
+    } catch (error) {
+      console.error('Error loading stored wallet:', error);
+    }
+  }, []);
 
   const mintFreeNFT = async () => {
     if (!isWalletConnected()) {
@@ -47,6 +65,60 @@ const Index = () => {
         description: "Your free Cyber City Arcade NFT has been minted to your wallet"
       });
     }, 3000);
+  };
+
+  const createWallet = async () => {
+    try {
+      toast({
+        title: "Creating Wallet...",
+        description: "Generating secure Solana keypair",
+      });
+
+      // Generate a new Solana keypair
+      const { Keypair } = await import('@solana/web3.js');
+      const bs58 = await import('bs58');
+      
+      const newKeypair = Keypair.generate();
+      const publicKey = newKeypair.publicKey.toString();
+      const privateKey = bs58.default.encode(newKeypair.secretKey);
+      
+      const walletData = { publicKey, privateKey };
+      
+      // Store wallet info securely in localStorage
+      localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
+      
+      // Update state
+      setCreatedWallet(walletData);
+      
+      toast({
+        title: "Wallet Created Successfully! 🎉",
+        description: `New Solana wallet: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+      });
+      
+    } catch (error) {
+      console.error('Wallet creation error:', error);
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create Solana wallet. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Goodbye!",
+        description: "Successfully logged out from Cyber City Arcade",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -88,14 +160,58 @@ const Index = () => {
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
           
-          {/* Centered Mint Free NFT Button */}
-          <div className="flex justify-center mb-6 md:mb-8 px-4">
+          {/* Action Buttons Row */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6 md:mb-8 px-4">
+            {/* Mint Free NFT Button */}
             <Button 
               onClick={mintFreeNFT} 
               className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
             >
               🔨 MINT FREE NFT
             </Button>
+
+            {/* Authentication Button */}
+            {loading ? (
+              <div className="text-neon-cyan">Loading...</div>
+            ) : user ? (
+              <Button 
+                onClick={handleSignOut}
+                variant="outline" 
+                className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black text-lg px-8 py-4"
+              >
+                🔐 LOGOUT
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+              >
+                <span className="text-lg">🔐</span>
+                LOGIN / SIGNUP
+              </Button>
+            )}
+
+            {/* Wallet Management Button */}
+            {createdWallet ? (
+              <Button 
+                onClick={() => {
+                  toast({
+                    title: "Wallet Manager",
+                    description: "Wallet management moved to TopBar. Look for the Phantom button!",
+                  });
+                }}
+                className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+              >
+                💰 WALLET READY
+              </Button>
+            ) : (
+              <Button 
+                onClick={createWallet}
+                className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+              >
+                ➕ CREATE WALLET
+              </Button>
+            )}
           </div>
         </div>
 
