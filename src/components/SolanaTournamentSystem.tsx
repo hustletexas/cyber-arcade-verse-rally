@@ -71,7 +71,6 @@ export const SolanaTournamentSystem = () => {
 
   const checkWalletConnection = async () => {
     try {
-      // Check if wallet is connected (mock implementation)
       if (window.solana && window.solana.isPhantom) {
         const response = await window.solana.connect({ onlyIfTrusted: true });
         if (response.publicKey) {
@@ -118,9 +117,7 @@ export const SolanaTournamentSystem = () => {
 
   const checkNFTPass = async (wallet: string) => {
     try {
-      // Mock NFT check - in production, you'd check against your NFT collection
-      // For demo purposes, we'll simulate NFT ownership
-      const mockHasNFT = Math.random() > 0.3; // 70% chance of having NFT
+      const mockHasNFT = Math.random() > 0.3;
       setHasNFTPass(mockHasNFT);
       
       if (!mockHasNFT) {
@@ -137,8 +134,7 @@ export const SolanaTournamentSystem = () => {
   };
 
   const checkAdminStatus = (wallet: string) => {
-    // Check if wallet is an admin (you can configure this)
-    const adminWallets = ['YOUR_ADMIN_WALLET_ADDRESS']; // Replace with actual admin wallet
+    const adminWallets = ['YOUR_ADMIN_WALLET_ADDRESS'];
     setIsAdmin(adminWallets.includes(wallet));
   };
 
@@ -168,6 +164,42 @@ export const SolanaTournamentSystem = () => {
       setEntries(data || []);
     } catch (error) {
       console.error('Error loading entries:', error);
+    }
+  };
+
+  const removeActiveTournaments = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Admin Access Required",
+        description: "Only admins can remove tournaments",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('tournaments')
+        .update({ status: 'cancelled' })
+        .eq('status', 'active');
+
+      if (error) throw error;
+
+      toast({
+        title: "Active Tournaments Removed",
+        description: "All active tournaments have been cancelled successfully"
+      });
+
+      loadTournaments();
+    } catch (error) {
+      toast({
+        title: "Removal Failed",
+        description: "Failed to remove active tournaments",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -343,7 +375,6 @@ export const SolanaTournamentSystem = () => {
 
     setLoading(true);
     try {
-      // Call the complete_tournament function
       const { error } = await supabase.rpc('complete_tournament', {
         tournament_id_param: tournamentId
       });
@@ -403,66 +434,80 @@ export const SolanaTournamentSystem = () => {
         </CardContent>
       </Card>
 
-      {/* Admin Tournament Creation */}
+      {/* Admin Tournament Management */}
       {isAdmin && (
         <Card className="arcade-frame">
           <CardHeader>
             <CardTitle className="font-display text-xl text-neon-purple">
-              🏆 Create Tournament (Admin)
+              🏆 Admin Tournament Management
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input
-              placeholder="Tournament Name"
-              value={newTournament.name}
-              onChange={(e) => setNewTournament({...newTournament, name: e.target.value})}
-              className="bg-black/20 border-neon-purple text-white"
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <Select 
-                value={newTournament.format} 
-                onValueChange={(value) => setNewTournament({...newTournament, format: value as any})}
+            <div className="flex gap-4">
+              <Button 
+                onClick={removeActiveTournaments} 
+                disabled={loading}
+                variant="destructive"
+                className="flex-1"
               >
-                <SelectTrigger className="bg-black/20 border-neon-purple text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="top_5_split">Top 5 Split (40/25/15/12/8%)</SelectItem>
-                  <SelectItem value="winner_takes_all">Winner Takes All</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                type="number"
-                placeholder="Entry Fee (SOL)"
-                step="0.01"
-                value={newTournament.entry_fee}
-                onChange={(e) => setNewTournament({...newTournament, entry_fee: parseFloat(e.target.value)})}
-                className="bg-black/20 border-neon-purple text-white"
-              />
+                {loading ? 'Removing...' : 'Remove All Active Tournaments'}
+              </Button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold text-neon-cyan mb-4">Create New Tournament</h3>
               <Input
-                type="number"
-                placeholder="Prize Pool (SOL)"
-                step="0.1"
-                value={newTournament.prize_pool}
-                onChange={(e) => setNewTournament({...newTournament, prize_pool: parseFloat(e.target.value)})}
-                className="bg-black/20 border-neon-purple text-white"
+                placeholder="Tournament Name"
+                value={newTournament.name}
+                onChange={(e) => setNewTournament({...newTournament, name: e.target.value})}
+                className="bg-black/20 border-neon-purple text-white mb-4"
               />
-              <Input
-                type="datetime-local"
-                value={newTournament.start_time}
-                onChange={(e) => setNewTournament({...newTournament, start_time: e.target.value})}
-                className="bg-black/20 border-neon-purple text-white"
-              />
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <Select 
+                  value={newTournament.format} 
+                  onValueChange={(value) => setNewTournament({...newTournament, format: value as any})}
+                >
+                  <SelectTrigger className="bg-black/20 border-neon-purple text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="top_5_split">Top 5 Split (40/25/15/12/8%)</SelectItem>
+                    <SelectItem value="winner_takes_all">Winner Takes All</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  placeholder="Entry Fee (SOL)"
+                  step="0.01"
+                  value={newTournament.entry_fee}
+                  onChange={(e) => setNewTournament({...newTournament, entry_fee: parseFloat(e.target.value)})}
+                  className="bg-black/20 border-neon-purple text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <Input
+                  type="number"
+                  placeholder="Prize Pool (SOL)"
+                  step="0.1"
+                  value={newTournament.prize_pool}
+                  onChange={(e) => setNewTournament({...newTournament, prize_pool: parseFloat(e.target.value)})}
+                  className="bg-black/20 border-neon-purple text-white"
+                />
+                <Input
+                  type="datetime-local"
+                  value={newTournament.start_time}
+                  onChange={(e) => setNewTournament({...newTournament, start_time: e.target.value})}
+                  className="bg-black/20 border-neon-purple text-white"
+                />
+              </div>
+              <Button 
+                onClick={createTournament} 
+                disabled={loading}
+                className="cyber-button w-full"
+              >
+                {loading ? 'Creating...' : 'Create Tournament'}
+              </Button>
             </div>
-            <Button 
-              onClick={createTournament} 
-              disabled={loading}
-              className="cyber-button w-full"
-            >
-              {loading ? 'Creating...' : 'Create Tournament'}
-            </Button>
           </CardContent>
         </Card>
       )}
@@ -471,82 +516,86 @@ export const SolanaTournamentSystem = () => {
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-xl text-neon-cyan">
-            🏆 Active Tournaments
+            🏆 Tournaments
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            {tournaments.map((tournament) => (
-              <Card key={tournament.id} className="holographic p-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-neon-pink">{tournament.name}</h3>
-                    <Badge className={
-                      tournament.status === 'active' ? 'bg-neon-green text-black' :
-                      tournament.status === 'upcoming' ? 'bg-neon-cyan text-black' :
-                      'bg-gray-500 text-white'
-                    }>
-                      {tournament.status.toUpperCase()}
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                    <div>
-                      <span className="text-gray-400">Format:</span>
-                      <div className="text-neon-cyan">
-                        {tournament.format === 'top_5_split' ? 'Top 5 Split' : 'Winner Takes All'}
+            {tournaments.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">No tournaments available</p>
+            ) : (
+              tournaments.map((tournament) => (
+                <Card key={tournament.id} className="holographic p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-neon-pink">{tournament.name}</h3>
+                      <Badge className={
+                        tournament.status === 'active' ? 'bg-neon-green text-black' :
+                        tournament.status === 'upcoming' ? 'bg-neon-cyan text-black' :
+                        tournament.status === 'cancelled' ? 'bg-red-500 text-white' :
+                        'bg-gray-500 text-white'
+                      }>
+                        {tournament.status.toUpperCase()}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                      <div>
+                        <span className="text-gray-400">Format:</span>
+                        <div className="text-neon-cyan">
+                          {tournament.format === 'top_5_split' ? 'Top 5 Split' : 'Winner Takes All'}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Entry Fee:</span>
+                        <div className="text-neon-green">{tournament.entry_fee} SOL</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Prize Pool:</span>
+                        <div className="text-neon-purple">{tournament.prize_pool} SOL</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Players:</span>
+                        <div className="text-neon-pink">{tournament.current_players}/{tournament.max_players}</div>
                       </div>
                     </div>
-                    <div>
-                      <span className="text-gray-400">Entry Fee:</span>
-                      <div className="text-neon-green">{tournament.entry_fee} SOL</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Prize Pool:</span>
-                      <div className="text-neon-purple">{tournament.prize_pool} SOL</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Players:</span>
-                      <div className="text-neon-pink">{tournament.current_players}/{tournament.max_players}</div>
-                    </div>
-                  </div>
 
-                  <div className="flex gap-2">
-                    {walletConnected && hasNFTPass && tournament.status === 'upcoming' && (
+                    <div className="flex gap-2">
+                      {walletConnected && hasNFTPass && tournament.status === 'upcoming' && (
+                        <Button 
+                          onClick={() => {
+                            setSelectedTournament(tournament.id);
+                          }}
+                          className="cyber-button text-xs"
+                        >
+                          Join Tournament
+                        </Button>
+                      )}
                       <Button 
                         onClick={() => {
                           setSelectedTournament(tournament.id);
-                          // Show join form
+                          loadEntries(tournament.id);
                         }}
-                        className="cyber-button text-xs"
-                      >
-                        Join Tournament
-                      </Button>
-                    )}
-                    <Button 
-                      onClick={() => {
-                        setSelectedTournament(tournament.id);
-                        loadEntries(tournament.id);
-                      }}
-                      variant="outline"
-                      className="border-neon-cyan text-neon-cyan text-xs"
-                    >
-                      View Leaderboard
-                    </Button>
-                    {isAdmin && (
-                      <Button 
-                        onClick={() => distributePrizes(tournament.id)}
                         variant="outline"
-                        className="border-neon-purple text-neon-purple text-xs"
-                        disabled={loading}
+                        className="border-neon-cyan text-neon-cyan text-xs"
                       >
-                        Distribute Prizes
+                        View Leaderboard
                       </Button>
-                    )}
+                      {isAdmin && (
+                        <Button 
+                          onClick={() => distributePrizes(tournament.id)}
+                          variant="outline"
+                          className="border-neon-purple text-neon-purple text-xs"
+                          disabled={loading}
+                        >
+                          Distribute Prizes
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
