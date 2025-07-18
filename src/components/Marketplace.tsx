@@ -87,12 +87,12 @@ const mockNFTs = [
   },
   {
     id: 9,
-    name: "Tetris Master Pro",
+    name: "Cyber City Arcade Gamer",
     price: { cctr: 2000, sol: 1.0, usdc: 90, pyusd: 90 },
-    image: "/lovable-uploads/2eea59c4-10d5-498e-97bb-58b9eb675a55.png",
+    image: "/lovable-uploads/9ec7cfe8-1223-4c47-bf02-5249c4de7a54.png",
     rarity: "Rare",
-    seller: "PuzzleGamingElite",
-    description: "Cyberpunk Tetris champion with RGB gaming setup - master of the classic puzzle game in the digital age"
+    seller: "CyberCityElite",
+    description: "Elite cyberpunk gamer with advanced neural interface - master of the Cyber City Arcade realm"
   }
 ];
 
