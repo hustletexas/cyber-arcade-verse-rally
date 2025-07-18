@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
+import { WalletManager } from '@/components/WalletManager';
 import { TournamentSection } from '@/components/TournamentSection';
 import { TokenDashboard } from '@/components/TokenDashboard';
 import { VotingSection } from '@/components/VotingSection';
@@ -92,7 +93,7 @@ const Index = () => {
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
           
-          {/* Login/Signup Button - Above Mint Free NFT */}
+          {/* Login/Signup Button */}
           <div className="flex justify-center mb-4 px-4">
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
@@ -105,6 +106,11 @@ const Index = () => {
                 LOGIN / SIGNUP
               </Button>
             ) : null}
+          </div>
+
+          {/* Wallet Manager - Between Login and Mint NFT */}
+          <div className="flex justify-center mb-4 px-4">
+            <WalletManager />
           </div>
 
           {/* Centered Mint Free NFT Button */}
