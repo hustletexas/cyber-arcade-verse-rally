@@ -65,6 +65,34 @@ const mockNFTs = [
     rarity: "Epic",
     seller: "GenesisCollection",
     description: "Genesis edition arcade cabinet from the original Cyber City collection - limited first edition piece"
+  },
+  // Rare NFTs
+  {
+    id: 7,
+    name: "Cyber City Mobile Gamer",
+    price: { cctr: 1800, sol: 0.9, usdc: 81, pyusd: 81 },
+    image: "/lovable-uploads/fc54726a-fe30-47a9-8b16-766dc230e78c.png",
+    rarity: "Rare",
+    seller: "MobileGamingCorp",
+    description: "Cyberpunk mobile gamer with alien tech device - the future of portable gaming in neon cityscapes"
+  },
+  {
+    id: 8,
+    name: "VR Racing Champion",
+    price: { cctr: 2200, sol: 1.1, usdc: 99, pyusd: 99 },
+    image: "/lovable-uploads/7aefc14a-b1ec-4889-8990-4f12e95eec7d.png",
+    rarity: "Rare",
+    seller: "VRRacingLeague",
+    description: "Professional VR racing simulator setup with cyberpunk aesthetic - experience the ultimate driving simulation"
+  },
+  {
+    id: 9,
+    name: "Tetris Master Pro",
+    price: { cctr: 2000, sol: 1.0, usdc: 90, pyusd: 90 },
+    image: "/lovable-uploads/2eea59c4-10d5-498e-97bb-58b9eb675a55.png",
+    rarity: "Rare",
+    seller: "PuzzleGamingElite",
+    description: "Cyberpunk Tetris champion with RGB gaming setup - master of the classic puzzle game in the digital age"
   }
 ];
 
