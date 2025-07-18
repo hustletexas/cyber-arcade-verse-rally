@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,11 +19,22 @@ import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/hooks/useWallet';
+
 const Index = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const { isWalletConnected } = useWallet();
+
   const mintFreeNFT = async () => {
+    if (!isWalletConnected()) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet first to mint your free NFT",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Minting NFT",
       description: "Free NFT mint in progress..."
@@ -36,7 +48,9 @@ const Index = () => {
       });
     }, 3000);
   };
-  return <div className="min-h-screen bg-black">
+
+  return (
+    <div className="min-h-screen bg-black">
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -60,9 +74,14 @@ const Index = () => {
         <div className="text-center mb-8 md:mb-12">
           {/* Main Logo - Centered */}
           <div className="flex justify-center mb-6">
-            <img src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" alt="Cyber City Arcade" className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" style={{
-            filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
-          }} />
+            <img 
+              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
+              alt="Cyber City Arcade" 
+              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" 
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
+              }} 
+            />
           </div>
 
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
@@ -71,7 +90,10 @@ const Index = () => {
           
           {/* Centered Mint Free NFT Button */}
           <div className="flex justify-center mb-6 md:mb-8 px-4">
-            <Button onClick={mintFreeNFT} className="cyber-button flex items-center gap-2 text-lg px-8 py-4">
+            <Button 
+              onClick={mintFreeNFT} 
+              className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+            >
               🔨 MINT FREE NFT
             </Button>
           </div>
@@ -81,7 +103,6 @@ const Index = () => {
         <div className="space-y-12 md:space-y-16">
           {/* Dashboard Section */}
           <section>
-            
             <TokenDashboard />
           </section>
 
@@ -101,19 +122,16 @@ const Index = () => {
 
           {/* Merchandise Store Section */}
           <section>
-            
             <MerchandiseStore />
           </section>
 
           {/* Live Tournaments Section - Moved under Store */}
           <section>
-            
             <LiveTournaments />
           </section>
 
           {/* NFT Marketplace Section */}
           <section>
-            
             <Marketplace />
           </section>
 
@@ -124,37 +142,31 @@ const Index = () => {
 
           {/* Raffles Section */}
           <section>
-            
             <RaffleSection />
           </section>
 
           {/* Prize Pool Section - Moved after Raffles */}
           <section>
-            
             <PrizeSection />
           </section>
 
           {/* Voting Section */}
           <section>
-            
             <VotingSection />
           </section>
 
           {/* DEX Section - Moved under Voting */}
           <section>
-            
             <SolanaDexChart />
           </section>
 
           {/* Buy CCTR Section - Moved under DEX */}
           <section>
-            
             <TokenPurchase />
           </section>
 
           {/* CCTR Staking Section - Moved under Buy CCTR */}
           <section>
-            
             <CCTRStaking />
           </section>
         </div>
@@ -184,6 +196,8 @@ const Index = () => {
       
       {/* Cart Drawer */}
       <CartDrawer />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
