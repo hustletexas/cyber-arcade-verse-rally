@@ -71,7 +71,7 @@ const mockNFTs = [
     id: 7,
     name: "Cyber City Mobile Gamer",
     price: { cctr: 1800, sol: 0.9, usdc: 81, pyusd: 81 },
-    image: "/lovable-uploads/fc54726a-fe30-47a9-8b16-766dc230e78c.png",
+    image: "/lovable-uploads/fa16ab59-6385-4247-ac77-1ef0cf685f60.png",
     rarity: "Rare",
     seller: "MobileGamingCorp",
     description: "Cyberpunk mobile gamer with alien tech device - the future of portable gaming in neon cityscapes"
