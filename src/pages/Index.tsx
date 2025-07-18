@@ -107,9 +107,7 @@ const Index = () => {
 
           {/* Live Tournaments Section - Moved under Store */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🔴 LIVE TOURNAMENTS
-            </h2>
+            
             <LiveTournaments />
           </section>
 
