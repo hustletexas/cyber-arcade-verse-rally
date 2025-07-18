@@ -142,9 +142,7 @@ const Index = () => {
 
           {/* DEX Section - Moved under Voting */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              📈 DEX
-            </h2>
+            
             <SolanaDexChart />
           </section>
 
