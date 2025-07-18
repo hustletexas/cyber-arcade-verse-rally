@@ -307,6 +307,33 @@ export const TokenPurchase = () => {
                     </p>
                   </div>
                 </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-neon-yellow text-xl">🏆</span>
+                  <div>
+                    <h4 className="font-bold text-neon-pink">Loyalty Rewards</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Earn bonus tokens and exclusive perks for loyalty
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-neon-green text-xl">💸</span>
+                  <div>
+                    <h4 className="font-bold text-neon-pink">0 Fees</h4>
+                    <p className="text-sm text-muted-foreground">
+                      No transaction fees for token holders
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-neon-purple text-xl">👑</span>
+                  <div>
+                    <h4 className="font-bold text-neon-pink">VIP Access</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Exclusive access to premium features and events
+                    </p>
+                  </div>
+                </div>
               </div>
             </Card>
 
