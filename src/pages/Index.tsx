@@ -124,9 +124,7 @@ const Index = () => {
 
           {/* Raffles Section */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🎫 RAFFLES
-            </h2>
+            
             <RaffleSection />
           </section>
 
