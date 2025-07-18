@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
-import { ShoppingCart, Copy, Eye, EyeOff, Download } from 'lucide-react';
+import { ShoppingCart, Copy, Eye, EyeOff, Download, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export const TopBar = () => {
@@ -21,6 +22,8 @@ export const TopBar = () => {
   const [coinbaseAddress, setCoinbaseAddress] = useState('');
   const [showWalletDetails, setShowWalletDetails] = useState(false);
   const [showPrivateKey, setShowPrivateKey] = useState(false);
+  const [showImportWallet, setShowImportWallet] = useState(false);
+  const [importPrivateKey, setImportPrivateKey] = useState('');
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [createdWallet, setCreatedWallet] = useState<{publicKey: string, privateKey: string} | null>(null);
 
@@ -406,6 +409,67 @@ export const TopBar = () => {
     });
   };
 
+  const importWallet = async () => {
+    if (!importPrivateKey.trim()) {
+      toast({
+        title: "Missing Private Key",
+        description: "Please enter a valid private key",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Importing Wallet...",
+        description: "Validating and importing your Solana wallet",
+      });
+
+      const { Keypair } = await import('@solana/web3.js');
+      const bs58 = await import('bs58');
+      
+      // Decode the private key
+      const secretKey = bs58.default.decode(importPrivateKey.trim());
+      
+      // Create keypair from secret key
+      const keypair = Keypair.fromSecretKey(secretKey);
+      const publicKey = keypair.publicKey.toString();
+      
+      const walletData = { publicKey, privateKey: importPrivateKey.trim() };
+      
+      // Store wallet info securely in localStorage
+      localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
+      
+      // Update state
+      setCreatedWallet(walletData);
+      setPhantomAddress(publicKey);
+      setPhantomConnected(true);
+      
+      // Check initial balance
+      await checkWalletBalance(publicKey);
+      
+      // Clear import form
+      setImportPrivateKey('');
+      setShowImportWallet(false);
+      
+      toast({
+        title: "Wallet Imported Successfully! 🎉",
+        description: `Imported Solana wallet: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+      });
+      
+      // Show wallet details modal
+      setShowWalletDetails(true);
+      
+    } catch (error) {
+      console.error('Wallet import error:', error);
+      toast({
+        title: "Import Failed",
+        description: "Invalid private key. Please check and try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -473,21 +537,33 @@ export const TopBar = () => {
             )}
 
             {/* Create/Manage Wallet Button */}
-            {createdWallet ? (
-              <Button 
-                onClick={() => setShowWalletDetails(true)}
-                className="cyber-button flex items-center gap-2"
-              >
-                💰 MANAGE WALLET
-              </Button>
-            ) : (
-              <Button 
-                onClick={createWallet}
-                className="cyber-button flex items-center gap-2"
-              >
-                ➕ CREATE WALLET
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {createdWallet ? (
+                <Button 
+                  onClick={() => setShowWalletDetails(true)}
+                  className="cyber-button flex items-center gap-2"
+                >
+                  💰 MANAGE WALLET
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={createWallet}
+                    className="cyber-button flex items-center gap-2"
+                  >
+                    ➕ CREATE WALLET
+                  </Button>
+                  <Button 
+                    onClick={() => setShowImportWallet(true)}
+                    className="cyber-button flex items-center gap-2"
+                    variant="outline"
+                  >
+                    <Upload size={16} />
+                    IMPORT WALLET
+                  </Button>
+                </div>
+              )}
+            </div>
 
             {/* Wallet Integration Buttons */}
             <div className="flex items-center gap-2">
@@ -519,6 +595,67 @@ export const TopBar = () => {
           </div>
         </div>
       </div>
+
+      {/* Import Wallet Modal */}
+      <Dialog open={showImportWallet} onOpenChange={setShowImportWallet}>
+        <DialogContent className="max-w-md arcade-frame">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-neon-cyan font-display flex items-center gap-2">
+              <Upload size={24} />
+              Import Solana Wallet
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-neon-purple">Private Key</label>
+              <Input
+                type="password"
+                placeholder="Enter your Solana private key (base58 encoded)"
+                value={importPrivateKey}
+                onChange={(e) => setImportPrivateKey(e.target.value)}
+                className="bg-black/50 border-neon-cyan text-neon-cyan font-mono text-sm"
+              />
+              <p className="text-xs text-red-400">
+                ⚠️ Never share your private key with anyone!
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={importWallet}
+                className="cyber-button flex-1"
+                disabled={!importPrivateKey.trim()}
+              >
+                <Upload size={16} className="mr-2" />
+                IMPORT WALLET
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowImportWallet(false);
+                  setImportPrivateKey('');
+                }}
+                variant="outline"
+                className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+              >
+                CANCEL
+              </Button>
+            </div>
+
+            <Card className="bg-neon-cyan/10 border-neon-cyan/30">
+              <CardContent className="p-3">
+                <h4 className="font-bold text-neon-cyan mb-2 text-sm">📝 How to get your private key:</h4>
+                <ul className="text-xs space-y-1 text-muted-foreground">
+                  <li>• From Phantom: Settings → Export Private Key</li>
+                  <li>• From Solflare: Menu → Export Wallet</li>
+                  <li>• From CLI: solana-keygen display</li>
+                  <li>• Should be base58 encoded string</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Wallet Details Modal */}
       <Dialog open={showWalletDetails} onOpenChange={setShowWalletDetails}>
