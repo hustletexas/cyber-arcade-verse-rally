@@ -20,10 +20,14 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/hooks/useWallet';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { toast } = useToast();
   const { isWalletConnected } = useWallet();
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   const mintFreeNFT = async () => {
     if (!isWalletConnected()) {
@@ -88,6 +92,21 @@ const Index = () => {
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
           
+          {/* Login/Signup Button - Above Mint Free NFT */}
+          <div className="flex justify-center mb-4 px-4">
+            {loading ? (
+              <div className="text-neon-cyan">Loading...</div>
+            ) : !user ? (
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+              >
+                <span className="text-lg">🔐</span>
+                LOGIN / SIGNUP
+              </Button>
+            ) : null}
+          </div>
+
           {/* Centered Mint Free NFT Button */}
           <div className="flex justify-center mb-6 md:mb-8 px-4">
             <Button 
