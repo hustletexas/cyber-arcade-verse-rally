@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -420,8 +421,8 @@ export const TopBar = () => {
               />
             </div>
             
-            {/* Cart Button moved 3 inches to the left */}
-            <div className="ml-[216px]">
+            {/* Cart Button moved 5 inches to the left */}
+            <div className="ml-[360px]">
               <Button 
                 onClick={() => setIsOpen(true)}
                 className="cyber-button flex items-center gap-2 relative"
@@ -437,8 +438,8 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Center Section - User Info */}
-          <div className="flex items-center gap-4">
+          {/* Center Section - User Info and Wallet Management */}
+          <div className="flex items-center gap-4 justify-center flex-1">
             {/* User Authentication Info Only - No Login Button */}
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
@@ -474,7 +475,7 @@ export const TopBar = () => {
               )
             )}
 
-            {/* Create/Manage Wallet Button */}
+            {/* Create/Manage Wallet Button - Centered */}
             {createdWallet ? (
               <Button 
                 onClick={() => setShowWalletDetails(true)}
@@ -491,7 +492,7 @@ export const TopBar = () => {
               </Button>
             )}
 
-            {/* Wallet Integration Buttons */}
+            {/* Wallet Integration Buttons - Centered */}
             <div className="flex items-center gap-2">
               {/* Phantom Wallet */}
               {phantomConnected ? (
