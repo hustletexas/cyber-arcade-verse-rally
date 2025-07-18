@@ -136,9 +136,7 @@ const Index = () => {
 
           {/* Voting Section */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🗳️ VOTING
-            </h2>
+            
             <VotingSection />
           </section>
 
