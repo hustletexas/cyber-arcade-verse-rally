@@ -154,9 +154,7 @@ const Index = () => {
 
           {/* CCTR Staking Section - Moved under Buy CCTR */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🔒 CCTR STAKING
-            </h2>
+            
             <CCTRStaking />
           </section>
         </div>
