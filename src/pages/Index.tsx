@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,27 +18,25 @@ import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { useToast } from '@/hooks/use-toast';
-
 const Index = () => {
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const mintFreeNFT = async () => {
     toast({
       title: "Minting NFT",
-      description: "Free NFT mint in progress...",
+      description: "Free NFT mint in progress..."
     });
 
     // Simulate minting process
     setTimeout(() => {
       toast({
         title: "NFT Minted Successfully!",
-        description: "Your free Cyber City Arcade NFT has been minted to your wallet",
+        description: "Your free Cyber City Arcade NFT has been minted to your wallet"
       });
     }, 3000);
   };
-
-  return (
-    <div className="min-h-screen bg-black">
+  return <div className="min-h-screen bg-black">
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -63,14 +60,9 @@ const Index = () => {
         <div className="text-center mb-8 md:mb-12">
           {/* Main Logo - Centered */}
           <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-              alt="Cyber City Arcade" 
-              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" 
-              style={{
-                filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
-              }} 
-            />
+            <img src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" alt="Cyber City Arcade" className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" style={{
+            filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
+          }} />
           </div>
 
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
@@ -79,10 +71,7 @@ const Index = () => {
           
           {/* Centered Mint Free NFT Button */}
           <div className="flex justify-center mb-6 md:mb-8 px-4">
-            <Button 
-              onClick={mintFreeNFT}
-              className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
-            >
+            <Button onClick={mintFreeNFT} className="cyber-button flex items-center gap-2 text-lg px-8 py-4">
               🔨 MINT FREE NFT
             </Button>
           </div>
@@ -92,9 +81,7 @@ const Index = () => {
         <div className="space-y-12 md:space-y-16">
           {/* Dashboard Section */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              📊 DASHBOARD
-            </h2>
+            
             <TokenDashboard />
           </section>
 
@@ -215,8 +202,6 @@ const Index = () => {
       
       {/* Cart Drawer */}
       <CartDrawer />
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
