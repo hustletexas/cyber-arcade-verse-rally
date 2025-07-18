@@ -27,7 +27,6 @@ export const TopBar = () => {
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [createdWallet, setCreatedWallet] = useState<{publicKey: string, privateKey: string} | null>(null);
 
-  // Check for existing wallet connections on component mount
   useEffect(() => {
     checkWalletConnections();
     loadStoredWallet();
@@ -49,7 +48,6 @@ export const TopBar = () => {
   };
 
   const checkWalletConnections = async () => {
-    // Check Phantom wallet
     if (window.solana && window.solana.isPhantom) {
       try {
         if (window.solana.isConnected) {
@@ -64,15 +62,12 @@ export const TopBar = () => {
       }
     }
 
-    // Check Coinbase wallet (Base network compatible)
     if (window.ethereum) {
       try {
-        // Check if it's specifically Coinbase Wallet or if we can connect to Base
         const accounts = await window.ethereum.request({ 
           method: 'eth_accounts' 
         });
         if (accounts && accounts.length > 0) {
-          // Verify we're connected to Coinbase Wallet specifically
           if (window.ethereum.isCoinbaseWallet) {
             setCoinbaseAddress(accounts[0]);
             setCoinbaseConnected(true);
@@ -118,7 +113,6 @@ export const TopBar = () => {
           description: "Please install Phantom wallet extension",
           variant: "destructive",
         });
-        // Open Phantom website
         window.open('https://phantom.app/', '_blank');
       }
     } catch (error) {
@@ -135,7 +129,6 @@ export const TopBar = () => {
     try {
       console.log('Attempting Coinbase Wallet connection...');
       
-      // Check if any Ethereum provider is available
       if (!window.ethereum) {
         toast({
           title: "No Wallet Found",
@@ -146,7 +139,6 @@ export const TopBar = () => {
         return;
       }
 
-      // Request account access
       const accounts = await window.ethereum.request({ 
         method: 'eth_requestAccounts' 
       });
@@ -164,7 +156,6 @@ export const TopBar = () => {
           description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
         });
 
-        // Listen for account changes
         if (window.ethereum.on) {
           window.ethereum.on('accountsChanged', (newAccounts: string[]) => {
             console.log('Account changed:', newAccounts);
@@ -179,10 +170,8 @@ export const TopBar = () => {
             }
           });
 
-          // Listen for chain changes
           window.ethereum.on('chainChanged', (chainId: string) => {
             console.log('Chain changed:', chainId);
-            // Base mainnet is 0x2105, Base testnet is 0x14a33
             if (chainId === '0x2105' || chainId === '0x14a33') {
               toast({
                 title: "Base Network Connected",
@@ -192,14 +181,12 @@ export const TopBar = () => {
           });
         }
 
-        // Try to switch to Base network if not already connected
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x2105' }], // Base mainnet
+            params: [{ chainId: '0x2105' }],
           });
         } catch (switchError: any) {
-          // If Base network is not added, add it
           if (switchError.code === 4902) {
             try {
               await window.ethereum.request({
@@ -267,7 +254,6 @@ export const TopBar = () => {
     setCoinbaseConnected(false);
     setCoinbaseAddress('');
     
-    // Remove event listeners
     if (window.ethereum && window.ethereum.removeListener) {
       window.ethereum.removeListener('accountsChanged', () => {});
       window.ethereum.removeListener('chainChanged', () => {});
@@ -294,7 +280,6 @@ export const TopBar = () => {
       description: "Free NFT mint in progress...",
     });
 
-    // Simulate minting process
     setTimeout(() => {
       toast({
         title: "NFT Minted Successfully!",
@@ -322,7 +307,6 @@ export const TopBar = () => {
         description: "Generating secure Solana keypair",
       });
 
-      // Generate a new Solana keypair
       const { Keypair } = await import('@solana/web3.js');
       const bs58 = await import('bs58');
       
@@ -332,15 +316,12 @@ export const TopBar = () => {
       
       const walletData = { publicKey, privateKey };
       
-      // Store wallet info securely in localStorage
       localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
       
-      // Update state
       setCreatedWallet(walletData);
       setPhantomAddress(publicKey);
       setPhantomConnected(true);
       
-      // Check initial balance
       await checkWalletBalance(publicKey);
       
       toast({
@@ -348,7 +329,6 @@ export const TopBar = () => {
         description: `New Solana wallet: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
       });
       
-      // Show wallet details modal
       setShowWalletDetails(true);
       
     } catch (error) {
@@ -428,27 +408,21 @@ export const TopBar = () => {
       const { Keypair } = await import('@solana/web3.js');
       const bs58 = await import('bs58');
       
-      // Decode the private key
       const secretKey = bs58.default.decode(importPrivateKey.trim());
       
-      // Create keypair from secret key
       const keypair = Keypair.fromSecretKey(secretKey);
       const publicKey = keypair.publicKey.toString();
       
       const walletData = { publicKey, privateKey: importPrivateKey.trim() };
       
-      // Store wallet info securely in localStorage
       localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
       
-      // Update state
       setCreatedWallet(walletData);
       setPhantomAddress(publicKey);
       setPhantomConnected(true);
       
-      // Check initial balance
       await checkWalletBalance(publicKey);
       
-      // Clear import form
       setImportPrivateKey('');
       setShowImportWallet(false);
       
@@ -457,7 +431,6 @@ export const TopBar = () => {
         description: `Imported Solana wallet: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
       });
       
-      // Show wallet details modal
       setShowWalletDetails(true);
       
     } catch (error) {
@@ -474,20 +447,7 @@ export const TopBar = () => {
     <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo Section */}
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
-              <img 
-                src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
-                alt="Cyber City Arcade Logo" 
-                className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          </div>
-
-          {/* Center Section - Cart and User Info */}
-          <div className="flex items-center gap-4">
-            {/* Cart Button */}
+          <div className="flex items-center">
             <Button 
               onClick={() => setIsOpen(true)}
               className="cyber-button flex items-center gap-2 relative"
@@ -500,8 +460,19 @@ export const TopBar = () => {
                 </Badge>
               )}
             </Button>
+          </div>
 
-            {/* User Authentication Info Only - No Login Button */}
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
+              <img 
+                src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
+                alt="Cyber City Arcade Logo" 
+                className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
             ) : (
@@ -536,7 +507,6 @@ export const TopBar = () => {
               )
             )}
 
-            {/* Create/Manage Wallet Button */}
             <div className="flex items-center gap-2">
               {createdWallet ? (
                 <Button 
@@ -565,9 +535,7 @@ export const TopBar = () => {
               )}
             </div>
 
-            {/* Wallet Integration Buttons */}
             <div className="flex items-center gap-2">
-              {/* Phantom Wallet */}
               {phantomConnected ? (
                 <Button 
                   onClick={disconnectPhantom}
@@ -588,15 +556,9 @@ export const TopBar = () => {
               )}
             </div>
           </div>
-
-          {/* Right Section - Empty */}
-          <div className="flex items-center gap-3">
-            {/* Empty */}
-          </div>
         </div>
       </div>
 
-      {/* Import Wallet Modal */}
       <Dialog open={showImportWallet} onOpenChange={setShowImportWallet}>
         <DialogContent className="max-w-md arcade-frame">
           <DialogHeader>
@@ -657,7 +619,6 @@ export const TopBar = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Wallet Details Modal */}
       <Dialog open={showWalletDetails} onOpenChange={setShowWalletDetails}>
         <DialogContent className="max-w-2xl arcade-frame">
           <DialogHeader>
@@ -668,7 +629,6 @@ export const TopBar = () => {
           
           {createdWallet && (
             <div className="space-y-6">
-              {/* Wallet Overview */}
               <Card className="holographic p-4">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
@@ -692,7 +652,6 @@ export const TopBar = () => {
                 </div>
               </Card>
 
-              {/* Public Key */}
               <div className="space-y-2">
                 <label className="text-sm font-bold text-neon-purple">Public Key (Address)</label>
                 <div className="flex gap-2">
@@ -715,7 +674,6 @@ export const TopBar = () => {
                 </p>
               </div>
 
-              {/* Private Key */}
               <div className="space-y-2">
                 <label className="text-sm font-bold text-neon-pink">Private Key</label>
                 <div className="flex gap-2">
@@ -747,7 +705,6 @@ export const TopBar = () => {
                 </p>
               </div>
 
-              {/* Wallet Actions */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Button 
                   onClick={exportWallet}
@@ -776,7 +733,6 @@ export const TopBar = () => {
                 </Button>
               </div>
 
-              {/* Usage Instructions */}
               <Card className="bg-neon-cyan/10 border-neon-cyan/30">
                 <CardContent className="p-4">
                   <h4 className="font-bold text-neon-cyan mb-2">🎮 How to Use Your Wallet</h4>
