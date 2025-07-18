@@ -382,12 +382,12 @@ export const Marketplace = () => {
             {filteredNFTs.map((nft) => (
               <Card key={nft.id} className="vending-machine overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
                     {nft.image.startsWith('/') ? (
                       <img 
                         src={nft.image} 
                         alt={nft.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                       />
                     ) : (
                       <span className="text-6xl">{nft.image}</span>
