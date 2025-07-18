@@ -156,15 +156,15 @@ export const TokenDashboard = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span>Market Cap:</span>
-              <span className="text-neon-green font-bold">$2.3M</span>
+              <span className="text-neon-green font-bold">$45M</span>
             </div>
             <div className="flex justify-between items-center">
               <span>Total Supply:</span>
-              <span className="text-neon-purple font-bold">100M $CCTR</span>
+              <span className="text-neon-purple font-bold">1B $CCTR</span>
             </div>
             <div className="flex justify-between items-center">
               <span>Circulating Supply:</span>
-              <span className="text-neon-cyan font-bold">45M $CCTR</span>
+              <span className="text-neon-cyan font-bold">450M $CCTR</span>
             </div>
             <div className="flex justify-between items-center">
               <span>Holders:</span>

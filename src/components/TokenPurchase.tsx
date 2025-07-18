@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -102,29 +101,29 @@ export const TokenPurchase = () => {
               <div className="space-y-4">
                 <div className="border-b border-neon-purple/30 pb-3">
                   <h4 className="font-bold text-neon-pink mb-2">Total Supply</h4>
-                  <p className="text-2xl font-bold text-neon-green">1,000,000 $CCTR</p>
+                  <p className="text-2xl font-bold text-neon-green">1,000,000,000 $CCTR</p>
                 </div>
                 
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm">Public Sale:</span>
-                    <span className="text-neon-green font-bold">40% (400k)</span>
+                    <span className="text-neon-green font-bold">40% (400M)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Gaming Rewards:</span>
-                    <span className="text-neon-cyan font-bold">25% (250k)</span>
+                    <span className="text-neon-cyan font-bold">25% (250M)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Team & Dev:</span>
-                    <span className="text-neon-purple font-bold">15% (150k)</span>
+                    <span className="text-neon-purple font-bold">15% (150M)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Liquidity:</span>
-                    <span className="text-neon-pink font-bold">10% (100k)</span>
+                    <span className="text-neon-pink font-bold">10% (100M)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Marketing:</span>
-                    <span className="text-neon-yellow font-bold">10% (100k)</span>
+                    <span className="text-neon-yellow font-bold">10% (100M)</span>
                   </div>
                 </div>
 
@@ -135,7 +134,7 @@ export const TokenPurchase = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Market Cap:</span>
-                    <span className="text-neon-cyan font-bold">$45,000</span>
+                    <span className="text-neon-cyan font-bold">$45,000,000</span>
                   </div>
                 </div>
               </div>
