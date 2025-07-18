@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -423,6 +424,20 @@ export const TopBar = () => {
 
           {/* Center Section - Authentication and Wallet Actions */}
           <div className="flex items-center gap-4">
+            {/* Cart Button - moved to left side */}
+            <Button 
+              onClick={() => setIsOpen(true)}
+              className="cyber-button flex items-center gap-2 relative"
+            >
+              <ShoppingCart size={16} />
+              CART
+              {getTotalItems() > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-neon-pink text-black min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs">
+                  {getTotalItems()}
+                </Badge>
+              )}
+            </Button>
+
             {/* User Authentication */}
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
@@ -510,21 +525,9 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Right Section - Cart Only */}
+          {/* Right Section - Empty now */}
           <div className="flex items-center gap-3">
-            {/* Cart Button */}
-            <Button 
-              onClick={() => setIsOpen(true)}
-              className="cyber-button flex items-center gap-2 relative"
-            >
-              <ShoppingCart size={16} />
-              CART
-              {getTotalItems() > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-neon-pink text-black min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs">
-                  {getTotalItems()}
-                </Badge>
-              )}
-            </Button>
+            {/* Empty - cart moved to center */}
           </div>
         </div>
       </div>
