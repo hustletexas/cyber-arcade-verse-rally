@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -420,26 +419,24 @@ export const TopBar = () => {
                 className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
               />
             </div>
-            
-            {/* Cart Button moved 5 inches to the left */}
-            <div className="ml-[360px]">
-              <Button 
-                onClick={() => setIsOpen(true)}
-                className="cyber-button flex items-center gap-2 relative"
-              >
-                <ShoppingCart size={16} />
-                CART
-                {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-neon-pink text-black min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs">
-                    {getTotalItems()}
-                  </Badge>
-                )}
-              </Button>
-            </div>
           </div>
 
-          {/* Center Section - User Info and Wallet Management */}
-          <div className="flex items-center gap-4 justify-center flex-1">
+          {/* Center Section - Cart and User Info */}
+          <div className="flex items-center gap-4">
+            {/* Cart Button */}
+            <Button 
+              onClick={() => setIsOpen(true)}
+              className="cyber-button flex items-center gap-2 relative"
+            >
+              <ShoppingCart size={16} />
+              CART
+              {getTotalItems() > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-neon-pink text-black min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs">
+                  {getTotalItems()}
+                </Badge>
+              )}
+            </Button>
+
             {/* User Authentication Info Only - No Login Button */}
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
@@ -475,7 +472,7 @@ export const TopBar = () => {
               )
             )}
 
-            {/* Create/Manage Wallet Button - Centered */}
+            {/* Create/Manage Wallet Button */}
             {createdWallet ? (
               <Button 
                 onClick={() => setShowWalletDetails(true)}
@@ -492,7 +489,7 @@ export const TopBar = () => {
               </Button>
             )}
 
-            {/* Wallet Integration Buttons - Centered */}
+            {/* Wallet Integration Buttons */}
             <div className="flex items-center gap-2">
               {/* Phantom Wallet */}
               {phantomConnected ? (
