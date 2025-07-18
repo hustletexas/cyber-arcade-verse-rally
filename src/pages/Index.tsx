@@ -101,9 +101,7 @@ const Index = () => {
 
           {/* Merchandise Store Section */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🛍️ MERCHANDISE STORE
-            </h2>
+            
             <MerchandiseStore />
           </section>
 
