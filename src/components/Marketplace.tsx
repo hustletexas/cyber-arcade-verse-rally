@@ -89,7 +89,7 @@ const mockNFTs = [
     id: 9,
     name: "Cyber City Arcade Gamer",
     price: { cctr: 2000, sol: 1.0, usdc: 90, pyusd: 90 },
-    image: "/lovable-uploads/9ec7cfe8-1223-4c47-bf02-5249c4de7a54.png",
+    image: "/lovable-uploads/499520d8-632b-415d-9e5a-5599ef4eca14.png",
     rarity: "Rare",
     seller: "CyberCityElite",
     description: "Elite cyberpunk gamer with advanced neural interface - master of the Cyber City Arcade realm"
