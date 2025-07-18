@@ -8,14 +8,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CreditCard, DollarSign, Coins } from 'lucide-react';
-
 export const TokenPurchase = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [amount, setAmount] = useState<number>(1000);
   const [paymentMethod, setPaymentMethod] = useState<string>('paypal');
   const [processing, setProcessing] = useState(false);
-
   const tokenPrice = 0.045; // $0.045 per CCTR token
 
   const handlePurchase = async () => {
@@ -23,45 +25,42 @@ export const TokenPurchase = () => {
       toast({
         title: "Authentication Required",
         description: "Please log in to purchase tokens",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setProcessing(true);
-
     try {
-      const { data, error } = await supabase.functions.invoke('create-payment', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: amount,
           payment_method: paymentMethod,
           payment_currency: getPaymentCurrency(paymentMethod)
         }
       });
-
       if (error) throw error;
 
       // Open payment URL in new tab
       if (data.payment_url) {
         window.open(data.payment_url, '_blank');
       }
-
       toast({
         title: "💳 Payment Initiated",
-        description: `Redirecting to ${paymentMethod.toUpperCase()} for ${amount.toLocaleString()} $CCTR tokens`,
+        description: `Redirecting to ${paymentMethod.toUpperCase()} for ${amount.toLocaleString()} $CCTR tokens`
       });
-
     } catch (error: any) {
       toast({
         title: "Payment Failed",
         description: error.message || "Failed to initiate payment",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setProcessing(false);
     }
   };
-
   const getPaymentCurrency = (method: string) => {
     switch (method) {
       case 'usdc':
@@ -74,18 +73,25 @@ export const TokenPurchase = () => {
         return 'USD';
     }
   };
-
-  const paymentMethods = [
-    { value: 'paypal', label: '💳 PayPal', icon: '💳' },
-    { value: 'usdc', label: '🪙 USDC', icon: '🪙' },
-    { value: 'pyusd', label: '💰 PYUSD', icon: '💰' },
-    { value: 'solana', label: '⚡ Solana', icon: '⚡' }
-  ];
-
+  const paymentMethods = [{
+    value: 'paypal',
+    label: '💳 PayPal',
+    icon: '💳'
+  }, {
+    value: 'usdc',
+    label: '🪙 USDC',
+    icon: '🪙'
+  }, {
+    value: 'pyusd',
+    label: '💰 PYUSD',
+    icon: '💰'
+  }, {
+    value: 'solana',
+    label: '⚡ Solana',
+    icon: '⚡'
+  }];
   const presetAmounts = [500, 1000, 2500, 5000, 10000];
-
-  return (
-    <Card className="arcade-frame">
+  return <Card className="arcade-frame">
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-green flex items-center gap-3">
           💰 BUY $CCTR TOKENS
@@ -191,26 +197,11 @@ export const TokenPurchase = () => {
             <div className="space-y-4">
               <h3 className="font-bold text-neon-pink">Amount to Purchase</h3>
               <div className="grid grid-cols-3 gap-2">
-                {presetAmounts.map((preset) => (
-                  <Button
-                    key={preset}
-                    variant={amount === preset ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setAmount(preset)}
-                    className={amount === preset ? "cyber-button" : "border-neon-cyan text-neon-cyan"}
-                  >
+                {presetAmounts.map(preset => <Button key={preset} variant={amount === preset ? "default" : "outline"} size="sm" onClick={() => setAmount(preset)} className={amount === preset ? "cyber-button" : "border-neon-cyan text-neon-cyan"}>
                     {preset.toLocaleString()}
-                  </Button>
-                ))}
+                  </Button>)}
               </div>
-              <Input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
-                placeholder="Custom amount"
-                min="1"
-                className="text-center text-lg font-bold"
-              />
+              <Input type="number" value={amount} onChange={e => setAmount(parseInt(e.target.value) || 0)} placeholder="Custom amount" min="1" className="text-center text-lg font-bold" />
             </div>
 
             {/* Payment Method */}
@@ -251,18 +242,8 @@ export const TokenPurchase = () => {
             </div>
 
             {/* Purchase Button */}
-            <Button
-              onClick={handlePurchase}
-              disabled={processing || !amount || !user}
-              className="w-full cyber-button text-lg py-6"
-            >
-              {processing ? (
-                "💳 Processing..."
-              ) : !user ? (
-                "🔐 LOGIN TO PURCHASE"
-              ) : (
-                `💰 BUY ${amount.toLocaleString()} $CCTR`
-              )}
+            <Button onClick={handlePurchase} disabled={processing || !amount || !user} className="w-full cyber-button text-lg py-6">
+              {processing ? "💳 Processing..." : !user ? "🔐 LOGIN TO PURCHASE" : `💰 BUY ${amount.toLocaleString()} $CCTR`}
             </Button>
           </div>
 
@@ -316,15 +297,7 @@ export const TokenPurchase = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-neon-green text-xl">💸</span>
-                  <div>
-                    <h4 className="font-bold text-neon-pink">0 Fees</h4>
-                    <p className="text-sm text-muted-foreground">
-                      No transaction fees for token holders
-                    </p>
-                  </div>
-                </div>
+                
                 <div className="flex items-start gap-3">
                   <span className="text-neon-purple text-xl">👑</span>
                   <div>
@@ -361,6 +334,5 @@ export const TokenPurchase = () => {
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
