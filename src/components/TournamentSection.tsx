@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TournamentGameInterface } from './TournamentGameInterface';
 import { TournamentBracket } from './TournamentBracket';
-import { SolanaTournamentBracket } from './SolanaTournamentBracket';
 import { SolanaTournamentSystem } from './SolanaTournamentSystem';
 import { TournamentAdminPanel } from './TournamentAdminPanel';
 import { PayPalTournamentEntry } from './PayPalTournamentEntry';
@@ -419,7 +417,6 @@ export const TournamentSection = () => {
 
           {/* Tournament Bracket */}
           <TournamentBracket />
-          <SolanaTournamentBracket />
         </div>
       )}
 
