@@ -130,9 +130,7 @@ const Index = () => {
 
           {/* Prize Pool Section - Moved after Raffles */}
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-              🏆 PRIZE POOL
-            </h2>
+            
             <PrizeSection />
           </section>
 
