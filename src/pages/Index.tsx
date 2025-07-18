@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
 import { TournamentSection } from '@/components/TournamentSection';
 import { TokenDashboard } from '@/components/TokenDashboard';
@@ -17,8 +18,26 @@ import { LiveTournaments } from '@/components/LiveTournaments';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const { toast } = useToast();
+
+  const mintFreeNFT = async () => {
+    toast({
+      title: "Minting NFT",
+      description: "Free NFT mint in progress...",
+    });
+
+    // Simulate minting process
+    setTimeout(() => {
+      toast({
+        title: "NFT Minted Successfully!",
+        description: "Your free Cyber City Arcade NFT has been minted to your wallet",
+      });
+    }, 3000);
+  };
+
   return (
     <div className="min-h-screen bg-black">
       {/* Enhanced Animated Background */}
@@ -57,16 +76,15 @@ const Index = () => {
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
-          <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-6 md:mb-8 px-4">
-            <Badge className="bg-neon-pink text-black px-2 md:px-4 py-1 md:py-2 text-xs md:text-sm font-bold neon-glow">
-              🏆 LIVE TOURNAMENTS
-            </Badge>
-            <Badge className="bg-neon-cyan text-black px-2 md:px-4 py-1 md:py-2 text-xs md:text-sm font-bold neon-glow">
-              💎 FREE NFT MINTS
-            </Badge>
-            <Badge className="bg-neon-green text-black px-2 md:px-4 py-1 md:py-2 text-xs md:text-sm font-bold neon-glow">
-              🪙 $CCTR REWARDS
-            </Badge>
+          
+          {/* Centered Mint Free NFT Button */}
+          <div className="flex justify-center mb-6 md:mb-8 px-4">
+            <Button 
+              onClick={mintFreeNFT}
+              className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+            >
+              🔨 MINT FREE NFT
+            </Button>
           </div>
         </div>
 
