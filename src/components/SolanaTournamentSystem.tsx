@@ -150,7 +150,22 @@ export const SolanaTournamentSystem = () => {
         .order('start_time', { ascending: false });
 
       if (error) throw error;
-      setTournaments(data || []);
+      
+      // Map the database fields to our Tournament interface
+      const mappedTournaments: Tournament[] = (data || []).map(tournament => ({
+        id: tournament.id,
+        name: tournament.name,
+        format: tournament.format as 'top_5_split' | 'winner_takes_all',
+        entry_fee: tournament.entry_fee,
+        prize_pool: tournament.prize_pool,
+        start_time: tournament.start_time,
+        status: tournament.status,
+        admin_wallet: tournament.admin_wallet,
+        max_players: tournament.max_players,
+        current_players: tournament.current_players
+      }));
+      
+      setTournaments(mappedTournaments);
     } catch (error) {
       console.error('Error loading tournaments:', error);
     }
@@ -165,7 +180,21 @@ export const SolanaTournamentSystem = () => {
         .order('score', { ascending: false });
 
       if (error) throw error;
-      setEntries(data || []);
+      
+      // Map the database fields to our Entry interface
+      const mappedEntries: Entry[] = (data || []).map(entry => ({
+        id: entry.id,
+        tournament_id: entry.tournament_id,
+        wallet: entry.wallet,
+        epic_name: entry.epic_name,
+        score: entry.score,
+        kills: entry.kills,
+        placement: entry.placement,
+        screenshot_url: entry.screenshot_url,
+        approved: entry.approved
+      }));
+      
+      setEntries(mappedEntries);
     } catch (error) {
       console.error('Error loading entries:', error);
     }
@@ -186,8 +215,13 @@ export const SolanaTournamentSystem = () => {
       const { error } = await supabase
         .from('tournaments')
         .insert([{
-          ...newTournament,
+          name: newTournament.name,
+          format: newTournament.format,
+          entry_fee: newTournament.entry_fee,
+          prize_pool: newTournament.prize_pool,
+          start_time: newTournament.start_time,
           admin_wallet: walletAddress,
+          max_players: newTournament.max_players,
           status: 'upcoming'
         }]);
 

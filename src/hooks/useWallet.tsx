@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 
 export interface WalletState {
@@ -39,15 +40,12 @@ export const useWallet = () => {
       // Check Phantom wallet
       if (window.solana && window.solana.isPhantom) {
         try {
-          if (window.solana.isConnected) {
-            const response = await window.solana.connect({ onlyIfTrusted: true });
-            if (response?.publicKey) {
-              setWalletState(prev => ({
-                ...prev,
-                phantomAddress: response.publicKey.toString(),
-                phantomConnected: true
-              }));
-            }
+          if (window.solana.publicKey) {
+            setWalletState(prev => ({
+              ...prev,
+              phantomAddress: window.solana.publicKey.toString(),
+              phantomConnected: true
+            }));
           }
         } catch (error) {
           console.log('Phantom wallet not auto-connected');
@@ -76,6 +74,46 @@ export const useWallet = () => {
     checkConnections();
   }, []);
 
+  const connectPhantom = async () => {
+    try {
+      if (!window.solana) {
+        throw new Error('Phantom wallet not found');
+      }
+
+      const response = await window.solana.connect();
+      setWalletState(prev => ({
+        ...prev,
+        phantomConnected: true,
+        phantomAddress: response.publicKey.toString()
+      }));
+
+      return response.publicKey.toString();
+    } catch (error) {
+      console.error('Error connecting Phantom wallet:', error);
+      throw error;
+    }
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      if (window.solana && window.solana.disconnect) {
+        await window.solana.disconnect();
+      }
+      
+      setWalletState({
+        phantomConnected: false,
+        coinbaseConnected: false,
+        phantomAddress: '',
+        coinbaseAddress: '',
+        createdWallet: null
+      });
+      
+      localStorage.removeItem('cyberCityWallet');
+    } catch (error) {
+      console.error('Error disconnecting wallet:', error);
+    }
+  };
+
   const getConnectedWallet = () => {
     if (walletState.phantomConnected && walletState.phantomAddress) {
       return {
@@ -101,6 +139,8 @@ export const useWallet = () => {
   return {
     walletState,
     getConnectedWallet,
-    isWalletConnected
+    isWalletConnected,
+    connectPhantom,
+    disconnectWallet
   };
 };
