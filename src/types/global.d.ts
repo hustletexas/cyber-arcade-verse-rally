@@ -1,6 +1,4 @@
 
-// Global type declarations for external libraries
-
 declare global {
   interface Window {
     solana?: {
@@ -9,6 +7,7 @@ declare global {
       disconnect: () => Promise<void>;
       signTransaction: (transaction: any) => Promise<any>;
       signAllTransactions: (transactions: any[]) => Promise<any[]>;
+      publicKey?: { toString(): string };
     };
     paypal?: {
       Buttons: (config: {
@@ -17,7 +16,7 @@ declare global {
         onError?: (err: any) => void;
         onCancel?: (data: any) => void;
       }) => {
-        render: (selector: string) => void;
+        render: (selector: string | HTMLElement) => void;
       };
     };
   }
