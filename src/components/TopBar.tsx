@@ -510,7 +510,7 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Right Section - Cart and Mint NFT Button */}
+          {/* Right Section - Cart Only */}
           <div className="flex items-center gap-3">
             {/* Cart Button */}
             <Button 
@@ -524,13 +524,6 @@ export const TopBar = () => {
                   {getTotalItems()}
                 </Badge>
               )}
-            </Button>
-            
-            <Button 
-              onClick={mintFreeNFT}
-              className="cyber-button flex items-center gap-2"
-            >
-              🔨 MINT FREE NFT
             </Button>
           </div>
         </div>
