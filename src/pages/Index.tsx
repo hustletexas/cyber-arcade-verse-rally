@@ -200,7 +200,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-neon-cyan/30 mt-12 md:mt-20 py-6 md:py-8">
         <div className="container mx-auto px-4">
-          {/* Privacy and Support Links */}
+          {/* Privacy, Support, and Terms Links */}
           <div className="flex justify-center gap-6 mb-6">
             <button 
               onClick={() => window.open('#', '_blank')} 
@@ -214,6 +214,13 @@ const Index = () => {
               className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
             >
               Support
+            </button>
+            <span className="text-neon-purple">•</span>
+            <button 
+              onClick={() => window.open('#', '_blank')} 
+              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
+            >
+              Terms
             </button>
           </div>
           
