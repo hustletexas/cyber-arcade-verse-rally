@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -421,8 +422,9 @@ export const TopBar = () => {
             </div>
           </div>
 
-          {/* Center Section - Cart Button */}
+          {/* Center Section - Authentication and Wallet Actions */}
           <div className="flex items-center gap-4">
+            {/* Cart Button - moved to left side */}
             <Button 
               onClick={() => setIsOpen(true)}
               className="cyber-button flex items-center gap-2 relative"
@@ -435,6 +437,68 @@ export const TopBar = () => {
                 </Badge>
               )}
             </Button>
+
+            {/* User Authentication */}
+            {loading ? (
+              <div className="text-neon-cyan">Loading...</div>
+            ) : (
+              <div className="flex items-center gap-3">
+                {user ? (
+                  <Card className="arcade-frame px-4 py-2">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-8 h-8 border-2 border-neon-cyan">
+                        <AvatarImage src={user.user_metadata?.avatar_url} />
+                        <AvatarFallback className="bg-neon-purple text-black font-bold">
+                          {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-sm">
+                        <p className="font-bold text-neon-cyan">
+                          {user.user_metadata?.username || user.email?.split('@')[0]}
+                        </p>
+                        <p className="text-neon-purple text-xs">{user.email}</p>
+                      </div>
+                      <Badge className="bg-neon-green text-black">
+                        🔐 AUTHENTICATED
+                      </Badge>
+                      <Button 
+                        onClick={handleSignOut}
+                        variant="outline" 
+                        size="sm"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                      >
+                        Logout
+                      </Button>
+                    </div>
+                  </Card>
+                ) : (
+                  <Button 
+                    onClick={() => navigate('/auth')}
+                    className="cyber-button flex items-center gap-2"
+                  >
+                    <span className="text-lg">🔐</span>
+                    LOGIN / SIGNUP
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Create/Manage Wallet Button */}
+            {createdWallet ? (
+              <Button 
+                onClick={() => setShowWalletDetails(true)}
+                className="cyber-button flex items-center gap-2"
+              >
+                💰 MANAGE WALLET
+              </Button>
+            ) : (
+              <Button 
+                onClick={createWallet}
+                className="cyber-button flex items-center gap-2"
+              >
+                ➕ CREATE WALLET
+              </Button>
+            )}
 
             {/* Wallet Integration Buttons */}
             <div className="flex items-center gap-2">
@@ -457,42 +521,13 @@ export const TopBar = () => {
                   👻 PHANTOM
                 </Button>
               )}
+
             </div>
           </div>
 
-          {/* Right Section - User Info if logged in */}
+          {/* Right Section - Empty now */}
           <div className="flex items-center gap-3">
-            {loading ? (
-              <div className="text-neon-cyan">Loading...</div>
-            ) : user ? (
-              <Card className="arcade-frame px-4 py-2">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-8 h-8 border-2 border-neon-cyan">
-                    <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-neon-purple text-black font-bold">
-                      {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-sm">
-                    <p className="font-bold text-neon-cyan">
-                      {user.user_metadata?.username || user.email?.split('@')[0]}
-                    </p>
-                    <p className="text-neon-purple text-xs">{user.email}</p>
-                  </div>
-                  <Badge className="bg-neon-green text-black">
-                    🔐 AUTHENTICATED
-                  </Badge>
-                  <Button 
-                    onClick={handleSignOut}
-                    variant="outline" 
-                    size="sm"
-                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
-                  >
-                    Logout
-                  </Button>
-                </div>
-              </Card>
-            ) : null}
+            {/* Empty - cart moved to center */}
           </div>
         </div>
       </div>
