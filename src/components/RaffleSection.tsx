@@ -170,26 +170,13 @@ export const RaffleSection = () => {
       }
 
       // For demonstration purposes, we'll simulate blockchain interaction
-      // In a real implementation, you'd interact with your Solana program
       console.log(`Distributing ${prize.name} to ${walletAddress}`);
       
       // Simulate transaction hash
       const mockTxHash = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      // Create a mock transaction (in real implementation, this would be your program call)
-      const transaction = new Transaction();
-      
-      // Add your program instruction here
-      // For now, we'll just add a minimal SOL transfer as example
-      if (prize.type === 'usdc') {
-        transaction.add(
-          SystemProgram.transfer({
-            fromPubkey: new PublicKey('11111111111111111111111111111112'), // System program
-            toPubkey: new PublicKey(walletAddress),
-            lamports: prize.value * LAMPORTS_PER_SOL / 1000, // Convert USDC to minimal SOL for demo
-          })
-        );
-      }
+      // In a real implementation, you would create actual Solana transactions here
+      console.log(`Simulated transaction hash: ${mockTxHash}`);
 
       return mockTxHash;
     } catch (error) {
@@ -243,6 +230,8 @@ export const RaffleSection = () => {
 
       // Process each ticket purchase
       const wonPrizes = [];
+      let totalCCTRWon = 0;
+
       for (let i = 0; i < ticketCount; i++) {
         const randomPrize = selectRandomPrize(raffle.rarity);
         wonPrizes.push(randomPrize);
@@ -252,39 +241,44 @@ export const RaffleSection = () => {
           const txHash = await distributePrizeOnSolana(wallet.address, randomPrize);
           console.log(`Prize distributed: ${randomPrize.name}, TX: ${txHash}`);
           
-          // Award CCTR tokens directly to user balance
+          // Add CCTR tokens to total
           if (randomPrize.type === 'cctr') {
-            await supabase
-              .from('user_balances')
-              .update({ 
-                cctr_balance: balance.cctr_balance - raffle.ticket_price + randomPrize.value,
-                updated_at: new Date().toISOString()
-              })
-              .eq('user_id', user.id);
+            totalCCTRWon += randomPrize.value;
           }
         } catch (error) {
           console.error('Prize distribution failed:', error);
         }
       }
 
-      // Deduct ticket cost from user balance
-      await supabase
+      // Update user balance: deduct cost and add won CCTR tokens
+      const newBalance = balance.cctr_balance - totalCost + totalCCTRWon;
+      
+      const { error: updateError } = await supabase
         .from('user_balances')
         .update({ 
-          cctr_balance: balance.cctr_balance - totalCost,
+          cctr_balance: newBalance,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
 
+      if (updateError) {
+        console.error('Balance update error:', updateError);
+        throw updateError;
+      }
+
       // Create transaction record
-      await supabase
+      const { error: transactionError } = await supabase
         .from('token_transactions')
         .insert({
           user_id: user.id,
           amount: -totalCost,
           transaction_type: 'chest_purchase',
-          description: `Opened ${ticketCount} ${raffle.title}(s)`
+          description: `Opened ${ticketCount} ${raffle.title}(s) - Won: ${wonPrizes.map(p => p.name).join(', ')}`
         });
+
+      if (transactionError) {
+        console.error('Transaction record error:', transactionError);
+      }
 
       toast({
         title: "🎉 Chest Opened Successfully!",
@@ -305,7 +299,7 @@ export const RaffleSection = () => {
       console.error('Purchase error:', error);
       toast({
         title: "Purchase Failed",
-        description: error.message || "Failed to open chest",
+        description: error.message || "Failed to open chest. Please try again.",
         variant: "destructive",
       });
     } finally {
