@@ -2,13 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { SolanaTournamentManager } from './SolanaTournamentManager';
 
 export const SolanaTournamentSystem = () => {
   const { user } = useAuth();
@@ -17,7 +14,6 @@ export const SolanaTournamentSystem = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [hasNFTPass, setHasNFTPass] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     checkWalletConnection();
@@ -71,14 +67,14 @@ export const SolanaTournamentSystem = () => {
 
   const checkNFTPass = async (wallet: string) => {
     try {
+      // Mock NFT check - replace with actual NFT verification
       const mockHasNFT = Math.random() > 0.3;
       setHasNFTPass(mockHasNFT);
       
       if (!mockHasNFT) {
         toast({
-          title: "NFT Pass Required",
-          description: "You need a Cyber City Pass NFT to enter tournaments",
-          variant: "destructive"
+          title: "NFT Pass Recommended",
+          description: "Get a Cyber City Pass NFT for exclusive tournaments",
         });
       }
     } catch (error) {
@@ -88,58 +84,28 @@ export const SolanaTournamentSystem = () => {
   };
 
   const checkAdminStatus = (wallet: string) => {
+    // Replace with your actual admin wallet addresses
     const adminWallets = ['YOUR_ADMIN_WALLET_ADDRESS'];
     setIsAdmin(adminWallets.includes(wallet));
   };
 
-  const removeActiveTournaments = async () => {
-    if (!isAdmin) {
-      toast({
-        title: "Admin Access Required",
-        description: "Only admins can remove tournaments",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('tournaments')
-        .update({ status: 'cancelled' })
-        .eq('status', 'active');
-
-      if (error) throw error;
-
-      toast({
-        title: "Active Tournaments Removed",
-        description: "All active tournaments have been cancelled successfully"
-      });
-    } catch (error) {
-      toast({
-        title: "Removal Failed",
-        description: "Failed to remove active tournaments",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Wallet Connection */}
+      {/* Quick Wallet Status */}
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-xl text-neon-cyan">
-            🔗 Solana Wallet Connection
+            🔗 Solana Tournament Portal
           </CardTitle>
         </CardHeader>
         <CardContent>
           {!walletConnected ? (
-            <Button onClick={connectWallet} className="cyber-button w-full">
-              Connect Phantom Wallet
-            </Button>
+            <div className="text-center space-y-4">
+              <p className="text-gray-300">Connect your Phantom wallet to join tournaments</p>
+              <Button onClick={connectWallet} className="cyber-button">
+                Connect Phantom Wallet
+              </Button>
+            </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -150,8 +116,8 @@ export const SolanaTournamentSystem = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span>NFT Pass Status:</span>
-                <Badge className={hasNFTPass ? "bg-neon-green text-black" : "bg-red-500 text-white"}>
-                  {hasNFTPass ? "✅ Valid Pass" : "❌ No Pass"}
+                <Badge className={hasNFTPass ? "bg-neon-green text-black" : "bg-yellow-500 text-black"}>
+                  {hasNFTPass ? "✅ Valid Pass" : "⚠️ Optional"}
                 </Badge>
               </div>
               {isAdmin && (
@@ -162,40 +128,51 @@ export const SolanaTournamentSystem = () => {
         </CardContent>
       </Card>
 
-      {/* Admin Tournament Management */}
-      {isAdmin && (
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-xl text-neon-purple">
-              🏆 Admin Tournament Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-4">
-              <Button 
-                onClick={removeActiveTournaments} 
-                disabled={loading}
-                variant="destructive"
-                className="flex-1"
-              >
-                {loading ? 'Removing...' : 'Remove All Active Tournaments'}
-              </Button>
+      {/* Tournament Manager */}
+      <SolanaTournamentManager />
+
+      {/* Tournament Features */}
+      <Card className="arcade-frame">
+        <CardHeader>
+          <CardTitle className="font-display text-xl text-neon-cyan">
+            🏆 Tournament Features
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="space-y-2">
+              <h4 className="text-neon-green font-bold">🎯 Tournament System:</h4>
+              <ul className="text-gray-300 space-y-1">
+                <li>• Maximum 32 players per tournament</li>
+                <li>• Automatic entry fee collection</li>
+                <li>• Real-time player count tracking</li>
+                <li>• Smart contract prize distribution</li>
+              </ul>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="space-y-2">
+              <h4 className="text-neon-purple font-bold">💰 Prize Distribution:</h4>
+              <ul className="text-gray-300 space-y-1">
+                <li>• Winner receives 90% of prize pool</li>
+                <li>• Admin receives 10% service fee</li>
+                <li>• Automatic SOL payouts</li>
+                <li>• Transparent on-chain transactions</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* NFT Gate Message */}
       {walletConnected && !hasNFTPass && (
-        <Card className="arcade-frame border-red-500">
+        <Card className="arcade-frame border-yellow-500">
           <CardContent className="text-center p-6">
-            <h3 className="text-xl font-bold text-red-400 mb-3">🚫 NFT Pass Required</h3>
+            <h3 className="text-xl font-bold text-yellow-400 mb-3">🎫 NFT Pass Available</h3>
             <p className="text-gray-300 mb-4">
-              You need a Cyber City Pass NFT to enter tournaments. 
-              Purchase one from our marketplace to get started!
+              Get a Cyber City Pass NFT for access to exclusive tournaments 
+              and special rewards!
             </p>
             <Button className="cyber-button">
-              Buy NFT Pass
+              Browse NFT Marketplace
             </Button>
           </CardContent>
         </Card>

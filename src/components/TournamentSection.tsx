@@ -216,7 +216,7 @@ export const TournamentSection = () => {
         </CardContent>
       </Card>
 
-      {/* Live Tournaments Section - Moved under Tournament Systems */}
+      {/* Live Tournaments Section */}
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-cyan flex items-center gap-3">
@@ -273,7 +273,7 @@ export const TournamentSection = () => {
         </CardContent>
       </Card>
 
-      {/* Live Statistics Section - Moved under Tournament Systems */}
+      {/* Live Statistics Section */}
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-xl text-neon-cyan">📊 LIVE STATISTICS</CardTitle>
@@ -310,28 +310,41 @@ export const TournamentSection = () => {
           <Card className="arcade-frame">
             <CardHeader>
               <CardTitle className="font-display text-xl text-neon-cyan">
-                ⛓️ Solana-Powered Tournaments
+                ⛓️ Solana-Powered Tournament System
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="space-y-2">
-                    <h4 className="text-neon-green font-bold">🏆 Prize Distribution:</h4>
+                    <h4 className="text-neon-green font-bold">🎯 Smart Contract Features:</h4>
                     <ul className="text-gray-300 space-y-1">
-                      <li>• Top 5 Split: 40%, 25%, 15%, 12%, 8%</li>
-                      <li>• Winner Takes All: 100% to 1st place</li>
-                      <li>• Automatic SOL payouts</li>
+                      <li>• Maximum 32 players per tournament</li>
+                      <li>• Automatic entry fee collection</li>
+                      <li>• Real-time player tracking</li>
+                      <li>• Tournament full protection</li>
                     </ul>
                   </div>
                   <div className="space-y-2">
-                    <h4 className="text-neon-purple font-bold">🔐 Features:</h4>
+                    <h4 className="text-neon-purple font-bold">💰 Prize Distribution:</h4>
                     <ul className="text-gray-300 space-y-1">
-                      <li>• NFT gating for premium tournaments</li>
-                      <li>• Smart contract prize distribution</li>
-                      <li>• Admin result verification</li>
+                      <li>• Winner receives 90% of prize pool</li>
+                      <li>• Admin receives 10% service fee</li>
+                      <li>• Automatic SOL payouts</li>
+                      <li>• Transparent on-chain transactions</li>
                     </ul>
                   </div>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-neon-cyan">
+                  <h4 className="text-neon-cyan font-bold mb-2">How It Works:</h4>
+                  <ol className="text-gray-300 space-y-1 text-sm">
+                    <li>1. Connect your Phantom wallet</li>
+                    <li>2. Pay tournament entry fee in SOL</li>
+                    <li>3. Compete with up to 31 other players</li>
+                    <li>4. Winner automatically receives 90% of prize pool</li>
+                    <li>5. All transactions are verified on-chain</li>
+                  </ol>
                 </div>
               </div>
             </CardContent>

@@ -214,6 +214,116 @@ export type Database = {
         }
         Relationships: []
       }
+      solana_tournament_entries: {
+        Row: {
+          created_at: string
+          entry_transaction_hash: string
+          id: string
+          joined_at: string
+          placement: number | null
+          reward_amount: number | null
+          reward_claimed: boolean | null
+          reward_transaction_hash: string | null
+          score: number | null
+          tournament_id: string
+          updated_at: string
+          user_id: string | null
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          entry_transaction_hash: string
+          id?: string
+          joined_at?: string
+          placement?: number | null
+          reward_amount?: number | null
+          reward_claimed?: boolean | null
+          reward_transaction_hash?: string | null
+          score?: number | null
+          tournament_id: string
+          updated_at?: string
+          user_id?: string | null
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          entry_transaction_hash?: string
+          id?: string
+          joined_at?: string
+          placement?: number | null
+          reward_amount?: number | null
+          reward_claimed?: boolean | null
+          reward_transaction_hash?: string | null
+          score?: number | null
+          tournament_id?: string
+          updated_at?: string
+          user_id?: string | null
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solana_tournament_entries_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "solana_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solana_tournaments: {
+        Row: {
+          admin_wallet: string
+          created_at: string
+          current_players: number
+          end_time: string | null
+          entry_fee: number
+          id: string
+          max_players: number
+          name: string
+          prize_pool: number
+          program_id: string
+          start_time: string
+          status: string
+          tournament_account: string | null
+          updated_at: string
+          winner_wallet: string | null
+        }
+        Insert: {
+          admin_wallet: string
+          created_at?: string
+          current_players?: number
+          end_time?: string | null
+          entry_fee?: number
+          id?: string
+          max_players?: number
+          name: string
+          prize_pool?: number
+          program_id: string
+          start_time: string
+          status?: string
+          tournament_account?: string | null
+          updated_at?: string
+          winner_wallet?: string | null
+        }
+        Update: {
+          admin_wallet?: string
+          created_at?: string
+          current_players?: number
+          end_time?: string | null
+          entry_fee?: number
+          id?: string
+          max_players?: number
+          name?: string
+          prize_pool?: number
+          program_id?: string
+          start_time?: string
+          status?: string
+          tournament_account?: string | null
+          updated_at?: string
+          winner_wallet?: string | null
+        }
+        Relationships: []
+      }
       token_purchases: {
         Row: {
           amount: number
@@ -465,9 +575,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_solana_tournament: {
+        Args: {
+          tournament_id_param: string
+          winner_wallet_param: string
+          admin_wallet_param: string
+        }
+        Returns: Json
+      }
       draw_raffle_winner: {
         Args: { raffle_id_param: string }
         Returns: string
+      }
+      join_solana_tournament: {
+        Args: {
+          tournament_id_param: string
+          wallet_address_param: string
+          transaction_hash_param: string
+          user_id_param?: string
+        }
+        Returns: Json
       }
     }
     Enums: {
