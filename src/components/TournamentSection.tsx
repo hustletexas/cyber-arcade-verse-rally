@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -474,7 +475,7 @@ export const TournamentSection = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
-                      {tournament.gameIcon || getGameIcon(tournament.gameType, tournament.realGame)} {tournament.title}
+                      {'gameIcon' in tournament ? tournament.gameIcon : getGameIcon(tournament.gameType, tournament.realGame)} {tournament.title}
                     </h3>
                     <Badge className="bg-neon-green animate-pulse text-black">
                       LIVE
