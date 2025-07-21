@@ -406,7 +406,7 @@ export const RaffleSection = () => {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
-                  {getRarityIcon(raffle.rarity)}
+                  {getTrophyIcon(raffle.rarity)}
                   <p className="text-neon-pink font-bold">{raffle.ticket_price} CCTR</p>
                   <p className="text-muted-foreground">Per Chest</p>
                 </div>
