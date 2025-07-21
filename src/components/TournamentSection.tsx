@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -424,40 +423,6 @@ export const TournamentSection = () => {
     }
   ];
 
-  // Live tournaments data for the new sections
-  const liveTournaments = [
-    {
-      id: 'fortnite-championship',
-      name: 'FORTNITE BATTLE ROYALE',
-      game: '🎯',
-      status: 'live',
-      participants: 72,
-      prize: '100,000 $CCTR',
-      currentRound: 'Round of 16',
-      nextMatch: '2 minutes'
-    },
-    {
-      id: 'mario-kart-grand-prix',
-      name: 'MARIO KART GRAND PRIX',
-      game: '🏎️',
-      status: 'live',
-      participants: 64,
-      prize: '75,000 $CCTR',
-      currentRound: 'Quarterfinals',
-      nextMatch: '8 minutes'
-    },
-    {
-      id: 'call-of-duty-warzone',
-      name: 'CALL OF DUTY WARZONE',
-      game: '🔫',
-      status: 'upcoming',
-      participants: 80,
-      prize: '120,000 $CCTR',
-      currentRound: 'Registration Open',
-      nextMatch: '25 minutes'
-    }
-  ];
-
   // Get all active tournaments from all categories
   const getActiveTournaments = () => {
     const allTournaments = [...cryptoTournaments, ...classicTournaments, ...fightingTournaments, ...shooterTournaments];
@@ -512,23 +477,6 @@ export const TournamentSection = () => {
     }
   };
 
-  const joinLiveTournament = (tournamentId: string) => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please sign in to join tournaments",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const tournament = liveTournaments.find(t => t.id === tournamentId);
-    toast({
-      title: "Tournament Joined!",
-      description: `You've successfully joined ${tournament?.name}. Check your email for details.`,
-    });
-  };
-
   const getGameIcon = (gameType: string, realGame?: boolean) => {
     if (realGame) {
       switch (gameType) {
@@ -551,7 +499,7 @@ export const TournamentSection = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
-            {tournament.gameIcon} {tournament.title}
+            {tournament.gameIcon || getGameIcon(tournament.gameType, tournament.realGame)} {tournament.title}
           </h3>
           <div className="flex gap-2">
             <Badge className={`${tournament.status === 'live' ? 'bg-neon-green animate-pulse' : 'bg-neon-purple'} text-black`}>
@@ -662,63 +610,6 @@ export const TournamentSection = () => {
                 🔧 Admin Panel
               </Button>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Live Tournaments Section */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-2xl text-neon-cyan flex items-center gap-3">
-            🏆 LIVE TOURNAMENTS
-            <Badge className="bg-neon-green text-black animate-pulse">LIVE</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {liveTournaments.map((tournament) => (
-              <Card 
-                key={tournament.id}
-                className="vending-machine p-4 cursor-pointer transition-transform hover:scale-105"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
-                      {tournament.game} {tournament.name}
-                    </h3>
-                    <Badge className={`${tournament.status === 'live' ? 'bg-neon-green animate-pulse' : 'bg-neon-purple'} text-black text-xs`}>
-                      {tournament.status.toUpperCase()}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Prize:</span>
-                      <span className="text-neon-green font-bold">{tournament.prize}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Players:</span>
-                      <span className="text-neon-cyan">{tournament.participants}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Round:</span>
-                      <span className="text-neon-purple">{tournament.currentRound}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Next:</span>
-                      <span className="text-neon-pink">{tournament.nextMatch}</span>
-                    </div>
-                  </div>
-
-                  <Button 
-                    onClick={() => joinLiveTournament(tournament.id)}
-                    className="w-full cyber-button text-xs"
-                  >
-                    🎮 JOIN TOURNAMENT
-                  </Button>
-                </div>
-              </Card>
-            ))}
           </div>
         </CardContent>
       </Card>
