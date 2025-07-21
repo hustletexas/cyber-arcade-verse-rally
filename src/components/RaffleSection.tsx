@@ -337,6 +337,13 @@ export const RaffleSection = () => {
     return `${hours}h`;
   };
 
+  const getTrophyIcon = (rarity: string) => {
+    if (rarity === 'Rare') {
+      return <Trophy className="mx-auto text-yellow-500 mb-1" size={20} />;
+    }
+    return <Trophy className="mx-auto text-neon-pink mb-1" size={20} />;
+  };
+
   if (loading) {
     return (
       <Card className="arcade-frame">
@@ -399,7 +406,7 @@ export const RaffleSection = () => {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
-                  <Ticket className="mx-auto text-neon-pink mb-1" size={20} />
+                  {getRarityIcon(raffle.rarity)}
                   <p className="text-neon-pink font-bold">{raffle.ticket_price} CCTR</p>
                   <p className="text-muted-foreground">Per Chest</p>
                 </div>
