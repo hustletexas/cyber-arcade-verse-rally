@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 export const TournamentSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeView, setActiveView] = useState<'solana' | 'classic' | 'admin'>('solana');
+  const [activeView, setActiveView] = useState<'solana' | 'classic' | 'fighting' | 'admin'>('solana');
   const [activeGame, setActiveGame] = useState<{
     tournamentId: string;
     gameType: 'tetris' | 'pacman' | 'galaga';
@@ -65,6 +66,92 @@ export const TournamentSection = () => {
     }
   ];
 
+  // Fighting game tournaments
+  const fightingTournaments = [
+    {
+      id: 'street-fighter-6',
+      title: 'STREET FIGHTER 6 CHAMPIONSHIP',
+      date: '2024-12-10',
+      prize: '40,000 $CCTR',
+      passRequired: 'elite',
+      status: 'live',
+      participants: 128,
+      description: 'Ultimate fighting game showdown',
+      gameType: 'tetris' as const,
+      realGame: true,
+      votes: 2156
+    },
+    {
+      id: 'tekken-8-tournament',
+      title: 'TEKKEN 8 IRON FIST',
+      date: '2024-12-18',
+      prize: '35,000 $CCTR',
+      passRequired: 'standard',
+      status: 'upcoming',
+      participants: 96,
+      description: 'King of Iron Fist Tournament',
+      gameType: 'pacman' as const,
+      realGame: true,
+      votes: 1789
+    },
+    {
+      id: 'mortal-kombat-1',
+      title: 'MORTAL KOMBAT 1 FATALITY',
+      date: '2024-12-25',
+      prize: '45,000 $CCTR',
+      passRequired: 'legendary',
+      status: 'upcoming',
+      participants: 64,
+      description: 'Finish Him! Ultimate MK tournament',
+      gameType: 'galaga' as const,
+      realGame: true,
+      votes: 2043
+    }
+  ];
+
+  // N64 tournaments
+  const n64Tournaments = [
+    {
+      id: 'mario-kart-64',
+      title: 'MARIO KART 64 GRAND PRIX',
+      date: '2024-12-12',
+      prize: '20,000 $CCTR',
+      passRequired: 'standard',
+      status: 'live',
+      participants: 32,
+      description: 'Nostalgic N64 racing tournament',
+      gameType: 'tetris' as const,
+      realGame: true,
+      votes: 1456
+    },
+    {
+      id: 'super-smash-bros-64',
+      title: 'SUPER SMASH BROS 64',
+      date: '2024-12-20',
+      prize: '15,000 $CCTR',
+      passRequired: 'standard',
+      status: 'upcoming',
+      participants: 64,
+      description: 'Original Smash Bros tournament',
+      gameType: 'pacman' as const,
+      realGame: true,
+      votes: 1234
+    },
+    {
+      id: 'goldeneye-007',
+      title: 'GOLDENEYE 007 TOURNAMENT',
+      date: '2024-12-30',
+      prize: '18,000 $CCTR',
+      passRequired: 'elite',
+      status: 'upcoming',
+      participants: 48,
+      description: 'Classic N64 FPS tournament',
+      gameType: 'galaga' as const,
+      realGame: true,
+      votes: 987
+    }
+  ];
+
   // Live tournaments data for the new sections
   const liveTournaments = [
     {
@@ -98,6 +185,12 @@ export const TournamentSection = () => {
       nextMatch: '25 minutes'
     }
   ];
+
+  // Get all active tournaments from all categories
+  const getActiveTournaments = () => {
+    const allTournaments = [...tournaments, ...fightingTournaments, ...n64Tournaments];
+    return allTournaments.filter(tournament => tournament.status === 'live');
+  };
 
   const voteForTournament = (tournamentId: string) => {
     if (!user) {
@@ -204,6 +297,12 @@ export const TournamentSection = () => {
             >
               🎮 Classic Tournaments
             </Button>
+            <Button
+              onClick={() => setActiveView('fighting')}
+              className={`cyber-button ${activeView === 'fighting' ? 'bg-neon-cyan text-black' : ''}`}
+            >
+              👊 Fighting Games
+            </Button>
             {isAdmin && (
               <Button
                 onClick={() => setActiveView('admin')}
@@ -266,6 +365,74 @@ export const TournamentSection = () => {
                   >
                     🎮 JOIN TOURNAMENT
                   </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Active Tournaments Section */}
+      <Card className="arcade-frame">
+        <CardHeader>
+          <CardTitle className="font-display text-xl text-neon-cyan flex items-center gap-3">
+            ⚡ ACTIVE TOURNAMENTS
+            <Badge className="bg-neon-red text-white animate-pulse">ACTIVE</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {getActiveTournaments().map((tournament) => (
+              <Card key={tournament.id} className="holographic p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
+                      {getGameIcon(tournament.gameType, tournament.realGame)} {tournament.title}
+                    </h3>
+                    <Badge className="bg-neon-green animate-pulse text-black">
+                      LIVE
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-sm text-gray-300">{tournament.description}</p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400">Date:</span>
+                      <div className="text-neon-cyan">{tournament.date}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Prize:</span>
+                      <div className="text-neon-green font-bold">{tournament.prize}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Participants:</span>
+                      <div className="text-neon-purple">{tournament.participants}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Votes:</span>
+                      <div className="text-neon-pink">{tournament.votes}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      onClick={() => joinTournament(tournament)}
+                      className="cyber-button text-xs"
+                    >
+                      🎮 Join Tournament
+                    </Button>
+                    <Button 
+                      onClick={() => voteForTournament(tournament.id)}
+                      variant="outline"
+                      className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs"
+                    >
+                      🗳️ Vote (100 CCTR)
+                    </Button>
+                    <Badge variant="outline" className="border-neon-purple text-neon-purple">
+                      {tournament.passRequired.toUpperCase()} PASS
+                    </Badge>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -370,14 +537,153 @@ export const TournamentSection = () => {
               </p>
               
               <div className="grid gap-4">
-                {tournaments.map((tournament) => (
+                {tournaments.filter(t => t.status === 'upcoming').map((tournament) => (
                   <Card key={tournament.id} className="holographic p-4">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
                           {getGameIcon(tournament.gameType, tournament.realGame)} {tournament.title}
                         </h3>
-                        <Badge className={`${tournament.status === 'live' ? 'bg-neon-green animate-pulse' : 'bg-neon-purple'} text-black`}>
+                        <Badge className="bg-neon-purple text-black">
+                          {tournament.status.toUpperCase()}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-sm text-gray-300">{tournament.description}</p>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-400">Date:</span>
+                          <div className="text-neon-cyan">{tournament.date}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Prize:</span>
+                          <div className="text-neon-green font-bold">{tournament.prize}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Participants:</span>
+                          <div className="text-neon-purple">{tournament.participants}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Votes:</span>
+                          <div className="text-neon-pink">{tournament.votes}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button 
+                          onClick={() => joinTournament(tournament)}
+                          className="cyber-button text-xs"
+                        >
+                          🎮 Join Tournament
+                        </Button>
+                        <Button 
+                          onClick={() => voteForTournament(tournament.id)}
+                          variant="outline"
+                          className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs"
+                        >
+                          🗳️ Vote (100 CCTR)
+                        </Button>
+                        <Badge variant="outline" className="border-neon-purple text-neon-purple">
+                          {tournament.passRequired.toUpperCase()} PASS
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* N64 Tournaments Subsection */}
+              <div className="mt-8">
+                <h3 className="font-display text-lg text-neon-cyan mb-4">🎮 N64 CLASSICS</h3>
+                <div className="grid gap-4">
+                  {n64Tournaments.filter(t => t.status === 'upcoming').map((tournament) => (
+                    <Card key={tournament.id} className="holographic p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
+                            🎮 {tournament.title}
+                          </h3>
+                          <Badge className="bg-neon-purple text-black">
+                            {tournament.status.toUpperCase()}
+                          </Badge>
+                        </div>
+                        
+                        <p className="text-sm text-gray-300">{tournament.description}</p>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-400">Date:</span>
+                            <div className="text-neon-cyan">{tournament.date}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Prize:</span>
+                            <div className="text-neon-green font-bold">{tournament.prize}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Participants:</span>
+                            <div className="text-neon-purple">{tournament.participants}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Votes:</span>
+                            <div className="text-neon-pink">{tournament.votes}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <Button 
+                            onClick={() => joinTournament(tournament)}
+                            className="cyber-button text-xs"
+                          >
+                            🎮 Join Tournament
+                          </Button>
+                          <Button 
+                            onClick={() => voteForTournament(tournament.id)}
+                            variant="outline"
+                            className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs"
+                          >
+                            🗳️ Vote (100 CCTR)
+                          </Button>
+                          <Badge variant="outline" className="border-neon-purple text-neon-purple">
+                            {tournament.passRequired.toUpperCase()} PASS
+                          </Badge>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tournament Bracket */}
+          <TournamentBracket />
+        </div>
+      )}
+
+      {/* Fighting Games Tournament System */}
+      {activeView === 'fighting' && (
+        <div className="space-y-6">
+          <Card className="arcade-frame">
+            <CardHeader>
+              <CardTitle className="font-display text-xl text-neon-pink">
+                👊 Fighting Game Championships
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-300 mb-4">
+                Compete in the ultimate fighting game tournaments! Test your skills against the best fighters.
+              </p>
+              
+              <div className="grid gap-4">
+                {fightingTournaments.filter(t => t.status === 'upcoming').map((tournament) => (
+                  <Card key={tournament.id} className="holographic p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
+                          👊 {tournament.title}
+                        </h3>
+                        <Badge className="bg-neon-purple text-black">
                           {tournament.status.toUpperCase()}
                         </Badge>
                       </div>
@@ -427,9 +733,6 @@ export const TournamentSection = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Tournament Bracket */}
-          <TournamentBracket />
         </div>
       )}
 
