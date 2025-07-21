@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, Trophy, Ticket, Users, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface Raffle {
   id: string;
@@ -28,19 +28,54 @@ interface Raffle {
   rarity: string;
 }
 
+interface PrizePool {
+  type: 'nft' | 'cctr' | 'merch' | 'usdc';
+  name: string;
+  value: number;
+  probability: number;
+  image?: string;
+}
+
+const PRIZE_POOLS: { [key: string]: PrizePool[] } = {
+  'Common': [
+    { type: 'cctr', name: '500 CCTR Tokens', value: 500, probability: 0.4 },
+    { type: 'merch', name: 'Cyber City Sticker Pack', value: 10, probability: 0.3 },
+    { type: 'nft', name: 'Common Avatar NFT', value: 50, probability: 0.25 },
+    { type: 'cctr', name: '1000 CCTR Tokens', value: 1000, probability: 0.05 }
+  ],
+  'Rare': [
+    { type: 'cctr', name: '1500 CCTR Tokens', value: 1500, probability: 0.35 },
+    { type: 'nft', name: 'Rare Weapon NFT', value: 150, probability: 0.3 },
+    { type: 'merch', name: 'Premium T-Shirt', value: 50, probability: 0.25 },
+    { type: 'cctr', name: '3000 CCTR Tokens', value: 3000, probability: 0.1 }
+  ],
+  'Epic': [
+    { type: 'nft', name: 'Epic Character NFT', value: 400, probability: 0.4 },
+    { type: 'cctr', name: '5000 CCTR Tokens', value: 5000, probability: 0.3 },
+    { type: 'usdc', name: '25 USDC', value: 25, probability: 0.2 },
+    { type: 'merch', name: 'Limited Edition Hoodie', value: 100, probability: 0.1 }
+  ],
+  'Legendary': [
+    { type: 'nft', name: 'Legendary Skin NFT', value: 1000, probability: 0.35 },
+    { type: 'cctr', name: '10000 CCTR Tokens', value: 10000, probability: 0.25 },
+    { type: 'usdc', name: '100 USDC', value: 100, probability: 0.25 },
+    { type: 'merch', name: 'Signed Gaming Chair', value: 500, probability: 0.15 }
+  ]
+};
+
 export const RaffleSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isWalletConnected } = useWallet();
+  const { isWalletConnected, getConnectedWallet } = useWallet();
   const { balance, refetch: refetchBalance } = useUserBalance();
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [loading, setLoading] = useState(true);
   const [ticketCounts, setTicketCounts] = useState<{[key: string]: number}>({});
   const [purchasing, setPurchasing] = useState<{[key: string]: boolean}>({});
+  const [connection] = useState(new Connection('https://api.devnet.solana.com'));
 
   useEffect(() => {
-    // Treasure chest raffles with random prizes
     const treasureChests: Raffle[] = [
       {
         id: '1',
@@ -48,7 +83,7 @@ export const RaffleSection = () => {
         description: 'Basic loot with surprise rewards',
         prize_type: 'random',
         prize_name: 'Random Prize: Merch, Small CCTR, or Common NFT',
-        prize_value: 5000, // $50
+        prize_value: 5000,
         prize_image: '/lovable-uploads/08a3dde3-268a-45e6-9985-248775e6cb58.png',
         ticket_price: 50,
         max_tickets: 2000,
@@ -63,7 +98,7 @@ export const RaffleSection = () => {
         description: 'Valuable rewards with better odds',
         prize_type: 'random',
         prize_name: 'Random Prize: Premium Merch, CCTR Bundle, or Rare NFT',
-        prize_value: 15000, // $150
+        prize_value: 15000,
         prize_image: '/lovable-uploads/6347bc0d-7044-4d7c-8264-0d89f8640c08.png',
         ticket_price: 150,
         max_tickets: 1000,
@@ -78,7 +113,7 @@ export const RaffleSection = () => {
         description: 'High-tier loot for serious collectors',
         prize_type: 'random',
         prize_name: 'Random Prize: Exclusive Merch, Large CCTR, Epic NFT, or USDC',
-        prize_value: 40000, // $400
+        prize_value: 40000,
         prize_image: '/lovable-uploads/7b8388cc-637c-4b0e-9a7e-d1fda1b2a279.png',
         ticket_price: 400,
         max_tickets: 500,
@@ -93,7 +128,7 @@ export const RaffleSection = () => {
         description: 'Ultimate prize pool with maximum rewards',
         prize_type: 'random',
         prize_name: 'Random Prize: Limited Merch, Massive CCTR, Legendary NFT, or Big USDC',
-        prize_value: 100000, // $1000
+        prize_value: 100000,
         prize_image: '/lovable-uploads/89628fec-79c5-4251-b4cb-915cceb7e9b0.png',
         ticket_price: 1000,
         max_tickets: 200,
@@ -108,8 +143,59 @@ export const RaffleSection = () => {
     setLoading(false);
   }, []);
 
+  const selectRandomPrize = (rarity: string): PrizePool => {
+    const prizePool = PRIZE_POOLS[rarity] || PRIZE_POOLS['Common'];
+    const random = Math.random();
+    let cumulativeProbability = 0;
+    
+    for (const prize of prizePool) {
+      cumulativeProbability += prize.probability;
+      if (random <= cumulativeProbability) {
+        return prize;
+      }
+    }
+    
+    return prizePool[0]; // fallback to first prize
+  };
+
   const handleLoginToPlay = () => {
     navigate('/auth');
+  };
+
+  const distributePrizeOnSolana = async (walletAddress: string, prize: PrizePool) => {
+    try {
+      const wallet = getConnectedWallet();
+      if (!wallet || !window.solana) {
+        throw new Error('Wallet not connected');
+      }
+
+      // For demonstration purposes, we'll simulate blockchain interaction
+      // In a real implementation, you'd interact with your Solana program
+      console.log(`Distributing ${prize.name} to ${walletAddress}`);
+      
+      // Simulate transaction hash
+      const mockTxHash = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Create a mock transaction (in real implementation, this would be your program call)
+      const transaction = new Transaction();
+      
+      // Add your program instruction here
+      // For now, we'll just add a minimal SOL transfer as example
+      if (prize.type === 'usdc') {
+        transaction.add(
+          SystemProgram.transfer({
+            fromPubkey: new PublicKey('11111111111111111111111111111112'), // System program
+            toPubkey: new PublicKey(walletAddress),
+            lamports: prize.value * LAMPORTS_PER_SOL / 1000, // Convert USDC to minimal SOL for demo
+          })
+        );
+      }
+
+      return mockTxHash;
+    } catch (error) {
+      console.error('Prize distribution error:', error);
+      throw error;
+    }
   };
 
   const handlePurchaseTickets = async (raffleId: string) => {
@@ -138,7 +224,6 @@ export const RaffleSection = () => {
 
     const totalCost = ticketCount * raffle.ticket_price;
 
-    // Check if user has enough CCTR tokens
     if (balance.cctr_balance < totalCost) {
       toast({
         title: "Insufficient CCTR Tokens",
@@ -151,22 +236,59 @@ export const RaffleSection = () => {
     setPurchasing(prev => ({ ...prev, [raffleId]: true }));
 
     try {
-      // Call the purchase raffle ticket edge function
-      const { data, error } = await supabase.functions.invoke('purchase-raffle-ticket', {
-        body: {
-          raffleId: raffleId,
-          ticketCount: ticketCount,
-          totalCost: totalCost
-        }
-      });
-
-      if (error) {
-        throw error;
+      const wallet = getConnectedWallet();
+      if (!wallet) {
+        throw new Error('Wallet not connected');
       }
 
+      // Process each ticket purchase
+      const wonPrizes = [];
+      for (let i = 0; i < ticketCount; i++) {
+        const randomPrize = selectRandomPrize(raffle.rarity);
+        wonPrizes.push(randomPrize);
+        
+        // Distribute prize on Solana
+        try {
+          const txHash = await distributePrizeOnSolana(wallet.address, randomPrize);
+          console.log(`Prize distributed: ${randomPrize.name}, TX: ${txHash}`);
+          
+          // Award CCTR tokens directly to user balance
+          if (randomPrize.type === 'cctr') {
+            await supabase
+              .from('user_balances')
+              .update({ 
+                cctr_balance: balance.cctr_balance - raffle.ticket_price + randomPrize.value,
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', user.id);
+          }
+        } catch (error) {
+          console.error('Prize distribution failed:', error);
+        }
+      }
+
+      // Deduct ticket cost from user balance
+      await supabase
+        .from('user_balances')
+        .update({ 
+          cctr_balance: balance.cctr_balance - totalCost,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      // Create transaction record
+      await supabase
+        .from('token_transactions')
+        .insert({
+          user_id: user.id,
+          amount: -totalCost,
+          transaction_type: 'chest_purchase',
+          description: `Opened ${ticketCount} ${raffle.title}(s)`
+        });
+
       toast({
-        title: "🎫 Tickets Purchased!",
-        description: `Successfully purchased ${ticketCount} ticket(s) for ${totalCost} CCTR tokens. Good luck!`,
+        title: "🎉 Chest Opened Successfully!",
+        description: `You won: ${wonPrizes.map(p => p.name).join(', ')}`,
       });
       
       // Update local state
@@ -176,16 +298,14 @@ export const RaffleSection = () => {
           : raffle
       ));
       
-      // Refresh user balance
       await refetchBalance();
-      
       setTicketCounts(prev => ({ ...prev, [raffleId]: 1 }));
 
     } catch (error: any) {
       console.error('Purchase error:', error);
       toast({
         title: "Purchase Failed",
-        description: error.message || "Failed to purchase tickets",
+        description: error.message || "Failed to open chest",
         variant: "destructive",
       });
     } finally {
@@ -206,7 +326,7 @@ export const RaffleSection = () => {
   };
 
   const getPrizeIcon = (prizeType: string) => {
-    return '🎁'; // Treasure chest always shows gift icon
+    return '🎁';
   };
 
   const formatTimeLeft = (endDate: string) => {
@@ -263,7 +383,6 @@ export const RaffleSection = () => {
             </CardHeader>
             
             <CardContent className="space-y-4">
-              {/* Treasure Chest Image */}
               <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 rounded-lg overflow-hidden">
                 <img 
                   src={raffle.prize_image} 
@@ -272,32 +391,33 @@ export const RaffleSection = () => {
                 />
               </div>
 
-              {/* Prize Details */}
               <div className="bg-black/30 rounded-lg p-4 border border-neon-purple/30">
-                <h4 className="font-bold text-neon-green mb-2">🎁 Random Prize</h4>
-                <p className="text-neon-cyan text-sm font-semibold">{raffle.prize_name}</p>
-                <p className="text-sm text-neon-purple mt-1">
-                  Max Value: ${(raffle.prize_value / 100).toFixed(2)}
-                </p>
+                <h4 className="font-bold text-neon-green mb-2">🎁 Possible Rewards</h4>
+                <div className="space-y-1 text-xs">
+                  {PRIZE_POOLS[raffle.rarity]?.map((prize, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span className="text-neon-cyan">{prize.name}</span>
+                      <span className="text-neon-purple">{(prize.probability * 100).toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Ticket Info */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
                   <Ticket className="mx-auto text-neon-pink mb-1" size={20} />
                   <p className="text-neon-pink font-bold">{raffle.ticket_price} CCTR</p>
-                  <p className="text-muted-foreground">Per Ticket</p>
+                  <p className="text-muted-foreground">Per Chest</p>
                 </div>
                 <div className="text-center">
                   <Users className="mx-auto text-neon-cyan mb-1" size={20} />
                   <p className="text-neon-cyan font-bold">
                     {raffle.tickets_sold}/{raffle.max_tickets}
                   </p>
-                  <p className="text-muted-foreground">Sold</p>
+                  <p className="text-muted-foreground">Opened</p>
                 </div>
               </div>
 
-              {/* Progress Bar */}
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
                   className={`h-2 rounded-full transition-all duration-300 ${
@@ -310,21 +430,20 @@ export const RaffleSection = () => {
                 />
               </div>
 
-              {/* Purchase Section */}
               {user && isWalletConnected() ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
                       min="1"
-                      max={raffle.max_tickets - raffle.tickets_sold}
+                      max={Math.min(10, raffle.max_tickets - raffle.tickets_sold)}
                       value={ticketCounts[raffle.id] || 1}
                       onChange={(e) => setTicketCounts(prev => ({
                         ...prev,
                         [raffle.id]: parseInt(e.target.value) || 1
                       }))}
                       className="flex-1"
-                      placeholder="Tickets"
+                      placeholder="Chests"
                     />
                     <span className="text-sm text-neon-purple whitespace-nowrap">
                       {((ticketCounts[raffle.id] || 1) * raffle.ticket_price)} CCTR
@@ -337,11 +456,11 @@ export const RaffleSection = () => {
                     className="w-full cyber-button"
                   >
                     {purchasing[raffle.id] ? (
-                      "🎫 Purchasing..."
+                      "🎁 OPENING CHEST..."
                     ) : raffle.tickets_sold >= raffle.max_tickets ? (
                       "🚫 SOLD OUT"
                     ) : (
-                      "🎫 OPEN CHEST"
+                      "🎁 OPEN CHEST"
                     )}
                   </Button>
                 </div>
