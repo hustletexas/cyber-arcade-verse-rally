@@ -308,14 +308,14 @@ export const RaffleSection = () => {
   };
 
   const getRarityColor = (rarity: string | undefined) => {
-    if (!rarity) return 'bg-yellow-600';
+    if (!rarity) return 'bg-gray-500';
     
     switch (rarity) {
       case 'Legendary': return 'bg-yellow-500';
-      case 'Epic': return 'bg-yellow-600';
-      case 'Rare': return 'bg-yellow-700';
-      case 'Common': return 'bg-yellow-800';
-      default: return 'bg-yellow-600';
+      case 'Epic': return 'bg-purple-500';
+      case 'Rare': return 'bg-blue-500';
+      case 'Common': return 'bg-green-500';
+      default: return 'bg-gray-500';
     }
   };
 
@@ -341,7 +341,7 @@ export const RaffleSection = () => {
     return (
       <Card className="arcade-frame">
         <CardContent className="p-8 text-center">
-          <div className="text-yellow-400">Loading treasure chests...</div>
+          <div className="text-neon-cyan">Loading treasure chests...</div>
         </CardContent>
       </Card>
     );
@@ -350,10 +350,10 @@ export const RaffleSection = () => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h3 className="text-xl font-bold text-yellow-400 mb-2">🏴‍☠️ MYSTERY TREASURE CHESTS</h3>
-        <p className="text-yellow-300">Each chest contains random prizes! Higher rarity = Better rewards!</p>
+        <h3 className="text-xl font-bold text-neon-pink mb-2">🏴‍☠️ MYSTERY TREASURE CHESTS</h3>
+        <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
         {user && (
-          <p className="text-yellow-200 mt-2">
+          <p className="text-neon-green mt-2">
             Your Balance: {balance.cctr_balance.toLocaleString()} CCTR tokens
           </p>
         )}
@@ -361,23 +361,23 @@ export const RaffleSection = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {raffles.map((raffle) => (
-          <Card key={raffle.id} className="holographic overflow-hidden relative bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 border-yellow-500/30">
+          <Card key={raffle.id} className="holographic overflow-hidden relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between mb-2">
                 <Badge className={`${getRarityColor(raffle.rarity)} text-white font-bold`}>
                   {raffle.rarity ? raffle.rarity.toUpperCase() : 'UNKNOWN'}
                 </Badge>
-                <Badge variant="outline" className="border-yellow-400 text-yellow-400">
+                <Badge variant="outline" className="border-neon-cyan text-neon-cyan">
                   <Clock size={12} className="mr-1" />
                   {formatTimeLeft(raffle.end_date)}
                 </Badge>
               </div>
-              <CardTitle className="text-lg text-yellow-300">{raffle.title}</CardTitle>
-              <p className="text-sm text-yellow-200/80">{raffle.description}</p>
+              <CardTitle className="text-lg text-neon-cyan">{raffle.title}</CardTitle>
+              <p className="text-sm text-muted-foreground">{raffle.description}</p>
             </CardHeader>
             
             <CardContent className="space-y-4">
-              <div className="aspect-square bg-gradient-to-br from-yellow-600/20 to-yellow-500/20 rounded-lg overflow-hidden border border-yellow-500/30">
+              <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 rounded-lg overflow-hidden">
                 <img 
                   src={raffle.prize_image} 
                   alt={raffle.title}
@@ -385,13 +385,13 @@ export const RaffleSection = () => {
                 />
               </div>
 
-              <div className="bg-black/30 rounded-lg p-4 border border-yellow-500/30">
-                <h4 className="font-bold text-yellow-300 mb-2">🎁 Possible Rewards</h4>
+              <div className="bg-black/30 rounded-lg p-4 border border-neon-purple/30">
+                <h4 className="font-bold text-neon-green mb-2">🎁 Possible Rewards</h4>
                 <div className="space-y-1 text-xs">
                   {PRIZE_POOLS[raffle.rarity]?.map((prize, index) => (
                     <div key={index} className="flex justify-between">
-                      <span className="text-yellow-200">{prize.name}</span>
-                      <span className="text-yellow-400">{(prize.probability * 100).toFixed(1)}%</span>
+                      <span className="text-neon-cyan">{prize.name}</span>
+                      <span className="text-neon-purple">{(prize.probability * 100).toFixed(1)}%</span>
                     </div>
                   ))}
                 </div>
@@ -399,16 +399,16 @@ export const RaffleSection = () => {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
-                  <Ticket className="mx-auto text-yellow-400 mb-1" size={20} />
-                  <p className="text-yellow-400 font-bold">{raffle.ticket_price} CCTR</p>
-                  <p className="text-yellow-200/80">Per Chest</p>
+                  <Ticket className="mx-auto text-neon-pink mb-1" size={20} />
+                  <p className="text-neon-pink font-bold">{raffle.ticket_price} CCTR</p>
+                  <p className="text-muted-foreground">Per Chest</p>
                 </div>
                 <div className="text-center">
-                  <Users className="mx-auto text-yellow-300 mb-1" size={20} />
-                  <p className="text-yellow-300 font-bold">
+                  <Users className="mx-auto text-neon-cyan mb-1" size={20} />
+                  <p className="text-neon-cyan font-bold">
                     {raffle.tickets_sold}/{raffle.max_tickets}
                   </p>
-                  <p className="text-yellow-200/80">Opened</p>
+                  <p className="text-muted-foreground">Opened</p>
                 </div>
               </div>
 
@@ -416,9 +416,9 @@ export const RaffleSection = () => {
                 <div 
                   className={`h-2 rounded-full transition-all duration-300 ${
                     raffle.rarity === 'Legendary' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
-                    raffle.rarity === 'Epic' ? 'bg-gradient-to-r from-yellow-500 to-yellow-700' :
-                    raffle.rarity === 'Rare' ? 'bg-gradient-to-r from-yellow-600 to-yellow-800' :
-                    'bg-gradient-to-r from-yellow-700 to-yellow-900'
+                    raffle.rarity === 'Epic' ? 'bg-gradient-to-r from-purple-400 to-purple-600' :
+                    raffle.rarity === 'Rare' ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
+                    'bg-gradient-to-r from-green-400 to-green-600'
                   }`}
                   style={{ width: `${(raffle.tickets_sold / raffle.max_tickets) * 100}%` }}
                 />
@@ -436,10 +436,10 @@ export const RaffleSection = () => {
                         ...prev,
                         [raffle.id]: parseInt(e.target.value) || 1
                       }))}
-                      className="flex-1 bg-black/30 border-yellow-500/30 text-yellow-200"
+                      className="flex-1"
                       placeholder="Chests"
                     />
-                    <span className="text-sm text-yellow-400 whitespace-nowrap">
+                    <span className="text-sm text-neon-purple whitespace-nowrap">
                       {((ticketCounts[raffle.id] || 1) * raffle.ticket_price)} CCTR
                     </span>
                   </div>
@@ -447,7 +447,7 @@ export const RaffleSection = () => {
                   <Button
                     onClick={() => handlePurchaseTickets(raffle.id)}
                     disabled={purchasing[raffle.id] || raffle.tickets_sold >= raffle.max_tickets}
-                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 text-white border-yellow-500"
+                    className="w-full cyber-button"
                   >
                     {purchasing[raffle.id] ? (
                       "🎁 OPENING CHEST..."
@@ -460,14 +460,14 @@ export const RaffleSection = () => {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-sm text-yellow-200/80 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {!user ? "Login and connect wallet to open treasure chests" : "Connect your Solana wallet to play"}
                   </p>
                   <Button 
                     onClick={handleLoginToPlay}
                     variant="outline" 
                     size="sm" 
-                    className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
                   >
                     {!user ? "Login to Play" : "Connect Wallet"}
                   </Button>
