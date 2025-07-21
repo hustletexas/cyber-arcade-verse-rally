@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -114,7 +113,10 @@ export const SolanaTournamentManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTournaments(data || []);
+      setTournaments((data || []).map(tournament => ({
+        ...tournament,
+        status: tournament.status as 'upcoming' | 'active' | 'completed' | 'cancelled'
+      })));
     } catch (error) {
       console.error('Error loading tournaments:', error);
       toast({
