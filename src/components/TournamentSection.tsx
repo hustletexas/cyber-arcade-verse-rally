@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,94 @@ export const TournamentSection = () => {
 
   // Mock admin check - replace with your actual admin logic
   const isAdmin = user?.email?.includes('admin') || false;
+
+  // Crypto/Solana games tournaments
+  const cryptoTournaments = [
+    {
+      id: 'off-the-grid-battle',
+      title: 'OFF THE GRID BATTLE ROYALE',
+      date: '2024-12-15',
+      prize: '100,000 $SOL',
+      passRequired: 'legendary',
+      status: 'live',
+      participants: 1024,
+      description: 'Epic cyberpunk battle royale on Solana blockchain',
+      gameType: 'tetris' as const,
+      realGame: true,
+      votes: 5847,
+      gameIcon: '🔫'
+    },
+    {
+      id: 'star-atlas-tournament',
+      title: 'STAR ATLAS GALACTIC CONQUEST',
+      date: '2024-12-18',
+      prize: '75,000 $ATLAS',
+      passRequired: 'elite',
+      status: 'upcoming',
+      participants: 512,
+      description: 'Space exploration and combat tournament',
+      gameType: 'pacman' as const,
+      realGame: true,
+      votes: 4123,
+      gameIcon: '🚀'
+    },
+    {
+      id: 'aurory-championship',
+      title: 'AURORY TACTICS CHAMPIONSHIP',
+      date: '2024-12-20',
+      prize: '50,000 $AURY',
+      passRequired: 'standard',
+      status: 'upcoming',
+      participants: 256,
+      description: 'Strategic creature battles on Solana',
+      gameType: 'galaga' as const,
+      realGame: true,
+      votes: 3456,
+      gameIcon: '🐉'
+    },
+    {
+      id: 'solana-monkey-kingdom',
+      title: 'SOLANA MONKEY KINGDOM WARS',
+      date: '2024-12-22',
+      prize: '60,000 $SMB',
+      passRequired: 'elite',
+      status: 'upcoming',
+      participants: 128,
+      description: 'Epic monkey battles in the metaverse',
+      gameType: 'tetris' as const,
+      realGame: true,
+      votes: 2987,
+      gameIcon: '🐵'
+    },
+    {
+      id: 'genopets-tournament',
+      title: 'GENOPETS EVOLUTION TOURNAMENT',
+      date: '2024-12-25',
+      prize: '40,000 $GENE',
+      passRequired: 'standard',
+      status: 'upcoming',
+      participants: 200,
+      description: 'Move-to-earn creature evolution battles',
+      gameType: 'pacman' as const,
+      realGame: true,
+      votes: 2654,
+      gameIcon: '🧬'
+    },
+    {
+      id: 'stepn-racing',
+      title: 'STEPN RACING CHAMPIONSHIP',
+      date: '2024-12-28',
+      prize: '35,000 $GMT',
+      passRequired: 'standard',
+      status: 'upcoming',
+      participants: 300,
+      description: 'Move-to-earn sneaker racing tournament',
+      gameType: 'galaga' as const,
+      realGame: true,
+      votes: 2134,
+      gameIcon: '👟'
+    }
+  ];
 
   // Updated tournaments with real games
   const tournaments = [
@@ -188,7 +275,7 @@ export const TournamentSection = () => {
 
   // Get all active tournaments from all categories
   const getActiveTournaments = () => {
-    const allTournaments = [...tournaments, ...fightingTournaments, ...n64Tournaments];
+    const allTournaments = [...tournaments, ...fightingTournaments, ...n64Tournaments, ...cryptoTournaments];
     return allTournaments.filter(tournament => tournament.status === 'live');
   };
 
@@ -387,7 +474,7 @@ export const TournamentSection = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
-                      {getGameIcon(tournament.gameType, tournament.realGame)} {tournament.title}
+                      {tournament.gameIcon || getGameIcon(tournament.gameType, tournament.realGame)} {tournament.title}
                     </h3>
                     <Badge className="bg-neon-green animate-pulse text-black">
                       LIVE
@@ -513,6 +600,77 @@ export const TournamentSection = () => {
                     <li>5. All transactions are verified on-chain</li>
                   </ol>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Crypto/Solana Games Tournaments */}
+          <Card className="arcade-frame">
+            <CardHeader>
+              <CardTitle className="font-display text-xl text-neon-purple">
+                🚀 CRYPTO GAMES TOURNAMENTS
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-300 mb-4">
+                Play the latest blockchain games and compete for massive crypto prizes on Solana!
+              </p>
+              
+              <div className="grid gap-4">
+                {cryptoTournaments.map((tournament) => (
+                  <Card key={tournament.id} className="holographic p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-display text-lg font-bold text-neon-pink flex items-center gap-2">
+                          {tournament.gameIcon} {tournament.title}
+                        </h3>
+                        <Badge className={`${tournament.status === 'live' ? 'bg-neon-green animate-pulse' : 'bg-neon-purple'} text-black`}>
+                          {tournament.status.toUpperCase()}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-sm text-gray-300">{tournament.description}</p>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-400">Date:</span>
+                          <div className="text-neon-cyan">{tournament.date}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Prize:</span>
+                          <div className="text-neon-green font-bold">{tournament.prize}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Participants:</span>
+                          <div className="text-neon-purple">{tournament.participants}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Votes:</span>
+                          <div className="text-neon-pink">{tournament.votes}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button 
+                          onClick={() => joinTournament(tournament)}
+                          className="cyber-button text-xs"
+                        >
+                          🎮 Join Tournament
+                        </Button>
+                        <Button 
+                          onClick={() => voteForTournament(tournament.id)}
+                          variant="outline"
+                          className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs"
+                        >
+                          🗳️ Vote (100 CCTR)
+                        </Button>
+                        <Badge variant="outline" className="border-neon-purple text-neon-purple">
+                          {tournament.passRequired.toUpperCase()} PASS
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </CardContent>
           </Card>
