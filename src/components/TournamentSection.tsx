@@ -631,37 +631,6 @@ export const TournamentSection = () => {
         </CardContent>
       </Card>
 
-      {/* Live Statistics Section */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-xl text-neon-cyan">📊 LIVE STATISTICS</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-green font-bold mb-2">🔴 LIVE VIEWERS</h4>
-              <div className="text-2xl font-black text-neon-green">89,347</div>
-              <div className="text-xs text-muted-foreground animate-pulse">+2,156 watching</div>
-            </Card>
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-pink font-bold mb-2">💰 TOTAL PRIZES</h4>
-              <div className="text-2xl font-black text-neon-pink">1.2M $CCTR</div>
-              <div className="text-xs text-muted-foreground">Across all tournaments</div>
-            </Card>
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-purple font-bold mb-2">⚡ ACTIVE MATCHES</h4>
-              <div className="text-2xl font-black text-neon-purple">48</div>
-              <div className="text-xs text-muted-foreground">Live right now</div>
-            </Card>
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-cyan font-bold mb-2">👥 TOTAL PLAYERS</h4>
-              <div className="text-2xl font-black text-neon-cyan">2,856</div>
-              <div className="text-xs text-muted-foreground">Competing today</div>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Crypto Games Tab */}
       {activeView === 'crypto' && (
         <Card className="arcade-frame">
@@ -757,6 +726,37 @@ export const TournamentSection = () => {
 
       {/* Solana Tournament System */}
       <SolanaTournamentSystem />
+
+      {/* Live Statistics Section - moved under Solana Tournament System */}
+      <Card className="arcade-frame">
+        <CardHeader>
+          <CardTitle className="font-display text-xl text-neon-cyan">📊 LIVE STATISTICS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="holographic p-4 text-center">
+              <h4 className="text-neon-green font-bold mb-2">🔴 LIVE VIEWERS</h4>
+              <div className="text-2xl font-black text-neon-green">89,347</div>
+              <div className="text-xs text-muted-foreground animate-pulse">+2,156 watching</div>
+            </Card>
+            <Card className="holographic p-4 text-center">
+              <h4 className="text-neon-pink font-bold mb-2">💰 TOTAL PRIZES</h4>
+              <div className="text-2xl font-black text-neon-pink">1.2M $CCTR</div>
+              <div className="text-xs text-muted-foreground">Across all tournaments</div>
+            </Card>
+            <Card className="holographic p-4 text-center">
+              <h4 className="text-neon-purple font-bold mb-2">⚡ ACTIVE MATCHES</h4>
+              <div className="text-2xl font-black text-neon-purple">48</div>
+              <div className="text-xs text-muted-foreground">Live right now</div>
+            </Card>
+            <Card className="holographic p-4 text-center">
+              <h4 className="text-neon-cyan font-bold mb-2">👥 TOTAL PLAYERS</h4>
+              <div className="text-2xl font-black text-neon-cyan">2,856</div>
+              <div className="text-xs text-muted-foreground">Competing today</div>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
