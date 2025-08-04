@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSolanaScore } from '@/hooks/useSolanaScore';
+import { useWallet } from '@/hooks/useWallet';
 import { TriviaQuestion } from '@/types/trivia';
 
 interface TriviaGameplayProps {
@@ -18,6 +19,9 @@ interface TriviaGameplayProps {
 export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: TriviaGameplayProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { submitScore, isSubmitting } = useSolanaScore();
+  const { getConnectedWallet, isWalletConnected } = useWallet();
+  
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
@@ -212,9 +216,17 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
   const endGame = async () => {
     setGameStatus('finished');
     
+    // Submit score to Solana blockchain if wallet is connected
+    if (isWalletConnected()) {
+      const result = await submitScore(score, category);
+      if (result.success) {
+        console.log('Score successfully submitted to Solana blockchain');
+      }
+    }
+
+    // Also save to traditional database if user is authenticated
     if (user) {
       try {
-        // Award CCTR tokens (this will be implemented when the database is ready)
         await supabase
           .from('token_transactions')
           .insert({
@@ -223,13 +235,8 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             transaction_type: 'trivia_reward',
             description: `Trivia game: ${correctAnswers}/${questions.length} correct, ${score} points`
           });
-
-        toast({
-          title: "Game Complete! 🎉",
-          description: `You earned ${score} CCTR tokens!`,
-        });
       } catch (error) {
-        console.error('Error saving game results:', error);
+        console.error('Error saving to database:', error);
       }
     }
 
@@ -252,6 +259,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
 
   if (gameStatus === 'finished') {
     const accuracy = Math.round((correctAnswers / questions.length) * 100);
+    const connectedWallet = getConnectedWallet();
     
     return (
       <Card className="arcade-frame">
@@ -276,11 +284,16 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             </div>
           </div>
           
-          {user && (
+          {connectedWallet && (
             <div className="mb-6">
               <Badge className="bg-neon-green text-black text-lg px-4 py-2">
-                +{score} CCTR Earned!
+                🔗 Submitted to Solana! +{score} CCTR
               </Badge>
+              {isSubmitting && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Submitting to blockchain...
+                </p>
+              )}
             </div>
           )}
           
