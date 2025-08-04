@@ -6,6 +6,7 @@ import { TriviaGameplay } from './trivia/TriviaGameplay';
 import { TriviaLeaderboard } from './trivia/TriviaLeaderboard';
 import { TriviaRewards } from './trivia/TriviaRewards';
 import { useAuth } from '@/hooks/useAuth';
+import { useWallet } from '@/hooks/useWallet';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TriviaUserStats } from '@/types/trivia';
@@ -14,6 +15,7 @@ type ViewState = 'menu' | 'game' | 'leaderboard' | 'rewards';
 
 export const TriviaGame = () => {
   const { user } = useAuth();
+  const { walletState, getConnectedWallet, isWalletConnected } = useWallet();
   const { toast } = useToast();
   const [currentView, setCurrentView] = useState<ViewState>('menu');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -39,15 +41,15 @@ export const TriviaGame = () => {
   ];
 
   useEffect(() => {
-    if (user) {
+    if (user || isWalletConnected()) {
       loadUserStats();
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, walletState]);
 
   const loadUserStats = async () => {
-    if (!user) return;
+    if (!user && !isWalletConnected()) return;
 
     setLoading(true);
     try {
@@ -76,11 +78,49 @@ export const TriviaGame = () => {
     }
   };
 
+  const connectWallet = async () => {
+    try {
+      if (window.solana && window.solana.isPhantom) {
+        toast({
+          title: "Connecting Phantom Wallet...",
+          description: "Please approve the connection request",
+        });
+
+        const response = await window.solana.connect();
+        if (response?.publicKey) {
+          toast({
+            title: "Wallet Connected! 🎉",
+            description: `Connected to ${response.publicKey.toString().slice(0, 8)}...${response.publicKey.toString().slice(-4)}`,
+          });
+          
+          // Reload user stats after wallet connection
+          loadUserStats();
+        }
+      } else {
+        toast({
+          title: "Phantom Wallet Not Found",
+          description: "Please install Phantom wallet extension to play",
+          variant: "destructive",
+        });
+        
+        // Open Phantom website in new tab
+        window.open('https://phantom.app/', '_blank');
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const startGame = (category: string) => {
-    if (!user) {
+    if (!user && !isWalletConnected()) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to play trivia games",
+        description: "Please connect your wallet or log in to play trivia games",
         variant: "destructive",
       });
       return;
@@ -121,6 +161,9 @@ export const TriviaGame = () => {
     );
   }
 
+  const isAuthenticated = user || isWalletConnected();
+  const connectedWallet = getConnectedWallet();
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -132,6 +175,13 @@ export const TriviaGame = () => {
           <p className="text-center text-muted-foreground">
             Test your gaming knowledge and earn CCTR tokens • Console classics • Gaming legends
           </p>
+          {connectedWallet && (
+            <div className="text-center mt-2">
+              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+              </Badge>
+            </div>
+          )}
         </CardHeader>
       </Card>
 
@@ -161,7 +211,7 @@ export const TriviaGame = () => {
       </div>
 
       {/* User Stats */}
-      {user && (
+      {isAuthenticated && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card className="holographic p-4 text-center">
             <div className="text-2xl mb-2">🎮</div>
@@ -262,16 +312,16 @@ export const TriviaGame = () => {
         </Card>
       </div>
 
-      {!user && (
+      {!isAuthenticated && (
         <Card className="arcade-frame border-neon-pink/30">
           <CardContent className="text-center py-8">
             <div className="text-4xl mb-4">🔐</div>
-            <h3 className="text-xl font-bold text-neon-pink mb-2">Authentication Required</h3>
+            <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Wallet</h3>
             <p className="text-muted-foreground mb-4">
-              Log in to track your progress, earn CCTR tokens, and compete on gaming leaderboards
+              Connect your Solana wallet to track progress, earn CCTR tokens, and compete on gaming leaderboards
             </p>
-            <Button className="cyber-button">
-              Login to Play
+            <Button onClick={connectWallet} className="cyber-button">
+              🚀 Connect Phantom Wallet
             </Button>
           </CardContent>
         </Card>

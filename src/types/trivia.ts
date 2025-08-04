@@ -53,3 +53,10 @@ export interface TriviaLeaderboardEntry {
   completed_at: string;
   rank: number;
 }
+
+export interface TriviaUserStats {
+  totalGames: number;
+  totalScore: number;
+  bestScore: number;
+  winRate: number;
+}
