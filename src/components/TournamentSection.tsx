@@ -8,13 +8,15 @@ import { TournamentBracket } from './TournamentBracket';
 import { SolanaTournamentSystem } from './SolanaTournamentSystem';
 import { TournamentAdminPanel } from './TournamentAdminPanel';
 import { PayPalTournamentEntry } from './PayPalTournamentEntry';
+import { TriviaGame } from './TriviaGame';
+import { TriviaAdmin } from './trivia/TriviaAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 export const TournamentSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeView, setActiveView] = useState<'crypto' | 'classic' | 'fighting' | 'shooter' | 'admin'>('crypto');
+  const [activeView, setActiveView] = useState<'crypto' | 'classic' | 'fighting' | 'shooter' | 'trivia' | 'admin'>('crypto');
   const [activeGame, setActiveGame] = useState<{
     tournamentId: string;
     gameType: 'tetris' | 'pacman' | 'galaga';
@@ -602,6 +604,12 @@ export const TournamentSection = () => {
             >
               🔫 Shooter Games
             </Button>
+            <Button
+              onClick={() => setActiveView('trivia')}
+              className={`cyber-button ${activeView === 'trivia' ? 'bg-neon-cyan text-black' : ''}`}
+            >
+              🧠 Trivia Challenge
+            </Button>
             {isAdmin && (
               <Button
                 onClick={() => setActiveView('admin')}
@@ -614,149 +622,160 @@ export const TournamentSection = () => {
         </CardContent>
       </Card>
 
-      {/* Active Tournaments Section */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-xl text-neon-cyan flex items-center gap-3">
-            ⚡ ACTIVE TOURNAMENTS
-            <Badge className="bg-neon-red text-white animate-pulse">ACTIVE</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {getActiveTournaments().map((tournament) => (
-              <TournamentCard key={tournament.id} tournament={tournament} />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Crypto Games Tab */}
-      {activeView === 'crypto' && (
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-xl text-neon-purple">
-              🚀 CRYPTO GAMES TOURNAMENTS
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 mb-4">
-              Play the latest blockchain games and compete for massive crypto prizes on Solana!
-            </p>
-            
-            <div className="grid gap-4">
-              {cryptoTournaments.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Classic Games Tab */}
-      {activeView === 'classic' && (
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-xl text-neon-pink">
-              🎮 CLASSIC GAMES TOURNAMENTS
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 mb-4">
-              Compete in nostalgic arcade and retro gaming tournaments with NFT access!
-            </p>
-            
-            <div className="grid gap-4">
-              {classicTournaments.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Fighting Games Tab */}
-      {activeView === 'fighting' && (
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-xl text-neon-pink">
-              👊 FIGHTING GAMES TOURNAMENTS
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 mb-4">
-              Battle it out in the ultimate fighting game championships with NFT access!
-            </p>
-            
-            <div className="grid gap-4">
-              {fightingTournaments.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Shooter Games Tab */}
-      {activeView === 'shooter' && (
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-xl text-neon-cyan">
-              🔫 SHOOTER GAMES TOURNAMENTS
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 mb-4">
-              Compete in intense FPS and shooter game tournaments with NFT access!
-            </p>
-            
-            <div className="grid gap-4">
-              {shooterTournaments.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Trivia Game Tab */}
+      {activeView === 'trivia' && (
+        <TriviaGame />
       )}
 
       {/* Admin Panel */}
       {activeView === 'admin' && isAdmin && (
-        <TournamentAdminPanel isAdmin={isAdmin} />
+        <div className="space-y-8">
+          <TournamentAdminPanel isAdmin={isAdmin} />
+          <TriviaAdmin isAdmin={isAdmin} />
+        </div>
       )}
 
-      {/* Solana Tournament System */}
-      <SolanaTournamentSystem />
+      {activeView !== 'trivia' && activeView !== 'admin' && (
+        <>
+          <Card className="arcade-frame">
+            <CardHeader>
+              <CardTitle className="font-display text-xl text-neon-cyan flex items-center gap-3">
+                ⚡ ACTIVE TOURNAMENTS
+                <Badge className="bg-neon-red text-white animate-pulse">ACTIVE</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {getActiveTournaments().map((tournament) => (
+                  <TournamentCard key={tournament.id} tournament={tournament} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Live Statistics Section - moved under Solana Tournament System */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-xl text-neon-cyan">📊 LIVE STATISTICS</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-green font-bold mb-2">🔴 LIVE VIEWERS</h4>
-              <div className="text-2xl font-black text-neon-green">89,347</div>
-              <div className="text-xs text-muted-foreground animate-pulse">+2,156 watching</div>
+          {/* Crypto Games Tab */}
+          {activeView === 'crypto' && (
+            <Card className="arcade-frame">
+              <CardHeader>
+                <CardTitle className="font-display text-xl text-neon-purple">
+                  🚀 CRYPTO GAMES TOURNAMENTS
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300 mb-4">
+                  Play the latest blockchain games and compete for massive crypto prizes on Solana!
+                </p>
+                
+                <div className="grid gap-4">
+                  {cryptoTournaments.map((tournament) => (
+                    <TournamentCard key={tournament.id} tournament={tournament} />
+                  ))}
+                </div>
+              </CardContent>
             </Card>
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-pink font-bold mb-2">💰 TOTAL PRIZES</h4>
-              <div className="text-2xl font-black text-neon-pink">1.2M $CCTR</div>
-              <div className="text-xs text-muted-foreground">Across all tournaments</div>
+          )}
+
+          {/* Classic Games Tab */}
+          {activeView === 'classic' && (
+            <Card className="arcade-frame">
+              <CardHeader>
+                <CardTitle className="font-display text-xl text-neon-pink">
+                  🎮 CLASSIC GAMES TOURNAMENTS
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300 mb-4">
+                  Compete in nostalgic arcade and retro gaming tournaments with NFT access!
+                </p>
+                
+                <div className="grid gap-4">
+                  {classicTournaments.map((tournament) => (
+                    <TournamentCard key={tournament.id} tournament={tournament} />
+                  ))}
+                </div>
+              </CardContent>
             </Card>
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-purple font-bold mb-2">⚡ ACTIVE MATCHES</h4>
-              <div className="text-2xl font-black text-neon-purple">48</div>
-              <div className="text-xs text-muted-foreground">Live right now</div>
+          )}
+
+          {/* Fighting Games Tab */}
+          {activeView === 'fighting' && (
+            <Card className="arcade-frame">
+              <CardHeader>
+                <CardTitle className="font-display text-xl text-neon-pink">
+                  👊 FIGHTING GAMES TOURNAMENTS
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300 mb-4">
+                  Battle it out in the ultimate fighting game championships with NFT access!
+                </p>
+                
+                <div className="grid gap-4">
+                  {fightingTournaments.map((tournament) => (
+                    <TournamentCard key={tournament.id} tournament={tournament} />
+                  ))}
+                </div>
+              </CardContent>
             </Card>
-            <Card className="holographic p-4 text-center">
-              <h4 className="text-neon-cyan font-bold mb-2">👥 TOTAL PLAYERS</h4>
-              <div className="text-2xl font-black text-neon-cyan">2,856</div>
-              <div className="text-xs text-muted-foreground">Competing today</div>
+          )}
+
+          {/* Shooter Games Tab */}
+          {activeView === 'shooter' && (
+            <Card className="arcade-frame">
+              <CardHeader>
+                <CardTitle className="font-display text-xl text-neon-cyan">
+                  🔫 SHOOTER GAMES TOURNAMENTS
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300 mb-4">
+                  Compete in intense FPS and shooter game tournaments with NFT access!
+                </p>
+                
+                <div className="grid gap-4">
+                  {shooterTournaments.map((tournament) => (
+                    <TournamentCard key={tournament.id} tournament={tournament} />
+                  ))}
+                </div>
+              </CardContent>
             </Card>
-          </div>
-        </CardContent>
-      </Card>
+          )}
+
+          {/* Solana Tournament System */}
+          <SolanaTournamentSystem />
+
+          {/* Live Statistics Section - moved under Solana Tournament System */}
+          <Card className="arcade-frame">
+            <CardHeader>
+              <CardTitle className="font-display text-xl text-neon-cyan">📊 LIVE STATISTICS</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="holographic p-4 text-center">
+                  <h4 className="text-neon-green font-bold mb-2">🔴 LIVE VIEWERS</h4>
+                  <div className="text-2xl font-black text-neon-green">89,347</div>
+                  <div className="text-xs text-muted-foreground animate-pulse">+2,156 watching</div>
+                </Card>
+                <Card className="holographic p-4 text-center">
+                  <h4 className="text-neon-pink font-bold mb-2">💰 TOTAL PRIZES</h4>
+                  <div className="text-2xl font-black text-neon-pink">1.2M $CCTR</div>
+                  <div className="text-xs text-muted-foreground">Across all tournaments</div>
+                </Card>
+                <Card className="holographic p-4 text-center">
+                  <h4 className="text-neon-purple font-bold mb-2">⚡ ACTIVE MATCHES</h4>
+                  <div className="text-2xl font-black text-neon-purple">48</div>
+                  <div className="text-xs text-muted-foreground">Live right now</div>
+                </Card>
+                <Card className="holographic p-4 text-center">
+                  <h4 className="text-neon-cyan font-bold mb-2">👥 TOTAL PLAYERS</h4>
+                  <div className="text-2xl font-black text-neon-cyan">2,856</div>
+                  <div className="text-xs text-muted-foreground">Competing today</div>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 };
