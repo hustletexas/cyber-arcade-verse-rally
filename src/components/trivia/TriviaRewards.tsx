@@ -199,7 +199,7 @@ export const TriviaRewards = ({ onBackToMenu }: TriviaRewardsProps) => {
                   <Badge className="bg-neon-cyan text-black">1.2x Points</Badge>
                 </div>
                 <div className="flex justify-between items-center p-2 rounded bg-gray-800/30">
-                  <span className="text-muted-foreground">> 20 seconds</span>
+                  <span className="text-muted-foreground">&gt; 20 seconds</span>
                   <Badge variant="outline">Base Points</Badge>
                 </div>
               </div>
