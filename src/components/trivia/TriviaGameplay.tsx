@@ -7,17 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-
-interface TriviaQuestion {
-  id: string;
-  question: string;
-  option_a: string;
-  option_b: string;
-  option_c: string;
-  option_d: string;
-  correct_answer: string;
-  difficulty: string;
-}
+import { TriviaQuestion, TriviaSession } from '@/types/trivia';
 
 interface TriviaGameplayProps {
   category: string;
@@ -58,12 +48,11 @@ export const TriviaGameplay = ({ category, onGameEnd, onBackToMenu }: TriviaGame
     if (!user) return;
 
     try {
-      // Fetch random questions from the selected category
+      // Fetch random questions from the selected category using raw query
       const { data: questionsData, error: questionsError } = await supabase
-        .from('trivia_questions')
+        .from('trivia_questions' as any)
         .select('*')
         .eq('category', category)
-        .order('RANDOM()')
         .limit(10);
 
       if (questionsError) throw questionsError;
@@ -78,24 +67,28 @@ export const TriviaGameplay = ({ category, onGameEnd, onBackToMenu }: TriviaGame
         return;
       }
 
-      setQuestions(questionsData);
+      // Shuffle questions
+      const shuffledQuestions = questionsData.sort(() => Math.random() - 0.5);
+      setQuestions(shuffledQuestions as TriviaQuestion[]);
 
-      // Create a new game session
-      const { data: sessionData, error: sessionError } = await supabase
-        .from('trivia_sessions')
-        .insert({
-          user_id: user.id,
-          category: category,
-          total_questions: questionsData.length,
-          session_type: 'single',
-          status: 'active'
-        })
+      // Create a new game session using raw query
+      const sessionData: Partial<TriviaSession> = {
+        user_id: user.id,
+        category: category,
+        total_questions: shuffledQuestions.length,
+        session_type: 'single',
+        status: 'active'
+      };
+
+      const { data: newSession, error: sessionError } = await supabase
+        .from('trivia_sessions' as any)
+        .insert([sessionData])
         .select()
         .single();
 
       if (sessionError) throw sessionError;
 
-      setSessionId(sessionData.id);
+      setSessionId(newSession.id);
       setGameStatus('playing');
       setQuestionStartTime(new Date());
 
@@ -120,33 +113,37 @@ export const TriviaGameplay = ({ category, onGameEnd, onBackToMenu }: TriviaGame
     const isCorrect = answer === currentQuestion.correct_answer;
     const responseTime = Math.floor((new Date().getTime() - questionStartTime.getTime()) / 1000);
 
-    // Calculate score using the database function
-    const { data: scoreData, error: scoreError } = await supabase
-      .rpc('calculate_trivia_score', {
-        response_time: responseTime,
-        is_correct: isCorrect,
-        difficulty: currentQuestion.difficulty
-      });
-
-    const pointsAwarded = scoreError ? 0 : (scoreData || 0);
+    // Calculate score using basic logic since RPC might not be available
+    let pointsAwarded = 0;
+    if (isCorrect) {
+      const basePoints = currentQuestion.difficulty === 'easy' ? 100 : 
+                        currentQuestion.difficulty === 'medium' ? 200 : 300;
+      const speedMultiplier = responseTime <= 10 ? 1.5 : 
+                             responseTime <= 20 ? 1.2 : 1.0;
+      pointsAwarded = Math.round(basePoints * speedMultiplier);
+    }
 
     if (isCorrect) {
       setCorrectAnswers(prev => prev + 1);
       setScore(prev => prev + pointsAwarded);
     }
 
-    // Save the answer
+    // Save the answer using raw query
     if (sessionId) {
-      await supabase
-        .from('trivia_answers')
-        .insert({
-          session_id: sessionId,
-          question_id: currentQuestion.id,
-          user_answer: answer,
-          is_correct: isCorrect,
-          response_time: responseTime,
-          points_awarded: pointsAwarded
-        });
+      try {
+        await supabase
+          .from('trivia_answers' as any)
+          .insert([{
+            session_id: sessionId,
+            question_id: currentQuestion.id,
+            user_answer: answer,
+            is_correct: isCorrect,
+            response_time: responseTime,
+            points_awarded: pointsAwarded
+          }]);
+      } catch (error) {
+        console.error('Error saving answer:', error);
+      }
     }
 
     toast({
@@ -193,33 +190,37 @@ export const TriviaGameplay = ({ category, onGameEnd, onBackToMenu }: TriviaGame
     setGameStatus('finished');
 
     if (sessionId && user) {
-      // Update session with final results
-      await supabase
-        .from('trivia_sessions')
-        .update({
-          total_score: score,
-          correct_answers: correctAnswers,
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', sessionId);
-
-      // Award tokens for participation
-      const tokenReward = Math.floor(score / 10); // 1 token per 10 points
-      if (tokenReward > 0) {
+      try {
+        // Update session with final results using raw query
         await supabase
-          .from('token_transactions')
-          .insert({
-            user_id: user.id,
-            amount: tokenReward,
-            transaction_type: 'trivia_reward',
-            description: `Trivia game reward: ${tokenReward} CCTR for ${correctAnswers}/${questions.length} correct answers`
-          });
+          .from('trivia_sessions' as any)
+          .update({
+            total_score: score,
+            correct_answers: correctAnswers,
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', sessionId);
 
-        toast({
-          title: "Rewards Earned! 💰",
-          description: `You earned ${tokenReward} CCTR tokens!`,
-        });
+        // Award tokens for participation
+        const tokenReward = Math.floor(score / 10); // 1 token per 10 points
+        if (tokenReward > 0) {
+          await supabase
+            .from('token_transactions')
+            .insert([{
+              user_id: user.id,
+              amount: tokenReward,
+              transaction_type: 'trivia_reward',
+              description: `Trivia game reward: ${tokenReward} CCTR for ${correctAnswers}/${questions.length} correct answers`
+            }]);
+
+          toast({
+            title: "Rewards Earned! 💰",
+            description: `You earned ${tokenReward} CCTR tokens!`,
+          });
+        }
+      } catch (error) {
+        console.error('Error finishing game:', error);
       }
     }
 

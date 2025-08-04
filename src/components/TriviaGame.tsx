@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { TriviaGameplay } from './trivia/TriviaGameplay';
 import { TriviaLeaderboard } from './trivia/TriviaLeaderboard';
 import { TriviaRewards } from './trivia/TriviaRewards';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { TriviaSession } from '@/types/trivia';
 
 export const TriviaGame = () => {
   const { user } = useAuth();
@@ -64,27 +64,46 @@ export const TriviaGame = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('trivia_sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'completed');
+      // Use raw SQL query to avoid type issues with new tables
+      const { data, error } = await supabase.rpc('get_trivia_stats', {
+        p_user_id: user.id
+      });
 
-      if (error) throw error;
+      if (error) {
+        // Fallback: try direct query if RPC doesn't exist
+        console.warn('RPC not found, using direct query');
+        
+        const { data: rawData, error: queryError } = await supabase
+          .from('trivia_sessions' as any)
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'completed');
 
-      if (data && data.length > 0) {
-        const totalGames = data.length;
-        const totalScore = data.reduce((sum, session) => sum + session.total_score, 0);
-        const bestScore = Math.max(...data.map(session => session.total_score));
-        const totalQuestions = data.reduce((sum, session) => sum + session.total_questions, 0);
-        const totalCorrect = data.reduce((sum, session) => sum + session.correct_answers, 0);
-        const winRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+        if (queryError) throw queryError;
 
-        setUserStats({
-          totalGames,
-          totalScore,
-          bestScore,
-          winRate
+        if (rawData && rawData.length > 0) {
+          const sessions = rawData as TriviaSession[];
+          const totalGames = sessions.length;
+          const totalScore = sessions.reduce((sum: number, session: TriviaSession) => sum + session.total_score, 0);
+          const bestScore = Math.max(...sessions.map((session: TriviaSession) => session.total_score));
+          const totalQuestions = sessions.reduce((sum: number, session: TriviaSession) => sum + session.total_questions, 0);
+          const totalCorrect = sessions.reduce((sum: number, session: TriviaSession) => sum + session.correct_answers, 0);
+          const winRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+          setUserStats({
+            totalGames,
+            totalScore,
+            bestScore,
+            winRate
+          });
+        }
+      } else {
+        // Use RPC result if available
+        setUserStats(data || {
+          totalGames: 0,
+          totalScore: 0,
+          bestScore: 0,
+          winRate: 0
         });
       }
     } catch (error) {

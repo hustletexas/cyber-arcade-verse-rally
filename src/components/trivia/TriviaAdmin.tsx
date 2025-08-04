@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { TriviaQuestion } from '@/types/trivia';
 
 interface TriviaAdminProps {
   isAdmin: boolean;
@@ -17,7 +18,7 @@ interface TriviaAdminProps {
 export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [newQuestion, setNewQuestion] = useState({
     category: '',
@@ -26,8 +27,8 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
     option_b: '',
     option_c: '',
     option_d: '',
-    correct_answer: 'A',
-    difficulty: 'medium'
+    correct_answer: 'A' as 'A' | 'B' | 'C' | 'D',
+    difficulty: 'medium' as 'easy' | 'medium' | 'hard'
   });
 
   useEffect(() => {
@@ -40,12 +41,12 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('trivia_questions')
+        .from('trivia_questions' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setQuestions(data || []);
+      setQuestions((data || []) as TriviaQuestion[]);
     } catch (error) {
       console.error('Error fetching questions:', error);
     } finally {
@@ -58,7 +59,7 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
 
     try {
       const { error } = await supabase
-        .from('trivia_questions')
+        .from('trivia_questions' as any)
         .insert([newQuestion]);
 
       if (error) throw error;
@@ -96,7 +97,7 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
 
     try {
       const { error } = await supabase
-        .from('trivia_questions')
+        .from('trivia_questions' as any)
         .delete()
         .eq('id', questionId);
 
@@ -167,7 +168,7 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
               </SelectContent>
             </Select>
 
-            <Select value={newQuestion.difficulty} onValueChange={(value) => setNewQuestion({...newQuestion, difficulty: value})}>
+            <Select value={newQuestion.difficulty} onValueChange={(value: 'easy' | 'medium' | 'hard') => setNewQuestion({...newQuestion, difficulty: value})}>
               <SelectTrigger>
                 <SelectValue placeholder="Select difficulty" />
               </SelectTrigger>
@@ -209,7 +210,7 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
             />
           </div>
 
-          <Select value={newQuestion.correct_answer} onValueChange={(value) => setNewQuestion({...newQuestion, correct_answer: value})}>
+          <Select value={newQuestion.correct_answer} onValueChange={(value: 'A' | 'B' | 'C' | 'D') => setNewQuestion({...newQuestion, correct_answer: value})}>
             <SelectTrigger>
               <SelectValue placeholder="Select correct answer" />
             </SelectTrigger>
