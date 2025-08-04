@@ -30,13 +30,14 @@ interface SolajumpGameProps {
 export const SolajumpGame: React.FC<SolajumpGameProps> = ({ onGameEnd, isActive }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
+  const animationIdRef = useRef<number>();
   const [score, setScore] = useState(0);
   const [highestPlatform, setHighestPlatform] = useState(0);
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'ended'>('idle');
   const { submitScore, isSubmitting } = useSolanaScore();
   const { toast } = useToast();
 
-  // Game state
+  // Game state refs
   const playerRef = useRef<Player>({
     x: 375,
     y: 500,
@@ -51,198 +52,206 @@ export const SolajumpGame: React.FC<SolajumpGameProps> = ({ onGameEnd, isActive 
   const cameraYRef = useRef(0);
   const keysRef = useRef({ left: false, right: false, space: false });
 
-  useEffect(() => {
-    if (!canvasRef.current) return;
+  const initializePlatforms = () => {
+    platformsRef.current = [];
+    
+    // Ground platform
+    platformsRef.current.push({
+      x: 0,
+      y: 580,
+      width: 800,
+      height: 20
+    });
+
+    // Generate platforms going up
+    for (let i = 1; i < 100; i++) {
+      platformsRef.current.push({
+        x: Math.random() * (800 - 120) + 10,
+        y: 580 - (i * 100),
+        width: 100 + Math.random() * 50,
+        height: 20
+      });
+    }
+  };
+
+  const resetGame = () => {
+    playerRef.current = {
+      x: 375,
+      y: 500,
+      width: 30,
+      height: 30,
+      velocityY: 0,
+      speed: 5,
+      onGround: false
+    };
+    cameraYRef.current = 0;
+    setScore(0);
+    setHighestPlatform(0);
+    initializePlatforms();
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    switch (e.code) {
+      case 'ArrowLeft':
+      case 'KeyA':
+        keysRef.current.left = true;
+        e.preventDefault();
+        break;
+      case 'ArrowRight':
+      case 'KeyD':
+        keysRef.current.right = true;
+        e.preventDefault();
+        break;
+      case 'Space':
+      case 'ArrowUp':
+      case 'KeyW':
+        keysRef.current.space = true;
+        e.preventDefault();
+        break;
+    }
+  };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    switch (e.code) {
+      case 'ArrowLeft':
+      case 'KeyA':
+        keysRef.current.left = false;
+        break;
+      case 'ArrowRight':
+      case 'KeyD':
+        keysRef.current.right = false;
+        break;
+      case 'Space':
+      case 'ArrowUp':
+      case 'KeyW':
+        keysRef.current.space = false;
+        break;
+    }
+  };
+
+  const gameLoop = () => {
+    if (gameState !== 'playing' || !canvasRef.current) {
+      return;
+    }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const player = playerRef.current;
+    const platforms = platformsRef.current;
+
+    // Handle input
+    if (keysRef.current.left && player.x > 0) {
+      player.x -= player.speed;
+    }
+    if (keysRef.current.right && player.x < canvas.width - player.width) {
+      player.x += player.speed;
+    }
+    if (keysRef.current.space && player.onGround) {
+      player.velocityY = -15;
+      player.onGround = false;
+    }
+
+    // Apply gravity
+    player.velocityY += 0.6;
+    player.y += player.velocityY;
+
+    // Platform collision
+    player.onGround = false;
+    for (let i = 0; i < platforms.length; i++) {
+      const platform = platforms[i];
+      
+      // Check collision
+      if (
+        player.x < platform.x + platform.width &&
+        player.x + player.width > platform.x &&
+        player.y + player.height > platform.y &&
+        player.y + player.height < platform.y + platform.height + 15 &&
+        player.velocityY >= 0
+      ) {
+        player.y = platform.y - player.height;
+        player.velocityY = 0;
+        player.onGround = true;
+
+        // Update score based on height
+        if (i > highestPlatform) {
+          setHighestPlatform(i);
+          setScore(i * 100);
+        }
+        break;
+      }
+    }
+
+    // Update camera to follow player
+    const targetCameraY = Math.max(0, player.y - 400);
+    cameraYRef.current += (targetCameraY - cameraYRef.current) * 0.05;
+
+    // Game over condition
+    if (player.y > cameraYRef.current + 700) {
+      setGameState('ended');
+      onGameEnd(score);
+      return;
+    }
+
+    // Clear canvas
+    ctx.fillStyle = '#000022';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw platforms
+    ctx.fillStyle = '#00ff88';
+    platforms.forEach((platform) => {
+      const screenY = platform.y - cameraYRef.current;
+      if (screenY > -50 && screenY < canvas.height + 50) {
+        ctx.fillRect(platform.x, screenY, platform.width, platform.height);
+      }
+    });
+
+    // Draw player
+    const playerScreenY = player.y - cameraYRef.current;
+    ctx.fillStyle = '#00ffff';
+    ctx.fillRect(player.x, playerScreenY, player.width, player.height);
+
+    // Draw UI
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '24px Arial';
+    ctx.fillText(`Score: ${score}`, 20, 40);
+    ctx.fillText(`Height: ${Math.max(0, Math.floor((580 - player.y) / 10))}m`, 20, 80);
+
+    // Draw controls (only show when first starting)
+    if (score === 0) {
+      ctx.font = '16px Arial';
+      ctx.fillStyle = '#cccccc';
+      ctx.fillText('← → or A/D to Move', 20, canvas.height - 60);
+      ctx.fillText('SPACE or ↑/W to Jump', 20, canvas.height - 40);
+    }
+
+    animationIdRef.current = requestAnimationFrame(gameLoop);
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
     canvas.width = 800;
     canvas.height = 600;
 
-    // Initialize platforms
-    const initializePlatforms = () => {
-      platformsRef.current = [];
-      
-      // Ground platform
-      platformsRef.current.push({
-        x: 0,
-        y: 580,
-        width: 800,
-        height: 20
-      });
-
-      // Generate platforms going up
-      for (let i = 1; i < 50; i++) {
-        platformsRef.current.push({
-          x: Math.random() * (800 - 100),
-          y: 580 - (i * 120),
-          width: 100 + Math.random() * 50,
-          height: 20
-        });
-      }
-    };
-
-    const resetGame = () => {
-      playerRef.current = {
-        x: 375,
-        y: 500,
-        width: 30,
-        height: 30,
-        velocityY: 0,
-        speed: 5,
-        onGround: false
-      };
-      cameraYRef.current = 0;
-      setScore(0);
-      setHighestPlatform(0);
-      initializePlatforms();
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.code) {
-        case 'ArrowLeft':
-          keysRef.current.left = true;
-          e.preventDefault();
-          break;
-        case 'ArrowRight':
-          keysRef.current.right = true;
-          e.preventDefault();
-          break;
-        case 'Space':
-          keysRef.current.space = true;
-          e.preventDefault();
-          break;
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      switch (e.code) {
-        case 'ArrowLeft':
-          keysRef.current.left = false;
-          break;
-        case 'ArrowRight':
-          keysRef.current.right = false;
-          break;
-        case 'Space':
-          keysRef.current.space = false;
-          break;
-      }
-    };
-
-    const gameLoop = () => {
-      if (gameState !== 'playing') return;
-
-      const player = playerRef.current;
-      const platforms = platformsRef.current;
-
-      // Handle input
-      if (keysRef.current.left && player.x > 0) {
-        player.x -= player.speed;
-      }
-      if (keysRef.current.right && player.x < 800 - player.width) {
-        player.x += player.speed;
-      }
-      if (keysRef.current.space && player.onGround) {
-        player.velocityY = -15;
-        player.onGround = false;
-      }
-
-      // Apply gravity
-      player.velocityY += 0.6;
-      player.y += player.velocityY;
-
-      // Platform collision
-      player.onGround = false;
-      for (const platform of platforms) {
-        if (
-          player.x < platform.x + platform.width &&
-          player.x + player.width > platform.x &&
-          player.y + player.height > platform.y &&
-          player.y + player.height < platform.y + platform.height + 10 &&
-          player.velocityY >= 0
-        ) {
-          player.y = platform.y - player.height;
-          player.velocityY = 0;
-          player.onGround = true;
-
-          // Update score based on height
-          const currentPlatformIndex = platforms.indexOf(platform);
-          if (currentPlatformIndex > highestPlatform) {
-            setHighestPlatform(currentPlatformIndex);
-            setScore(currentPlatformIndex * 100);
-          }
-          break;
-        }
-      }
-
-      // Update camera to follow player
-      const targetCameraY = Math.max(0, player.y - 400);
-      cameraYRef.current += (targetCameraY - cameraYRef.current) * 0.1;
-
-      // Game over condition (fell too far below)
-      if (player.y > cameraYRef.current + 700) {
-        setGameState('ended');
-        onGameEnd(score);
-        return;
-      }
-
-      // Render
-      ctx.fillStyle = '#000011';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw platforms
-      ctx.fillStyle = '#00ff88';
-      for (const platform of platforms) {
-        const screenY = platform.y - cameraYRef.current;
-        if (screenY > -50 && screenY < canvas.height + 50) {
-          ctx.fillRect(platform.x, screenY, platform.width, platform.height);
-        }
-      }
-
-      // Draw player
-      const playerScreenY = player.y - cameraYRef.current;
-      ctx.fillStyle = '#00ffff';
-      ctx.fillRect(player.x, playerScreenY, player.width, player.height);
-
-      // Draw score
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '24px Arial';
-      ctx.fillText(`Score: ${score}`, 20, 40);
-      ctx.fillText(`Height: ${Math.max(0, Math.floor(-player.y / 10))}m`, 20, 80);
-
-      // Draw controls
-      ctx.font = '16px Arial';
-      ctx.fillText('← → Arrow Keys to Move', 20, canvas.height - 60);
-      ctx.fillText('SPACEBAR to Jump', 20, canvas.height - 40);
-
-      gameLoopRef.current = requestAnimationFrame(gameLoop);
-    };
-
-    if (isActive) {
+    if (isActive && gameState === 'playing') {
       document.addEventListener('keydown', handleKeyDown);
       document.addEventListener('keyup', handleKeyUp);
+      
       resetGame();
-      setGameState('playing');
-      gameLoopRef.current = requestAnimationFrame(gameLoop);
-    } else {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-      if (gameLoopRef.current) {
-        cancelAnimationFrame(gameLoopRef.current);
-      }
-      setGameState('idle');
+      animationIdRef.current = requestAnimationFrame(gameLoop);
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
-      if (gameLoopRef.current) {
-        cancelAnimationFrame(gameLoopRef.current);
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
       }
     };
-  }, [isActive, gameState, score, highestPlatform, onGameEnd]);
+  }, [isActive, gameState]);
 
   const startGame = () => {
     setGameState('playing');
@@ -254,7 +263,7 @@ export const SolajumpGame: React.FC<SolajumpGameProps> = ({ onGameEnd, isActive 
       if (result.success) {
         toast({
           title: "Score Submitted! 🚀",
-          description: `Earned ${result.tokensEarned} CCTR tokens for your Solajump performance!`,
+          description: `Earned ${result.tokensEarned} CCTR tokens for your SolaJump performance!`,
         });
       }
     }
@@ -266,14 +275,14 @@ export const SolajumpGame: React.FC<SolajumpGameProps> = ({ onGameEnd, isActive 
         <div className="space-y-4">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-neon-cyan mb-2">🚀 SolaJump</h3>
-            <p className="text-gray-400">Jump as high as you can! Collect platforms to increase your score.</p>
+            <p className="text-gray-400">Jump as high as you can! Each platform increases your score.</p>
           </div>
 
           <div className="relative">
             <canvas
               ref={canvasRef}
-              className="border-2 border-neon-cyan/30 rounded-lg mx-auto block"
-              style={{ background: 'linear-gradient(180deg, #000011 0%, #001122 100%)' }}
+              className="border-2 border-neon-cyan/30 rounded-lg mx-auto block bg-gradient-to-b from-slate-900 to-slate-800"
+              tabIndex={0}
             />
             
             {gameState === 'idle' && (
@@ -295,7 +304,7 @@ export const SolajumpGame: React.FC<SolajumpGameProps> = ({ onGameEnd, isActive 
                   <div className="text-xl font-bold text-neon-pink">Game Over!</div>
                   <div className="text-lg text-neon-green">Final Score: {score}</div>
                   <div className="text-sm text-gray-400">
-                    Max Height: {Math.max(0, Math.floor(highestPlatform * 12))}m
+                    Max Height: {Math.max(0, Math.floor(highestPlatform * 10))}m
                   </div>
                   <div className="flex gap-2 justify-center">
                     <Button onClick={startGame} className="cyber-button">
