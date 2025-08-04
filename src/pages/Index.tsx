@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ import { CCTRStaking } from '@/components/CCTRStaking';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
+import { TriviaGame } from '@/components/TriviaGame';
 import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/hooks/useAuth';
@@ -157,6 +157,11 @@ const Index = () => {
           {/* Tournaments Section - Now includes Live Tournaments and Statistics */}
           <section>
             <TournamentSection />
+          </section>
+
+          {/* Trivia Section - Added under Tournament Section */}
+          <section>
+            <TriviaGame />
           </section>
 
           {/* Raffles Section */}

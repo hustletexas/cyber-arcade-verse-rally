@@ -2,270 +2,291 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { TriviaQuestion, TriviaSession } from '@/types/trivia';
+import { TriviaQuestion } from '@/types/trivia';
 
 interface TriviaGameplayProps {
   category: string;
-  onGameEnd: () => void;
+  onGameComplete: () => void;
   onBackToMenu: () => void;
 }
 
-export const TriviaGameplay = ({ category, onGameEnd, onBackToMenu }: TriviaGameplayProps) => {
+export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: TriviaGameplayProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState(30);
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
   const [gameStatus, setGameStatus] = useState<'loading' | 'playing' | 'finished'>('loading');
-  const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
+  const [showResult, setShowResult] = useState(false);
+  const [answerSubmitted, setAnswerSubmitted] = useState(false);
+
+  const questionsPerGame = 10;
 
   useEffect(() => {
-    if (user) {
-      initializeGame();
-    }
-  }, [user, category]);
+    loadQuestions();
+  }, [category]);
 
   useEffect(() => {
-    if (gameStatus === 'playing' && timeLeft > 0) {
+    if (gameStatus === 'playing' && timeLeft > 0 && !answerSubmitted) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !showResult) {
-      handleTimeUp();
+    } else if (timeLeft === 0 && !answerSubmitted) {
+      handleTimeOut();
     }
-  }, [timeLeft, gameStatus, showResult]);
+  }, [timeLeft, gameStatus, answerSubmitted]);
 
-  const initializeGame = async () => {
-    if (!user) return;
-
+  const loadQuestions = async () => {
     try {
-      // Fetch random questions from the selected category using raw query
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('trivia_questions' as any)
-        .select('*')
-        .eq('category', category)
-        .limit(10);
+      // Mock questions for now since database tables don't exist yet
+      const mockQuestions: TriviaQuestion[] = [
+        {
+          id: '1',
+          category: category,
+          question: 'What is the capital of France?',
+          option_a: 'London',
+          option_b: 'Berlin',
+          option_c: 'Paris',
+          option_d: 'Madrid',
+          correct_answer: 'C',
+          difficulty: 'easy',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '2',
+          category: category,
+          question: 'Which planet is known as the Red Planet?',
+          option_a: 'Venus',
+          option_b: 'Mars',
+          option_c: 'Jupiter',
+          option_d: 'Saturn',
+          correct_answer: 'B',
+          difficulty: 'easy',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        // Add more mock questions...
+        {
+          id: '3',
+          category: category,
+          question: 'What is the largest ocean on Earth?',
+          option_a: 'Atlantic',
+          option_b: 'Indian',
+          option_c: 'Pacific',
+          option_d: 'Arctic',
+          correct_answer: 'C',
+          difficulty: 'medium',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
 
-      if (questionsError) throw questionsError;
-
-      if (!questionsData || questionsData.length === 0) {
-        toast({
-          title: "No Questions Available",
-          description: "No questions found for this category",
-          variant: "destructive",
+      // Simulate more questions to reach 10
+      const expandedQuestions = [...mockQuestions];
+      while (expandedQuestions.length < questionsPerGame) {
+        expandedQuestions.push({
+          ...mockQuestions[expandedQuestions.length % mockQuestions.length],
+          id: `${expandedQuestions.length + 1}`,
+          question: `Sample question ${expandedQuestions.length + 1} for ${category}?`,
         });
-        onBackToMenu();
-        return;
       }
 
-      // Shuffle questions
-      const shuffledQuestions = questionsData.sort(() => Math.random() - 0.5);
-      setQuestions(shuffledQuestions as TriviaQuestion[]);
-
-      // Create a new game session using raw query
-      const sessionData: Partial<TriviaSession> = {
-        user_id: user.id,
-        category: category,
-        total_questions: shuffledQuestions.length,
-        session_type: 'single',
-        status: 'active'
-      };
-
-      const { data: newSession, error: sessionError } = await supabase
-        .from('trivia_sessions' as any)
-        .insert([sessionData])
-        .select()
-        .single();
-
-      if (sessionError) throw sessionError;
-
-      setSessionId(newSession.id);
+      setQuestions(expandedQuestions);
       setGameStatus('playing');
-      setQuestionStartTime(new Date());
-
+      setTimeLeft(30);
     } catch (error) {
-      console.error('Error initializing game:', error);
+      console.error('Error loading questions:', error);
       toast({
-        title: "Game Error",
-        description: "Failed to start the game",
+        title: "Error Loading Questions",
+        description: "Failed to load trivia questions. Please try again.",
         variant: "destructive",
       });
-      onBackToMenu();
     }
   };
 
-  const handleAnswerSelect = async (answer: string) => {
-    if (selectedAnswer || showResult) return;
-
+  const handleAnswerSelect = (answer: string) => {
+    if (answerSubmitted) return;
     setSelectedAnswer(answer);
-    setShowResult(true);
+  };
 
+  const handleSubmitAnswer = async () => {
+    if (!selectedAnswer || answerSubmitted) return;
+
+    setAnswerSubmitted(true);
     const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = answer === currentQuestion.correct_answer;
-    const responseTime = Math.floor((new Date().getTime() - questionStartTime.getTime()) / 1000);
-
-    // Calculate score using basic logic since RPC might not be available
-    let pointsAwarded = 0;
+    const isCorrect = selectedAnswer === currentQuestion.correct_answer;
+    
     if (isCorrect) {
-      const basePoints = currentQuestion.difficulty === 'easy' ? 100 : 
-                        currentQuestion.difficulty === 'medium' ? 200 : 300;
-      const speedMultiplier = responseTime <= 10 ? 1.5 : 
-                             responseTime <= 20 ? 1.2 : 1.0;
-      pointsAwarded = Math.round(basePoints * speedMultiplier);
+      setCorrectAnswers(correctAnswers + 1);
+      
+      // Calculate points based on difficulty and speed
+      let points = getPointsForDifficulty(currentQuestion.difficulty);
+      const speedBonus = getSpeedBonus(timeLeft);
+      points = Math.floor(points * speedBonus);
+      
+      setScore(score + points);
+
+      toast({
+        title: "Correct! 🎉",
+        description: `+${points} CCTR (${speedBonus}x speed bonus)`,
+      });
+    } else {
+      toast({
+        title: "Incorrect ❌",
+        description: `The correct answer was ${getOptionText(currentQuestion, currentQuestion.correct_answer)}`,
+        variant: "destructive",
+      });
     }
 
-    if (isCorrect) {
-      setCorrectAnswers(prev => prev + 1);
-      setScore(prev => prev + pointsAwarded);
-    }
-
-    // Save the answer using raw query
-    if (sessionId) {
-      try {
-        await supabase
-          .from('trivia_answers' as any)
-          .insert([{
-            session_id: sessionId,
-            question_id: currentQuestion.id,
-            user_answer: answer,
-            is_correct: isCorrect,
-            response_time: responseTime,
-            points_awarded: pointsAwarded
-          }]);
-      } catch (error) {
-        console.error('Error saving answer:', error);
-      }
-    }
-
-    toast({
-      title: isCorrect ? "Correct! 🎉" : "Wrong Answer 😔",
-      description: isCorrect 
-        ? `+${pointsAwarded} points! ${responseTime <= 10 ? '⚡ Speed bonus!' : ''}`
-        : `The correct answer was ${currentQuestion.correct_answer}`,
-      variant: isCorrect ? "default" : "destructive",
-    });
-
+    setShowResult(true);
+    
+    // Show result for 2 seconds then move to next question
     setTimeout(() => {
-      nextQuestion();
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setSelectedAnswer('');
+        setTimeLeft(30);
+        setShowResult(false);
+        setAnswerSubmitted(false);
+      } else {
+        endGame();
+      }
     }, 2000);
   };
 
-  const handleTimeUp = () => {
-    if (showResult) return;
+  const handleTimeOut = () => {
+    if (answerSubmitted) return;
     
-    setShowResult(true);
+    setAnswerSubmitted(true);
     toast({
       title: "Time's Up! ⏰",
-      description: "You ran out of time for this question",
+      description: "Moving to next question...",
       variant: "destructive",
     });
 
     setTimeout(() => {
-      nextQuestion();
-    }, 2000);
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setSelectedAnswer('');
+        setTimeLeft(30);
+        setAnswerSubmitted(false);
+      } else {
+        endGame();
+      }
+    }, 1500);
   };
 
-  const nextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      setSelectedAnswer(null);
-      setShowResult(false);
-      setTimeLeft(30);
-      setQuestionStartTime(new Date());
-    } else {
-      finishGame();
+  const getPointsForDifficulty = (difficulty: string): number => {
+    switch (difficulty) {
+      case 'easy': return 100;
+      case 'medium': return 200;
+      case 'hard': return 300;
+      default: return 100;
     }
   };
 
-  const finishGame = async () => {
+  const getSpeedBonus = (timeRemaining: number): number => {
+    if (timeRemaining >= 20) return 1.5; // 150% for very fast
+    if (timeRemaining >= 10) return 1.2; // 120% for fast
+    return 1.0; // Base points for slow
+  };
+
+  const getOptionText = (question: TriviaQuestion, optionLetter: string): string => {
+    switch (optionLetter) {
+      case 'A': return question.option_a;
+      case 'B': return question.option_b;
+      case 'C': return question.option_c;
+      case 'D': return question.option_d;
+      default: return '';
+    }
+  };
+
+  const endGame = async () => {
     setGameStatus('finished');
-
-    if (sessionId && user) {
+    
+    if (user) {
       try {
-        // Update session with final results using raw query
+        // Award CCTR tokens (this will be implemented when the database is ready)
         await supabase
-          .from('trivia_sessions' as any)
-          .update({
-            total_score: score,
-            correct_answers: correctAnswers,
-            status: 'completed',
-            completed_at: new Date().toISOString()
-          })
-          .eq('id', sessionId);
-
-        // Award tokens for participation
-        const tokenReward = Math.floor(score / 10); // 1 token per 10 points
-        if (tokenReward > 0) {
-          await supabase
-            .from('token_transactions')
-            .insert([{
-              user_id: user.id,
-              amount: tokenReward,
-              transaction_type: 'trivia_reward',
-              description: `Trivia game reward: ${tokenReward} CCTR for ${correctAnswers}/${questions.length} correct answers`
-            }]);
-
-          toast({
-            title: "Rewards Earned! 💰",
-            description: `You earned ${tokenReward} CCTR tokens!`,
+          .from('token_transactions')
+          .insert({
+            user_id: user.id,
+            amount: score,
+            transaction_type: 'trivia_reward',
+            description: `Trivia game: ${correctAnswers}/${questions.length} correct, ${score} points`
           });
-        }
+
+        toast({
+          title: "Game Complete! 🎉",
+          description: `You earned ${score} CCTR tokens!`,
+        });
       } catch (error) {
-        console.error('Error finishing game:', error);
+        console.error('Error saving game results:', error);
       }
     }
 
     setTimeout(() => {
-      onGameEnd();
+      onGameComplete();
     }, 3000);
   };
 
   if (gameStatus === 'loading') {
     return (
       <Card className="arcade-frame">
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <div className="text-2xl mb-4">🎮</div>
-            <h3 className="text-xl font-bold text-neon-cyan">Loading Game...</h3>
-          </div>
+        <CardContent className="text-center py-12">
+          <div className="text-4xl mb-4">🔄</div>
+          <h3 className="text-xl font-bold text-neon-cyan mb-2">Loading Questions...</h3>
+          <p className="text-muted-foreground">Preparing your trivia challenge</p>
         </CardContent>
       </Card>
     );
   }
 
   if (gameStatus === 'finished') {
+    const accuracy = Math.round((correctAnswers / questions.length) * 100);
+    
     return (
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-cyan text-center">
-            🎉 GAME COMPLETE!
+            🏆 GAME COMPLETE!
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-center space-y-4">
-            <div className="text-6xl">🏆</div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-neon-green">Final Score: {score}</div>
-              <div className="text-lg text-neon-purple">
-                Correct Answers: {correctAnswers}/{questions.length}
-              </div>
-              <div className="text-lg text-neon-cyan">
-                Accuracy: {Math.round((correctAnswers / questions.length) * 100)}%
-              </div>
+        <CardContent className="text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="p-4 bg-gray-800/30 rounded">
+              <div className="text-3xl font-bold text-neon-green">{score}</div>
+              <p className="text-sm text-muted-foreground">Total Score</p>
             </div>
-            <Button onClick={onBackToMenu} className="cyber-button">
-              🎮 PLAY AGAIN
-            </Button>
+            <div className="p-4 bg-gray-800/30 rounded">
+              <div className="text-3xl font-bold text-neon-purple">{correctAnswers}/{questions.length}</div>
+              <p className="text-sm text-muted-foreground">Correct Answers</p>
+            </div>
+            <div className="p-4 bg-gray-800/30 rounded">
+              <div className="text-3xl font-bold text-neon-pink">{accuracy}%</div>
+              <p className="text-sm text-muted-foreground">Accuracy</p>
+            </div>
           </div>
+          
+          {user && (
+            <div className="mb-6">
+              <Badge className="bg-neon-green text-black text-lg px-4 py-2">
+                +{score} CCTR Earned!
+              </Badge>
+            </div>
+          )}
+          
+          <Button onClick={onBackToMenu} className="cyber-button">
+            Back to Menu
+          </Button>
         </CardContent>
       </Card>
     );
@@ -274,118 +295,103 @@ export const TriviaGameplay = ({ category, onGameEnd, onBackToMenu }: TriviaGame
   const currentQuestion = questions[currentQuestionIndex];
   if (!currentQuestion) return null;
 
-  const options = [
-    { key: 'A', text: currentQuestion.option_a },
-    { key: 'B', text: currentQuestion.option_b },
-    { key: 'C', text: currentQuestion.option_c },
-    { key: 'D', text: currentQuestion.option_d }
-  ];
-
-  const getOptionClass = (optionKey: string) => {
-    if (!showResult) return 'holographic hover:bg-gray-700/50 cursor-pointer';
-    if (selectedAnswer === optionKey) {
-      return selectedAnswer === currentQuestion.correct_answer 
-        ? 'bg-neon-green/20 border-neon-green' 
-        : 'bg-red-500/20 border-red-500';
-    }
-    if (optionKey === currentQuestion.correct_answer) {
-      return 'bg-neon-green/20 border-neon-green';
-    }
-    return 'holographic opacity-50';
-  };
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <Card className="arcade-frame">
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle className="font-display text-xl text-neon-cyan">
-              🧠 {category.toUpperCase()} TRIVIA
+            <CardTitle className="font-display text-2xl text-neon-cyan">
+              Question {currentQuestionIndex + 1} of {questions.length}
             </CardTitle>
             <Button onClick={onBackToMenu} variant="outline" size="sm">
-              ← Back to Menu
+              ← Exit Game
             </Button>
           </div>
         </CardHeader>
       </Card>
 
-      {/* Game Stats */}
-      <Card className="holographic">
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-neon-purple">{currentQuestionIndex + 1}</div>
-              <div className="text-xs text-muted-foreground">Question</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-neon-green">{score}</div>
-              <div className="text-xs text-muted-foreground">Score</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-neon-cyan">{correctAnswers}</div>
-              <div className="text-xs text-muted-foreground">Correct</div>
-            </div>
-            <div>
-              <div className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-neon-pink'}`}>
-                {timeLeft}
-              </div>
-              <div className="text-xs text-muted-foreground">Seconds</div>
-            </div>
+      {/* Timer and Progress */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="holographic p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted-foreground">Time Remaining</span>
+            <Badge variant={timeLeft <= 10 ? "destructive" : "default"}>
+              {timeLeft}s
+            </Badge>
           </div>
           <Progress 
             value={(timeLeft / 30) * 100} 
-            className="mt-4 h-2" 
+            className="h-3"
           />
-        </CardContent>
-      </Card>
+        </Card>
+        
+        <Card className="holographic p-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Score</span>
+            <span className="text-xl font-bold text-neon-green">{score} CCTR</span>
+          </div>
+        </Card>
+      </div>
 
       {/* Question */}
       <Card className="arcade-frame">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3 mb-4">
             <Badge className={`${
-              currentQuestion.difficulty === 'easy' ? 'bg-neon-green' :
-              currentQuestion.difficulty === 'medium' ? 'bg-neon-cyan' : 'bg-neon-pink'
-            } text-black`}>
+              currentQuestion.difficulty === 'easy' ? 'bg-green-500' :
+              currentQuestion.difficulty === 'medium' ? 'bg-yellow-500' :
+              'bg-red-500'
+            } text-white`}>
               {currentQuestion.difficulty.toUpperCase()}
             </Badge>
-            <Badge variant="outline" className="border-neon-purple text-neon-purple">
-              {currentQuestionIndex + 1}/{questions.length}
-            </Badge>
+            <Badge variant="outline">{category.toUpperCase()}</Badge>
           </div>
-          <CardTitle className="font-display text-xl text-neon-cyan leading-relaxed">
+          
+          <CardTitle className="font-display text-xl md:text-2xl text-center">
             {currentQuestion.question}
           </CardTitle>
         </CardHeader>
+        
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {options.map((option) => (
-              <Card
-                key={option.key}
-                className={`p-4 transition-all duration-300 ${getOptionClass(option.key)}`}
-                onClick={() => !showResult && handleAnswerSelect(option.key)}
+            {[
+              { letter: 'A', text: currentQuestion.option_a },
+              { letter: 'B', text: currentQuestion.option_b },
+              { letter: 'C', text: currentQuestion.option_c },
+              { letter: 'D', text: currentQuestion.option_d }
+            ].map((option) => (
+              <Button
+                key={option.letter}
+                onClick={() => handleAnswerSelect(option.letter)}
+                disabled={answerSubmitted}
+                variant={selectedAnswer === option.letter ? "default" : "outline"}
+                className={`h-auto p-4 text-left justify-start ${
+                  showResult && answerSubmitted ? (
+                    option.letter === currentQuestion.correct_answer ? 
+                    'bg-green-500/20 border-green-500' :
+                    option.letter === selectedAnswer ?
+                    'bg-red-500/20 border-red-500' :
+                    'opacity-50'
+                  ) : selectedAnswer === option.letter ?
+                  'cyber-button' : 
+                  'hover:bg-gray-800/50'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="border-neon-cyan text-neon-cyan w-8 h-8 flex items-center justify-center">
-                    {option.key}
-                  </Badge>
-                  <span className="text-sm font-medium">{option.text}</span>
-                </div>
-              </Card>
+                <span className="font-bold mr-3">{option.letter}.</span>
+                <span>{option.text}</span>
+              </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Speed Bonus Info */}
-      <Card className="holographic">
-        <CardContent className="pt-4">
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground">
-              ⚡ Answer within 10 seconds for <span className="text-neon-green font-bold">1.5x points</span> |
-              📊 Base Points: Easy (100) • Medium (200) • Hard (300)
-            </div>
+          
+          <div className="flex justify-center mt-6">
+            <Button
+              onClick={handleSubmitAnswer}
+              disabled={!selectedAnswer || answerSubmitted}
+              className="cyber-button px-8"
+            >
+              {answerSubmitted ? 'Submitted' : 'Submit Answer'}
+            </Button>
           </div>
         </CardContent>
       </Card>
