@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { PacManGame } from '../games/PacManGame';
 import { TetrisGame } from '../games/TetrisGame';
 import { GalagaGame } from '../games/GalagaGame';
-import { SolajumpGame } from '../games/SolajumpGame';
 
 interface Game {
   id: string;
@@ -62,8 +62,6 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ game, onBack }) => {
     switch (game.id) {
       case 'pac-man-classic':
         return <PacManGame onGameEnd={handleGameEnd} isActive={isPlaying} />;
-      case 'solajump-classic':
-        return <SolajumpGame onGameEnd={handleGameEnd} isActive={isPlaying} />;
       case 'tetris-cyber':
         return <TetrisGame onGameEnd={handleGameEnd} isActive={isPlaying} />;
       case 'galaga-deluxe':

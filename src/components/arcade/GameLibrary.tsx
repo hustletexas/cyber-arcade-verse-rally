@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,17 +39,6 @@ export const GameLibrary: React.FC<GameLibraryProps> = ({ onGameSelect }) => {
       thumbnail: '🟡',
       highScore: 999999,
       rewardMultiplier: 1.5,
-      isLocked: false
-    },
-    {
-      id: 'solajump-classic',
-      title: 'SolaJump Classic',
-      category: 'modern',
-      difficulty: 'medium',
-      description: 'Jump to new heights and earn crypto rewards!',
-      thumbnail: '🚀',
-      highScore: 15000,
-      rewardMultiplier: 2.2,
       isLocked: false
     },
     {
