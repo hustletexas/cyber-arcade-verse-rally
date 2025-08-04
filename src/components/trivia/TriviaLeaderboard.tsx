@@ -1,24 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-
-interface LeaderboardEntry {
-  user_id: string;
-  username: string;
-  wallet_address?: string;
-  category: string;
-  total_score: number;
-  correct_answers: number;
-  total_questions: number;
-  accuracy_percentage: number;
-  speed_bonus: number;
-  completed_at: string;
-  rank: number;
-}
+import { TriviaLeaderboardEntry } from '@/types/trivia';
 
 interface TriviaLeaderboardProps {
   onBackToMenu: () => void;
@@ -27,18 +13,20 @@ interface TriviaLeaderboardProps {
 export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState('all');
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardData, setLeaderboardData] = useState<TriviaLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'all-time'>('weekly');
 
   const categories = [
     { id: 'all', name: 'All Categories', emoji: '🌟' },
-    { id: 'general', name: 'General', emoji: '🧠' },
-    { id: 'science', name: 'Science', emoji: '🔬' },
-    { id: 'history', name: 'History', emoji: '🏛️' },
-    { id: 'sports', name: 'Sports', emoji: '⚽' },
-    { id: 'entertainment', name: 'Entertainment', emoji: '🎬' },
-    { id: 'geography', name: 'Geography', emoji: '🌍' }
+    { id: 'nintendo64', name: 'N64', emoji: '🎮' },
+    { id: 'playstation1', name: 'PS1', emoji: '🕹️' },
+    { id: 'playstation2', name: 'PS2', emoji: '🎯' },
+    { id: 'xbox', name: 'Xbox', emoji: '🎪' },
+    { id: 'gamecube', name: 'GameCube', emoji: '🎲' },
+    { id: 'retro', name: 'Retro', emoji: '👾' },
+    { id: 'arcade', name: 'Arcade', emoji: '🕹️' },
+    { id: 'pc-gaming', name: 'PC Gaming', emoji: '💻' }
   ];
 
   useEffect(() => {
@@ -49,12 +37,12 @@ export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
     setLoading(true);
     try {
       // Mock leaderboard data since database doesn't exist yet
-      const mockData: LeaderboardEntry[] = [
+      const mockData: TriviaLeaderboardEntry[] = [
         {
           user_id: '1',
-          username: 'CyberChampion',
+          username: 'N64Master',
           wallet_address: '1A2B...9Z8Y',
-          category: 'general',
+          category: 'nintendo64',
           total_score: 2450,
           correct_answers: 95,
           total_questions: 100,
@@ -65,9 +53,9 @@ export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
         },
         {
           user_id: '2',
-          username: 'QuizMaster',
+          username: 'PlayStationPro',
           wallet_address: '2B3C...8X7W',
-          category: 'science',
+          category: 'playstation1',
           total_score: 2200,
           correct_answers: 88,
           total_questions: 100,
@@ -78,9 +66,9 @@ export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
         },
         {
           user_id: '3',
-          username: 'BrainPower',
+          username: 'RetroGamer',
           wallet_address: '3C4D...7V6U',
-          category: 'history',
+          category: 'retro',
           total_score: 2100,
           correct_answers: 84,
           total_questions: 100,
@@ -91,11 +79,12 @@ export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
         }
       ];
 
-      // Add more mock entries
+      // Add more mock entries with gaming-related usernames
       for (let i = 4; i <= 20; i++) {
+        const gamingNames = ['ArcadeKing', 'ConsoleLord', 'PixelMaster', 'GameChamp', 'RetroHero', 'ControllerPro'];
         mockData.push({
           user_id: i.toString(),
-          username: `Player${i}`,
+          username: `${gamingNames[Math.floor(Math.random() * gamingNames.length)]}${i}`,
           wallet_address: `${i}X${i}Y...${i}Z${i}W`,
           category: categories[Math.floor(Math.random() * (categories.length - 1)) + 1].id,
           total_score: 2000 - (i * 50) + Math.floor(Math.random() * 100),
@@ -136,11 +125,11 @@ export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
   };
 
   const getAchievementBadge = (accuracy: number, totalScore: number) => {
-    if (accuracy >= 95 && totalScore >= 2000) return { text: 'Genius', color: 'bg-purple-500' };
-    if (accuracy >= 90 && totalScore >= 1500) return { text: 'Expert', color: 'bg-blue-500' };
-    if (accuracy >= 80 && totalScore >= 1000) return { text: 'Scholar', color: 'bg-green-500' };
-    if (accuracy >= 70) return { text: 'Student', color: 'bg-yellow-500' };
-    return { text: 'Rookie', color: 'bg-gray-500' };
+    if (accuracy >= 95 && totalScore >= 2000) return { text: 'Gaming Legend', color: 'bg-purple-500' };
+    if (accuracy >= 90 && totalScore >= 1500) return { text: 'Console Master', color: 'bg-blue-500' };
+    if (accuracy >= 80 && totalScore >= 1000) return { text: 'Gaming Expert', color: 'bg-green-500' };
+    if (accuracy >= 70) return { text: 'Casual Gamer', color: 'bg-yellow-500' };
+    return { text: 'Newbie', color: 'bg-gray-500' };
   };
 
   const filteredData = activeCategory === 'all' 
@@ -154,14 +143,14 @@ export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="font-display text-2xl text-neon-cyan">
-              🏆 TRIVIA LEADERBOARD
+              🏆 GAMING TRIVIA LEADERBOARD
             </CardTitle>
             <Button onClick={onBackToMenu} variant="outline">
               ← Back to Menu
             </Button>
           </div>
           <p className="text-muted-foreground">
-            Top performers across all trivia categories
+            Top gaming trivia performers across all console categories
           </p>
         </CardHeader>
       </Card>
@@ -271,7 +260,7 @@ export const TriviaLeaderboard = ({ onBackToMenu }: TriviaLeaderboardProps) => {
         <Card className="arcade-frame border-neon-purple/30">
           <CardContent className="p-4">
             <div className="text-center">
-              <h3 className="font-bold text-neon-purple mb-2">Your Best Ranking</h3>
+              <h3 className="font-bold text-neon-purple mb-2">Your Best Gaming Ranking</h3>
               <div className="flex justify-center items-center space-x-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-neon-cyan">#12</div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { TriviaRewards } from './trivia/TriviaRewards';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { TriviaUserStats } from '@/types/trivia';
 
 type ViewState = 'menu' | 'game' | 'leaderboard' | 'rewards';
 
@@ -17,7 +17,7 @@ export const TriviaGame = () => {
   const { toast } = useToast();
   const [currentView, setCurrentView] = useState<ViewState>('menu');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [userStats, setUserStats] = useState({
+  const [userStats, setUserStats] = useState<TriviaUserStats>({
     totalGames: 0,
     totalScore: 0,
     bestScore: 0,
@@ -27,12 +27,15 @@ export const TriviaGame = () => {
   const [loading, setLoading] = useState(true);
 
   const categories = [
-    { id: 'general', name: 'General Knowledge', emoji: '🧠', description: 'Mixed topics and facts' },
-    { id: 'science', name: 'Science & Tech', emoji: '🔬', description: 'Physics, chemistry, technology' },
-    { id: 'history', name: 'History', emoji: '🏛️', description: 'World history and events' },
-    { id: 'sports', name: 'Sports', emoji: '⚽', description: 'Sports and athletics' },
-    { id: 'entertainment', name: 'Entertainment', emoji: '🎬', description: 'Movies, music, celebrities' },
-    { id: 'geography', name: 'Geography', emoji: '🌍', description: 'Countries, capitals, landmarks' }
+    { id: 'nintendo64', name: 'Nintendo 64', emoji: '🎮', description: 'Mario, Zelda, GoldenEye classics' },
+    { id: 'playstation1', name: 'PlayStation 1', emoji: '🕹️', description: 'Final Fantasy, Crash Bandicoot' },
+    { id: 'playstation2', name: 'PlayStation 2', emoji: '🎯', description: 'GTA, God of War, Shadow of Colossus' },
+    { id: 'xbox', name: 'Original Xbox', emoji: '🎪', description: 'Halo, Fable, Knights of the Old Republic' },
+    { id: 'gamecube', name: 'GameCube', emoji: '🎲', description: 'Metroid Prime, Animal Crossing' },
+    { id: 'retro', name: 'Retro Gaming', emoji: '👾', description: 'NES, SNES, Genesis classics' },
+    { id: 'arcade', name: 'Arcade Classics', emoji: '🕹️', description: 'Street Fighter, Pac-Man, Galaga' },
+    { id: 'pc-gaming', name: 'PC Gaming', emoji: '💻', description: 'Half-Life, Counter-Strike, WoW' },
+    { id: 'nintendo-handheld', name: 'Nintendo Handhelds', emoji: '📱', description: 'Game Boy, DS, Pokemon series' }
   ];
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export const TriviaGame = () => {
     try {
       // For now, we'll use mock data since the tables don't exist yet
       // This will be replaced once the database is properly set up
-      const mockStats = {
+      const mockStats: TriviaUserStats = {
         totalGames: 5,
         totalScore: 2450,
         bestScore: 650,
@@ -124,10 +127,10 @@ export const TriviaGame = () => {
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-3xl text-neon-cyan text-center">
-            🧠 CYBER TRIVIA CHALLENGE
+            🎮 GAMING TRIVIA CHALLENGE
           </CardTitle>
           <p className="text-center text-muted-foreground">
-            Test your knowledge and earn CCTR tokens • Real-time multiplayer • Exclusive NFT rewards
+            Test your gaming knowledge and earn CCTR tokens • Console classics • Gaming legends
           </p>
         </CardHeader>
       </Card>
@@ -187,7 +190,7 @@ export const TriviaGame = () => {
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-purple">
-            🎯 SELECT CATEGORY
+            🎯 SELECT GAMING CATEGORY
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -229,15 +232,15 @@ export const TriviaGame = () => {
         <Card className="arcade-frame">
           <CardHeader>
             <CardTitle className="font-display text-lg text-neon-purple">
-              🏆 Compete & Win
+              🏆 Gaming Legends
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Real-time leaderboards</li>
+              <li>• Console mastery badges</li>
               <li>• Weekly tournaments</li>
-              <li>• Achievement badges</li>
-              <li>• Exclusive NFT rewards</li>
+              <li>• Retro gaming achievements</li>
+              <li>• Exclusive gaming NFTs</li>
             </ul>
           </CardContent>
         </Card>
@@ -250,9 +253,9 @@ export const TriviaGame = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Timed challenges</li>
+              <li>• Console-specific challenges</li>
               <li>• Multiple difficulty levels</li>
-              <li>• Category specialization</li>
+              <li>• Gaming era specialization</li>
               <li>• Progress tracking</li>
             </ul>
           </CardContent>
@@ -265,7 +268,7 @@ export const TriviaGame = () => {
             <div className="text-4xl mb-4">🔐</div>
             <h3 className="text-xl font-bold text-neon-pink mb-2">Authentication Required</h3>
             <p className="text-muted-foreground mb-4">
-              Log in to track your progress, earn CCTR tokens, and compete on leaderboards
+              Log in to track your progress, earn CCTR tokens, and compete on gaming leaderboards
             </p>
             <Button className="cyber-button">
               Login to Play

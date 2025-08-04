@@ -40,15 +40,27 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('trivia_questions' as any)
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setQuestions((data || []) as TriviaQuestion[]);
+      // Since the database tables don't exist yet, we'll use mock data
+      const mockQuestions: TriviaQuestion[] = [
+        {
+          id: '1',
+          category: 'nintendo64',
+          question: 'What was the first 3D Mario game on Nintendo 64?',
+          option_a: 'Super Mario 64',
+          option_b: 'Mario Kart 64',
+          option_c: 'Super Mario World',
+          option_d: 'Mario Party',
+          correct_answer: 'A',
+          difficulty: 'easy',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      setQuestions(mockQuestions);
     } catch (error) {
       console.error('Error fetching questions:', error);
+      setQuestions([]);
     } finally {
       setLoading(false);
     }
@@ -58,15 +70,19 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
     if (!isAdmin) return;
 
     try {
-      const { error } = await supabase
-        .from('trivia_questions' as any)
-        .insert([newQuestion]);
+      // Mock adding question - in real implementation this would use Supabase
+      const mockQuestion: TriviaQuestion = {
+        id: Date.now().toString(),
+        ...newQuestion,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-      if (error) throw error;
+      setQuestions(prev => [mockQuestion, ...prev]);
 
       toast({
         title: "Question Added! ✅",
-        description: "New trivia question has been added successfully",
+        description: "New gaming trivia question has been added successfully",
       });
 
       // Reset form
@@ -80,8 +96,6 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
         correct_answer: 'A',
         difficulty: 'medium'
       });
-
-      fetchQuestions();
     } catch (error) {
       console.error('Error adding question:', error);
       toast({
@@ -96,19 +110,12 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
     if (!isAdmin) return;
 
     try {
-      const { error } = await supabase
-        .from('trivia_questions' as any)
-        .delete()
-        .eq('id', questionId);
-
-      if (error) throw error;
+      setQuestions(prev => prev.filter(q => q.id !== questionId));
 
       toast({
         title: "Question Deleted",
         description: "Question has been removed from the database",
       });
-
-      fetchQuestions();
     } catch (error) {
       console.error('Error deleting question:', error);
       toast({
@@ -139,10 +146,10 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-purple">
-            🔧 TRIVIA ADMIN PANEL
+            🔧 GAMING TRIVIA ADMIN PANEL
           </CardTitle>
           <p className="text-muted-foreground">
-            Manage trivia questions and game content
+            Manage gaming trivia questions and console content
           </p>
         </CardHeader>
       </Card>
@@ -151,20 +158,25 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-xl text-neon-cyan">
-            ➕ ADD NEW QUESTION
+            ➕ ADD NEW GAMING QUESTION
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select value={newQuestion.category} onValueChange={(value) => setNewQuestion({...newQuestion, category: value})}>
               <SelectTrigger>
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder="Select gaming category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Game History">Game History</SelectItem>
-                <SelectItem value="Characters">Characters</SelectItem>
-                <SelectItem value="Developers">Developers</SelectItem>
-                <SelectItem value="Technology">Technology</SelectItem>
+                <SelectItem value="nintendo64">Nintendo 64</SelectItem>
+                <SelectItem value="playstation1">PlayStation 1</SelectItem>
+                <SelectItem value="playstation2">PlayStation 2</SelectItem>
+                <SelectItem value="xbox">Original Xbox</SelectItem>
+                <SelectItem value="gamecube">GameCube</SelectItem>
+                <SelectItem value="retro">Retro Gaming</SelectItem>
+                <SelectItem value="arcade">Arcade Classics</SelectItem>
+                <SelectItem value="pc-gaming">PC Gaming</SelectItem>
+                <SelectItem value="nintendo-handheld">Nintendo Handhelds</SelectItem>
               </SelectContent>
             </Select>
 
@@ -181,7 +193,7 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
           </div>
 
           <Textarea
-            placeholder="Enter the question..."
+            placeholder="Enter the gaming question..."
             value={newQuestion.question}
             onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
             rows={3}
@@ -227,7 +239,7 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
             className="cyber-button w-full"
             disabled={!newQuestion.category || !newQuestion.question || !newQuestion.option_a}
           >
-            ➕ ADD QUESTION
+            ➕ ADD GAMING QUESTION
           </Button>
         </CardContent>
       </Card>
@@ -236,7 +248,7 @@ export const TriviaAdmin = ({ isAdmin }: TriviaAdminProps) => {
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-xl text-neon-purple">
-            📋 QUESTION DATABASE ({questions.length} questions)
+            📋 GAMING QUESTION DATABASE ({questions.length} questions)
           </CardTitle>
         </CardHeader>
         <CardContent>
