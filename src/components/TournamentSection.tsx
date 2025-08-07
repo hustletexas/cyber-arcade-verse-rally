@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 export const TournamentSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeView, setActiveView] = useState<'crypto' | 'classic' | 'fighting' | 'shooter' | 'trivia' | 'admin'>('crypto');
+  const [activeView, setActiveView] = useState<'crypto' | 'classic' | 'fighting' | 'shooter' | 'admin'>('crypto');
   const [activeGame, setActiveGame] = useState<{
     tournamentId: string;
     gameType: 'tetris' | 'pacman' | 'galaga';
@@ -204,7 +204,7 @@ export const TournamentSection = () => {
       realGame: true,
       votes: 1234,
       gameIcon: '👊',
-      contractAddress: 'SMASHBROSxGdHzrJNcBjmrfVEjPgGFnQzUgMQ',
+      contractAddress: 'SMASHBROSxGdHzrJNcBjmrfVEjPgGFnQzUg',
       nftRequired: true
     },
     {
@@ -604,12 +604,6 @@ export const TournamentSection = () => {
             >
               🔫 Shooter Games
             </Button>
-            <Button
-              onClick={() => setActiveView('trivia')}
-              className={`cyber-button ${activeView === 'trivia' ? 'bg-neon-cyan text-black' : ''}`}
-            >
-              🧠 Trivia Challenge
-            </Button>
             {isAdmin && (
               <Button
                 onClick={() => setActiveView('admin')}
@@ -622,11 +616,6 @@ export const TournamentSection = () => {
         </CardContent>
       </Card>
 
-      {/* Trivia Game Tab */}
-      {activeView === 'trivia' && (
-        <TriviaGame />
-      )}
-
       {/* Admin Panel */}
       {activeView === 'admin' && isAdmin && (
         <div className="space-y-8">
@@ -635,7 +624,7 @@ export const TournamentSection = () => {
         </div>
       )}
 
-      {activeView !== 'trivia' && activeView !== 'admin' && (
+      {activeView !== 'admin' && (
         <>
           <Card className="arcade-frame">
             <CardHeader>
