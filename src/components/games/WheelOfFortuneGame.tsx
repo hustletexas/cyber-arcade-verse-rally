@@ -1,387 +1,480 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { useSolanaScore } from '@/hooks/useSolanaScore';
-import { getRandomPhrase, GamePhrase } from '@/data/gamingPhrases';
-import { Trophy, Star, Zap, RotateCcw } from 'lucide-react';
+import { useWheelContract } from '@/hooks/useWheelContract';
+import { getRandomPhrase } from '@/data/gamingPhrases';
+import { Zap, Star, Trophy, Coins, Gift, Gem, Skull } from 'lucide-react';
+
+interface WheelPrize {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  color: string;
+  cctrValue: number;
+  type: 'prize' | 'bankrupt';
+}
+
+const wheelPrizes: WheelPrize[] = [
+  { id: '1', name: '500 CCTR', icon: <Coins className="w-6 h-6" />, color: '#00ff41', cctrValue: 500, type: 'prize' },
+  { id: '2', name: '1000 CCTR', icon: <Zap className="w-6 h-6" />, color: '#ff0080', cctrValue: 1000, type: 'prize' },
+  { id: '3', name: 'LOSE EVERYTHING', icon: <Skull className="w-6 h-6" />, color: '#ff0000', cctrValue: 0, type: 'bankrupt' },
+  { id: '4', name: '750 CCTR', icon: <Star className="w-6 h-6" />, color: '#0080ff', cctrValue: 750, type: 'prize' },
+  { id: '5', name: '2000 CCTR', icon: <Trophy className="w-6 h-6" />, color: '#ffaa00', cctrValue: 2000, type: 'prize' },
+  { id: '6', name: '250 CCTR', icon: <Gift className="w-6 h-6" />, color: '#ff4000', cctrValue: 250, type: 'prize' },
+  { id: '7', name: 'LOSE EVERYTHING', icon: <Skull className="w-6 h-6" />, color: '#ff0000', cctrValue: 0, type: 'bankrupt' },
+  { id: '8', name: '1500 CCTR', icon: <Gem className="w-6 h-6" />, color: '#8000ff', cctrValue: 1500, type: 'prize' }
+];
 
 const WheelOfFortuneGame: React.FC = () => {
   const { toast } = useToast();
-  const { submitScore, isSubmitting } = useSolanaScore();
+  const { spinWheel: processReward, isProcessing } = useWheelContract();
   
-  const [currentPhrase, setCurrentPhrase] = useState<GamePhrase | null>(null);
-  const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
-  const [wrongGuesses, setWrongGuesses] = useState<string[]>([]);
-  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'menu'>('menu');
-  const [score, setScore] = useState(0);
-  const [letterInput, setLetterInput] = useState('');
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
-  const [gameStarted, setGameStarted] = useState(false);
+  const [gamePhase, setGamePhase] = useState<'menu' | 'playing' | 'spinning' | 'guessing' | 'complete'>('menu');
+  const [currentPhrase, setCurrentPhrase] = useState(getRandomPhrase());
+  const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
+  const [currentGuess, setCurrentGuess] = useState('');
+  const [bankTotal, setBankTotal] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [currentRotation, setCurrentRotation] = useState(0);
+  const [highlightedPrize, setHighlightedPrize] = useState<string | null>(null);
+  const [wrongGuesses, setWrongGuesses] = useState(0);
+  const [roundEarnings, setRoundEarnings] = useState<WheelPrize[]>([]);
+  
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const segmentAngle = 360 / wheelPrizes.length;
+  const maxWrongGuesses = 5;
 
-  const maxWrongGuesses = 6;
-
-  // Timer effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (gameStarted && gameStatus === 'playing' && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setGameStatus('lost');
-            toast({
-              title: "Time's Up! ⏰",
-              description: "You ran out of time!",
-              variant: "destructive",
-            });
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(interval);
-  }, [gameStarted, gameStatus, timeLeft, toast]);
-
-  const startNewGame = () => {
-    const phrase = getRandomPhrase();
-    setCurrentPhrase(phrase);
-    setGuessedLetters(new Set());
-    setWrongGuesses([]);
-    setGameStatus('playing');
-    setScore(0);
-    setLetterInput('');
-    setTimeLeft(300);
-    setGameStarted(true);
-
-    toast({
-      title: "New Game Started! 🎮",
-      description: `Category: ${phrase.category}`,
-    });
-  };
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const displayPhrase = (): string => {
-    if (!currentPhrase) return '';
-    
+  const getDisplayPhrase = () => {
     return currentPhrase.phrase
       .split('')
       .map(char => {
         if (char === ' ') return ' ';
-        if (!/[A-Z]/.test(char)) return char; // Show non-letters (numbers, punctuation)
-        return guessedLetters.has(char) ? char : '_';
+        if (guessedLetters.includes(char.toUpperCase())) return char;
+        if (/[^A-Z]/.test(char.toUpperCase())) return char;
+        return '_';
       })
       .join(' ');
   };
 
-  const checkWin = (): boolean => {
-    if (!currentPhrase) return false;
+  const isPhraseComplete = () => {
+    const letters = currentPhrase.phrase.replace(/[^A-Z]/gi, '').toUpperCase();
+    return letters.split('').every(letter => guessedLetters.includes(letter));
+  };
+
+  const spinWheel = async () => {
+    if (isSpinning) return;
+
+    setIsSpinning(true);
+    setHighlightedPrize(null);
     
-    const lettersInPhrase = currentPhrase.phrase
-      .split('')
-      .filter(char => /[A-Z]/.test(char));
+    // Random spin with multiple rotations
+    const spins = 5 + Math.random() * 3;
+    const finalAngle = Math.random() * 360;
+    const totalRotation = spins * 360 + finalAngle;
+    const newRotation = currentRotation + totalRotation;
     
-    return lettersInPhrase.every(letter => guessedLetters.has(letter));
+    setCurrentRotation(newRotation);
+
+    // Calculate which prize we land on
+    const normalizedAngle = (360 - (newRotation % 360)) % 360;
+    const prizeIndex = Math.floor(normalizedAngle / segmentAngle);
+    const landedPrize = wheelPrizes[prizeIndex];
+
+    setTimeout(() => {
+      setHighlightedPrize(landedPrize.id);
+      
+      if (landedPrize.type === 'bankrupt') {
+        setBankTotal(0);
+        setRoundEarnings([]);
+        toast({
+          title: "💀 BANKRUPT!",
+          description: "You lost everything! Spin again to rebuild your winnings.",
+          variant: "destructive",
+        });
+      } else {
+        setBankTotal(prev => prev + landedPrize.cctrValue);
+        setRoundEarnings(prev => [...prev, landedPrize]);
+        toast({
+          title: `🎊 You landed on ${landedPrize.name}!`,
+          description: `Total banked: ${bankTotal + landedPrize.cctrValue} CCTR`,
+        });
+      }
+      
+      setIsSpinning(false);
+      setGamePhase('guessing');
+    }, 4000);
   };
 
   const guessLetter = () => {
-    if (!letterInput || !currentPhrase || gameStatus !== 'playing') return;
+    if (!currentGuess || currentGuess.length !== 1) return;
     
-    const letter = letterInput.toUpperCase();
-    
-    // Validate input
-    if (!/[A-Z]/.test(letter)) {
-      toast({
-        title: "Invalid Letter",
-        description: "Please enter a valid letter A-Z",
-        variant: "destructive",
-      });
-      setLetterInput('');
-      return;
-    }
-
-    if (guessedLetters.has(letter)) {
+    const letter = currentGuess.toUpperCase();
+    if (guessedLetters.includes(letter)) {
       toast({
         title: "Already Guessed",
-        description: `You already guessed "${letter}"`,
+        description: "You've already guessed that letter!",
         variant: "destructive",
       });
-      setLetterInput('');
       return;
     }
 
-    const newGuessedLetters = new Set(guessedLetters);
-    newGuessedLetters.add(letter);
+    const newGuessedLetters = [...guessedLetters, letter];
     setGuessedLetters(newGuessedLetters);
+    setCurrentGuess('');
 
-    if (currentPhrase.phrase.includes(letter)) {
-      // Correct guess
-      const letterCount = (currentPhrase.phrase.match(new RegExp(letter, 'g')) || []).length;
-      const points = letterCount * 100;
-      setScore(prev => prev + points);
-      
+    if (!currentPhrase.phrase.toUpperCase().includes(letter)) {
+      setWrongGuesses(prev => prev + 1);
       toast({
-        title: "Correct! 🎉",
-        description: `Found ${letterCount} "${letter}"${letterCount > 1 ? 's' : ''} - ${points} points!`,
-      });
-
-      // Check for win
-      const lettersInPhrase = currentPhrase.phrase
-        .split('')
-        .filter(char => /[A-Z]/.test(char));
-      
-      if (lettersInPhrase.every(char => newGuessedLetters.has(char))) {
-        const timeBonus = Math.floor(timeLeft * 2);
-        const finalScore = score + points + timeBonus;
-        setScore(finalScore);
-        setGameStatus('won');
-        
-        toast({
-          title: "Puzzle Solved! 🏆",
-          description: `Final Score: ${finalScore} (Time Bonus: ${timeBonus})`,
-        });
-
-        // Submit score to Solana
-        submitScore(finalScore, 'wheel-of-fortune');
-      }
-    } else {
-      // Wrong guess
-      const newWrongGuesses = [...wrongGuesses, letter];
-      setWrongGuesses(newWrongGuesses);
-      
-      toast({
-        title: "Wrong Letter! ❌",
-        description: `"${letter}" is not in the phrase`,
+        title: "Wrong Letter",
+        description: `"${letter}" is not in the phrase. ${maxWrongGuesses - wrongGuesses - 1} guesses remaining.`,
         variant: "destructive",
       });
 
-      if (newWrongGuesses.length >= maxWrongGuesses) {
-        setGameStatus('lost');
-        toast({
-          title: "Game Over! 💀",
-          description: `The phrase was: "${currentPhrase.phrase}"`,
-          variant: "destructive",
-        });
+      if (wrongGuesses + 1 >= maxWrongGuesses) {
+        endGame(false);
+        return;
+      }
+    } else {
+      toast({
+        title: "Correct!",
+        description: `"${letter}" is in the phrase!`,
+      });
+    }
+
+    // Check if phrase is complete
+    const letters = currentPhrase.phrase.replace(/[^A-Z]/gi, '').toUpperCase();
+    const isComplete = letters.split('').every(l => newGuessedLetters.includes(l));
+    
+    if (isComplete) {
+      endGame(true);
+    }
+  };
+
+  const solvePuzzle = () => {
+    const solution = currentGuess.toUpperCase().trim();
+    if (solution === currentPhrase.phrase.toUpperCase()) {
+      endGame(true);
+    } else {
+      setWrongGuesses(prev => prev + 1);
+      toast({
+        title: "Wrong Solution",
+        description: `That's not correct. ${maxWrongGuesses - wrongGuesses - 1} guesses remaining.`,
+        variant: "destructive",
+      });
+      
+      if (wrongGuesses + 1 >= maxWrongGuesses) {
+        endGame(false);
       }
     }
-
-    setLetterInput('');
+    setCurrentGuess('');
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      guessLetter();
+  const endGame = async (won: boolean) => {
+    setGamePhase('complete');
+    
+    if (won && bankTotal > 0) {
+      toast({
+        title: "🎊 CONGRATULATIONS!",
+        description: `You solved the phrase and won ${bankTotal} CCTR tokens!`,
+        duration: 5000,
+      });
+
+      // Process rewards through Solana contract
+      await processReward(bankTotal, `Wheel of Fortune - ${currentPhrase.category}`);
+    } else {
+      toast({
+        title: won ? "Puzzle Solved!" : "Game Over",
+        description: won ? "But you had no tokens banked!" : `The phrase was: "${currentPhrase.phrase}"`,
+        variant: won ? "default" : "destructive",
+      });
     }
   };
 
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const startNewGame = () => {
+    setGamePhase('playing');
+    setCurrentPhrase(getRandomPhrase());
+    setGuessedLetters([]);
+    setCurrentGuess('');
+    setBankTotal(0);
+    setWrongGuesses(0);
+    setRoundEarnings([]);
+    setHighlightedPrize(null);
+  };
 
-  if (gameStatus === 'menu') {
+  const resetToMenu = () => {
+    setGamePhase('menu');
+    setCurrentPhrase(getRandomPhrase());
+    setGuessedLetters([]);
+    setCurrentGuess('');
+    setBankTotal(0);
+    setWrongGuesses(0);
+    setRoundEarnings([]);
+    setHighlightedPrize(null);
+    setCurrentRotation(0);
+  };
+
+  if (gamePhase === 'menu') {
     return (
-      <Card className="holographic max-w-2xl mx-auto">
+      <Card className="holographic max-w-4xl mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl text-neon-cyan flex items-center justify-center gap-2">
-            <Star className="w-8 h-8" />
-            Wheel of Fortune
-            <Star className="w-8 h-8" />
+          <CardTitle className="text-4xl text-neon-cyan flex items-center justify-center gap-3">
+            <Zap className="w-10 h-10" />
+            WHEEL OF FORTUNE
+            <Zap className="w-10 h-10" />
           </CardTitle>
-          <p className="text-neon-purple text-lg">
-            Guess the gaming phrase to win CCTR tokens!
+          <p className="text-xl text-neon-purple mt-2">
+            Spin the wheel, collect prizes, solve gaming phrases!
           </p>
         </CardHeader>
-        <CardContent className="text-center space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-            <div className="space-y-2">
-              <h3 className="font-bold text-neon-cyan">How to Play:</h3>
-              <ul className="text-sm space-y-1">
-                <li>• Guess letters to reveal the gaming phrase</li>
-                <li>• Each correct letter earns 100 points</li>
-                <li>• You have 6 wrong guesses maximum</li>
-                <li>• Complete the puzzle within 5 minutes</li>
-              </ul>
+        <CardContent className="space-y-8">
+          <div className="text-center space-y-4">
+            <h3 className="text-2xl font-bold text-neon-cyan">How to Play:</h3>
+            <div className="grid md:grid-cols-2 gap-4 text-left">
+              <div className="space-y-2">
+                <p className="text-neon-purple">🎰 <strong>Spin the Wheel:</strong> Land on prizes to build your bank</p>
+                <p className="text-neon-purple">💀 <strong>Avoid Bankrupt:</strong> Lose everything and start over</p>
+                <p className="text-neon-purple">🎮 <strong>Guess Letters:</strong> Reveal the gaming phrase</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-neon-purple">🧩 <strong>Solve the Puzzle:</strong> Complete the phrase to win</p>
+                <p className="text-neon-purple">🎊 <strong>Win Your Bank:</strong> Get all your collected CCTR tokens</p>
+                <p className="text-neon-purple">⚡ <strong>5 Wrong Guesses:</strong> Game over!</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <h3 className="font-bold text-neon-purple">Rewards:</h3>
-              <ul className="text-sm space-y-1">
-                <li>• 100 points per correct letter</li>
-                <li>• Time bonus for fast completion</li>
-                <li>• CCTR tokens for winning</li>
-                <li>• Categories: Games, Characters, Terms</li>
-              </ul>
-            </div>
+            
+            <Button 
+              onClick={startNewGame}
+              className="cyber-button text-2xl px-12 py-6 mt-8"
+            >
+              🎰 START GAME
+            </Button>
           </div>
-          
-          <Button 
-            onClick={startNewGame}
-            className="cyber-button text-xl px-8 py-4"
-          >
-            🎰 START GAME
-          </Button>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Game Header */}
       <Card className="holographic">
         <CardContent className="p-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Badge variant="secondary" className="text-lg px-3 py-1">
-                {currentPhrase?.category}
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <Badge variant="secondary" className="text-lg px-4 py-2">
+                <Zap className="w-5 h-5 mr-2" />
+                Wheel of Fortune
               </Badge>
-              <div className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-neon-cyan" />
-                <span className="text-xl font-bold">{score.toLocaleString()}</span>
+              <div className="text-sm space-x-4">
+                <span className="text-neon-cyan">Bank: {bankTotal} CCTR</span>
+                <span className="text-neon-purple">Wrong: {wrongGuesses}/{maxWrongGuesses}</span>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">Time Left</div>
-                <Badge variant={timeLeft <= 60 ? "destructive" : "default"}>
-                  {formatTime(timeLeft)}
-                </Badge>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">Wrong Guesses</div>
-                <Badge variant={wrongGuesses.length >= 4 ? "destructive" : "secondary"}>
-                  {wrongGuesses.length}/{maxWrongGuesses}
-                </Badge>
-              </div>
-            </div>
+            <Button 
+              onClick={resetToMenu}
+              variant="outline"
+              className="cyber-button-secondary"
+            >
+              🏠 Menu
+            </Button>
           </div>
-          
-          <Progress 
-            value={(timeLeft / 300) * 100} 
-            className="mt-4 h-2"
-          />
         </CardContent>
       </Card>
 
-      {/* Main Game Area */}
+      {/* Wheel */}
       <Card className="holographic">
         <CardContent className="p-8">
-          <div className="text-center space-y-6">
-            {/* Phrase Display */}
-            <div className="bg-black/50 p-6 rounded-lg border border-neon-cyan/30">
-              <div className="text-3xl md:text-4xl font-mono font-bold text-neon-cyan tracking-wider">
-                {displayPhrase()}
+          <div className="flex flex-col items-center space-y-6">
+            <div className="relative">
+              {/* Pointer */}
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10">
+                <div className="w-6 h-12 bg-neon-cyan rounded-full shadow-[0_0_20px_#00ffff]" 
+                     style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}>
+                </div>
               </div>
-              {currentPhrase?.hint && (
-                <div className="mt-4 text-neon-purple">
-                  <strong>Hint:</strong> {currentPhrase.hint}
+
+              {/* Wheel */}
+              <div 
+                ref={wheelRef}
+                className="w-80 h-80 rounded-full relative border-4 border-neon-cyan shadow-[0_0_50px_#00ffff] transition-transform duration-[4000ms] ease-out"
+                style={{ 
+                  transform: `rotate(${currentRotation}deg)`,
+                }}
+              >
+                {wheelPrizes.map((prize, index) => {
+                  const rotation = index * segmentAngle;
+                  const isHighlighted = highlightedPrize === prize.id;
+                  
+                  return (
+                    <div
+                      key={prize.id}
+                      className={`absolute w-full h-full rounded-full ${isHighlighted ? 'shadow-[0_0_30px_#00ffff]' : ''}`}
+                      style={{
+                        transform: `rotate(${rotation}deg)`,
+                        background: `conic-gradient(from 0deg, ${prize.color}40 0deg, ${prize.color}60 ${segmentAngle}deg, transparent ${segmentAngle}deg)`,
+                        clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.sin((segmentAngle * Math.PI) / 180)}% ${50 - 50 * Math.cos((segmentAngle * Math.PI) / 180)}%)`
+                      }}
+                    >
+                      <div 
+                        className="absolute text-white font-bold text-xs flex flex-col items-center justify-center"
+                        style={{
+                          top: '20%',
+                          left: '48%',
+                          transform: `rotate(${segmentAngle / 2}deg) translate(-50%, -50%)`,
+                          color: prize.color
+                        }}
+                      >
+                        <div className="mb-1">{prize.icon}</div>
+                        <div className="text-center whitespace-nowrap text-xs">
+                          {prize.name}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Center Hub */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-neon-cyan to-neon-purple rounded-full flex items-center justify-center shadow-[0_0_30px_#00ffff]">
+                  <Zap className="w-8 h-8 text-black" />
+                </div>
+              </div>
+            </div>
+
+            {gamePhase === 'playing' && (
+              <Button 
+                onClick={spinWheel}
+                disabled={isSpinning}
+                className="cyber-button text-xl px-12 py-4"
+              >
+                {isSpinning ? (
+                  <>
+                    <Zap className="w-6 h-6 mr-2 animate-spin" />
+                    SPINNING...
+                  </>
+                ) : (
+                  '🎰 SPIN THE WHEEL'
+                )}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Phrase Display */}
+      {gamePhase !== 'playing' && (
+        <Card className="holographic">
+          <CardContent className="p-8">
+            <div className="text-center space-y-4">
+              <div className="text-sm text-neon-purple">
+                Category: {currentPhrase.category}
+                {currentPhrase.hint && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Hint: {currentPhrase.hint}
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-4xl font-mono font-bold text-neon-cyan tracking-widest">
+                {getDisplayPhrase()}
+              </div>
+
+              {guessedLetters.length > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  Guessed Letters: {guessedLetters.join(', ')}
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            {/* Letter Input */}
-            {gameStatus === 'playing' && (
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={letterInput}
-                    onChange={(e) => setLetterInput(e.target.value.slice(0, 1))}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Enter a letter"
-                    className="w-20 text-center text-xl font-bold uppercase"
-                    maxLength={1}
-                  />
-                  <Button onClick={guessLetter} disabled={!letterInput}>
-                    Guess Letter
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Alphabet Display */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-neon-purple">Letters:</h3>
-              <div className="grid grid-cols-13 gap-2 max-w-3xl mx-auto">
-                {alphabet.map(letter => (
-                  <div
-                    key={letter}
-                    className={`
-                      w-8 h-8 rounded border-2 flex items-center justify-center text-sm font-bold
-                      ${guessedLetters.has(letter) 
-                        ? currentPhrase?.phrase.includes(letter)
-                          ? 'bg-green-500/50 border-green-400 text-green-100'
-                          : 'bg-red-500/50 border-red-400 text-red-100'
-                        : 'border-muted-foreground/30 text-muted-foreground'
-                      }
-                    `}
-                  >
-                    {letter}
-                  </div>
-                ))}
+      {/* Guess Interface */}
+      {gamePhase === 'guessing' && (
+        <Card className="holographic">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <Input
+                type="text"
+                placeholder="Enter letter or full solution"
+                value={currentGuess}
+                onChange={(e) => setCurrentGuess(e.target.value)}
+                className="text-center text-lg max-w-xs"
+                onKeyPress={(e) => e.key === 'Enter' && (currentGuess.length === 1 ? guessLetter() : solvePuzzle())}
+              />
+              
+              <div className="flex gap-2">
+                <Button 
+                  onClick={guessLetter}
+                  disabled={!currentGuess || currentGuess.length !== 1}
+                  className="cyber-button"
+                >
+                  Guess Letter
+                </Button>
+                
+                <Button 
+                  onClick={solvePuzzle}
+                  disabled={!currentGuess || currentGuess.length <= 1}
+                  variant="outline"
+                  className="cyber-button-secondary"
+                >
+                  Solve Puzzle
+                </Button>
+                
+                <Button 
+                  onClick={spinWheel}
+                  disabled={isSpinning}
+                  className="cyber-button text-sm px-4"
+                >
+                  Spin Again
+                </Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            {/* Wrong Letters */}
-            {wrongGuesses.length > 0 && (
-              <div className="text-center">
-                <h4 className="text-lg font-bold text-red-400 mb-2">Wrong Letters:</h4>
-                <div className="flex justify-center gap-2 flex-wrap">
-                  {wrongGuesses.map((letter, index) => (
-                    <Badge key={index} variant="destructive">
-                      {letter}
-                    </Badge>
-                  ))}
-                </div>
+      {/* Game Complete */}
+      {gamePhase === 'complete' && (
+        <Card className="holographic border-2 border-neon-cyan">
+          <CardContent className="p-8 text-center space-y-6">
+            <div className="text-6xl mb-4">
+              {isPhraseComplete() && bankTotal > 0 ? '🎊' : '😔'}
+            </div>
+            
+            <h2 className="text-4xl font-bold text-neon-cyan">
+              {isPhraseComplete() && bankTotal > 0 ? 'WINNER!' : 'GAME OVER'}
+            </h2>
+            
+            <div className="text-xl text-neon-purple">
+              The phrase was: <span className="text-neon-cyan font-bold">"{currentPhrase.phrase}"</span>
+            </div>
+
+            {bankTotal > 0 && isPhraseComplete() && (
+              <div className="text-2xl text-neon-cyan font-bold">
+                You won {bankTotal} CCTR tokens!
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Game Over Screen */}
-      {(gameStatus === 'won' || gameStatus === 'lost') && (
-        <Card className="holographic border-2 border-neon-cyan">
-          <CardContent className="p-8 text-center space-y-4">
-            {gameStatus === 'won' ? (
-              <>
-                <div className="text-6xl mb-4">🏆</div>
-                <h2 className="text-3xl font-bold text-neon-cyan">Puzzle Solved!</h2>
-                <p className="text-xl text-neon-purple">
-                  "{currentPhrase?.phrase}"
-                </p>
-                <div className="flex items-center justify-center gap-4 text-2xl">
-                  <Zap className="w-8 h-8 text-yellow-400" />
-                  <span className="font-bold">{score.toLocaleString()} Points</span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-6xl mb-4">💀</div>
-                <h2 className="text-3xl font-bold text-red-400">Game Over!</h2>
-                <p className="text-xl text-muted-foreground">
-                  The phrase was: <span className="text-neon-cyan">"{currentPhrase?.phrase}"</span>
-                </p>
-              </>
-            )}
             
-            <Button 
-              onClick={startNewGame}
-              className="cyber-button text-xl px-8 py-4"
-              disabled={isSubmitting}
-            >
-              <RotateCcw className="w-5 h-5 mr-2" />
-              Play Again
-            </Button>
+            <div className="flex gap-4 justify-center">
+              <Button 
+                onClick={startNewGame}
+                className="cyber-button text-xl px-8 py-4"
+              >
+                🎮 PLAY AGAIN
+              </Button>
+              
+              <Button 
+                onClick={resetToMenu}
+                className="cyber-button-secondary text-xl px-8 py-4"
+              >
+                🏠 MAIN MENU
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

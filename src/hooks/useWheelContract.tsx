@@ -9,13 +9,13 @@ export const useWheelContract = () => {
   const { getConnectedWallet } = useWallet();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const spinWheel = async (cctrAmount: number, prizeType: string) => {
+  const spinWheel = async (cctrAmount: number, gameType: string) => {
     const connectedWallet = getConnectedWallet();
     
     if (!connectedWallet || connectedWallet.type !== 'phantom') {
       toast({
         title: "Wallet Required",
-        description: "Please connect your Phantom wallet to spin the wheel",
+        description: "Please connect your Phantom wallet to claim rewards",
         variant: "destructive",
       });
       return { success: false };
@@ -24,55 +24,55 @@ export const useWheelContract = () => {
     setIsProcessing(true);
 
     try {
-      console.log('Processing wheel spin on Solana:', { 
+      console.log('Processing reward on Solana:', { 
         playerPubkey: connectedWallet.address, 
         cctrAmount,
-        prizeType
+        gameType
       });
 
-      // Call the Supabase Edge Function for wheel game
+      // Call the Supabase Edge Function for rewards
       const { data, error } = await supabase.functions.invoke('submit-score', {
         body: {
           playerPubkey: connectedWallet.address,
           score: cctrAmount,
-          gameType: 'wheel-of-gaming',
+          gameType: gameType,
           metadata: {
-            prizeType,
-            spinTimestamp: Date.now()
+            gameType: gameType,
+            rewardTimestamp: Date.now()
           }
         }
       });
 
       if (error) {
-        console.error('Wheel contract error:', error);
+        console.error('Reward processing error:', error);
         throw new Error(error.message);
       }
 
       if (data?.success) {
-        console.log('Wheel spin processed successfully:', data);
+        console.log('Reward processed successfully:', data);
         
         toast({
-          title: "🎊 Prize Awarded!",
-          description: `You won ${cctrAmount} CCTR tokens! TX: ${data.txHash.slice(0, 8)}...`,
-          duration: 5000,
+          title: "🎊 Reward Claimed!",
+          description: `${cctrAmount} CCTR tokens sent to your wallet! TX: ${data.txHash.slice(0, 8)}...`,
+          duration: 8000,
         });
 
         return { 
           success: true, 
           txHash: data.txHash, 
           tokensEarned: data.tokensEarned,
-          prizeType
+          gameType
         };
       } else {
-        throw new Error(data?.error || 'Wheel spin failed');
+        throw new Error(data?.error || 'Reward processing failed');
       }
 
     } catch (error) {
-      console.error('Error processing wheel spin:', error);
+      console.error('Error processing reward:', error);
       
       toast({
-        title: "Spin Failed",
-        description: error instanceof Error ? error.message : "Failed to process wheel spin on blockchain",
+        title: "Reward Failed",
+        description: error instanceof Error ? error.message : "Failed to process reward on blockchain",
         variant: "destructive",
       });
 

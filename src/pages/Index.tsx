@@ -179,6 +179,20 @@ const Index = () => {
             <WheelOfGaming />
           </section>
 
+          {/* Wheel of Fortune Section */}
+          <section className="space-y-8">
+            <div className="text-center space-y-4">
+              <h2 className="text-5xl font-bold text-neon-cyan animate-glow">
+                🎰 WHEEL OF FORTUNE
+              </h2>
+              <p className="text-xl text-neon-purple max-w-2xl mx-auto">
+                Spin the futuristic wheel, collect prizes, and solve gaming phrases to win CCTR tokens!
+              </p>
+            </div>
+            
+            <WheelOfFortuneGame />
+          </section>
+
           {/* Raffles Section */}
           <section>
             <RaffleSection />
