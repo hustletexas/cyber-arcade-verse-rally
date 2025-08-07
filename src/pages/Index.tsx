@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { WheelOfFortuneGame } from '@/components/games/WheelOfFortuneGame';
 
 const Index = () => {
   const { toast } = useToast();
@@ -162,6 +163,14 @@ const Index = () => {
           {/* Trivia Section - Added under Tournament Section */}
           <section>
             <TriviaGame />
+          </section>
+
+          {/* Wheel of Fortune Game Section - New addition */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+              🎰 Wheel of Fortune Gaming Edition
+            </h2>
+            <WheelOfFortuneGame />
           </section>
 
           {/* Raffles Section */}
