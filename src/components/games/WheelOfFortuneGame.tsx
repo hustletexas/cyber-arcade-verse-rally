@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useWheelContract } from '@/hooks/useWheelContract';
 import { getRandomPhrase } from '@/data/gamingPhrases';
-import { Zap, Star, Trophy, Coins, Gift, Gem, Skull } from 'lucide-react';
+import { Zap, Star, Trophy, Coins, Gift, Gem, Skull, Sparkles } from 'lucide-react';
 
 interface WheelPrize {
   id: string;
@@ -43,10 +43,28 @@ const WheelOfFortuneGame: React.FC = () => {
   const [highlightedPrize, setHighlightedPrize] = useState<string | null>(null);
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const [roundEarnings, setRoundEarnings] = useState<WheelPrize[]>([]);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [showLetterAnimation, setShowLetterAnimation] = useState('');
   
   const wheelRef = useRef<HTMLDivElement>(null);
   const segmentAngle = 360 / wheelPrizes.length;
   const maxWrongGuesses = 5;
+
+  // Celebration animation effect
+  useEffect(() => {
+    if (showCelebration) {
+      const timer = setTimeout(() => setShowCelebration(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showCelebration]);
+
+  // Letter animation effect
+  useEffect(() => {
+    if (showLetterAnimation) {
+      const timer = setTimeout(() => setShowLetterAnimation(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showLetterAnimation]);
 
   const getDisplayPhrase = () => {
     return currentPhrase.phrase
@@ -71,8 +89,8 @@ const WheelOfFortuneGame: React.FC = () => {
     setIsSpinning(true);
     setHighlightedPrize(null);
     
-    // Random spin with multiple rotations
-    const spins = 5 + Math.random() * 3;
+    // Slower spin with more rotations for better suspense
+    const spins = 8 + Math.random() * 4; // 8-12 full rotations
     const finalAngle = Math.random() * 360;
     const totalRotation = spins * 360 + finalAngle;
     const newRotation = currentRotation + totalRotation;
@@ -84,6 +102,7 @@ const WheelOfFortuneGame: React.FC = () => {
     const prizeIndex = Math.floor(normalizedAngle / segmentAngle);
     const landedPrize = wheelPrizes[prizeIndex];
 
+    // 5 second spin duration
     setTimeout(() => {
       setHighlightedPrize(landedPrize.id);
       
@@ -98,6 +117,7 @@ const WheelOfFortuneGame: React.FC = () => {
       } else {
         setBankTotal(prev => prev + landedPrize.cctrValue);
         setRoundEarnings(prev => [...prev, landedPrize]);
+        setShowCelebration(true);
         toast({
           title: `🎊 You landed on ${landedPrize.name}!`,
           description: `Total banked: ${bankTotal + landedPrize.cctrValue} CCTR`,
@@ -106,7 +126,7 @@ const WheelOfFortuneGame: React.FC = () => {
       
       setIsSpinning(false);
       setGamePhase('guessing');
-    }, 4000);
+    }, 5000); // 5 second spin duration
   };
 
   const guessLetter = () => {
@@ -139,8 +159,11 @@ const WheelOfFortuneGame: React.FC = () => {
         return;
       }
     } else {
+      // Show celebration animation for correct letter
+      setShowLetterAnimation(letter);
+      setShowCelebration(true);
       toast({
-        title: "Correct!",
+        title: "🎉 Correct!",
         description: `"${letter}" is in the phrase!`,
       });
     }
@@ -177,6 +200,7 @@ const WheelOfFortuneGame: React.FC = () => {
     setGamePhase('complete');
     
     if (won && bankTotal > 0) {
+      setShowCelebration(true);
       toast({
         title: "🎊 CONGRATULATIONS!",
         description: `You solved the phrase and won ${bankTotal} CCTR tokens!`,
@@ -203,6 +227,8 @@ const WheelOfFortuneGame: React.FC = () => {
     setWrongGuesses(0);
     setRoundEarnings([]);
     setHighlightedPrize(null);
+    setShowCelebration(false);
+    setShowLetterAnimation('');
   };
 
   const resetToMenu = () => {
@@ -215,6 +241,8 @@ const WheelOfFortuneGame: React.FC = () => {
     setRoundEarnings([]);
     setHighlightedPrize(null);
     setCurrentRotation(0);
+    setShowCelebration(false);
+    setShowLetterAnimation('');
   };
 
   if (gamePhase === 'menu') {
@@ -222,9 +250,9 @@ const WheelOfFortuneGame: React.FC = () => {
       <Card className="holographic max-w-4xl mx-auto">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl text-neon-cyan flex items-center justify-center gap-3">
-            <Zap className="w-10 h-10" />
+            <Zap className="w-10 h-10 animate-pulse" />
             WHEEL OF FORTUNE
-            <Zap className="w-10 h-10" />
+            <Zap className="w-10 h-10 animate-pulse" />
           </CardTitle>
           <p className="text-xl text-neon-purple mt-2">
             Spin the wheel, collect prizes, solve gaming phrases!
@@ -259,18 +287,48 @@ const WheelOfFortuneGame: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 relative">
+      {/* Celebration Overlay */}
+      {showCelebration && (
+        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+          <div className="text-8xl animate-bounce">🎉</div>
+          <div className="absolute inset-0 bg-gradient-to-r from-neon-pink/20 via-neon-cyan/20 to-neon-purple/20 animate-pulse"></div>
+          {Array.from({length: 20}).map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-ping"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 2}s`
+              }}
+            >
+              <Sparkles className="w-8 h-8 text-neon-cyan" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Letter Animation */}
+      {showLetterAnimation && (
+        <div className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center">
+          <div className="text-9xl font-bold text-neon-cyan animate-bounce">
+            {showLetterAnimation}
+          </div>
+        </div>
+      )}
+
       {/* Game Header */}
       <Card className="holographic">
         <CardContent className="p-4">
           <div className="flex justify-between items-center flex-wrap gap-4">
             <div className="flex items-center gap-4 flex-wrap">
               <Badge variant="secondary" className="text-lg px-4 py-2">
-                <Zap className="w-5 h-5 mr-2" />
+                <Zap className="w-5 h-5 mr-2 animate-pulse" />
                 Wheel of Fortune
               </Badge>
               <div className="text-sm space-x-4">
-                <span className="text-neon-cyan">Bank: {bankTotal} CCTR</span>
+                <span className="text-neon-cyan animate-pulse">Bank: {bankTotal} CCTR</span>
                 <span className="text-neon-purple">Wrong: {wrongGuesses}/{maxWrongGuesses}</span>
               </div>
             </div>
@@ -286,24 +344,52 @@ const WheelOfFortuneGame: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Wheel */}
+      {/* Enhanced Wheel with Neon Effects */}
       <Card className="holographic">
         <CardContent className="p-8">
           <div className="flex flex-col items-center space-y-6">
             <div className="relative">
+              {/* Outer Neon Ring */}
+              <div className="absolute -inset-8 rounded-full border-4 border-neon-cyan animate-pulse shadow-[0_0_50px_#00ffff]"></div>
+              
+              {/* Middle Neon Ring */}
+              <div className="absolute -inset-6 rounded-full border-2 border-neon-pink animate-pulse shadow-[0_0_30px_#ff0080]" style={{ animationDelay: '0.5s' }}></div>
+              
+              {/* Inner Neon Ring */}
+              <div className="absolute -inset-4 rounded-full border-2 border-neon-purple animate-pulse shadow-[0_0_20px_#8000ff]" style={{ animationDelay: '1s' }}></div>
+
+              {/* Spinning Light Effect */}
+              <div className="absolute -inset-10 rounded-full">
+                {Array.from({length: 12}).map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-4 h-4 bg-neon-cyan rounded-full animate-ping"
+                    style={{
+                      top: '50%',
+                      left: '50%',
+                      transform: `rotate(${i * 30}deg) translateY(-200px)`,
+                      animationDelay: `${i * 0.1}s`
+                    }}
+                  ></div>
+                ))}
+              </div>
+
               {/* Pointer */}
-              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10">
-                <div className="w-6 h-12 bg-neon-cyan rounded-full shadow-[0_0_20px_#00ffff]" 
-                     style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}>
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-20">
+                <div 
+                  className="w-8 h-16 bg-gradient-to-b from-neon-cyan to-white rounded-full shadow-[0_0_30px_#00ffff]" 
+                  style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}
+                >
                 </div>
               </div>
 
               {/* Wheel */}
               <div 
                 ref={wheelRef}
-                className="w-80 h-80 rounded-full relative border-4 border-neon-cyan shadow-[0_0_50px_#00ffff] transition-transform duration-[4000ms] ease-out"
+                className="w-96 h-96 rounded-full relative border-8 border-neon-cyan shadow-[0_0_80px_#00ffff] transition-transform duration-[5000ms] ease-out"
                 style={{ 
                   transform: `rotate(${currentRotation}deg)`,
+                  background: 'radial-gradient(circle, hsl(var(--card-bg)), hsl(240 10% 8%))'
                 }}
               >
                 {wheelPrizes.map((prize, index) => {
@@ -313,34 +399,46 @@ const WheelOfFortuneGame: React.FC = () => {
                   return (
                     <div
                       key={prize.id}
-                      className={`absolute w-full h-full rounded-full ${isHighlighted ? 'shadow-[0_0_30px_#00ffff]' : ''}`}
+                      className={`absolute w-full h-full rounded-full overflow-hidden ${isHighlighted ? 'animate-pulse' : ''}`}
                       style={{
                         transform: `rotate(${rotation}deg)`,
-                        background: `conic-gradient(from 0deg, ${prize.color}40 0deg, ${prize.color}60 ${segmentAngle}deg, transparent ${segmentAngle}deg)`,
                         clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.sin((segmentAngle * Math.PI) / 180)}% ${50 - 50 * Math.cos((segmentAngle * Math.PI) / 180)}%)`
                       }}
                     >
                       <div 
-                        className="absolute text-white font-bold text-xs flex flex-col items-center justify-center"
+                        className={`w-full h-full ${isHighlighted ? 'shadow-[0_0_40px_#00ffff]' : ''}`}
                         style={{
-                          top: '20%',
-                          left: '48%',
-                          transform: `rotate(${segmentAngle / 2}deg) translate(-50%, -50%)`,
-                          color: prize.color
+                          background: `linear-gradient(45deg, ${prize.color}60, ${prize.color}80)`,
+                          border: isHighlighted ? `3px solid ${prize.color}` : 'none'
                         }}
                       >
-                        <div className="mb-1">{prize.icon}</div>
-                        <div className="text-center whitespace-nowrap text-xs">
-                          {prize.name}
+                        <div 
+                          className="absolute text-white font-bold text-sm flex flex-col items-center justify-center"
+                          style={{
+                            top: '25%',
+                            left: '48%',
+                            transform: `rotate(${segmentAngle / 2}deg) translate(-50%, -50%)`,
+                            color: isHighlighted ? '#ffffff' : prize.color,
+                            textShadow: isHighlighted ? `0 0 10px ${prize.color}` : 'none'
+                          }}
+                        >
+                          <div className={`mb-2 ${isHighlighted ? 'animate-spin' : ''}`}>
+                            {prize.icon}
+                          </div>
+                          <div className="text-center whitespace-nowrap text-xs font-bold">
+                            {prize.name}
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Center Hub */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-neon-cyan to-neon-purple rounded-full flex items-center justify-center shadow-[0_0_30px_#00ffff]">
-                  <Zap className="w-8 h-8 text-black" />
+                {/* Center Hub with Enhanced Effects */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gradient-to-br from-neon-cyan via-neon-purple to-neon-pink rounded-full flex items-center justify-center shadow-[0_0_40px_#00ffff] animate-pulse">
+                  <div className="w-16 h-16 bg-gradient-to-br from-neon-pink to-neon-cyan rounded-full flex items-center justify-center">
+                    <Zap className="w-10 h-10 text-black animate-pulse" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -442,11 +540,11 @@ const WheelOfFortuneGame: React.FC = () => {
       {gamePhase === 'complete' && (
         <Card className="holographic border-2 border-neon-cyan">
           <CardContent className="p-8 text-center space-y-6">
-            <div className="text-6xl mb-4">
+            <div className="text-6xl mb-4 animate-bounce">
               {isPhraseComplete() && bankTotal > 0 ? '🎊' : '😔'}
             </div>
             
-            <h2 className="text-4xl font-bold text-neon-cyan">
+            <h2 className="text-4xl font-bold text-neon-cyan animate-pulse">
               {isPhraseComplete() && bankTotal > 0 ? 'WINNER!' : 'GAME OVER'}
             </h2>
             
@@ -455,7 +553,7 @@ const WheelOfFortuneGame: React.FC = () => {
             </div>
 
             {bankTotal > 0 && isPhraseComplete() && (
-              <div className="text-2xl text-neon-cyan font-bold">
+              <div className="text-2xl text-neon-cyan font-bold animate-pulse">
                 You won {bankTotal} CCTR tokens!
               </div>
             )}
