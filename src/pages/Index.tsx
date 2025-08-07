@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import WheelOfFortuneGame from '@/components/games/WheelOfFortuneGame';
 
 const Index = () => {
   const { toast } = useToast();
@@ -161,23 +159,9 @@ const Index = () => {
             <TournamentSection />
           </section>
 
-          {/* Gaming Trivia Challenge Section - Single trivia section */}
+          {/* Trivia Section - Added under Tournament Section */}
           <section>
             <TriviaGame />
-          </section>
-
-          {/* Cyber City Wheel Section */}
-          <section className="space-y-8">
-            <div className="text-center space-y-4">
-              <h2 className="text-5xl font-bold text-neon-cyan animate-glow">
-                🎰 CYBER CITY WHEEL
-              </h2>
-              <p className="text-xl text-neon-purple max-w-2xl mx-auto">
-                Spin the futuristic Cyber City wheel, collect amazing prizes, and solve gaming phrases to win CCTR tokens!
-              </p>
-            </div>
-            
-            <WheelOfFortuneGame />
           </section>
 
           {/* Raffles Section */}
