@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSolanaScore } from '@/hooks/useSolanaScore';
 import { useWallet } from '@/hooks/useWallet';
 import { TriviaQuestion } from '@/types/trivia';
+import { getRandomMixedQuestions } from '@/data/gamingTriviaQuestions';
 
 interface TriviaGameplayProps {
   category: string;
@@ -47,65 +49,39 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     }
   }, [timeLeft, gameStatus, answerSubmitted]);
 
-  const loadQuestions = async () => {
+  const loadQuestions = () => {
     try {
-      // Mock questions for now since database tables don't exist yet
-      const mockQuestions: TriviaQuestion[] = [
-        {
-          id: '1',
-          category: category,
-          question: 'What is the capital of France?',
-          option_a: 'London',
-          option_b: 'Berlin',
-          option_c: 'Paris',
-          option_d: 'Madrid',
-          correct_answer: 'C',
-          difficulty: 'easy',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          category: category,
-          question: 'Which planet is known as the Red Planet?',
-          option_a: 'Venus',
-          option_b: 'Mars',
-          option_c: 'Jupiter',
-          option_d: 'Saturn',
-          correct_answer: 'B',
-          difficulty: 'easy',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        // Add more mock questions...
-        {
-          id: '3',
-          category: category,
-          question: 'What is the largest ocean on Earth?',
-          option_a: 'Atlantic',
-          option_b: 'Indian',
-          option_c: 'Pacific',
-          option_d: 'Arctic',
-          correct_answer: 'C',
-          difficulty: 'medium',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-
-      // Simulate more questions to reach 10
-      const expandedQuestions = [...mockQuestions];
-      while (expandedQuestions.length < questionsPerGame) {
-        expandedQuestions.push({
-          ...mockQuestions[expandedQuestions.length % mockQuestions.length],
-          id: `${expandedQuestions.length + 1}`,
-          question: `Sample question ${expandedQuestions.length + 1} for ${category}?`,
+      console.log(`Loading questions for category: ${category}`);
+      
+      // Get real gaming questions for the selected category
+      const gameQuestions = getRandomMixedQuestions(category, questionsPerGame);
+      
+      if (gameQuestions.length === 0) {
+        toast({
+          title: "No Questions Available",
+          description: `No questions found for category: ${category}. Please try another category.`,
+          variant: "destructive",
         });
+        onBackToMenu();
+        return;
       }
 
-      setQuestions(expandedQuestions);
+      console.log(`Loaded ${gameQuestions.length} questions for ${category}:`, gameQuestions);
+      
+      setQuestions(gameQuestions);
       setGameStatus('playing');
       setTimeLeft(30);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer('');
+      setScore(0);
+      setCorrectAnswers(0);
+      setShowResult(false);
+      setAnswerSubmitted(false);
+      
+      toast({
+        title: "Game Started! 🎮",
+        description: `Loading ${category} gaming trivia questions`,
+      });
     } catch (error) {
       console.error('Error loading questions:', error);
       toast({
@@ -113,6 +89,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
         description: "Failed to load trivia questions. Please try again.",
         variant: "destructive",
       });
+      onBackToMenu();
     }
   };
 
@@ -170,22 +147,27 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     if (answerSubmitted) return;
     
     setAnswerSubmitted(true);
+    const currentQuestion = questions[currentQuestionIndex];
+    
     toast({
       title: "Time's Up! ⏰",
-      description: "Moving to next question...",
+      description: `Correct answer: ${getOptionText(currentQuestion, currentQuestion.correct_answer)}`,
       variant: "destructive",
     });
+
+    setShowResult(true);
 
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedAnswer('');
         setTimeLeft(30);
+        setShowResult(false);
         setAnswerSubmitted(false);
       } else {
         endGame();
       }
-    }, 1500);
+    }, 2000);
   };
 
   const getPointsForDifficulty = (difficulty: string): number => {
@@ -216,11 +198,20 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
   const endGame = async () => {
     setGameStatus('finished');
     
+    toast({
+      title: "Game Complete! 🏆",
+      description: `You scored ${score} CCTR with ${correctAnswers}/${questions.length} correct answers!`,
+    });
+    
     // Submit score to Solana blockchain if wallet is connected
     if (isWalletConnected()) {
       const result = await submitScore(score, category);
       if (result.success) {
         console.log('Score successfully submitted to Solana blockchain');
+        toast({
+          title: "Score Submitted! 🔗",
+          description: "Your score has been recorded on the Solana blockchain",
+        });
       }
     }
 
@@ -233,8 +224,10 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             user_id: user.id,
             amount: score,
             transaction_type: 'trivia_reward',
-            description: `Trivia game: ${correctAnswers}/${questions.length} correct, ${score} points`
+            description: `${category} trivia: ${correctAnswers}/${questions.length} correct, ${score} CCTR earned`
           });
+        
+        console.log('Score saved to database');
       } catch (error) {
         console.error('Error saving to database:', error);
       }
@@ -249,9 +242,9 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     return (
       <Card className="arcade-frame">
         <CardContent className="text-center py-12">
-          <div className="text-4xl mb-4">🔄</div>
-          <h3 className="text-xl font-bold text-neon-cyan mb-2">Loading Questions...</h3>
-          <p className="text-muted-foreground">Preparing your trivia challenge</p>
+          <div className="text-4xl mb-4">🎮</div>
+          <h3 className="text-xl font-bold text-neon-cyan mb-2">Loading Gaming Questions...</h3>
+          <p className="text-muted-foreground">Preparing your {category} trivia challenge</p>
         </CardContent>
       </Card>
     );
@@ -265,14 +258,14 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-cyan text-center">
-            🏆 GAME COMPLETE!
+            🏆 GAMING TRIVIA COMPLETE!
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="p-4 bg-gray-800/30 rounded">
               <div className="text-3xl font-bold text-neon-green">{score}</div>
-              <p className="text-sm text-muted-foreground">Total Score</p>
+              <p className="text-sm text-muted-foreground">CCTR Earned</p>
             </div>
             <div className="p-4 bg-gray-800/30 rounded">
               <div className="text-3xl font-bold text-neon-purple">{correctAnswers}/{questions.length}</div>
@@ -284,10 +277,16 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             </div>
           </div>
           
+          <div className="mb-4">
+            <Badge className="bg-neon-cyan text-black text-lg px-4 py-2 mb-2">
+              🎮 {category.replace('-', ' ').toUpperCase()} MASTER
+            </Badge>
+          </div>
+          
           {connectedWallet && (
             <div className="mb-6">
               <Badge className="bg-neon-green text-black text-lg px-4 py-2">
-                🔗 Submitted to Solana! +{score} CCTR
+                🔗 Blockchain Verified! +{score} CCTR
               </Badge>
               {isSubmitting && (
                 <p className="text-sm text-muted-foreground mt-2">
@@ -297,9 +296,11 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             </div>
           )}
           
-          <Button onClick={onBackToMenu} className="cyber-button">
-            Back to Menu
-          </Button>
+          <div className="space-y-2">
+            <Button onClick={onBackToMenu} className="cyber-button w-full">
+              🏠 Back to Gaming Categories
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -315,7 +316,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="font-display text-2xl text-neon-cyan">
-              Question {currentQuestionIndex + 1} of {questions.length}
+              🎮 {category.replace('-', ' ').toUpperCase()} Question {currentQuestionIndex + 1}/{questions.length}
             </CardTitle>
             <Button onClick={onBackToMenu} variant="outline" size="sm">
               ← Exit Game
@@ -329,7 +330,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
         <Card className="holographic p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">Time Remaining</span>
-            <Badge variant={timeLeft <= 10 ? "destructive" : "default"}>
+            <Badge variant={timeLeft <= 10 ? "destructive" : timeLeft <= 20 ? "secondary" : "default"}>
               {timeLeft}s
             </Badge>
           </div>
@@ -356,12 +357,14 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
               currentQuestion.difficulty === 'medium' ? 'bg-yellow-500' :
               'bg-red-500'
             } text-white`}>
-              {currentQuestion.difficulty.toUpperCase()}
+              {currentQuestion.difficulty.toUpperCase()} • +{getPointsForDifficulty(currentQuestion.difficulty)} CCTR
             </Badge>
-            <Badge variant="outline">{category.toUpperCase()}</Badge>
+            <Badge variant="outline" className="border-neon-cyan text-neon-cyan">
+              🎮 {category.replace('-', ' ').toUpperCase()}
+            </Badge>
           </div>
           
-          <CardTitle className="font-display text-xl md:text-2xl text-center">
+          <CardTitle className="font-display text-xl md:text-2xl text-center leading-relaxed">
             {currentQuestion.question}
           </CardTitle>
         </CardHeader>
@@ -379,20 +382,20 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
                 onClick={() => handleAnswerSelect(option.letter)}
                 disabled={answerSubmitted}
                 variant={selectedAnswer === option.letter ? "default" : "outline"}
-                className={`h-auto p-4 text-left justify-start ${
+                className={`h-auto p-4 text-left justify-start text-wrap ${
                   showResult && answerSubmitted ? (
                     option.letter === currentQuestion.correct_answer ? 
-                    'bg-green-500/20 border-green-500' :
+                    'bg-green-500/30 border-green-500 text-green-100' :
                     option.letter === selectedAnswer ?
-                    'bg-red-500/20 border-red-500' :
+                    'bg-red-500/30 border-red-500 text-red-100' :
                     'opacity-50'
                   ) : selectedAnswer === option.letter ?
                   'cyber-button' : 
-                  'hover:bg-gray-800/50'
+                  'hover:bg-gray-800/50 transition-colors'
                 }`}
               >
-                <span className="font-bold mr-3">{option.letter}.</span>
-                <span>{option.text}</span>
+                <span className="font-bold mr-3 text-neon-cyan">{option.letter}.</span>
+                <span className="flex-1">{option.text}</span>
               </Button>
             ))}
           </div>
@@ -401,11 +404,22 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             <Button
               onClick={handleSubmitAnswer}
               disabled={!selectedAnswer || answerSubmitted}
-              className="cyber-button px-8"
+              className="cyber-button px-8 py-3"
+              size="lg"
             >
-              {answerSubmitted ? 'Submitted' : 'Submit Answer'}
+              {answerSubmitted ? '✓ Submitted' : '🎯 Submit Answer'}
             </Button>
           </div>
+
+          {showResult && (
+            <div className="mt-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {currentQuestionIndex < questions.length - 1 
+                  ? 'Next question loading...' 
+                  : 'Calculating final score...'}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
