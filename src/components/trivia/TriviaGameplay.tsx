@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(15);
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [gameStatus, setGameStatus] = useState<'loading' | 'playing' | 'finished'>('loading');
@@ -70,7 +69,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
       
       setQuestions(gameQuestions);
       setGameStatus('playing');
-      setTimeLeft(30);
+      setTimeLeft(15);
       setCurrentQuestionIndex(0);
       setSelectedAnswer('');
       setScore(0);
@@ -80,7 +79,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
       
       toast({
         title: "Game Started! 🎮",
-        description: `Loading ${category} gaming trivia questions`,
+        description: `Loading ${category} gaming trivia questions - 15 seconds per question!`,
       });
     } catch (error) {
       console.error('Error loading questions:', error);
@@ -134,7 +133,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedAnswer('');
-        setTimeLeft(30);
+        setTimeLeft(15);
         setShowResult(false);
         setAnswerSubmitted(false);
       } else {
@@ -151,7 +150,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     
     toast({
       title: "Time's Up! ⏰",
-      description: `Correct answer: ${getOptionText(currentQuestion, currentQuestion.correct_answer)}`,
+      description: `No rewards earned - Correct answer: ${getOptionText(currentQuestion, currentQuestion.correct_answer)}`,
       variant: "destructive",
     });
 
@@ -161,7 +160,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedAnswer('');
-        setTimeLeft(30);
+        setTimeLeft(15);
         setShowResult(false);
         setAnswerSubmitted(false);
       } else {
@@ -180,9 +179,10 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
   };
 
   const getSpeedBonus = (timeRemaining: number): number => {
-    if (timeRemaining >= 20) return 1.5; // 150% for very fast
-    if (timeRemaining >= 10) return 1.2; // 120% for fast
-    return 1.0; // Base points for slow
+    // Updated for 15-second timer
+    if (timeRemaining >= 12) return 1.5; // 150% for very fast (12-15 seconds)
+    if (timeRemaining >= 8) return 1.2; // 120% for fast (8-11 seconds)
+    return 1.0; // Base points for slow (0-7 seconds)
   };
 
   const getOptionText = (question: TriviaQuestion, optionLetter: string): string => {
@@ -330,12 +330,12 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
         <Card className="holographic p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">Time Remaining</span>
-            <Badge variant={timeLeft <= 10 ? "destructive" : timeLeft <= 20 ? "secondary" : "default"}>
+            <Badge variant={timeLeft <= 5 ? "destructive" : timeLeft <= 10 ? "secondary" : "default"}>
               {timeLeft}s
             </Badge>
           </div>
           <Progress 
-            value={(timeLeft / 30) * 100} 
+            value={(timeLeft / 15) * 100} 
             className="h-3"
           />
         </Card>
