@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ import { TokenPurchase } from '@/components/TokenPurchase';
 import { CCTRStaking } from '@/components/CCTRStaking';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
-import { VirtualArcade } from '@/components/VirtualArcade';
 import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { useToast } from '@/hooks/use-toast';
@@ -139,11 +137,6 @@ const Index = () => {
             <div className="flex justify-center mx-0 px-0">
               <CyberMusicPlayer />
             </div>
-          </section>
-
-          {/* Virtual Arcade Section - NEW */}
-          <section>
-            <VirtualArcade />
           </section>
 
           {/* Community Hub Section - Added after Dashboard */}
