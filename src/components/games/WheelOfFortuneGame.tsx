@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useWheelContract } from '@/hooks/useWheelContract';
 import { getRandomPhrase } from '@/data/gamingPhrases';
-import { Zap, Star, Trophy, Coins, Gift, Gem, Skull, Sparkles } from 'lucide-react';
+import { Zap, Star, Trophy, Coins, Gift, Gem, Skull, Sparkles, Headphones, Monitor, Gamepad2 } from 'lucide-react';
 
 interface WheelPrize {
   id: string;
@@ -19,14 +19,14 @@ interface WheelPrize {
 }
 
 const wheelPrizes: WheelPrize[] = [
-  { id: '1', name: '500 CCTR', icon: <Coins className="w-6 h-6" />, color: '#00ff41', cctrValue: 500, type: 'prize' },
-  { id: '2', name: '1000 CCTR', icon: <Zap className="w-6 h-6" />, color: '#ff0080', cctrValue: 1000, type: 'prize' },
-  { id: '3', name: 'LOSE EVERYTHING', icon: <Skull className="w-6 h-6" />, color: '#ff0000', cctrValue: 0, type: 'bankrupt' },
-  { id: '4', name: '750 CCTR', icon: <Star className="w-6 h-6" />, color: '#0080ff', cctrValue: 750, type: 'prize' },
-  { id: '5', name: '2000 CCTR', icon: <Trophy className="w-6 h-6" />, color: '#ffaa00', cctrValue: 2000, type: 'prize' },
-  { id: '6', name: '250 CCTR', icon: <Gift className="w-6 h-6" />, color: '#ff4000', cctrValue: 250, type: 'prize' },
-  { id: '7', name: 'LOSE EVERYTHING', icon: <Skull className="w-6 h-6" />, color: '#ff0000', cctrValue: 0, type: 'bankrupt' },
-  { id: '8', name: '1500 CCTR', icon: <Gem className="w-6 h-6" />, color: '#8000ff', cctrValue: 1500, type: 'prize' }
+  { id: '1', name: '100 CCTR', icon: <span className="text-2xl">💎</span>, color: '#ffaa00', cctrValue: 100, type: 'prize' },
+  { id: '2', name: 'HEADPHONES', icon: <Headphones className="w-8 h-8" />, color: '#00ffff', cctrValue: 50, type: 'prize' },
+  { id: '3', name: 'LOSE EVERYTHING', icon: <span className="text-2xl">💀</span>, color: '#ff0080', cctrValue: 0, type: 'bankrupt' },
+  { id: '4', name: 'PC SETUP', icon: <Monitor className="w-8 h-8" />, color: '#0080ff', cctrValue: 350, type: 'prize' },
+  { id: '5', name: 'CONTROLLER', icon: <Gamepad2 className="w-8 h-8" />, color: '#8000ff', cctrValue: 150, type: 'prize' },
+  { id: '6', name: '750 CCTR', icon: <span className="text-2xl">🎮</span>, color: '#ffaa00', cctrValue: 750, type: 'prize' },
+  { id: '7', name: 'NFT PRIZE', icon: <span className="text-2xl">🖼️</span>, color: '#00ff41', cctrValue: 200, type: 'prize' },
+  { id: '8', name: 'GAMING CHAIR', icon: <span className="text-2xl">🪑</span>, color: '#ff4000', cctrValue: 300, type: 'prize' }
 ];
 
 const WheelOfFortuneGame: React.FC = () => {
@@ -89,7 +89,7 @@ const WheelOfFortuneGame: React.FC = () => {
     setIsSpinning(true);
     setHighlightedPrize(null);
     
-    // Slower spin with more rotations for better suspense
+    // 5 second spin with multiple rotations
     const spins = 8 + Math.random() * 4; // 8-12 full rotations
     const finalAngle = Math.random() * 360;
     const totalRotation = spins * 360 + finalAngle;
@@ -110,7 +110,7 @@ const WheelOfFortuneGame: React.FC = () => {
         setBankTotal(0);
         setRoundEarnings([]);
         toast({
-          title: "💀 BANKRUPT!",
+          title: "💀 LOSE EVERYTHING!",
           description: "You lost everything! Spin again to rebuild your winnings.",
           variant: "destructive",
         });
@@ -208,7 +208,7 @@ const WheelOfFortuneGame: React.FC = () => {
       });
 
       // Process rewards through Solana contract
-      await processReward(bankTotal, `Wheel of Fortune - ${currentPhrase.category}`);
+      await processReward(bankTotal, `Cyber City Wheel - ${currentPhrase.category}`);
     } else {
       toast({
         title: won ? "Puzzle Solved!" : "Game Over",
@@ -251,11 +251,11 @@ const WheelOfFortuneGame: React.FC = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-4xl text-neon-cyan flex items-center justify-center gap-3">
             <Zap className="w-10 h-10 animate-pulse" />
-            WHEEL OF FORTUNE
+            CYBER CITY WHEEL
             <Zap className="w-10 h-10 animate-pulse" />
           </CardTitle>
           <p className="text-xl text-neon-purple mt-2">
-            Spin the wheel, collect prizes, solve gaming phrases!
+            Spin the futuristic wheel, collect prizes, solve gaming phrases!
           </p>
         </CardHeader>
         <CardContent className="space-y-8">
@@ -264,12 +264,12 @@ const WheelOfFortuneGame: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-4 text-left">
               <div className="space-y-2">
                 <p className="text-neon-purple">🎰 <strong>Spin the Wheel:</strong> Land on prizes to build your bank</p>
-                <p className="text-neon-purple">💀 <strong>Avoid Bankrupt:</strong> Lose everything and start over</p>
+                <p className="text-neon-purple">💀 <strong>Avoid "LOSE EVERYTHING":</strong> Lose all banked prizes</p>
                 <p className="text-neon-purple">🎮 <strong>Guess Letters:</strong> Reveal the gaming phrase</p>
               </div>
               <div className="space-y-2">
                 <p className="text-neon-purple">🧩 <strong>Solve the Puzzle:</strong> Complete the phrase to win</p>
-                <p className="text-neon-purple">🎊 <strong>Win Your Bank:</strong> Get all your collected CCTR tokens</p>
+                <p className="text-neon-purple">🎊 <strong>Win Your Bank:</strong> Get all your collected prizes</p>
                 <p className="text-neon-purple">⚡ <strong>5 Wrong Guesses:</strong> Game over!</p>
               </div>
             </div>
@@ -325,7 +325,7 @@ const WheelOfFortuneGame: React.FC = () => {
             <div className="flex items-center gap-4 flex-wrap">
               <Badge variant="secondary" className="text-lg px-4 py-2">
                 <Zap className="w-5 h-5 mr-2 animate-pulse" />
-                Wheel of Fortune
+                Cyber City Wheel
               </Badge>
               <div className="text-sm space-x-4">
                 <span className="text-neon-cyan animate-pulse">Bank: {bankTotal} CCTR</span>
@@ -344,52 +344,54 @@ const WheelOfFortuneGame: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Enhanced Wheel with Neon Effects */}
-      <Card className="holographic">
+      {/* Cyber City Arcade Wheel */}
+      <Card className="holographic bg-gradient-to-b from-blue-900/50 to-purple-900/50">
         <CardContent className="p-8">
           <div className="flex flex-col items-center space-y-6">
-            <div className="relative">
-              {/* Outer Neon Ring */}
-              <div className="absolute -inset-8 rounded-full border-4 border-neon-cyan animate-pulse shadow-[0_0_50px_#00ffff]"></div>
-              
-              {/* Middle Neon Ring */}
-              <div className="absolute -inset-6 rounded-full border-2 border-neon-pink animate-pulse shadow-[0_0_30px_#ff0080]" style={{ animationDelay: '0.5s' }}></div>
-              
-              {/* Inner Neon Ring */}
-              <div className="absolute -inset-4 rounded-full border-2 border-neon-purple animate-pulse shadow-[0_0_20px_#8000ff]" style={{ animationDelay: '1s' }}></div>
+            {/* Cyberpunk Background Elements */}
+            <div className="absolute inset-0 overflow-hidden opacity-10">
+              <div className="absolute top-10 left-10 w-4 h-20 bg-neon-cyan animate-pulse"></div>
+              <div className="absolute top-20 right-20 w-4 h-16 bg-neon-pink animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              <div className="absolute bottom-10 left-20 w-4 h-24 bg-neon-purple animate-pulse" style={{ animationDelay: '1s' }}></div>
+              <div className="absolute bottom-20 right-10 w-4 h-18 bg-yellow-400 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+            </div>
 
+            <div className="relative">
+              {/* Outer Neon Rings - Multiple layers like the image */}
+              <div className="absolute -inset-12 rounded-full border-4 border-neon-cyan animate-pulse shadow-[0_0_80px_#00ffff]"></div>
+              <div className="absolute -inset-10 rounded-full border-4 border-neon-pink animate-pulse shadow-[0_0_60px_#ff0080]" style={{ animationDelay: '0.5s' }}></div>
+              <div className="absolute -inset-8 rounded-full border-4 border-yellow-400 animate-pulse shadow-[0_0_40px_#ffaa00]" style={{ animationDelay: '1s' }}></div>
+              
               {/* Spinning Light Effect */}
-              <div className="absolute -inset-10 rounded-full">
-                {Array.from({length: 12}).map((_, i) => (
+              <div className="absolute -inset-16 rounded-full">
+                {Array.from({length: 16}).map((_, i) => (
                   <div
                     key={i}
-                    className="absolute w-4 h-4 bg-neon-cyan rounded-full animate-ping"
+                    className="absolute w-3 h-3 bg-neon-cyan rounded-full animate-ping"
                     style={{
                       top: '50%',
                       left: '50%',
-                      transform: `rotate(${i * 30}deg) translateY(-200px)`,
+                      transform: `rotate(${i * 22.5}deg) translateY(-240px)`,
                       animationDelay: `${i * 0.1}s`
                     }}
                   ></div>
                 ))}
               </div>
 
-              {/* Pointer */}
-              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-20">
+              {/* Pointer - Triangle like in the image */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-20">
                 <div 
-                  className="w-8 h-16 bg-gradient-to-b from-neon-cyan to-white rounded-full shadow-[0_0_30px_#00ffff]" 
-                  style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}
+                  className="w-0 h-0 border-l-[20px] border-r-[20px] border-b-[40px] border-l-transparent border-r-transparent border-b-neon-cyan shadow-[0_0_30px_#00ffff]"
                 >
                 </div>
               </div>
 
-              {/* Wheel */}
+              {/* Main Wheel - Cyber City Style */}
               <div 
                 ref={wheelRef}
-                className="w-96 h-96 rounded-full relative border-8 border-neon-cyan shadow-[0_0_80px_#00ffff] transition-transform duration-[5000ms] ease-out"
+                className="w-96 h-96 rounded-full relative border-8 border-neon-cyan shadow-[0_0_100px_#00ffff] transition-transform duration-[5000ms] ease-out bg-gradient-to-br from-blue-900/80 to-purple-900/80"
                 style={{ 
-                  transform: `rotate(${currentRotation}deg)`,
-                  background: 'radial-gradient(circle, hsl(var(--card-bg)), hsl(240 10% 8%))'
+                  transform: `rotate(${currentRotation}deg)`
                 }}
               >
                 {wheelPrizes.map((prize, index) => {
@@ -406,14 +408,15 @@ const WheelOfFortuneGame: React.FC = () => {
                       }}
                     >
                       <div 
-                        className={`w-full h-full ${isHighlighted ? 'shadow-[0_0_40px_#00ffff]' : ''}`}
+                        className={`w-full h-full border-2 ${isHighlighted ? 'shadow-[0_0_60px_#00ffff] border-neon-cyan' : 'border-transparent'}`}
                         style={{
-                          background: `linear-gradient(45deg, ${prize.color}60, ${prize.color}80)`,
-                          border: isHighlighted ? `3px solid ${prize.color}` : 'none'
+                          background: prize.type === 'bankrupt' 
+                            ? `linear-gradient(45deg, #ff008080, #ff0080ff)` 
+                            : `linear-gradient(45deg, ${prize.color}40, ${prize.color}80)`,
                         }}
                       >
                         <div 
-                          className="absolute text-white font-bold text-sm flex flex-col items-center justify-center"
+                          className="absolute text-white font-bold text-xs flex flex-col items-center justify-center"
                           style={{
                             top: '25%',
                             left: '48%',
@@ -425,7 +428,7 @@ const WheelOfFortuneGame: React.FC = () => {
                           <div className={`mb-2 ${isHighlighted ? 'animate-spin' : ''}`}>
                             {prize.icon}
                           </div>
-                          <div className="text-center whitespace-nowrap text-xs font-bold">
+                          <div className="text-center whitespace-nowrap font-bold text-[10px] leading-tight">
                             {prize.name}
                           </div>
                         </div>
@@ -434,10 +437,21 @@ const WheelOfFortuneGame: React.FC = () => {
                   );
                 })}
 
-                {/* Center Hub with Enhanced Effects */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gradient-to-br from-neon-cyan via-neon-purple to-neon-pink rounded-full flex items-center justify-center shadow-[0_0_40px_#00ffff] animate-pulse">
-                  <div className="w-16 h-16 bg-gradient-to-br from-neon-pink to-neon-cyan rounded-full flex items-center justify-center">
-                    <Zap className="w-10 h-10 text-black animate-pulse" />
+                {/* Center Hub - "CYBER CITY ARCADE" */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-gradient-to-br from-neon-cyan via-neon-purple to-neon-pink rounded-full flex items-center justify-center shadow-[0_0_50px_#00ffff] animate-pulse border-4 border-neon-cyan">
+                  <div className="text-center">
+                    <div className="text-[8px] font-bold text-neon-cyan leading-tight">CYBER</div>
+                    <div className="text-[8px] font-bold text-neon-cyan leading-tight">CITY</div>
+                    <div className="text-[6px] font-bold text-neon-purple leading-tight">ARCADE</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Bottom Label */}
+              <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
+                <div className="bg-gradient-to-r from-neon-cyan to-neon-purple px-8 py-2 rounded-lg border-2 border-neon-cyan shadow-[0_0_30px_#00ffff]">
+                  <div className="text-neon-cyan font-bold text-lg tracking-wider">
+                    CYBER CITY WHEEL
                   </div>
                 </div>
               </div>
@@ -447,7 +461,7 @@ const WheelOfFortuneGame: React.FC = () => {
               <Button 
                 onClick={spinWheel}
                 disabled={isSpinning}
-                className="cyber-button text-xl px-12 py-4"
+                className="cyber-button text-xl px-12 py-4 mt-8"
               >
                 {isSpinning ? (
                   <>
