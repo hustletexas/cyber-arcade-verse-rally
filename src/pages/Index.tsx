@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import WheelOfFortuneGame from '@/components/games/WheelOfFortuneGame';
+import WheelOfGaming from '@/components/games/WheelOfGaming';
 
 const Index = () => {
   const { toast } = useToast();
@@ -166,17 +166,17 @@ const Index = () => {
             <TriviaGame />
           </section>
 
-          {/* Wheel of Fortune Game Section - Separate section with proper heading */}
+          {/* Wheel of Gaming Section - Futuristic spinning wheel with prizes */}
           <section>
             <div className="text-center mb-8">
               <h2 className="text-3xl md:text-4xl font-bold text-neon-cyan mb-4">
-                🎰 Wheel of Fortune Gaming Edition
+                🎰 Wheel of Gaming
               </h2>
               <p className="text-lg text-neon-purple">
-                Spin the wheel and guess gaming phrases to win CCTR tokens!
+                Spin the futuristic wheel for a chance to win CCTR tokens and exclusive prizes!
               </p>
             </div>
-            <WheelOfFortuneGame />
+            <WheelOfGaming />
           </section>
 
           {/* Raffles Section */}
