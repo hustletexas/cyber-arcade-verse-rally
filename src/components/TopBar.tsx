@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { ShoppingCart, ChevronDown, Wallet } from 'lucide-react';
 import { WalletConnectionModal } from './WalletConnectionModal';
 import { 
@@ -35,6 +36,9 @@ export const TopBar = () => {
     switchPrimaryWallet,
     getWalletIcon 
   } = useMultiWallet();
+  
+  // Initialize wallet authentication
+  useWalletAuth();
   
   const [showWalletModal, setShowWalletModal] = useState(false);
 
@@ -110,6 +114,11 @@ export const TopBar = () => {
                           {user.user_metadata?.username || user.email?.split('@')[0]}
                         </p>
                         <p className="text-neon-purple text-xs">{user.email}</p>
+                        {primaryWallet && (
+                          <p className="text-neon-green text-xs">
+                            {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 6)}...
+                          </p>
+                        )}
                       </div>
                       <Badge className="bg-neon-green text-black">
                         🔐 AUTHENTICATED
@@ -191,6 +200,17 @@ export const TopBar = () => {
                   </Button>
                 )}
               </div>
+
+              {/* Show login button only if no wallet connected and no user */}
+              {!user && !isWalletConnected && (
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  className="cyber-button flex items-center gap-2"
+                  size="sm"
+                >
+                  🔐 LOGIN
+                </Button>
+              )}
             </div>
           </div>
         </div>

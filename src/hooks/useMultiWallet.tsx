@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export type WalletType = 'phantom' | 'solflare' | 'backpack' | 'coinbase' | 'created';
 
@@ -13,6 +15,7 @@ export interface ConnectedWallet {
 
 export const useMultiWallet = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([]);
   const [primaryWallet, setPrimaryWallet] = useState<ConnectedWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -110,6 +113,23 @@ export const useMultiWallet = () => {
     }
   };
 
+  const linkWalletToProfile = async (walletAddress: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ wallet_address: walletAddress })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      console.log('Wallet linked to profile:', walletAddress);
+    } catch (error) {
+      console.error('Error linking wallet to profile:', error);
+    }
+  };
+
   const connectWallet = useCallback(async (type: WalletType, address: string) => {
     const newWallet: ConnectedWallet = {
       type,
@@ -127,11 +147,16 @@ export const useMultiWallet = () => {
       setPrimaryWallet(newWallet);
     }
 
+    // Link wallet to user profile if logged in
+    if (user) {
+      await linkWalletToProfile(address);
+    }
+
     toast({
       title: "Wallet Connected!",
       description: `${type.charAt(0).toUpperCase() + type.slice(1)} wallet connected successfully`,
     });
-  }, [primaryWallet, toast]);
+  }, [primaryWallet, toast, user]);
 
   const disconnectWallet = useCallback(async (type: WalletType) => {
     try {
@@ -173,13 +198,19 @@ export const useMultiWallet = () => {
     }
   }, [connectedWallets, primaryWallet, toast]);
 
-  const switchPrimaryWallet = useCallback((wallet: ConnectedWallet) => {
+  const switchPrimaryWallet = useCallback(async (wallet: ConnectedWallet) => {
     setPrimaryWallet(wallet);
+    
+    // Update profile with new primary wallet
+    if (user) {
+      await linkWalletToProfile(wallet.address);
+    }
+    
     toast({
       title: "Primary Wallet Changed",
       description: `Switched to ${wallet.type} wallet`,
     });
-  }, [toast]);
+  }, [toast, user]);
 
   const getWalletIcon = (type: WalletType) => {
     switch (type) {

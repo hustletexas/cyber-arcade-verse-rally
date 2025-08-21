@@ -92,22 +92,7 @@ const Index = () => {
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
           
-          {/* Login/Signup Button */}
-          <div className="flex justify-center mb-4 px-4">
-            {loading ? (
-              <div className="text-neon-cyan">Loading...</div>
-            ) : !user ? (
-              <Button 
-                onClick={() => navigate('/auth')}
-                className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
-              >
-                <span className="text-lg">🔐</span>
-                LOGIN / SIGNUP
-              </Button>
-            ) : null}
-          </div>
-
-          {/* Wallet Manager - Between Login and Mint NFT */}
+          {/* Wallet Manager - Now handles both wallet connection and authentication */}
           <div className="flex justify-center mb-4 px-4">
             <WalletManager />
           </div>
