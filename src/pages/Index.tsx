@@ -20,20 +20,22 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/hooks/useWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { toast } = useToast();
   const { isWalletConnected } = useWallet();
+  const { isFullyAuthenticated } = useWalletAuth();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   const mintFreeNFT = async () => {
-    if (!isWalletConnected()) {
+    if (!isFullyAuthenticated) {
       toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet first to mint your free NFT",
+        title: "Authentication Required",
+        description: "Please connect your Phantom wallet to mint your free NFT",
         variant: "destructive",
       });
       return;
@@ -92,19 +94,33 @@ const Index = () => {
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
           
-          {/* Login/Signup Button */}
+          {/* Authentication Status Display */}
           <div className="flex justify-center mb-4 px-4">
             {loading ? (
               <div className="text-neon-cyan">Loading...</div>
-            ) : !user ? (
-              <Button 
-                onClick={() => navigate('/auth')}
-                className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
-              >
-                <span className="text-lg">🔐</span>
-                LOGIN / SIGNUP
-              </Button>
-            ) : null}
+            ) : !isFullyAuthenticated ? (
+              <div className="space-y-4">
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+                >
+                  <span className="text-lg">🔐</span>
+                  CONNECT PHANTOM WALLET
+                </Button>
+                <p className="text-sm text-neon-purple">
+                  Connect your Phantom wallet to automatically authenticate and start playing!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Badge className="bg-neon-green text-black text-lg px-6 py-2">
+                  ✅ WALLET CONNECTED & AUTHENTICATED
+                </Badge>
+                <p className="text-sm text-neon-cyan">
+                  You're ready to play and transact with the app!
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Wallet Manager - Between Login and Mint NFT */}
@@ -117,8 +133,9 @@ const Index = () => {
             <Button 
               onClick={mintFreeNFT} 
               className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+              disabled={!isFullyAuthenticated}
             >
-              🔨 MINT FREE NFT
+              🔨 {isFullyAuthenticated ? 'MINT FREE NFT' : 'CONNECT WALLET TO MINT'}
             </Button>
           </div>
         </div>
