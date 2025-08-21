@@ -94,6 +94,10 @@ export const TopBar = () => {
     }
   };
 
+  const handleManageWallets = () => {
+    setShowWalletManager(true);
+  };
+
   return (
     <>
       <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -168,14 +172,30 @@ export const TopBar = () => {
               {/* Multi-Wallet Connection */}
               <div className="flex items-center gap-2">
                 {!isWalletConnected ? (
-                  <Button 
-                    onClick={handleWalletConnect}
-                    className="cyber-button flex items-center gap-2"
-                    size="sm"
-                  >
-                    <Wallet size={16} />
-                    CONNECT WALLET
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        className="cyber-button flex items-center gap-2"
+                        size="sm"
+                      >
+                        <Wallet size={16} />
+                        CONNECT WALLET
+                        <ChevronDown size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
+                      <DropdownMenuLabel>Wallet Options</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
+                        <Wallet size={16} className="mr-2" />
+                        Connect External Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleManageWallets} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : hasMultipleWallets ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -211,7 +231,7 @@ export const TopBar = () => {
                         </DropdownMenuItem>
                       ))}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setShowWalletManager(true)} className="hover:bg-neon-cyan/10">
+                      <DropdownMenuItem onClick={handleManageWallets} className="hover:bg-neon-cyan/10">
                         <Settings size={16} className="mr-2" />
                         Manage Wallets
                       </DropdownMenuItem>
@@ -244,7 +264,7 @@ export const TopBar = () => {
                     <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
                       <DropdownMenuLabel>Wallet Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setShowWalletManager(true)} className="hover:bg-neon-cyan/10">
+                      <DropdownMenuItem onClick={handleManageWallets} className="hover:bg-neon-cyan/10">
                         <Settings size={16} className="mr-2" />
                         Manage Wallets
                       </DropdownMenuItem>
