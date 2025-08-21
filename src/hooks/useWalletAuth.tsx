@@ -47,7 +47,8 @@ export const useWalletAuth = () => {
 
   const createWalletAccount = async (walletAddress: string) => {
     try {
-      const walletEmail = `${walletAddress.slice(0, 8)}@wallet.cybercity`;
+      // Use a more standard email format that Supabase will accept
+      const walletEmail = `${walletAddress.toLowerCase().slice(0, 8)}.wallet@cybercity.app`;
       
       const { error } = await supabase.auth.signUp({
         email: walletEmail,
@@ -69,10 +70,22 @@ export const useWalletAuth = () => {
         });
 
         if (signInError) {
-          throw signInError;
+          console.error('Sign in error:', signInError);
+          toast({
+            title: "Authentication Error",
+            description: "Failed to authenticate with wallet. Please try again.",
+            variant: "destructive",
+          });
+          return;
         }
       } else if (error) {
-        throw error;
+        console.error('Sign up error:', error);
+        toast({
+          title: "Authentication Error",
+          description: error.message || "Failed to create wallet account",
+          variant: "destructive",
+        });
+        return;
       }
 
       toast({
@@ -80,9 +93,36 @@ export const useWalletAuth = () => {
         description: "Successfully created and logged into your wallet account",
       });
     } catch (error: any) {
+      console.error('Wallet account creation error:', error);
       toast({
         title: "Authentication Error",
         description: error.message || "Failed to authenticate with wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const logoutWallet = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: "Logout Error",
+          description: "Failed to logout completely",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Logged Out",
+          description: "Successfully logged out from your wallet account",
+        });
+      }
+    } catch (error: any) {
+      console.error('Wallet logout error:', error);
+      toast({
+        title: "Logout Error",
+        description: error.message || "Failed to logout",
         variant: "destructive",
       });
     }
@@ -98,6 +138,7 @@ export const useWalletAuth = () => {
 
   return {
     createOrLoginWithWallet,
-    createWalletAccount
+    createWalletAccount,
+    logoutWallet
   };
 };

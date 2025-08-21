@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { ShoppingCart, ChevronDown, Wallet } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Wallet, LogOut } from 'lucide-react';
 import { WalletConnectionModal } from './WalletConnectionModal';
 import { 
   DropdownMenu, 
@@ -38,21 +38,34 @@ export const TopBar = () => {
   } = useMultiWallet();
   
   // Initialize wallet authentication
-  useWalletAuth();
+  const { logoutWallet } = useWalletAuth();
   
   const [showWalletModal, setShowWalletModal] = useState(false);
 
   const handleSignOut = async () => {
     try {
+      // If user has wallet connected, also logout from wallet auth
+      if (isWalletConnected) {
+        await logoutWallet();
+      }
+      
+      // Sign out from regular auth
       await signOut();
+      
+      // Disconnect all wallets
+      for (const wallet of connectedWallets) {
+        await disconnectWallet(wallet.type);
+      }
+      
       toast({
         title: "Goodbye!",
         description: "Successfully logged out from Cyber City Arcade",
       });
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to logout completely",
         variant: "destructive",
       });
     }
@@ -62,8 +75,22 @@ export const TopBar = () => {
     setShowWalletModal(true);
   };
 
-  const handleDisconnectWallet = (walletType: string) => {
-    disconnectWallet(walletType as any);
+  const handleDisconnectWallet = async (walletType: string) => {
+    try {
+      // If this is the primary wallet and user is logged in via wallet, logout first
+      if (primaryWallet?.type === walletType && user) {
+        await logoutWallet();
+      }
+      
+      await disconnectWallet(walletType as any);
+    } catch (error: any) {
+      console.error('Wallet disconnect error:', error);
+      toast({
+        title: "Disconnect Error",
+        description: error.message || "Failed to disconnect wallet",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -127,8 +154,9 @@ export const TopBar = () => {
                         onClick={handleSignOut}
                         variant="outline" 
                         size="sm"
-                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1"
                       >
+                        <LogOut size={14} />
                         Logout
                       </Button>
                     </div>
@@ -186,18 +214,44 @@ export const TopBar = () => {
                         <Wallet size={16} className="mr-2" />
                         Add Wallet
                       </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
+                        className="text-neon-pink"
+                      >
+                        <LogOut size={16} className="mr-2" />
+                        Disconnect Wallet
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Button 
-                    onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
-                    variant="outline"
-                    size="sm"
-                    className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
-                  >
-                    {getWalletIcon(primaryWallet?.type || 'phantom')} 
-                    {primaryWallet?.address.slice(0, 6)}...
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                      >
+                        {getWalletIcon(primaryWallet?.type || 'phantom')} 
+                        {primaryWallet?.address.slice(0, 6)}...
+                        <ChevronDown size={16} className="ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="arcade-frame">
+                      <DropdownMenuLabel>Wallet Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleWalletConnect}>
+                        <Wallet size={16} className="mr-2" />
+                        Add Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
+                        className="text-neon-pink"
+                      >
+                        <LogOut size={16} className="mr-2" />
+                        Disconnect Wallet
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
 
