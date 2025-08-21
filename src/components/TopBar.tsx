@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,8 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { ShoppingCart, ChevronDown, Wallet, LogOut } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings } from 'lucide-react';
 import { WalletConnectionModal } from './WalletConnectionModal';
+import { WalletManager } from './WalletManager';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -41,6 +41,7 @@ export const TopBar = () => {
   const { logoutWallet } = useWalletAuth();
   
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showWalletManager, setShowWalletManager] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -188,14 +189,14 @@ export const TopBar = () => {
                         <ChevronDown size={16} className="ml-1" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame">
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
                       <DropdownMenuLabel>Connected Wallets</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       {connectedWallets.map((wallet) => (
                         <DropdownMenuItem 
                           key={`${wallet.type}-${wallet.address}`}
                           onClick={() => switchPrimaryWallet(wallet)}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 hover:bg-neon-cyan/10"
                         >
                           <span>{getWalletIcon(wallet.type)}</span>
                           <span className="flex-1">
@@ -210,13 +211,17 @@ export const TopBar = () => {
                         </DropdownMenuItem>
                       ))}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleWalletConnect}>
+                      <DropdownMenuItem onClick={() => setShowWalletManager(true)} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
                         Add Wallet
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
-                        className="text-neon-pink"
+                        className="text-neon-pink hover:bg-neon-pink/10"
                       >
                         <LogOut size={16} className="mr-2" />
                         Disconnect Wallet
@@ -236,16 +241,20 @@ export const TopBar = () => {
                         <ChevronDown size={16} className="ml-1" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame">
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
                       <DropdownMenuLabel>Wallet Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleWalletConnect}>
+                      <DropdownMenuItem onClick={() => setShowWalletManager(true)} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
                         Add Wallet
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
-                        className="text-neon-pink"
+                        className="text-neon-pink hover:bg-neon-pink/10"
                       >
                         <LogOut size={16} className="mr-2" />
                         Disconnect Wallet
@@ -275,6 +284,20 @@ export const TopBar = () => {
         onClose={() => setShowWalletModal(false)}
         onWalletConnected={connectWallet}
       />
+
+      {showWalletManager && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="relative">
+            <Button
+              onClick={() => setShowWalletManager(false)}
+              className="absolute -top-2 -right-2 z-10 w-8 h-8 p-0 rounded-full bg-neon-pink text-black hover:bg-neon-pink/80"
+            >
+              ✕
+            </Button>
+            <WalletManager />
+          </div>
+        </div>
+      )}
     </>
   );
 };
