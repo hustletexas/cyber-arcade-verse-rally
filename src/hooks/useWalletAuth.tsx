@@ -1,5 +1,4 @@
-
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,47 +9,65 @@ export const useWalletAuth = () => {
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
 
-  const createOrLoginWithWallet = async (walletAddress: string) => {
-    try {
-      // First, check if a user with this wallet exists
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('wallet_address', walletAddress)
-        .single();
+  // Prevent duplicate/parallel auth attempts and rate-limit thrashing
+  const authInProgressRef = useRef(false);
+  const lastAttemptedAddressRef = useRef<string | null>(null);
 
-      if (existingProfile) {
-        // User exists, try to sign them in using their email
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: existingProfile.email,
-          password: walletAddress // Use wallet as password for wallet-only accounts
-        });
+  const getWalletEmail = (walletAddress: string) =>
+    `${walletAddress.toLowerCase().slice(0, 8)}.wallet@cybercity.app`;
 
-        if (signInError) {
-          // If password doesn't work, create a new account
-          await createWalletAccount(walletAddress);
-        } else {
-          toast({
-            title: "Welcome back!",
-            description: "Logged in with your connected wallet",
-          });
-        }
-      } else {
-        // No existing profile, create new account
-        await createWalletAccount(walletAddress);
-      }
-    } catch (error) {
-      console.error('Error in wallet authentication:', error);
-      await createWalletAccount(walletAddress);
-    }
+  const safeResetAuthFlag = () => {
+    authInProgressRef.current = false;
   };
 
-  const createWalletAccount = async (walletAddress: string) => {
+  const signInWithWalletCreds = async (walletAddress: string) => {
+    const walletEmail = getWalletEmail(walletAddress);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: walletEmail,
+      password: walletAddress,
+    });
+    return { signInError };
+  };
+
+  const createOrLoginWithWallet = async (walletAddress: string) => {
+    if (!walletAddress) return;
+
+    // Guard: avoid re-entrancy and spamming signup within 60s
+    if (authInProgressRef.current) {
+      console.log('[WalletAuth] Auth already in progress, skipping.');
+      return;
+    }
+    const cooldownKey = `wallet-auth-cooldown:${walletAddress}`;
+    const last = localStorage.getItem(cooldownKey);
+    const now = Date.now();
+    if (last && now - Number(last) < 60_000) {
+      console.log('[WalletAuth] Cooldown active, skipping signup attempt.');
+      // Still try a sign-in in case account exists now
+      const { signInError } = await signInWithWalletCreds(walletAddress);
+      if (!signInError) {
+        toast({ title: "Welcome back!", description: "Logged in with your connected wallet" });
+      }
+      return;
+    }
+
+    authInProgressRef.current = true;
+    lastAttemptedAddressRef.current = walletAddress;
+
     try {
-      // Use a more standard email format that Supabase will accept
-      const walletEmail = `${walletAddress.toLowerCase().slice(0, 8)}.wallet@cybercity.app`;
-      
-      const { error } = await supabase.auth.signUp({
+      // First try a direct sign-in with deterministic wallet creds
+      const { signInError } = await signInWithWalletCreds(walletAddress);
+
+      if (!signInError) {
+        toast({
+          title: "Welcome back!",
+          description: "Logged in with your connected wallet",
+        });
+        return;
+      }
+
+      // If that fails, create the account
+      const walletEmail = getWalletEmail(walletAddress);
+      const { error: signUpError } = await supabase.auth.signUp({
         email: walletEmail,
         password: walletAddress,
         options: {
@@ -62,44 +79,66 @@ export const useWalletAuth = () => {
         },
       });
 
-      if (error && error.message.includes('User already registered')) {
-        // User exists, try to sign in
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: walletEmail,
-          password: walletAddress,
-        });
-
-        if (signInError) {
-          console.error('Sign in error:', signInError);
+      if (signUpError) {
+        console.error('Sign up error:', signUpError);
+        // Store cooldown if rate limited
+        if ((signUpError as any)?.status === 429) {
+          localStorage.setItem(cooldownKey, String(now));
           toast({
-            title: "Authentication Error",
-            description: "Failed to authenticate with wallet. Please try again.",
-            variant: "destructive",
+            title: "Please wait a moment",
+            description: "We're handling your wallet sign-in. Try again in about a minute.",
           });
           return;
         }
-      } else if (error) {
-        console.error('Sign up error:', error);
+        // If already registered, try sign-in again
+        if (signUpError.message?.toLowerCase().includes('already registered')) {
+          const retry = await signInWithWalletCreds(walletAddress);
+          if (!retry.signInError) {
+            toast({
+              title: "Welcome back!",
+              description: "Logged in with your connected wallet",
+            });
+            return;
+          }
+        }
         toast({
           title: "Authentication Error",
-          description: error.message || "Failed to create wallet account",
+          description: signUpError.message || "Failed to create wallet account",
           variant: "destructive",
         });
         return;
       }
 
+      // Attempt immediate sign-in after sign-up (works if email confirmations are disabled)
+      const retry = await signInWithWalletCreds(walletAddress);
+      if (!retry.signInError) {
+        toast({
+          title: "Account Created!",
+          description: "Successfully created and logged into your wallet account",
+        });
+        return;
+      }
+
+      // If sign-in still fails, likely email confirmation is required
       toast({
-        title: "Account Created!",
-        description: "Successfully created and logged into your wallet account",
+        title: "Check your email",
+        description: "Please confirm your email to complete wallet sign-in.",
       });
     } catch (error: any) {
-      console.error('Wallet account creation error:', error);
+      console.error('Error in wallet authentication:', error);
       toast({
         title: "Authentication Error",
         description: error.message || "Failed to authenticate with wallet",
         variant: "destructive",
       });
+    } finally {
+      safeResetAuthFlag();
     }
+  };
+
+  const createWalletAccount = async (walletAddress: string) => {
+    // Delegate to createOrLogin to keep logic in one place
+    await createOrLoginWithWallet(walletAddress);
   };
 
   const logoutWallet = async () => {
@@ -128,13 +167,17 @@ export const useWalletAuth = () => {
     }
   };
 
-  // Auto-login when wallet connects and no user is logged in
+  // Auto-login when wallet connects and no user is logged in, with guard against duplicate attempts
   useEffect(() => {
-    if (primaryWallet && !user && isWalletConnected) {
-      console.log('Auto-authenticating with wallet:', primaryWallet.address);
-      createOrLoginWithWallet(primaryWallet.address);
+    const addr = primaryWallet?.address;
+    if (addr && !user && isWalletConnected) {
+      if (lastAttemptedAddressRef.current === addr || authInProgressRef.current) {
+        return;
+      }
+      console.log('Auto-authenticating with wallet:', addr);
+      createOrLoginWithWallet(addr);
     }
-  }, [primaryWallet, user, isWalletConnected]);
+  }, [primaryWallet?.address, user, isWalletConnected]); // only re-run if address changes
 
   return {
     createOrLoginWithWallet,

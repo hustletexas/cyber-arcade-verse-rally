@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useWallet } from '@/hooks/useWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 
 const mockNFTs = [
   // Legendary NFTs
@@ -99,42 +100,60 @@ const mockNFTs = [
 export const Marketplace = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isWalletConnected, getConnectedWallet } = useWallet();
+  const { isWalletConnected, primaryWallet } = useMultiWallet();
+  const { createOrLoginWithWallet } = useWalletAuth();
   const { balance, refetch: refreshBalance } = useUserBalance();
   const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('cctr');
   const [filter, setFilter] = useState('all');
   const [purchasing, setPurchasing] = useState<number | null>(null);
 
   const simulateTransaction = async (currency: string, amount: number): Promise<string> => {
-    // Simulate blockchain transaction
     await new Promise(resolve => setTimeout(resolve, 2000));
     return `0x${Math.random().toString(16).slice(2, 42)}`;
   };
 
-  const handlePurchase = async (nft: any) => {
-    if (!user) {
+  const ensureAuthenticated = async (): Promise<string | null> => {
+    if (user?.id) return user.id;
+
+    if (!isWalletConnected || !primaryWallet?.address) {
       toast({
-        title: "Authentication Required",
-        description: "Please log in to make a purchase",
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to continue",
         variant: "destructive"
       });
-      return;
+      return null;
     }
 
-    if (!isWalletConnected()) {
+    toast({
+      title: "Connecting wallet…",
+      description: "Authenticating your wallet to proceed with the purchase",
+    });
+
+    await createOrLoginWithWallet(primaryWallet.address);
+
+    const { data } = await supabase.auth.getSession();
+    const authedUserId = data.session?.user?.id || null;
+
+    if (!authedUserId) {
+      toast({
+        title: "Authentication Required",
+        description: "We couldn't authenticate your wallet yet. Please try again in a moment.",
+        variant: "destructive"
+      });
+      return null;
+    }
+
+    return authedUserId;
+  };
+
+  const handlePurchase = async (nft: any) => {
+    const userId = await ensureAuthenticated();
+    if (!userId) return;
+
+    if (!isWalletConnected || !primaryWallet?.address) {
       toast({
         title: "Wallet Not Connected",
         description: "Please connect your wallet to make a purchase",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const connectedWallet = getConnectedWallet();
-    if (!connectedWallet) {
-      toast({
-        title: "No Wallet Found",
-        description: "Please connect a wallet to proceed",
         variant: "destructive"
       });
       return;
@@ -145,7 +164,6 @@ export const Marketplace = () => {
                           selectedCurrency === 'sol' ? 'SOL' : 
                           selectedCurrency === 'usdc' ? 'USDC' : 'PYUSD';
 
-    // Check CCTR balance if paying with CCTR
     if (selectedCurrency === 'cctr' && balance.cctr_balance < price) {
       toast({
         title: "Insufficient Balance",
@@ -163,26 +181,22 @@ export const Marketplace = () => {
         description: `Buying ${nft.name} for ${price} ${currencySymbol}...`,
       });
 
-      // Simulate transaction based on currency
       let transactionHash = '';
       if (selectedCurrency === 'cctr') {
-        // For CCTR, simulate internal transfer
         transactionHash = `cctr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       } else {
-        // For crypto currencies, simulate blockchain transaction
         transactionHash = await simulateTransaction(selectedCurrency, price);
       }
 
-      // Store purchase in database
       const { error: purchaseError } = await supabase
         .from('nft_purchases')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           nft_id: nft.id.toString(),
           nft_name: nft.name,
           price: price,
           currency: selectedCurrency,
-          wallet_address: connectedWallet.address,
+          wallet_address: primaryWallet.address,
           transaction_hash: transactionHash,
           status: 'completed'
         });
@@ -197,9 +211,7 @@ export const Marketplace = () => {
         return;
       }
 
-      // Update user balance if paying with CCTR
       if (selectedCurrency === 'cctr') {
-        // Deduct CCTR balance
         const newBalance = balance.cctr_balance - price;
         const { error: balanceError } = await supabase
           .from('user_balances')
@@ -207,7 +219,7 @@ export const Marketplace = () => {
             cctr_balance: newBalance,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id);
+          .eq('user_id', userId);
 
         if (balanceError) {
           console.error('Balance update error:', balanceError);
@@ -219,11 +231,10 @@ export const Marketplace = () => {
           return;
         }
 
-        // Record the transaction
         const { error: transactionError } = await supabase
           .from('token_transactions')
           .insert({
-            user_id: user.id,
+            user_id: userId,
             amount: -price,
             transaction_type: 'purchase',
             description: `NFT Purchase: ${nft.name}`
@@ -238,10 +249,9 @@ export const Marketplace = () => {
 
       toast({
         title: "🎉 Purchase Successful!",
-        description: `${nft.name} has been transferred to your wallet: ${connectedWallet.address.slice(0, 6)}...${connectedWallet.address.slice(-4)}`,
+        description: `${nft.name} has been transferred to your wallet: ${primaryWallet.address.slice(0, 6)}...${primaryWallet.address.slice(-4)}`,
       });
 
-      // Show transaction details
       toast({
         title: "📋 Transaction Details",
         description: `Transaction Hash: ${transactionHash.slice(0, 10)}...`,
@@ -291,7 +301,6 @@ export const Marketplace = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Platform Connections */}
           <Card className="holographic p-6">
             <h3 className="font-bold text-neon-cyan mb-4">🔗 Platform Connections</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -322,7 +331,6 @@ export const Marketplace = () => {
             </div>
           </Card>
 
-          {/* Filters and Currency Selection */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-4 items-center">
               <div className="flex gap-2">
@@ -377,9 +385,9 @@ export const Marketplace = () => {
             </div>
           </div>
 
-          {/* NFT Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredNFTs.map((nft) => (
+            { (filter === 'all' ? mockNFTs : mockNFTs.filter(nft => nft.rarity.toLowerCase() === filter.toLowerCase()))
+              .map((nft) => (
               <Card key={nft.id} className="vending-machine overflow-hidden">
                 <CardContent className="p-0">
                   <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
