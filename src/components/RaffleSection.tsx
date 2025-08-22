@@ -215,8 +215,24 @@ export const RaffleSection = () => {
   const processSolanaPayment = async (amount: number, paymentMethod: 'sol' | 'usdc') => {
     try {
       const wallet = window.solana;
-      if (!wallet || !wallet.publicKey) {
+      if (!wallet) {
         throw new Error('Wallet not connected');
+      }
+
+      // Connect wallet to get publicKey if not already connected
+      let publicKey;
+      if (wallet.isConnected) {
+        // If already connected, we need to get the publicKey from our stored wallet info
+        if (!primaryWallet?.address) {
+          throw new Error('No wallet address available');
+        }
+        publicKey = new PublicKey(primaryWallet.address);
+      } else {
+        const response = await wallet.connect();
+        if (!response?.publicKey) {
+          throw new Error('Failed to get wallet public key');
+        }
+        publicKey = new PublicKey(response.publicKey.toString());
       }
 
       // Create transaction
@@ -227,7 +243,7 @@ export const RaffleSection = () => {
         const lamports = amount * LAMPORTS_PER_SOL;
         transaction.add(
           SystemProgram.transfer({
-            fromPubkey: wallet.publicKey,
+            fromPubkey: publicKey,
             toPubkey: new PublicKey('11111111111111111111111111111112'), // System program
             lamports: Math.floor(lamports),
           })
@@ -237,7 +253,7 @@ export const RaffleSection = () => {
 
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
-      transaction.feePayer = wallet.publicKey;
+      transaction.feePayer = publicKey;
 
       // Sign and send transaction
       const signedTransaction = await wallet.signTransaction(transaction);
