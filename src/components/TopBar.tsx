@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export const TopBar = () => {
   const { user, signOut, loading } = useAuth();
@@ -96,7 +97,7 @@ export const TopBar = () => {
   };
 
   const handleManageWallets = () => {
-    // Open instantly and ensure focus moves to dialog content
+    console.log('Opening wallet manager dialog');
     setShowWalletManager(true);
   };
 
@@ -307,9 +308,17 @@ export const TopBar = () => {
         onWalletConnected={connectWallet}
       />
 
-      {/* Use Dialog to ensure instant, reliable overlay for Wallet Manager */}
+      {/* Wallet Manager Dialog with proper accessibility */}
       <Dialog open={showWalletManager} onOpenChange={setShowWalletManager}>
         <DialogContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
+              💰 Wallet Manager
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Create, import, and manage your Solana wallets
+            </DialogDescription>
+          </DialogHeader>
           <WalletManager />
         </DialogContent>
       </Dialog>
