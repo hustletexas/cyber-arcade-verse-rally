@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +38,6 @@ export const TopBar = () => {
     getWalletIcon 
   } = useMultiWallet();
   
-  // Initialize wallet authentication
   const { logoutWallet } = useWalletAuth();
   
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -47,19 +45,13 @@ export const TopBar = () => {
 
   const handleSignOut = async () => {
     try {
-      // If user has wallet connected, also logout from wallet auth
       if (isWalletConnected) {
         await logoutWallet();
       }
-      
-      // Sign out from regular auth
       await signOut();
-      
-      // Disconnect all wallets
       for (const wallet of connectedWallets) {
         await disconnectWallet(wallet.type);
       }
-      
       toast({
         title: "Goodbye!",
         description: "Successfully logged out from Cyber City Arcade",
@@ -79,45 +71,47 @@ export const TopBar = () => {
   };
 
   const handleCreateWallet = async () => {
+    console.log('[CreateWallet] Starting thirdweb LocalWallet (Solana) generation...');
     try {
       toast({
         title: "Creating Wallet...",
-        description: "Generating secure Solana wallet with thirdweb",
+        description: "Generating a secure Solana wallet with thirdweb",
       });
 
-      // Import thirdweb SDK
-      const { ThirdwebSDK } = await import('@thirdweb-dev/sdk/solana');
-      
-      // Initialize thirdweb SDK for Solana
-      const sdk = new ThirdwebSDK("devnet"); // Use devnet for testing, mainnet for production
-      
-      // Generate a new wallet
-      const wallet = sdk.wallet.generate();
+      // Dynamically import to keep bundle light and ensure client-only usage
+      const { LocalWallet } = await import('@thirdweb-dev/wallets/solana');
+
+      const wallet = new LocalWallet();
+      await wallet.generate();
       const address = await wallet.getAddress();
-      
-      // Store wallet data securely
-      const walletData = {
-        publicKey: address,
-        privateKey: wallet.privateKey,
-        type: 'thirdweb-created'
-      };
-      
-      // Save to localStorage for now (in production, consider more secure storage)
-      localStorage.setItem('thirdwebWallet', JSON.stringify(walletData));
-      
-      // Connect the wallet to our multi-wallet system
+
+      // Try to export a private key if available (optional)
+      let privateKey: string | undefined;
+      try {
+        if ((wallet as any).export) {
+          privateKey = await (wallet as any).export({ strategy: 'privateKey' });
+        }
+      } catch (e) {
+        console.warn('[CreateWallet] Could not export private key via thirdweb LocalWallet.');
+      }
+
+      // IMPORTANT: Save to the key expected by useMultiWallet ("cyberCityWallet")
+      const walletData = { publicKey: address, ...(privateKey ? { privateKey } : {}) };
+      localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
+
+      // Connect to our multi-wallet system as "created"
       await connectWallet('created', address);
-      
+
       toast({
         title: "Wallet Created Successfully! 🎉",
-        description: `New Solana wallet created: ${address.slice(0, 8)}...${address.slice(-4)}`,
+        description: `New Solana wallet: ${address.slice(0, 8)}...${address.slice(-4)}`,
       });
-      
+      console.log('[CreateWallet] Wallet created & connected:', address);
     } catch (error: any) {
-      console.error('Thirdweb wallet creation error:', error);
+      console.error('[CreateWallet] thirdweb wallet creation error:', error);
       toast({
         title: "Creation Failed",
-        description: error.message || "Failed to create wallet with thirdweb",
+        description: error?.message || "Failed to create wallet with thirdweb",
         variant: "destructive",
       });
     }
@@ -125,11 +119,9 @@ export const TopBar = () => {
 
   const handleDisconnectWallet = async (walletType: string) => {
     try {
-      // If this is the primary wallet and user is logged in via wallet, logout first
       if (primaryWallet?.type === walletType && user) {
         await logoutWallet();
       }
-      
       await disconnectWallet(walletType as any);
     } catch (error: any) {
       console.error('Wallet disconnect error:', error);
@@ -365,7 +357,6 @@ export const TopBar = () => {
         onWalletConnected={connectWallet}
       />
 
-      {/* Wallet Manager Dialog with proper accessibility */}
       <Dialog open={showWalletManager} onOpenChange={setShowWalletManager}>
         <DialogContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 max-w-3xl">
           <DialogHeader>
