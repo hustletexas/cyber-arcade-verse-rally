@@ -446,10 +446,16 @@ export const RaffleSection = () => {
       <div className="text-center mb-6">
         <h3 className="text-xl font-bold text-neon-pink mb-2">🏴‍☠️ MYSTERY TREASURE CHESTS</h3>
         <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
-        {user && (
-          <p className="text-neon-green mt-2">
-            Your Balance: {balance.cctr_balance.toLocaleString()} CCTR tokens
-          </p>
+        {user && isWalletConnected && (
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <Badge className="bg-neon-green text-black">
+              <Wallet size={14} className="mr-1" />
+              {primaryWallet?.address.slice(0, 6)}...{primaryWallet?.address.slice(-4)}
+            </Badge>
+            <Badge className="bg-neon-cyan text-black">
+              💎 {balance.cctr_balance.toLocaleString()} CCTR
+            </Badge>
+          </div>
         )}
       </div>
       
