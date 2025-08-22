@@ -16,7 +16,7 @@ export const TokenDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
-  const { createOrLoginWithWallet } = useWalletAuth();
+  const { createOrLoginWithWallet, isAuthenticating } = useWalletAuth();
 
   const tokenPrice = 0.045;
 
@@ -101,8 +101,9 @@ export const TokenDashboard = () => {
             <Button 
               onClick={handleLoginWithWalletOrAuth}
               className="cyber-button"
+              disabled={isAuthenticating}
             >
-              🔐 LOGIN TO CONTINUE
+              {isAuthenticating ? '⏳ AUTHENTICATING...' : '🔐 LOGIN TO CONTINUE'}
             </Button>
           </CardContent>
         </Card>

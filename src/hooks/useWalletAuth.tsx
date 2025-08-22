@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,12 +13,14 @@ export const useWalletAuth = () => {
   // Prevent duplicate/parallel auth attempts and rate-limit thrashing
   const authInProgressRef = useRef(false);
   const lastAttemptedAddressRef = useRef<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const getWalletEmail = (walletAddress: string) =>
     `${walletAddress.toLowerCase().slice(0, 8)}.wallet@cybercity.app`;
 
   const safeResetAuthFlag = () => {
     authInProgressRef.current = false;
+    setIsAuthenticating(false);
   };
 
   const signInWithWalletCreds = async (walletAddress: string) => {
@@ -40,17 +43,24 @@ export const useWalletAuth = () => {
     const cooldownKey = `wallet-auth-cooldown:${walletAddress}`;
     const last = localStorage.getItem(cooldownKey);
     const now = Date.now();
+    const walletEmail = getWalletEmail(walletAddress);
+
     if (last && now - Number(last) < 60_000) {
-      console.log('[WalletAuth] Cooldown active, skipping signup attempt.');
-      // Still try a sign-in in case account exists now
+      console.log('[WalletAuth] Cooldown active, attempting sign-in only.');
       const { signInError } = await signInWithWalletCreds(walletAddress);
       if (!signInError) {
         toast({ title: "Welcome back!", description: "Logged in with your connected wallet" });
+      } else {
+        toast({
+          title: "Please wait a moment",
+          description: `We recently attempted to create your account. Check ${walletEmail} for a confirmation link or try again shortly.`,
+        });
       }
       return;
     }
 
     authInProgressRef.current = true;
+    setIsAuthenticating(true);
     lastAttemptedAddressRef.current = walletAddress;
 
     try {
@@ -65,8 +75,10 @@ export const useWalletAuth = () => {
         return;
       }
 
+      // Proactively set a cooldown to avoid 429 thrashing on sign-up bursts
+      localStorage.setItem(cooldownKey, String(now));
+
       // If that fails, create the account
-      const walletEmail = getWalletEmail(walletAddress);
       const { error: signUpError } = await supabase.auth.signUp({
         email: walletEmail,
         password: walletAddress,
@@ -81,12 +93,12 @@ export const useWalletAuth = () => {
 
       if (signUpError) {
         console.error('Sign up error:', signUpError);
-        // Store cooldown if rate limited
+        // If rate limited, extend cooldown and inform user
         if ((signUpError as any)?.status === 429) {
           localStorage.setItem(cooldownKey, String(now));
           toast({
             title: "Please wait a moment",
-            description: "We're handling your wallet sign-in. Try again in about a minute.",
+            description: `We’re setting up your wallet login. Check ${walletEmail} or try again in about a minute.`,
           });
           return;
         }
@@ -122,7 +134,7 @@ export const useWalletAuth = () => {
       // If sign-in still fails, likely email confirmation is required
       toast({
         title: "Check your email",
-        description: "Please confirm your email to complete wallet sign-in.",
+        description: `Please confirm your email (${walletEmail}) to complete wallet sign-in.`,
       });
     } catch (error: any) {
       console.error('Error in wallet authentication:', error);
@@ -182,6 +194,7 @@ export const useWalletAuth = () => {
   return {
     createOrLoginWithWallet,
     createWalletAccount,
-    logoutWallet
+    logoutWallet,
+    isAuthenticating
   };
 };
