@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useWallet } from '@/hooks/useWallet';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
-import { Gift, Trophy, Ticket, Users, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Gift, Trophy, Ticket, Users, Clock, Wallet } from 'lucide-react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface Raffle {
@@ -66,12 +67,13 @@ const PRIZE_POOLS: { [key: string]: PrizePool[] } = {
 export const RaffleSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { isWalletConnected, getConnectedWallet } = useWallet();
+  const { isWalletConnected, primaryWallet, connectWallet } = useMultiWallet();
+  const { createOrLoginWithWallet } = useWalletAuth();
   const { balance, refetch: refetchBalance } = useUserBalance();
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [loading, setLoading] = useState(true);
   const [ticketCounts, setTicketCounts] = useState<{[key: string]: number}>({});
+  const [paymentMethods, setPaymentMethods] = useState<{[key: string]: 'cctr' | 'sol' | 'usdc'}>({});
   const [purchasing, setPurchasing] = useState<{[key: string]: boolean}>({});
   const [connection] = useState(new Connection('https://api.devnet.solana.com'));
 
@@ -158,60 +160,119 @@ export const RaffleSection = () => {
     return prizePool[0]; // fallback to first prize
   };
 
-  const handleLoginToPlay = () => {
-    navigate('/auth');
+  const connectWalletAndAuth = async () => {
+    try {
+      // First connect wallet if not connected
+      if (!isWalletConnected) {
+        if (window.solana && window.solana.isPhantom) {
+          const response = await window.solana.connect();
+          if (response?.publicKey) {
+            await connectWallet('phantom', response.publicKey.toString());
+          }
+        } else {
+          toast({
+            title: "Phantom Wallet Required",
+            description: "Please install Phantom wallet to play",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Then authenticate with the connected wallet
+      if (primaryWallet?.address && !user) {
+        await createOrLoginWithWallet(primaryWallet.address);
+      }
+
+      toast({
+        title: "Wallet Connected!",
+        description: "You can now play treasure chests",
+      });
+    } catch (error) {
+      console.error('Connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const distributePrizeOnSolana = async (walletAddress: string, prize: PrizePool) => {
+  const getPaymentPrice = (raffle: Raffle, paymentMethod: 'cctr' | 'sol' | 'usdc') => {
+    const basePrice = raffle.ticket_price;
+    switch (paymentMethod) {
+      case 'cctr':
+        return basePrice;
+      case 'sol':
+        return (basePrice * 0.0005); // Convert CCTR to SOL (example rate)
+      case 'usdc':
+        return (basePrice * 0.001); // Convert CCTR to USDC (example rate)
+      default:
+        return basePrice;
+    }
+  };
+
+  const processSolanaPayment = async (amount: number, paymentMethod: 'sol' | 'usdc') => {
     try {
-      const wallet = getConnectedWallet();
-      if (!wallet || !window.solana) {
+      const wallet = window.solana;
+      if (!wallet || !wallet.publicKey) {
         throw new Error('Wallet not connected');
       }
 
-      // For demonstration purposes, we'll simulate blockchain interaction
-      console.log(`Distributing ${prize.name} to ${walletAddress}`);
+      // Create transaction
+      const transaction = new Transaction();
       
-      // Simulate transaction hash
-      const mockTxHash = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // In a real implementation, you would create actual Solana transactions here
-      console.log(`Simulated transaction hash: ${mockTxHash}`);
+      if (paymentMethod === 'sol') {
+        // SOL payment
+        const lamports = amount * LAMPORTS_PER_SOL;
+        transaction.add(
+          SystemProgram.transfer({
+            fromPubkey: wallet.publicKey,
+            toPubkey: new PublicKey('11111111111111111111111111111112'), // System program
+            lamports: Math.floor(lamports),
+          })
+        );
+      }
+      // For USDC, you would add SPL token transfer instruction here
 
-      return mockTxHash;
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = wallet.publicKey;
+
+      // Sign and send transaction
+      const signedTransaction = await wallet.signTransaction(transaction);
+      const txid = await connection.sendRawTransaction(signedTransaction.serialize());
+      
+      // Wait for confirmation
+      await connection.confirmTransaction(txid);
+      
+      return txid;
     } catch (error) {
-      console.error('Prize distribution error:', error);
+      console.error('Solana payment error:', error);
       throw error;
     }
   };
 
   const handlePurchaseTickets = async (raffleId: string) => {
-    if (!user) {
+    if (!user || !isWalletConnected || !primaryWallet) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to purchase raffle tickets",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!isWalletConnected()) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your Solana wallet to purchase tickets",
+        description: "Please connect your wallet first",
         variant: "destructive",
       });
       return;
     }
 
     const ticketCount = ticketCounts[raffleId] || 1;
+    const paymentMethod = paymentMethods[raffleId] || 'cctr';
     const raffle = raffles.find(r => r.id === raffleId);
     
     if (!raffle) return;
 
-    const totalCost = ticketCount * raffle.ticket_price;
+    const totalCost = ticketCount * getPaymentPrice(raffle, paymentMethod);
 
-    if (balance.cctr_balance < totalCost) {
+    // Check balance for CCTR payments
+    if (paymentMethod === 'cctr' && balance.cctr_balance < totalCost) {
       toast({
         title: "Insufficient CCTR Tokens",
         description: `You need ${totalCost} CCTR tokens but only have ${balance.cctr_balance}`,
@@ -223,12 +284,30 @@ export const RaffleSection = () => {
     setPurchasing(prev => ({ ...prev, [raffleId]: true }));
 
     try {
-      const wallet = getConnectedWallet();
-      if (!wallet) {
-        throw new Error('Wallet not connected');
+      let txHash = '';
+
+      // Process payment based on method
+      if (paymentMethod === 'cctr') {
+        // CCTR payment - update balance directly
+        const newBalance = balance.cctr_balance - totalCost;
+        
+        const { error: updateError } = await supabase
+          .from('user_balances')
+          .update({ 
+            cctr_balance: newBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+        
+        txHash = `cctr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      } else {
+        // SOL/USDC payment via Solana
+        txHash = await processSolanaPayment(totalCost, paymentMethod);
       }
 
-      // Process each ticket purchase
+      // Process each ticket purchase and distribute prizes
       const wonPrizes = [];
       let totalCCTRWon = 0;
 
@@ -236,34 +315,26 @@ export const RaffleSection = () => {
         const randomPrize = selectRandomPrize(raffle.rarity);
         wonPrizes.push(randomPrize);
         
-        // Distribute prize on Solana
-        try {
-          const txHash = await distributePrizeOnSolana(wallet.address, randomPrize);
-          console.log(`Prize distributed: ${randomPrize.name}, TX: ${txHash}`);
-          
-          // Add CCTR tokens to total
-          if (randomPrize.type === 'cctr') {
-            totalCCTRWon += randomPrize.value;
-          }
-        } catch (error) {
-          console.error('Prize distribution failed:', error);
+        if (randomPrize.type === 'cctr') {
+          totalCCTRWon += randomPrize.value;
         }
       }
 
-      // Update user balance: deduct cost and add won CCTR tokens
-      const newBalance = balance.cctr_balance - totalCost + totalCCTRWon;
-      
-      const { error: updateError } = await supabase
-        .from('user_balances')
-        .update({ 
-          cctr_balance: newBalance,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
+      // Add won CCTR tokens to balance
+      if (totalCCTRWon > 0) {
+        const currentBalance = paymentMethod === 'cctr' 
+          ? balance.cctr_balance - totalCost + totalCCTRWon
+          : balance.cctr_balance + totalCCTRWon;
+          
+        const { error: rewardError } = await supabase
+          .from('user_balances')
+          .update({ 
+            cctr_balance: currentBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
 
-      if (updateError) {
-        console.error('Balance update error:', updateError);
-        throw updateError;
+        if (rewardError) console.error('Reward update error:', rewardError);
       }
 
       // Create transaction record
@@ -271,9 +342,9 @@ export const RaffleSection = () => {
         .from('token_transactions')
         .insert({
           user_id: user.id,
-          amount: -totalCost,
+          amount: paymentMethod === 'cctr' ? -totalCost : totalCCTRWon,
           transaction_type: 'chest_purchase',
-          description: `Opened ${ticketCount} ${raffle.title}(s) - Won: ${wonPrizes.map(p => p.name).join(', ')}`
+          description: `Opened ${ticketCount} ${raffle.title}(s) with ${paymentMethod.toUpperCase()} - Won: ${wonPrizes.map(p => p.name).join(', ')}`
         });
 
       if (transactionError) {
@@ -431,7 +502,7 @@ export const RaffleSection = () => {
                 />
               </div>
 
-              {user && isWalletConnected() ? (
+              {user && isWalletConnected ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Input
@@ -446,10 +517,29 @@ export const RaffleSection = () => {
                       className="flex-1"
                       placeholder="Chests"
                     />
-                    <span className="text-sm text-neon-purple whitespace-nowrap">
-                      {((ticketCounts[raffle.id] || 1) * raffle.ticket_price)} CCTR
-                    </span>
                   </div>
+
+                  <Select 
+                    value={paymentMethods[raffle.id] || 'cctr'} 
+                    onValueChange={(value: 'cctr' | 'sol' | 'usdc') => 
+                      setPaymentMethods(prev => ({ ...prev, [raffle.id]: value }))
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cctr">
+                        💎 {((ticketCounts[raffle.id] || 1) * getPaymentPrice(raffle, 'cctr')).toFixed(0)} CCTR
+                      </SelectItem>
+                      <SelectItem value="sol">
+                        ☀️ {((ticketCounts[raffle.id] || 1) * getPaymentPrice(raffle, 'sol')).toFixed(4)} SOL
+                      </SelectItem>
+                      <SelectItem value="usdc">
+                        💵 {((ticketCounts[raffle.id] || 1) * getPaymentPrice(raffle, 'usdc')).toFixed(2)} USDC
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   
                   <Button
                     onClick={() => handlePurchaseTickets(raffle.id)}
@@ -461,22 +551,21 @@ export const RaffleSection = () => {
                     ) : raffle.tickets_sold >= raffle.max_tickets ? (
                       "🚫 SOLD OUT"
                     ) : (
-                      "🎁 OPEN CHEST"
+                      "🎮 PLAY NOW"
                     )}
                   </Button>
                 </div>
               ) : (
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground mb-2">
-                    {!user ? "Login and connect wallet to open treasure chests" : "Connect your Solana wallet to play"}
+                    Connect your Solana wallet to play
                   </p>
                   <Button 
-                    onClick={handleLoginToPlay}
-                    variant="outline" 
-                    size="sm" 
-                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                    onClick={connectWalletAndAuth}
+                    className="w-full cyber-button flex items-center gap-2"
                   >
-                    {!user ? "Login to Play" : "Connect Wallet"}
+                    <Wallet size={16} />
+                    🎮 PLAY NOW
                   </Button>
                 </div>
               )}
