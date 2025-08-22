@@ -2,7 +2,6 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useWalletAuth } from './useWalletAuth';
 import { useMultiWallet } from './useMultiWallet';
 
 interface AuthContextType {
@@ -35,7 +34,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   
   const { primaryWallet, isWalletConnected, connectWallet } = useMultiWallet();
-  const { createOrLoginWithWallet, logoutWallet } = useWalletAuth();
 
   const walletAddress = primaryWallet?.address || '';
 
@@ -59,16 +57,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const phantomConnect = async () => {
     try {
-      await connectWallet('phantom');
+      await connectWallet('phantom', '');
     } catch (error) {
       console.error('Failed to connect Phantom wallet:', error);
     }
   };
 
   const signOut = async () => {
-    await logoutWallet();
-    setUser(null);
-    setSession(null);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   const value = {
