@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -83,52 +84,6 @@ export const WalletManager = () => {
     }
   };
 
-  const exportWallet = () => {
-    if (!createdWallet) return;
-    
-    const walletData = {
-      publicKey: createdWallet.publicKey,
-      privateKey: createdWallet.privateKey,
-      created: new Date().toISOString(),
-      network: 'mainnet-beta'
-    };
-    
-    const dataStr = JSON.stringify(walletData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `cyber-city-wallet-${createdWallet.publicKey.slice(0, 8)}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Wallet Exported",
-      description: "Wallet file downloaded. Keep it secure!",
-    });
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied!",
-      description: `${label} copied to clipboard`,
-    });
-  };
-
-  const deleteWallet = () => {
-    localStorage.removeItem('cyberCityWallet');
-    setCreatedWallet(null);
-    setWalletBalance(0);
-    setShowWalletDetails(false);
-    
-    toast({
-      title: "Wallet Deleted",
-      description: "Local wallet has been removed",
-      variant: "destructive",
-    });
-  };
-
   const importWallet = async () => {
     if (!importPrivateKey.trim()) {
       toast({
@@ -181,29 +136,180 @@ export const WalletManager = () => {
     }
   };
 
+  const exportWallet = () => {
+    if (!createdWallet) return;
+    
+    const walletData = {
+      publicKey: createdWallet.publicKey,
+      privateKey: createdWallet.privateKey,
+      created: new Date().toISOString(),
+      network: 'mainnet-beta'
+    };
+    
+    const dataStr = JSON.stringify(walletData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `cyber-city-wallet-${createdWallet.publicKey.slice(0, 8)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Wallet Exported",
+      description: "Wallet file downloaded. Keep it secure!",
+    });
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied!",
+      description: `${label} copied to clipboard`,
+    });
+  };
+
+  const deleteWallet = () => {
+    localStorage.removeItem('cyberCityWallet');
+    setCreatedWallet(null);
+    setWalletBalance(0);
+    setShowWalletDetails(false);
+    
+    toast({
+      title: "Wallet Deleted",
+      description: "Local wallet has been removed",
+      variant: "destructive",
+    });
+  };
+
   return (
-    <>
-      <div className="flex items-center gap-2">
-        {!createdWallet ? (
-          <div className="flex gap-2">
-            <Button 
-              onClick={createWallet}
-              className="cyber-button flex items-center gap-2"
-            >
-              ➕ CREATE WALLET
-            </Button>
-            <Button 
-              onClick={() => setShowImportWallet(true)}
-              className="cyber-button flex items-center gap-2"
-              variant="outline"
-            >
-              <Upload size={16} />
-              IMPORT WALLET
-            </Button>
-          </div>
-        ) : null}
+    <div className="space-y-6">
+      {/* Main Wallet Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Button 
+          onClick={createWallet}
+          className="cyber-button flex items-center gap-2 h-16"
+        >
+          ➕ CREATE NEW WALLET
+        </Button>
+        <Button 
+          onClick={() => setShowImportWallet(true)}
+          className="cyber-button flex items-center gap-2 h-16"
+          variant="outline"
+        >
+          <Upload size={16} />
+          IMPORT EXISTING WALLET
+        </Button>
       </div>
 
+      {/* Show wallet details if one exists */}
+      {createdWallet && (
+        <Card className="holographic p-4">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold text-neon-pink">Current Wallet</h3>
+              <Button 
+                size="sm"
+                onClick={() => checkWalletBalance(createdWallet.publicKey)}
+                className="cyber-button text-xs"
+              >
+                🔄 REFRESH BALANCE
+              </Button>
+            </div>
+            
+            <div className="text-center mb-4">
+              <div className="text-3xl font-bold text-neon-green mb-2">
+                {walletBalance.toFixed(4)} SOL
+              </div>
+              <div className="text-sm text-muted-foreground">
+                ≈ ${(walletBalance * 50).toFixed(2)} USD
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-bold text-neon-purple">Public Key (Address)</label>
+                <div className="flex gap-2 mt-1">
+                  <input 
+                    readOnly 
+                    value={createdWallet.publicKey}
+                    className="flex-1 p-2 bg-black/50 border border-neon-cyan rounded text-neon-cyan text-sm font-mono"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => copyToClipboard(createdWallet.publicKey, "Public Key")}
+                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                    variant="outline"
+                  >
+                    <Copy size={16} />
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-neon-pink">Private Key</label>
+                <div className="flex gap-2 mt-1">
+                  <input 
+                    readOnly 
+                    type={showPrivateKey ? "text" : "password"}
+                    value={createdWallet.privateKey}
+                    className="flex-1 p-2 bg-black/50 border border-neon-pink rounded text-neon-pink text-sm font-mono"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => setShowPrivateKey(!showPrivateKey)}
+                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                    variant="outline"
+                  >
+                    {showPrivateKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => copyToClipboard(createdWallet.privateKey, "Private Key")}
+                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                    variant="outline"
+                  >
+                    <Copy size={16} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+              <Button 
+                onClick={exportWallet}
+                className="cyber-button flex items-center gap-2"
+                size="sm"
+              >
+                <Download size={16} />
+                EXPORT
+              </Button>
+              
+              <Button 
+                onClick={() => {
+                  window.open(`https://explorer.solana.com/address/${createdWallet.publicKey}`, '_blank');
+                }}
+                variant="outline"
+                size="sm"
+                className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+              >
+                🔍 EXPLORER
+              </Button>
+              
+              <Button 
+                onClick={deleteWallet}
+                variant="outline"
+                size="sm"
+                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+              >
+                🗑️ DELETE
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Import Wallet Dialog */}
       <Dialog open={showImportWallet} onOpenChange={setShowImportWallet}>
         <DialogContent className="max-w-md arcade-frame">
           <DialogHeader>
@@ -264,136 +370,20 @@ export const WalletManager = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showWalletDetails} onOpenChange={setShowWalletDetails}>
-        <DialogContent className="max-w-2xl arcade-frame">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
-              💰 Cyber City Wallet Manager
-            </DialogTitle>
-          </DialogHeader>
-          
-          {createdWallet && (
-            <div className="space-y-6">
-              <Card className="holographic p-4">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-neon-pink">Wallet Balance</h3>
-                    <Button 
-                      size="sm"
-                      onClick={() => checkWalletBalance(createdWallet.publicKey)}
-                      className="cyber-button text-xs"
-                    >
-                      🔄 REFRESH
-                    </Button>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-neon-green mb-2">
-                      {walletBalance.toFixed(4)} SOL
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      ≈ ${(walletBalance * 50).toFixed(2)} USD
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-neon-purple">Public Key (Address)</label>
-                <div className="flex gap-2">
-                  <input 
-                    readOnly 
-                    value={createdWallet.publicKey}
-                    className="flex-1 p-3 bg-black/50 border border-neon-cyan rounded text-neon-cyan text-sm font-mono"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => copyToClipboard(createdWallet.publicKey, "Public Key")}
-                    className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                    variant="outline"
-                  >
-                    <Copy size={16} />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Share this address to receive SOL and SPL tokens
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-neon-pink">Private Key</label>
-                <div className="flex gap-2">
-                  <input 
-                    readOnly 
-                    type={showPrivateKey ? "text" : "password"}
-                    value={createdWallet.privateKey}
-                    className="flex-1 p-3 bg-black/50 border border-neon-pink rounded text-neon-pink text-sm font-mono"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => setShowPrivateKey(!showPrivateKey)}
-                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
-                    variant="outline"
-                  >
-                    {showPrivateKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => copyToClipboard(createdWallet.privateKey, "Private Key")}
-                    className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
-                    variant="outline"
-                  >
-                    <Copy size={16} />
-                  </Button>
-                </div>
-                <p className="text-xs text-red-400">
-                  ⚠️ Never share your private key! Keep it secret and secure.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Button 
-                  onClick={exportWallet}
-                  className="cyber-button flex items-center gap-2"
-                >
-                  <Download size={16} />
-                  EXPORT WALLET
-                </Button>
-                
-                <Button 
-                  onClick={() => {
-                    window.open(`https://explorer.solana.com/address/${createdWallet.publicKey}`, '_blank');
-                  }}
-                  variant="outline"
-                  className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                >
-                  🔍 VIEW ON EXPLORER
-                </Button>
-                
-                <Button 
-                  onClick={deleteWallet}
-                  variant="outline"
-                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                >
-                  🗑️ DELETE WALLET
-                </Button>
-              </div>
-
-              <Card className="bg-neon-cyan/10 border-neon-cyan/30">
-                <CardContent className="p-4">
-                  <h4 className="font-bold text-neon-cyan mb-2">🎮 How to Use Your Wallet</h4>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Send SOL to this address to fund your wallet</li>
-                    <li>• Use it for marketplace purchases and tournament entries</li>
-                    <li>• Export the wallet file for backup</li>
-                    <li>• Import into Phantom or other Solana wallets</li>
-                    <li>• Always keep your private key secure</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+      {/* Info Section */}
+      <Card className="bg-neon-cyan/10 border-neon-cyan/30">
+        <CardContent className="p-4">
+          <h4 className="font-bold text-neon-cyan mb-2">🎮 Wallet Manager Features</h4>
+          <ul className="text-sm space-y-1 text-muted-foreground">
+            <li>• Create new Solana wallets securely</li>
+            <li>• Import existing wallets from other apps</li>
+            <li>• View real-time SOL balance</li>
+            <li>• Export wallet files for backup</li>
+            <li>• Connect to Solana Explorer</li>
+            <li>• Secure local storage encryption</li>
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
