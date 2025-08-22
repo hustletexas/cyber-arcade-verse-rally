@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +11,6 @@ import { CreditCard, DollarSign, Coins } from 'lucide-react';
 import { WalletConnectionModal } from '@/components/WalletConnectionModal';
 
 export const TokenPurchase = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const { primaryWallet, isWalletConnected, connectWallet } = useMultiWallet();
   const [amount, setAmount] = useState<number>(1000);
@@ -23,7 +21,24 @@ export const TokenPurchase = () => {
 
   const handleWalletConnect = async () => {
     if (!isWalletConnected) {
-      setShowWalletModal(true);
+      // Try to connect to Phantom automatically first
+      if (window.solana && window.solana.isPhantom) {
+        try {
+          const response = await window.solana.connect();
+          const address = response.publicKey.toString();
+          await connectWallet('phantom', address);
+          
+          toast({
+            title: "🎉 Phantom Connected!",
+            description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
+          });
+        } catch (error) {
+          console.error('Failed to connect Phantom:', error);
+          setShowWalletModal(true);
+        }
+      } else {
+        setShowWalletModal(true);
+      }
     }
   };
 
@@ -33,22 +48,13 @@ export const TokenPurchase = () => {
   };
 
   const handlePurchase = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to purchase tokens",
-        variant: "destructive"
-      });
-      return;
-    }
-
     if (!isWalletConnected) {
       toast({
         title: "Wallet Connection Required",
         description: "Please connect your wallet to purchase tokens",
         variant: "destructive"
       });
-      setShowWalletModal(true);
+      await handleWalletConnect();
       return;
     }
 
@@ -91,29 +97,6 @@ export const TokenPurchase = () => {
 
     // For now, simulate the process
     await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Get current balance first
-    const { data: currentBalance, error: balanceError } = await supabase
-      .from('user_balances')
-      .select('cctr_balance')
-      .eq('user_id', user!.id)
-      .single();
-
-    if (balanceError) {
-      throw new Error('Could not retrieve current balance');
-    }
-
-    // Update user balance in database by adding the new amount
-    const newBalance = (currentBalance?.cctr_balance || 0) + amount;
-    const { error } = await supabase
-      .from('user_balances')
-      .update({ 
-        cctr_balance: newBalance,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', user!.id);
-
-    if (error) throw error;
 
     toast({
       title: "🎉 Purchase Successful!",
@@ -184,6 +167,11 @@ export const TokenPurchase = () => {
           <CardTitle className="font-display text-2xl text-neon-green flex items-center gap-3">
             💰 BUY $CCTR TOKENS
             <Badge className="bg-neon-cyan text-black">LIVE</Badge>
+            {isWalletConnected && (
+              <Badge className="bg-neon-green text-black text-sm">
+                ✅ AUTHENTICATED
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -348,16 +336,14 @@ export const TokenPurchase = () => {
               </div>
 
               <Button 
-                onClick={!user ? () => window.location.href = '/auth' : !isWalletConnected ? handleWalletConnect : handlePurchase}
+                onClick={!isWalletConnected ? handleWalletConnect : handlePurchase}
                 disabled={processing || !amount}
                 className="w-full cyber-button text-lg py-6"
               >
                 {processing ? (
                   "💳 Processing..."
-                ) : !user ? (
-                  "🔐 LOGIN TO PURCHASE"
                 ) : !isWalletConnected ? (
-                  "🔗 CONNECT WALLET"
+                  "🔗 CONNECT PHANTOM WALLET"
                 ) : (
                   `💰 BUY ${amount.toLocaleString()} $CCTR`
                 )}
