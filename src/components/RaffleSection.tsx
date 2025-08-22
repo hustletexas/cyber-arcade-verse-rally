@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,7 +85,7 @@ export const RaffleSection = () => {
       name: 'Common Chest',
       price: { cctr: 100, sol: 0.1, usdc: 5 },
       rarity: 'common',
-      image: '/lovable-uploads/29ba2fef-23a8-4456-933b-1d8ab31c0a99.png',
+      image: '/lovable-uploads/378a8773-5320-4d49-8779-341407974bb9.png',
       description: 'Basic rewards for beginners',
       rewards: ['10-50 CCTR', 'Common NFT', 'Discord Role']
     },
