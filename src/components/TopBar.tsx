@@ -1,336 +1,355 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
-import { ShoppingCart, Copy, Eye, EyeOff, Download, Upload } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings, Plus } from 'lucide-react';
+import { WalletConnectionModal } from './WalletConnectionModal';
+import { WalletManager } from './WalletManager';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export const TopBar = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { getTotalItems, setIsOpen } = useCart();
-  const [phantomConnected, setPhantomConnected] = useState(false);
-  const [coinbaseConnected, setCoinbaseConnected] = useState(false);
-  const [phantomAddress, setPhantomAddress] = useState('');
-  const [coinbaseAddress, setCoinbaseAddress] = useState('');
-
-  useEffect(() => {
-    checkWalletConnections();
-  }, []);
-
-  const checkWalletConnections = async () => {
-    if (window.solana && window.solana.isPhantom) {
-      try {
-        if (window.solana.isConnected) {
-          const response = await window.solana.connect({ onlyIfTrusted: true });
-          if (response?.publicKey) {
-            setPhantomAddress(response.publicKey.toString());
-            setPhantomConnected(true);
-          }
-        }
-      } catch (error) {
-        console.log('Phantom wallet not auto-connected');
-      }
-    }
-
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ 
-          method: 'eth_accounts' 
-        });
-        if (accounts && accounts.length > 0) {
-          if (window.ethereum.isCoinbaseWallet) {
-            setCoinbaseAddress(accounts[0]);
-            setCoinbaseConnected(true);
-            console.log('Coinbase Wallet auto-connected:', accounts[0]);
-          }
-        }
-      } catch (error) {
-        console.log('Coinbase wallet not auto-connected');
-      }
-    }
-  };
+  const { 
+    connectedWallets, 
+    primaryWallet, 
+    isWalletConnected, 
+    hasMultipleWallets,
+    connectWallet,
+    disconnectWallet,
+    switchPrimaryWallet,
+    getWalletIcon 
+  } = useMultiWallet();
+  
+  const { logoutWallet } = useWalletAuth();
+  
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showWalletManager, setShowWalletManager] = useState(false);
 
   const handleSignOut = async () => {
     try {
+      if (isWalletConnected) {
+        await logoutWallet();
+      }
       await signOut();
+      for (const wallet of connectedWallets) {
+        await disconnectWallet(wallet.type);
+      }
       toast({
         title: "Goodbye!",
         description: "Successfully logged out from Cyber City Arcade",
       });
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to logout completely",
         variant: "destructive",
       });
     }
   };
 
-  const connectPhantom = async () => {
+  const handleWalletConnect = () => {
+    setShowWalletModal(true);
+  };
+
+  const handleCreateWallet = async () => {
+    console.log('[CreateWallet] Starting wallet generation...');
     try {
-      if (window.solana && window.solana.isPhantom) {
-        const response = await window.solana.connect();
-        const address = response.publicKey.toString();
-        setPhantomAddress(address);
-        setPhantomConnected(true);
-        toast({
-          title: "Phantom Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
-      } else {
-        toast({
-          title: "Phantom Not Found",
-          description: "Please install Phantom wallet extension",
-          variant: "destructive",
-        });
-        window.open('https://phantom.app/', '_blank');
-      }
-    } catch (error) {
-      console.error('Phantom connection error:', error);
       toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Phantom wallet",
-        variant: "destructive",
+        title: "Creating Wallet...",
+        description: "Generating a secure Solana wallet",
       });
-    }
-  };
 
-  const connectCoinbase = async () => {
-    try {
-      console.log('Attempting Coinbase Wallet connection...');
+      // Generate a new keypair using Solana web3.js
+      const { Keypair } = await import('@solana/web3.js');
+      const bs58 = await import('bs58');
       
-      if (!window.ethereum) {
-        toast({
-          title: "No Wallet Found",
-          description: "Please install Coinbase Wallet extension",
-          variant: "destructive",
-        });
-        window.open('https://www.coinbase.com/wallet', '_blank');
-        return;
-      }
+      const keypair = Keypair.generate();
+      const publicKey = keypair.publicKey.toString();
+      const privateKey = bs58.default.encode(keypair.secretKey);
 
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
+      // Save to localStorage with the key expected by useMultiWallet
+      const walletData = { publicKey, privateKey };
+      localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
+
+      // Connect to our multi-wallet system as "created"
+      await connectWallet('created', publicKey);
+
+      toast({
+        title: "Wallet Created Successfully! 🎉",
+        description: `New Solana wallet: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
       });
-
-      if (accounts && accounts.length > 0) {
-        const address = accounts[0];
-        setCoinbaseAddress(address);
-        setCoinbaseConnected(true);
-        
-        console.log('Connected to wallet:', address);
-        console.log('Is Coinbase Wallet:', window.ethereum.isCoinbaseWallet);
-        
-        toast({
-          title: "Base Wallet Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
-
-        if (window.ethereum.on) {
-          window.ethereum.on('accountsChanged', (newAccounts: string[]) => {
-            console.log('Account changed:', newAccounts);
-            if (newAccounts.length === 0) {
-              disconnectCoinbase();
-            } else {
-              setCoinbaseAddress(newAccounts[0]);
-              toast({
-                title: "Account Changed",
-                description: `Switched to ${newAccounts[0].slice(0, 8)}...${newAccounts[0].slice(-4)}`,
-              });
-            }
-          });
-
-          window.ethereum.on('chainChanged', (chainId: string) => {
-            console.log('Chain changed:', chainId);
-            if (chainId === '0x2105' || chainId === '0x14a33') {
-              toast({
-                title: "Base Network Connected",
-                description: "Connected to Base network",
-              });
-            }
-          });
-        }
-
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x2105' }],
-          });
-        } catch (switchError: any) {
-          if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x2105',
-                  chainName: 'Base',
-                  nativeCurrency: {
-                    name: 'Ethereum',
-                    symbol: 'ETH',
-                    decimals: 18,
-                  },
-                  rpcUrls: ['https://mainnet.base.org'],
-                  blockExplorerUrls: ['https://basescan.org'],
-                }],
-              });
-            } catch (addError) {
-              console.log('Could not add Base network:', addError);
-            }
-          }
-        }
-      }
+      console.log('[CreateWallet] Wallet created & connected:', publicKey);
     } catch (error: any) {
-      console.error('Coinbase connection error:', error);
-      let errorMessage = "Failed to connect to Base wallet";
-      
-      if (error.code === 4001) {
-        errorMessage = "Connection request was rejected";
-      } else if (error.code === -32002) {
-        errorMessage = "Connection request already pending";
-      } else if (error.code === -32603) {
-        errorMessage = "Internal error occurred";
-      }
-      
+      console.error('[CreateWallet] Wallet creation error:', error);
       toast({
-        title: "Connection Failed",
-        description: errorMessage,
+        title: "Creation Failed",
+        description: error?.message || "Failed to create wallet",
         variant: "destructive",
       });
     }
   };
 
-  const disconnectPhantom = async () => {
+  const handleDisconnectWallet = async (walletType: string) => {
     try {
-      if (window.solana) {
-        await window.solana.disconnect();
-        setPhantomConnected(false);
-        setPhantomAddress('');
-        toast({
-          title: "Phantom Disconnected",
-          description: "Successfully disconnected from Phantom wallet",
-        });
+      if (primaryWallet?.type === walletType && user) {
+        await logoutWallet();
       }
-    } catch (error) {
-      console.error('Phantom disconnection error:', error);
+      await disconnectWallet(walletType as any);
+    } catch (error: any) {
+      console.error('Wallet disconnect error:', error);
       toast({
-        title: "Disconnection Failed",
-        description: "Failed to disconnect from Phantom wallet",
+        title: "Disconnect Error",
+        description: error.message || "Failed to disconnect wallet",
         variant: "destructive",
       });
     }
   };
 
-  const disconnectCoinbase = () => {
-    setCoinbaseConnected(false);
-    setCoinbaseAddress('');
-    
-    if (window.ethereum && window.ethereum.removeListener) {
-      window.ethereum.removeListener('accountsChanged', () => {});
-      window.ethereum.removeListener('chainChanged', () => {});
-    }
-    
-    toast({
-      title: "Base Wallet Disconnected",
-      description: "Successfully disconnected from Base wallet",
-    });
+  const handleManageWallets = () => {
+    console.log('Opening wallet manager dialog');
+    setShowWalletManager(true);
   };
 
   return (
-    <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Button 
-              onClick={() => setIsOpen(true)}
-              className="cyber-button flex items-center gap-2 relative"
-            >
-              <ShoppingCart size={16} />
-              CART
-              {getTotalItems() > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-neon-pink text-black min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs">
-                  {getTotalItems()}
-                </Badge>
-              )}
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
-              <img 
-                src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
-                alt="Cyber City Arcade Logo" 
-                className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-              />
+    <>
+      <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button 
+                onClick={() => setIsOpen(true)}
+                className="cyber-button flex items-center gap-2 relative"
+              >
+                <ShoppingCart size={16} />
+                CART
+                {getTotalItems() > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-neon-pink text-black min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs">
+                    {getTotalItems()}
+                  </Badge>
+                )}
+              </Button>
             </div>
-          </div>
 
-          <div className="flex items-center gap-4">
-            {loading ? (
-              <div className="text-neon-cyan">Loading...</div>
-            ) : (
-              user && (
-                <Card className="arcade-frame px-4 py-2">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-8 h-8 border-2 border-neon-cyan">
-                      <AvatarImage src={user.user_metadata?.avatar_url} />
-                      <AvatarFallback className="bg-neon-purple text-black font-bold">
-                        {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-sm">
-                      <p className="font-bold text-neon-cyan">
-                        {user.user_metadata?.username || user.email?.split('@')[0]}
-                      </p>
-                      <p className="text-neon-purple text-xs">{user.email}</p>
-                    </div>
-                    <Badge className="bg-neon-green text-black">
-                      🔐 AUTHENTICATED
-                    </Badge>
-                    <Button 
-                      onClick={handleSignOut}
-                      variant="outline" 
-                      size="sm"
-                      className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
-                    >
-                      Logout
-                    </Button>
-                  </div>
-                </Card>
-              )
-            )}
+            <div className="flex items-center">
+              <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
+                <img 
+                  src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
+                  alt="Cyber City Arcade Logo" 
+                  className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            </div>
 
-            <div className="flex items-center gap-2">
-              {phantomConnected ? (
-                <Button 
-                  onClick={disconnectPhantom}
-                  variant="outline"
-                  size="sm"
-                  className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
-                >
-                  👻 {phantomAddress.slice(0, 6)}...
-                </Button>
+            <div className="flex items-center gap-4">
+              {loading ? (
+                <div className="text-neon-cyan">Loading...</div>
               ) : (
-                <Button 
-                  onClick={connectPhantom}
-                  className="cyber-button flex items-center gap-2"
-                  size="sm"
-                >
-                  👻 PHANTOM
-                </Button>
+                user && (
+                  <Card className="arcade-frame px-4 py-2">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-8 h-8 border-2 border-neon-cyan">
+                        <AvatarImage src={user.user_metadata?.avatar_url} />
+                        <AvatarFallback className="bg-neon-purple text-black font-bold">
+                          {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-sm">
+                        <p className="font-bold text-neon-cyan">
+                          {user.user_metadata?.username || user.email?.split('@')[0]}
+                        </p>
+                        <p className="text-neon-purple text-xs">{user.email}</p>
+                        {primaryWallet && (
+                          <p className="text-neon-green text-xs">
+                            {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 6)}...
+                          </p>
+                        )}
+                      </div>
+                      <Badge className="bg-neon-green text-black">
+                        🔐 AUTHENTICATED
+                      </Badge>
+                      <Button 
+                        onClick={handleSignOut}
+                        variant="outline" 
+                        size="sm"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1"
+                      >
+                        <LogOut size={14} />
+                        Logout
+                      </Button>
+                    </div>
+                  </Card>
+                )
               )}
+
+              {/* Multi-Wallet Connection - Now the primary authentication method */}
+              <div className="flex items-center gap-2">
+                {!isWalletConnected ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        className="cyber-button flex items-center gap-2"
+                        size="sm"
+                      >
+                        <Wallet size={16} />
+                        CONNECT WALLET
+                        <ChevronDown size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
+                      <DropdownMenuLabel>Wallet Options</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={handleWalletConnect} className="hover:bg-neon-cyan/10">
+                        <Wallet size={16} className="mr-2" />
+                        Connect External Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleCreateWallet} className="hover:bg-neon-green/10">
+                        <Plus size={16} className="mr-2" />
+                        Create Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : hasMultipleWallets ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                      >
+                        {getWalletIcon(primaryWallet?.type || 'phantom')} 
+                        {primaryWallet?.address.slice(0, 6)}...
+                        <ChevronDown size={16} className="ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
+                      <DropdownMenuLabel>Connected Wallets</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {connectedWallets.map((wallet) => (
+                        <DropdownMenuItem 
+                          key={`${wallet.type}-${wallet.address}`}
+                          onClick={() => switchPrimaryWallet(wallet)}
+                          className="flex items-center gap-2 hover:bg-neon-cyan/10"
+                        >
+                          <span>{getWalletIcon(wallet.type)}</span>
+                          <span className="flex-1">
+                            {wallet.type.charAt(0).toUpperCase() + wallet.type.slice(1)}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {wallet.address.slice(0, 6)}...
+                          </span>
+                          {primaryWallet?.address === wallet.address && (
+                            <Badge className="bg-neon-green text-black text-xs">Primary</Badge>
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
+                        <Wallet size={16} className="mr-2" />
+                        Add External Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleCreateWallet} className="hover:bg-neon-green/10">
+                        <Plus size={16} className="mr-2" />
+                        Create Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
+                        className="text-neon-pink hover:bg-neon-pink/10"
+                      >
+                        <LogOut size={16} className="mr-2" />
+                        Disconnect Wallet
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                      >
+                        {getWalletIcon(primaryWallet?.type || 'phantom')} 
+                        {primaryWallet?.address.slice(0, 6)}...
+                        <ChevronDown size={16} className="ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
+                      <DropdownMenuLabel>Wallet Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
+                        <Wallet size={16} className="mr-2" />
+                        Add External Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleCreateWallet} className="hover:bg-neon-green/10">
+                        <Plus size={16} className="mr-2" />
+                        Create Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
+                        className="text-neon-pink hover:bg-neon-pink/10"
+                      >
+                        <LogOut size={16} className="mr-2" />
+                        Disconnect Wallet
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <WalletConnectionModal
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onWalletConnected={connectWallet}
+      />
+
+      <Dialog open={showWalletManager} onOpenChange={setShowWalletManager}>
+        <DialogContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
+              💰 Wallet Manager
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Create, import, and manage your Solana wallets
+            </DialogDescription>
+          </DialogHeader>
+          <WalletManager />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
