@@ -232,6 +232,10 @@ export const TopBar = () => {
                         </DropdownMenuItem>
                       ))}
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
                         Add Wallet
@@ -261,6 +265,10 @@ export const TopBar = () => {
                     <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
                       <DropdownMenuLabel>Wallet Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
+                        <Settings size={16} className="mr-2" />
+                        Manage Wallets
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
                         Add Wallet
