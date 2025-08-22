@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -184,14 +183,8 @@ export const WalletManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Main Wallet Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Button 
-          onClick={createWallet}
-          className="cyber-button flex items-center gap-2 h-16"
-        >
-          ➕ CREATE NEW WALLET
-        </Button>
+      {/* Main Wallet Actions - Only Import Button */}
+      <div className="flex justify-center">
         <Button 
           onClick={() => setShowImportWallet(true)}
           className="cyber-button flex items-center gap-2 h-16"
@@ -375,7 +368,6 @@ export const WalletManager = () => {
         <CardContent className="p-4">
           <h4 className="font-bold text-neon-cyan mb-2">🎮 Wallet Manager Features</h4>
           <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Create new Solana wallets securely</li>
             <li>• Import existing wallets from other apps</li>
             <li>• View real-time SOL balance</li>
             <li>• Export wallet files for backup</li>
