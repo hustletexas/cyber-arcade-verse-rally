@@ -6,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
-import { supabase } from '@/integrations/supabase/client';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { useSolanaNFT } from '@/hooks/useSolanaNFT';
 
 const mockNFTs = [
   // Legendary NFTs
@@ -102,18 +102,13 @@ export const Marketplace = () => {
   const { user } = useAuth();
   const { isWalletConnected, primaryWallet } = useMultiWallet();
   const { createOrLoginWithWallet } = useWalletAuth();
-  const { balance, refetch: refreshBalance } = useUserBalance();
-  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('cctr');
+  const { balance } = useUserBalance();
+  const { purchaseNFT, isPurchasing } = useSolanaNFT();
+  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('sol');
   const [filter, setFilter] = useState('all');
-  const [purchasing, setPurchasing] = useState<number | null>(null);
 
-  const simulateTransaction = async (currency: string, amount: number): Promise<string> => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    return `0x${Math.random().toString(16).slice(2, 42)}`;
-  };
-
-  const ensureAuthenticated = async (): Promise<string | null> => {
-    if (user?.id) return user.id;
+  const ensureAuthenticated = async (): Promise<boolean> => {
+    if (user?.id) return true;
 
     if (!isWalletConnected || !primaryWallet?.address) {
       toast({
@@ -121,7 +116,7 @@ export const Marketplace = () => {
         description: "Please connect your wallet to continue",
         variant: "destructive"
       });
-      return null;
+      return false;
     }
 
     toast({
@@ -129,144 +124,38 @@ export const Marketplace = () => {
       description: "Authenticating your wallet to proceed with the purchase",
     });
 
-    await createOrLoginWithWallet(primaryWallet.address);
-
-    const { data } = await supabase.auth.getSession();
-    const authedUserId = data.session?.user?.id || null;
-
-    if (!authedUserId) {
+    try {
+      await createOrLoginWithWallet(primaryWallet.address);
+      return true;
+    } catch (error) {
       toast({
-        title: "Authentication Required",
-        description: "We couldn't authenticate your wallet yet. Please try again in a moment.",
+        title: "Authentication Failed",
+        description: "Could not authenticate your wallet. Please try again.",
         variant: "destructive"
       });
-      return null;
+      return false;
     }
-
-    return authedUserId;
   };
 
   const handlePurchase = async (nft: any) => {
-    const userId = await ensureAuthenticated();
-    if (!userId) return;
+    const isAuthenticated = await ensureAuthenticated();
+    if (!isAuthenticated) return;
 
-    if (!isWalletConnected || !primaryWallet?.address) {
-      toast({
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet to make a purchase",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const price = nft.price[selectedCurrency];
-    const currencySymbol = selectedCurrency === 'cctr' ? '$CCTR' : 
-                          selectedCurrency === 'sol' ? 'SOL' : 
-                          selectedCurrency === 'usdc' ? 'USDC' : 'PYUSD';
-
-    if (selectedCurrency === 'cctr' && balance.cctr_balance < price) {
-      toast({
-        title: "Insufficient Balance",
-        description: `You need ${price} $CCTR but only have ${balance.cctr_balance} $CCTR`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setPurchasing(nft.id);
-
-    try {
-      toast({
-        title: "🔄 Processing Purchase",
-        description: `Buying ${nft.name} for ${price} ${currencySymbol}...`,
-      });
-
-      let transactionHash = '';
-      if (selectedCurrency === 'cctr') {
-        transactionHash = `cctr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      } else {
-        transactionHash = await simulateTransaction(selectedCurrency, price);
-      }
-
-      const { error: purchaseError } = await supabase
-        .from('nft_purchases')
-        .insert({
-          user_id: userId,
-          nft_id: nft.id.toString(),
-          nft_name: nft.name,
-          price: price,
-          currency: selectedCurrency,
-          wallet_address: primaryWallet.address,
-          transaction_hash: transactionHash,
-          status: 'completed'
-        });
-
-      if (purchaseError) {
-        console.error('Purchase storage error:', purchaseError);
+    // Validate balance for CCTR purchases
+    if (selectedCurrency === 'cctr') {
+      const price = nft.price[selectedCurrency];
+      if (balance.cctr_balance < price) {
         toast({
-          title: "Purchase Failed",
-          description: "Failed to record purchase. Please try again.",
+          title: "Insufficient Balance",
+          description: `You need ${price} $CCTR but only have ${balance.cctr_balance} $CCTR`,
           variant: "destructive"
         });
         return;
       }
-
-      if (selectedCurrency === 'cctr') {
-        const newBalance = balance.cctr_balance - price;
-        const { error: balanceError } = await supabase
-          .from('user_balances')
-          .update({
-            cctr_balance: newBalance,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId);
-
-        if (balanceError) {
-          console.error('Balance update error:', balanceError);
-          toast({
-            title: "Payment Failed",
-            description: "Failed to process CCTR payment. Please try again.",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        const { error: transactionError } = await supabase
-          .from('token_transactions')
-          .insert({
-            user_id: userId,
-            amount: -price,
-            transaction_type: 'purchase',
-            description: `NFT Purchase: ${nft.name}`
-          });
-
-        if (transactionError) {
-          console.error('Transaction record error:', transactionError);
-        }
-
-        await refreshBalance();
-      }
-
-      toast({
-        title: "🎉 Purchase Successful!",
-        description: `${nft.name} has been transferred to your wallet: ${primaryWallet.address.slice(0, 6)}...${primaryWallet.address.slice(-4)}`,
-      });
-
-      toast({
-        title: "📋 Transaction Details",
-        description: `Transaction Hash: ${transactionHash.slice(0, 10)}...`,
-      });
-
-    } catch (error) {
-      console.error('Purchase error:', error);
-      toast({
-        title: "Purchase Failed",
-        description: "Something went wrong with your purchase. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setPurchasing(null);
     }
+
+    // Execute the purchase
+    await purchaseNFT(nft, selectedCurrency);
   };
 
   const connectPlatform = (platform: string, url: string) => {
@@ -296,11 +185,12 @@ export const Marketplace = () => {
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
           🛒 NFT MARKETPLACE
-          <Badge className="bg-neon-cyan text-black">LIVE</Badge>
+          <Badge className="bg-neon-cyan text-black">SOLANA POWERED</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
+          {/* Platform Connections */}
           <Card className="holographic p-6">
             <h3 className="font-bold text-neon-cyan mb-4">🔗 Platform Connections</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -331,6 +221,26 @@ export const Marketplace = () => {
             </div>
           </Card>
 
+          {/* Wallet Status */}
+          {isWalletConnected && primaryWallet && (
+            <Card className="vending-machine p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-neon-green text-black">
+                    CONNECTED
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {primaryWallet.address.slice(0, 6)}...{primaryWallet.address.slice(-4)}
+                  </span>
+                </div>
+                <div className="text-sm text-neon-cyan">
+                  {selectedCurrency === 'cctr' && `${balance.cctr_balance} $CCTR`}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Filters and Currency Selection */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-4 items-center">
               <div className="flex gap-2">
@@ -376,30 +286,27 @@ export const Marketplace = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cctr">💎 $CCTR</SelectItem>
                   <SelectItem value="sol">☀️ SOL</SelectItem>
                   <SelectItem value="usdc">💵 USDC</SelectItem>
                   <SelectItem value="pyusd">💰 PYUSD</SelectItem>
+                  <SelectItem value="cctr">💎 $CCTR</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
+          {/* NFT Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            { (filter === 'all' ? mockNFTs : mockNFTs.filter(nft => nft.rarity.toLowerCase() === filter.toLowerCase()))
+            {(filter === 'all' ? mockNFTs : mockNFTs.filter(nft => nft.rarity.toLowerCase() === filter.toLowerCase()))
               .map((nft) => (
               <Card key={nft.id} className="vending-machine overflow-hidden">
                 <CardContent className="p-0">
                   <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
-                    {nft.image.startsWith('/') ? (
-                      <img 
-                        src={nft.image} 
-                        alt={nft.name}
-                        className="w-full h-full object-cover object-center"
-                      />
-                    ) : (
-                      <span className="text-6xl">{nft.image}</span>
-                    )}
+                    <img 
+                      src={nft.image} 
+                      alt={nft.name}
+                      className="w-full h-full object-cover object-center"
+                    />
                   </div>
                   <div className="p-4 space-y-3">
                     <div className="flex justify-between items-start">
@@ -422,20 +329,22 @@ export const Marketplace = () => {
                     <div className="border-t border-neon-cyan/30 pt-3">
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-neon-pink font-bold">
-                          {nft.price[selectedCurrency]} {getCurrencySymbol()}
+                          {nft.price[selectedCurrency]} {selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}
                         </span>
                       </div>
                       
                       <Button
                         onClick={() => handlePurchase(nft)}
-                        disabled={purchasing === nft.id}
+                        disabled={isPurchasing === nft.id || !isWalletConnected}
                         className="w-full cyber-button"
                       >
-                        {purchasing === nft.id ? (
+                        {isPurchasing === nft.id ? (
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             PROCESSING...
                           </div>
+                        ) : !isWalletConnected ? (
+                          "CONNECT WALLET"
                         ) : (
                           "🛒 BUY NOW"
                         )}
