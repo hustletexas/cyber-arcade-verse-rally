@@ -12,10 +12,14 @@ import { TriviaGame } from './TriviaGame';
 import { TriviaAdmin } from './trivia/TriviaAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 
 export const TournamentSection = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { primaryWallet, isWalletConnected, connectWallet, getWalletIcon } = useMultiWallet();
+  const { createOrLoginWithWallet } = useWalletAuth();
   const [activeView, setActiveView] = useState<'crypto' | 'classic' | 'fighting' | 'shooter' | 'admin'>('crypto');
   const [activeGame, setActiveGame] = useState<{
     tournamentId: string;
@@ -24,6 +28,37 @@ export const TournamentSection = () => {
 
   // Mock admin check - replace with your actual admin logic
   const isAdmin = user?.email?.includes('admin') || false;
+
+  // Connect Solana wallet function
+  const connectSolanaWallet = async () => {
+    try {
+      if (window.solana && window.solana.isPhantom) {
+        const response = await window.solana.connect();
+        if (response?.publicKey) {
+          await connectWallet('phantom', response.publicKey.toString());
+          await createOrLoginWithWallet(response.publicKey.toString());
+          toast({
+            title: "Wallet Connected!",
+            description: "Your Solana wallet has been connected successfully",
+          });
+        }
+      } else {
+        toast({
+          title: "Phantom Wallet Required",
+          description: "Please install Phantom wallet to connect",
+          variant: "destructive",
+        });
+        window.open('https://phantom.app/', '_blank');
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Crypto/Solana games tournaments
   const cryptoTournaments = [
@@ -432,10 +467,10 @@ export const TournamentSection = () => {
   };
 
   const voteForTournament = (tournamentId: string) => {
-    if (!user) {
+    if (!user && !isWalletConnected) {
       toast({
-        title: "Login Required",
-        description: "Please sign in to vote for tournaments",
+        title: "Authentication Required",
+        description: "Please sign in or connect your wallet to vote",
         variant: "destructive",
       });
       return;
@@ -448,10 +483,10 @@ export const TournamentSection = () => {
   };
 
   const joinTournament = (tournament: any) => {
-    if (!user) {
+    if (!user && !isWalletConnected) {
       toast({
-        title: "Login Required",
-        description: "Please sign in to join tournaments",
+        title: "Authentication Required",
+        description: "Please sign in or connect your wallet to join tournaments",
         variant: "destructive",
       });
       return;
@@ -577,6 +612,21 @@ export const TournamentSection = () => {
           <CardTitle className="font-display text-2xl md:text-3xl text-neon-cyan text-center">
             🏆 SOLANA TOURNAMENT SYSTEMS
           </CardTitle>
+          {/* Wallet Authentication Badge */}
+          {primaryWallet && isWalletConnected && (
+            <div className="text-center mt-2">
+              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+                {getWalletIcon(primaryWallet.type)} Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
+              </Badge>
+            </div>
+          )}
+          {!isWalletConnected && (
+            <div className="text-center mt-2">
+              <Button onClick={connectSolanaWallet} className="cyber-button">
+                🔗 Connect Solana Wallet
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap justify-center gap-4">
