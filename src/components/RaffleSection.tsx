@@ -225,13 +225,6 @@ export const RaffleSection = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-pink">🏴‍☠️ MYSTERY TREASURE CHESTS</CardTitle>
           <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
-          {primaryWallet && (
-            <div className="text-center mt-2">
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
-              </Badge>
-            </div>
-          )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
