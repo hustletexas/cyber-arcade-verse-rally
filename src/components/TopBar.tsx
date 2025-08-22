@@ -200,7 +200,7 @@ export const TopBar = () => {
                 )
               )}
 
-              {/* Multi-Wallet Connection */}
+              {/* Multi-Wallet Connection - Now the primary authentication method */}
               <div className="flex items-center gap-2">
                 {!isWalletConnected ? (
                   <DropdownMenu>
@@ -326,17 +326,6 @@ export const TopBar = () => {
                   </DropdownMenu>
                 )}
               </div>
-
-              {/* Show login button only if no wallet connected and no user */}
-              {!user && !isWalletConnected && (
-                <Button 
-                  onClick={() => navigate('/auth')}
-                  className="cyber-button flex items-center gap-2"
-                  size="sm"
-                >
-                  🔐 LOGIN
-                </Button>
-              )}
             </div>
           </div>
         </div>
