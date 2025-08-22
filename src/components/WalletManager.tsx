@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -185,14 +184,7 @@ export const WalletManager = () => {
   return (
     <>
       <div className="flex items-center gap-2">
-        {createdWallet ? (
-          <Button 
-            onClick={() => setShowWalletDetails(true)}
-            className="cyber-button flex items-center gap-2"
-          >
-            💰 MANAGE WALLET
-          </Button>
-        ) : (
+        {!createdWallet ? (
           <div className="flex gap-2">
             <Button 
               onClick={createWallet}
@@ -209,7 +201,7 @@ export const WalletManager = () => {
               IMPORT WALLET
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
 
       <Dialog open={showImportWallet} onOpenChange={setShowImportWallet}>
