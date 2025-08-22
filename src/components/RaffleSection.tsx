@@ -141,12 +141,13 @@ export const RaffleSection = () => {
     }
   ]);
 
-  const connectWalletForChests = async () => {
+  const connectSolanaWallet = async () => {
     try {
       if (window.solana && window.solana.isPhantom) {
         const response = await window.solana.connect();
         if (response?.publicKey) {
           await connectWallet('phantom', response.publicKey.toString());
+          await createOrLoginWithWallet(response.publicKey.toString());
         }
       } else {
         window.open('https://phantom.app/', '_blank');
@@ -197,7 +198,6 @@ export const RaffleSection = () => {
   };
 
   const isAuthenticated = user || isWalletConnected;
-  const connectedWallet = primaryWallet;
 
   return (
     <div className="space-y-8">
@@ -210,10 +210,10 @@ export const RaffleSection = () => {
           <p className="text-center text-muted-foreground">
             Open treasure chests for instant rewards • Enter raffles for big prizes • Earn CCTR tokens
           </p>
-          {connectedWallet && (
+          {primaryWallet && (
             <div className="text-center mt-2">
               <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+                🔗 Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
               </Badge>
             </div>
           )}
@@ -225,10 +225,10 @@ export const RaffleSection = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-pink">🏴‍☠️ MYSTERY TREASURE CHESTS</CardTitle>
           <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
-          {connectedWallet && (
+          {primaryWallet && (
             <div className="text-center mt-2">
               <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+                🔗 Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
               </Badge>
             </div>
           )}
@@ -317,10 +317,10 @@ export const RaffleSection = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-green">🎫 LIVE RAFFLES</CardTitle>
           <p className="text-neon-cyan">Enter raffles for a chance to win amazing prizes!</p>
-          {connectedWallet && (
+          {primaryWallet && (
             <div className="text-center mt-2">
               <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+                🔗 Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
               </Badge>
             </div>
           )}
@@ -385,7 +385,7 @@ export const RaffleSection = () => {
                       {processingPayment === raffle.id 
                         ? "⏳ PROCESSING..." 
                         : !isAuthenticated 
-                          ? "🔐 CONNECT TO ENTER" 
+                          ? "🔐 CONNECT WALLET" 
                           : `🎫 ENTER RAFFLE (${(selectedTickets[raffle.id] || 1) * raffle.ticketPrice} CCTR)`
                       }
                     </Button>
@@ -402,11 +402,11 @@ export const RaffleSection = () => {
         <Card className="arcade-frame border-neon-pink/30">
           <CardContent className="text-center py-8">
             <div className="text-4xl mb-4">🔐</div>
-            <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Wallet</h3>
+            <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Solana Wallet</h3>
             <p className="text-muted-foreground mb-4">
               Connect your Solana wallet to open treasure chests, enter raffles, and earn CCTR rewards
             </p>
-            <Button onClick={connectWalletForChests} className="cyber-button">
+            <Button onClick={connectSolanaWallet} className="cyber-button">
               🚀 Connect Phantom Wallet
             </Button>
           </CardContent>
