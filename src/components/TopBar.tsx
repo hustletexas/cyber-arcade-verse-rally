@@ -71,47 +71,38 @@ export const TopBar = () => {
   };
 
   const handleCreateWallet = async () => {
-    console.log('[CreateWallet] Starting thirdweb LocalWallet (Solana) generation...');
+    console.log('[CreateWallet] Starting wallet generation...');
     try {
       toast({
         title: "Creating Wallet...",
-        description: "Generating a secure Solana wallet with thirdweb",
+        description: "Generating a secure Solana wallet",
       });
 
-      // Dynamically import to keep bundle light and ensure client-only usage
-      const { LocalWallet } = await import('@thirdweb-dev/wallets/solana');
+      // Generate a new keypair using Solana web3.js
+      const { Keypair } = await import('@solana/web3.js');
+      const { encode } = await import('bs58');
+      
+      const keypair = Keypair.generate();
+      const publicKey = keypair.publicKey.toString();
+      const privateKey = encode(keypair.secretKey);
 
-      const wallet = new LocalWallet();
-      await wallet.generate();
-      const address = await wallet.getAddress();
-
-      // Try to export a private key if available (optional)
-      let privateKey: string | undefined;
-      try {
-        if ((wallet as any).export) {
-          privateKey = await (wallet as any).export({ strategy: 'privateKey' });
-        }
-      } catch (e) {
-        console.warn('[CreateWallet] Could not export private key via thirdweb LocalWallet.');
-      }
-
-      // IMPORTANT: Save to the key expected by useMultiWallet ("cyberCityWallet")
-      const walletData = { publicKey: address, ...(privateKey ? { privateKey } : {}) };
+      // Save to localStorage with the key expected by useMultiWallet
+      const walletData = { publicKey, privateKey };
       localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
 
       // Connect to our multi-wallet system as "created"
-      await connectWallet('created', address);
+      await connectWallet('created', publicKey);
 
       toast({
         title: "Wallet Created Successfully! 🎉",
-        description: `New Solana wallet: ${address.slice(0, 8)}...${address.slice(-4)}`,
+        description: `New Solana wallet: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
       });
-      console.log('[CreateWallet] Wallet created & connected:', address);
+      console.log('[CreateWallet] Wallet created & connected:', publicKey);
     } catch (error: any) {
-      console.error('[CreateWallet] thirdweb wallet creation error:', error);
+      console.error('[CreateWallet] Wallet creation error:', error);
       toast({
         title: "Creation Failed",
-        description: error?.message || "Failed to create wallet with thirdweb",
+        description: error?.message || "Failed to create wallet",
         variant: "destructive",
       });
     }
