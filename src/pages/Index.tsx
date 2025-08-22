@@ -1,9 +1,10 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
+import { WalletManager } from '@/components/WalletManager';
 import { TournamentSection } from '@/components/TournamentSection';
+import { TokenDashboard } from '@/components/TokenDashboard';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
@@ -90,6 +91,26 @@ const Index = () => {
           <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
+          
+          {/* Login/Signup Button */}
+          <div className="flex justify-center mb-4 px-4">
+            {loading ? (
+              <div className="text-neon-cyan">Loading...</div>
+            ) : !user ? (
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+              >
+                <span className="text-lg">🔐</span>
+                LOGIN / SIGNUP
+              </Button>
+            ) : null}
+          </div>
+
+          {/* Wallet Manager - Between Login and Mint NFT */}
+          <div className="flex justify-center mb-4 px-4">
+            <WalletManager />
+          </div>
 
           {/* Centered Mint Free NFT Button */}
           <div className="flex justify-center mb-6 md:mb-8 px-4">
@@ -104,7 +125,12 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
-          {/* Music Player Section */}
+          {/* Dashboard Section */}
+          <section>
+            <TokenDashboard />
+          </section>
+
+          {/* Music Player Section - Added under Dashboard */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
             </h2>
@@ -113,7 +139,7 @@ const Index = () => {
             </div>
           </section>
 
-          {/* Community Hub Section */}
+          {/* Community Hub Section - Added after Dashboard */}
           <section>
             <CommunityHub />
           </section>

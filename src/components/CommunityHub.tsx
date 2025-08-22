@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Users, Zap, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -25,7 +25,6 @@ interface Announcement {
 
 export const CommunityHub = () => {
   const { user, loading } = useAuth();
-  const { toast } = useToast();
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -100,60 +99,6 @@ export const CommunityHub = () => {
       
       // Play arcade beep sound (optional)
       playArcadeBeep();
-    }
-  };
-
-  const handleDiscordConnect = () => {
-    console.log('Discord button clicked!'); // Debug log
-    
-    try {
-      console.log('Opening Discord link...'); // Debug log
-      
-      // Show connecting toast
-      toast({
-        title: "Opening Discord...",
-        description: "Taking you to our Discord server!",
-      });
-      
-      // Try to open Discord link - use a more reliable approach
-      const discordUrl = 'https://discord.gg/Y7yUUssH';
-      
-      // Create a temporary link element and click it (more reliable than window.open)
-      const link = document.createElement('a');
-      link.href = discordUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      
-      // Append to body, click, then remove
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Provide success feedback after a short delay
-      setTimeout(() => {
-        toast({
-          title: "Discord Link Opened! 🎮",
-          description: "Welcome to the Cyber City Community!",
-        });
-      }, 500);
-      
-    } catch (error) {
-      console.error('Discord connection error:', error);
-      
-      // Fallback: copy link to clipboard
-      try {
-        navigator.clipboard.writeText('https://discord.gg/Y7yUUssH');
-        toast({
-          title: "Link Copied to Clipboard! 📋",
-          description: "Paste this link in your browser: discord.gg/Y7yUUssH",
-        });
-      } catch (clipboardError) {
-        toast({
-          title: "Manual Link Required",
-          description: "Please visit: discord.gg/Y7yUUssH",
-          variant: "destructive",
-        });
-      }
     }
   };
 
@@ -307,19 +252,17 @@ export const CommunityHub = () => {
               <div className="space-y-3">
                 {/* Discord Connect Button */}
                 <Button 
-                  onClick={handleDiscordConnect}
-                  className="w-full hover:scale-105 transition-all duration-200 relative group"
+                  onClick={() => window.open('https://discord.gg/cybercityarcade', '_blank')}
+                  className="w-full"
                   style={{
                     background: 'linear-gradient(45deg, #5865F2, #4752C4)',
                     border: '1px solid #5865F2',
                     color: 'white',
-                    fontWeight: 'bold',
-                    boxShadow: '0 0 15px rgba(88, 101, 242, 0.3)'
+                    fontWeight: 'bold'
                   }}
                 >
                   <MessageCircle size={16} className="mr-2" />
                   CONNECT TO DISCORD
-                  <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded"></span>
                 </Button>
                 
                 <Button 
