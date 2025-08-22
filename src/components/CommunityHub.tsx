@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Users, Zap, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -25,6 +25,7 @@ interface Announcement {
 
 export const CommunityHub = () => {
   const { user, loading } = useAuth();
+  const { toast } = useToast();
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -99,6 +100,45 @@ export const CommunityHub = () => {
       
       // Play arcade beep sound (optional)
       playArcadeBeep();
+    }
+  };
+
+  const handleDiscordConnect = () => {
+    try {
+      // Show connecting toast
+      toast({
+        title: "Connecting to Discord",
+        description: "Opening Discord server in new tab...",
+      });
+      
+      // Open Discord link in new tab
+      const discordWindow = window.open('https://discord.gg/Y7yUUssH', '_blank', 'noopener,noreferrer');
+      
+      // Check if popup was blocked
+      if (!discordWindow) {
+        toast({
+          title: "Popup Blocked",
+          description: "Please allow popups and try again, or manually visit the Discord link.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Success feedback after a brief delay
+      setTimeout(() => {
+        toast({
+          title: "Discord Opened",
+          description: "Welcome to the Cyber City Community! 🎮",
+        });
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Discord connection error:', error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to open Discord. Please try again or visit discord.gg/Y7yUUssH manually.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -252,13 +292,14 @@ export const CommunityHub = () => {
               <div className="space-y-3">
                 {/* Discord Connect Button */}
                 <Button 
-                  onClick={() => window.open('https://discord.gg/Y7yUUssH', '_blank')}
-                  className="w-full"
+                  onClick={handleDiscordConnect}
+                  className="w-full hover:scale-105 transition-all duration-200"
                   style={{
                     background: 'linear-gradient(45deg, #5865F2, #4752C4)',
                     border: '1px solid #5865F2',
                     color: 'white',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    boxShadow: '0 0 15px rgba(88, 101, 242, 0.3)'
                   }}
                 >
                   <MessageCircle size={16} className="mr-2" />
