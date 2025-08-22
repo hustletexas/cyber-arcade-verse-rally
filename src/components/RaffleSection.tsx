@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -173,11 +174,12 @@ export const RaffleSection = () => {
   };
 
   const isAuthenticated = user || isWalletConnected;
-  const connectedWallet = primaryWallet;
+  const hasWallet = isWalletConnected && primaryWallet;
+  const displayWalletAddress = hasWallet ? `${primaryWallet.address.slice(0, 8)}...${primaryWallet.address.slice(-4)}` : null;
 
   return (
     <div className="space-y-8">
-      {/* Header with Authentication Status (same as Trivia) */}
+      {/* Header with Authentication Status */}
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-3xl text-neon-cyan text-center">
@@ -186,13 +188,39 @@ export const RaffleSection = () => {
           <p className="text-center text-muted-foreground">
             Open treasure chests for instant rewards • Enter raffles for big prizes • Earn CCTR tokens
           </p>
-          {connectedWallet && (
-            <div className="text-center mt-2">
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+          
+          {/* Status Badges */}
+          <div className="flex flex-wrap justify-center gap-2 mt-4">
+            <Badge 
+              className={isAuthenticated 
+                ? "bg-neon-green/20 text-neon-green border-neon-green" 
+                : "bg-red-500/20 text-red-400 border-red-500"
+              }
+            >
+              {isAuthenticated ? "✅ AUTHENTICATED" : "❌ NOT LOGGED IN"}
+            </Badge>
+            
+            <Badge 
+              className={hasWallet 
+                ? "bg-neon-cyan/20 text-neon-cyan border-neon-cyan" 
+                : "bg-orange-500/20 text-orange-400 border-orange-500"
+              }
+            >
+              {hasWallet ? "🔗 WALLET CONNECTED" : "⚫ NO WALLET"}
+            </Badge>
+            
+            {hasWallet && (
+              <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple">
+                {getWalletIcon(primaryWallet.type)} {displayWalletAddress}
               </Badge>
-            </div>
-          )}
+            )}
+            
+            {balance !== null && (
+              <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink">
+                💰 {balance.toLocaleString()} CCTR
+              </Badge>
+            )}
+          </div>
         </CardHeader>
       </Card>
 
@@ -359,7 +387,7 @@ export const RaffleSection = () => {
         </CardContent>
       </Card>
 
-      {/* Connect Wallet Section (same as Trivia) */}
+      {/* Connect Wallet Section */}
       {!isAuthenticated && (
         <Card className="arcade-frame border-neon-pink/30">
           <CardContent className="text-center py-8">
