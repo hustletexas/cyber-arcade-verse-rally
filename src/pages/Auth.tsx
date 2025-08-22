@@ -1,39 +1,70 @@
 
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { Wallet, ArrowRight } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { user, isWalletConnected, phantomConnect, loading } = useAuth();
+  const { toast } = useToast();
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (user && isWalletConnected) {
-      navigate('/');
-    }
-  }, [user, isWalletConnected, navigate]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const handleConnect = async () => {
     try {
-      await phantomConnect();
-      // After successful connection, redirect to home
-      navigate('/');
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Welcome back!",
+          description: "Successfully logged in to Cyber City Arcade",
+        });
+        navigate('/');
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              username: username || email.split('@')[0],
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Account created!",
+          description: "Welcome to Cyber City Arcade! Check your email to verify your account.",
+        });
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background vhs-glitch flex items-center justify-center">
-        <div className="text-neon-cyan">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background vhs-glitch flex items-center justify-center px-4">
@@ -45,82 +76,85 @@ const Auth = () => {
 
       <Card className="arcade-frame w-full max-w-md relative z-10">
         <CardHeader className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-neon-purple to-neon-pink rounded-lg flex items-center justify-center neon-glow mx-auto mb-4">
-            <Wallet size={40} className="text-white" />
+          <div className="w-16 h-16 bg-gradient-to-br from-neon-pink to-neon-purple rounded-lg flex items-center justify-center neon-glow mx-auto mb-4">
+            <span className="text-2xl font-black">🕹️</span>
           </div>
-          <CardTitle className="font-display text-3xl text-neon-cyan mb-2">
-            CONNECT WALLET
+          <CardTitle className="font-display text-2xl text-neon-cyan">
+            {isLogin ? 'ENTER THE ARCADE' : 'JOIN THE ARCADE'}
           </CardTitle>
-          <p className="text-neon-purple text-lg">
-            Access Cyber City Arcade with your Phantom wallet
+          <p className="text-neon-purple">
+            {isLogin ? 'Welcome back, player!' : 'Create your account to start gaming'}
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="text-center space-y-3">
-              <div className="flex items-center justify-center gap-2 text-neon-green">
-                <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse"></span>
-                <span className="text-sm font-medium">Phantom Wallet Required</span>
+          {/* Email/Password Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-neon-cyan">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  className="bg-black/50 border-neon-purple text-white"
+                />
               </div>
-              
-              <p className="text-sm text-muted-foreground">
-                Connect your Phantom wallet to access all arcade features, tournaments, and rewards.
-              </p>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-neon-cyan">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                className="bg-black/50 border-neon-purple text-white"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-neon-cyan">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                className="bg-black/50 border-neon-purple text-white"
+              />
             </div>
 
             <Button
-              onClick={handleConnect}
-              className="w-full cyber-button text-lg py-6 flex items-center gap-3"
+              type="submit"
+              disabled={loading}
+              className="w-full cyber-button"
             >
-              <Wallet size={24} />
-              CONNECT PHANTOM WALLET
-              <ArrowRight size={20} />
+              {loading ? '⏳ LOADING...' : (isLogin ? '🎮 LOGIN' : '🚀 SIGN UP')}
+            </Button>
+          </form>
+
+          <div className="text-center space-y-4">
+            <Button
+              variant="ghost"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-neon-purple hover:text-neon-cyan"
+            >
+              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
             </Button>
 
-            <div className="grid grid-cols-1 gap-3 text-center text-xs text-muted-foreground">
-              <div className="flex items-center justify-center gap-2">
-                <span className="w-1 h-1 bg-neon-cyan rounded-full"></span>
-                <span>Secure blockchain authentication</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="w-1 h-1 bg-neon-green rounded-full"></span>
-                <span>Earn and manage CCTR tokens</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="w-1 h-1 bg-neon-pink rounded-full"></span>
-                <span>Participate in tournaments & voting</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center">
             <Button
               variant="outline"
               onClick={() => navigate('/')}
-              className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
+              className="w-full border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
             >
               🏠 BACK TO ARCADE
             </Button>
           </div>
-
-          <Card className="bg-neon-cyan/10 border-neon-cyan/30">
-            <CardContent className="p-4">
-              <div className="text-center space-y-2">
-                <h4 className="text-neon-cyan font-bold text-sm">Don't have Phantom?</h4>
-                <p className="text-xs text-muted-foreground">
-                  Download the Phantom wallet extension to get started with Solana.
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.open('https://phantom.app/', '_blank')}
-                  className="text-neon-purple hover:text-neon-pink"
-                >
-                  Download Phantom →
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </CardContent>
       </Card>
     </div>
