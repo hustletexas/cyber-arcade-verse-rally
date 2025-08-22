@@ -1,11 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Search, RefreshCw } from 'lucide-react';
+import { TokenSearch } from '@/components/TokenSearch';
+import { TokenLists } from '@/components/TokenLists';
+import { solanaTokenService, TokenData, TopTokensData } from '@/services/solanaTokenService';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data for token prices and charts
 const mockTokensData = [
@@ -84,6 +87,14 @@ export const SolanaDexChart = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('24H');
   const [chartData, setChartData] = useState(generateChartData('24H', mockTokensData[0].price));
   const [isLoading, setIsLoading] = useState(false);
+  const [topTokensData, setTopTokensData] = useState<TopTokensData>({
+    topGainers: [],
+    topLosers: [],
+    mostViewed: [],
+    trending: []
+  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
 
   // Update chart data when token or period changes
   useEffect(() => {
@@ -96,6 +107,35 @@ export const SolanaDexChart = () => {
 
     return () => clearTimeout(timer);
   }, [selectedToken, selectedPeriod]);
+
+  // Load top tokens data on mount and set up real-time updates
+  useEffect(() => {
+    const loadTopTokensData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await solanaTokenService.getTopTokensData();
+        setTopTokensData(data);
+      } catch (error) {
+        console.error('Error loading top tokens data:', error);
+        toast({
+          title: "Data Load Error",
+          description: "Failed to load token data. Using cached data.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTopTokensData();
+
+    // Set up real-time updates
+    const cleanup = solanaTokenService.startRealTimeUpdates((data) => {
+      setTopTokensData(data);
+    });
+
+    return cleanup;
+  }, [toast]);
 
   // Update data every 5 seconds with slight variations
   useEffect(() => {
@@ -117,6 +157,46 @@ export const SolanaDexChart = () => {
 
     return () => clearInterval(interval);
   }, [selectedToken, selectedPeriod]);
+
+  const handleTokenSelect = (token: any) => {
+    const newToken = {
+      ...selectedToken,
+      name: token.name,
+      symbol: token.symbol,
+      price: token.price || selectedToken.price,
+      change24h: token.change24h || selectedToken.change24h,
+      volume24h: token.volume24h || selectedToken.volume24h,
+      marketCap: token.marketCap || selectedToken.marketCap
+    };
+    
+    setSelectedToken(newToken);
+    setChartData(generateChartData(selectedPeriod, newToken.price));
+    
+    toast({
+      title: "Token Selected",
+      description: `Now viewing ${token.symbol} - ${token.name}`,
+    });
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const data = await solanaTokenService.getTopTokensData();
+      setTopTokensData(data);
+      toast({
+        title: "Data Refreshed",
+        description: "Token data has been updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh token data",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const formatPrice = (price: number) => {
     if (price < 0.001) {
@@ -143,14 +223,50 @@ export const SolanaDexChart = () => {
   return (
     <Card className="arcade-frame">
       <CardHeader>
-        <CardTitle className="font-display text-3xl text-neon-cyan text-center">
-          📈 SOLANA DEX CHARTS
-        </CardTitle>
-        <p className="text-center text-muted-foreground">
-          Real-time price charts and trading data for Solana tokens
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="font-display text-3xl text-neon-cyan">
+              📈 SOLANA DEX CHARTS
+            </CardTitle>
+            <p className="text-muted-foreground">
+              Real-time price charts and trading data for Solana tokens
+            </p>
+          </div>
+          <Button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            variant="outline"
+            className="cyber-button"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Token Search */}
+        <Card className="holographic">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Search className="text-neon-cyan" size={20} />
+              <h3 className="font-bold text-neon-cyan">Search Tokens</h3>
+            </div>
+            <TokenSearch
+              onTokenSelect={handleTokenSelect}
+              placeholder="Search any Solana token..."
+            />
+          </CardContent>
+        </Card>
+
+        {/* Top Tokens Lists */}
+        <TokenLists
+          topGainers={topTokensData.topGainers}
+          topLosers={topTokensData.topLosers}
+          mostViewed={topTokensData.mostViewed}
+          trending={topTokensData.trending}
+          onTokenSelect={handleTokenSelect}
+        />
+
         {/* Token Selection */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {mockTokensData.map((token) => (
