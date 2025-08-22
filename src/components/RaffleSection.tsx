@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,6 +86,18 @@ export const RaffleSection = () => {
       ticketPrice: 75,
       prizeValue: '$650',
       endDate: new Date('2024-12-28'),
+      status: 'active'
+    },
+    {
+      id: '4',
+      title: 'Steam Deck OLED',
+      description: 'Portable PC Gaming + 1TB Storage + Premium Case',
+      image: '/lovable-uploads/91d31922-bcdc-45bb-b3b6-4df169a8cfce.png',
+      totalTickets: 400,
+      soldTickets: 220,
+      ticketPrice: 60,
+      prizeValue: '$550',
+      endDate: new Date('2024-12-30'),
       status: 'active'
     }
   ]);
