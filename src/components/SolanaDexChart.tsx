@@ -70,122 +70,15 @@ const CCTR_TOKEN = {
   ]
 };
 
-// Mock data for when API fails
-const mockTokenData: TokenData[] = [
-  {
-    symbol: 'SOL',
-    name: 'Solana',
-    price: 172.62,
-    change: '+0.22%',
-    changePercent: 0.22,
-    volume: '$17.9B',
-    marketCap: '$92.8B',
-    color: 'neon-purple',
-    mintAddress: 'So11111111111111111111111111111111111111112',
-    sparklineData: Array.from({ length: 24 }, (_, i) => ({
-      time: `${i}:00`,
-      price: 172 + Math.random() * 10 - 5
-    }))
-  },
-  {
-    symbol: 'USDC',
-    name: 'USD Coin',
-    price: 0.9999,
-    change: '-0.01%',
-    changePercent: -0.01,
-    volume: '$19.4B',
-    marketCap: '$63.5B',
-    color: 'neon-yellow',
-    mintAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-    sparklineData: Array.from({ length: 24 }, (_, i) => ({
-      time: `${i}:00`,
-      price: 0.9999 + Math.random() * 0.0002 - 0.0001
-    }))
-  },
-  {
-    symbol: 'BONK',
-    name: 'Bonk',
-    price: 0.00003485,
-    change: '-4.65%',
-    changePercent: -4.65,
-    volume: '$2.9B',
-    marketCap: '$2.7B',
-    color: 'neon-pink',
-    mintAddress: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
-    sparklineData: Array.from({ length: 24 }, (_, i) => ({
-      time: `${i}:00`,
-      price: 0.00003485 + Math.random() * 0.000005 - 0.0000025
-    }))
-  }
-];
-
-const mockTopTokensData: TopTokenData[] = [
-  {
-    symbol: 'SOL',
-    name: 'Solana',
-    price: 172.62,
-    changePercent: 0.22,
-    volume: '$17.9B',
-    marketCap: '$92.8B',
-    color: 'neon-purple',
-    views: 15420,
-    trending_score: 89
-  },
-  {
-    symbol: 'RAY',
-    name: 'Raydium',
-    price: 4.32,
-    changePercent: 8.45,
-    volume: '$245M',
-    marketCap: '$1.2B',
-    color: 'neon-cyan',
-    views: 8920,
-    trending_score: 76
-  },
-  {
-    symbol: 'JUP',
-    name: 'Jupiter',
-    price: 0.89,
-    changePercent: 12.34,
-    volume: '$180M',
-    marketCap: '$890M',
-    color: 'neon-purple',
-    views: 6750,
-    trending_score: 82
-  },
-  {
-    symbol: 'BONK',
-    name: 'Bonk',
-    price: 0.00003485,
-    changePercent: -4.65,
-    volume: '$2.9B',
-    marketCap: '$2.7B',
-    color: 'neon-pink',
-    views: 12340,
-    trending_score: 45
-  },
-  {
-    symbol: 'USDC',
-    name: 'USD Coin',
-    price: 0.9999,
-    changePercent: -0.01,
-    volume: '$19.4B',
-    marketCap: '$63.5B',
-    color: 'neon-yellow',
-    views: 5680,
-    trending_score: 34
-  }
-];
-
 export const SolanaDexChart = () => {
-  const [selectedAsset, setSelectedAsset] = useState('CCTR');
+  const [selectedAsset, setSelectedAsset] = useState('SOL');
   const [swapFromToken, setSwapFromToken] = useState('SOL');
   const [swapToToken, setSwapToToken] = useState('CCTR');
   const [swapAmount, setSwapAmount] = useState('');
   const [estimatedOutput, setEstimatedOutput] = useState('0.00');
   const [isSwapping, setIsSwapping] = useState(false);
-  const [solanaAssets, setSolanaAssets] = useState<TokenData[]>([CCTR_TOKEN]);
-  const [filteredAssets, setFilteredAssets] = useState<TokenData[]>([CCTR_TOKEN]);
+  const [solanaAssets, setSolanaAssets] = useState<TokenData[]>([]);
+  const [filteredAssets, setFilteredAssets] = useState<TokenData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -198,6 +91,211 @@ export const SolanaDexChart = () => {
   const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
   const { toast } = useToast();
   const connection = new Connection('https://api.mainnet-beta.solana.com');
+
+  // Generate proper sparkline data based on time period
+  const generateSparklineData = (prices: number[], period: TimePeriod) => {
+    if (!prices || prices.length === 0) return [];
+    
+    let dataPoints: Array<{ time: string; price: number }> = [];
+    
+    if (period === '24H') {
+      // For 24H, use hourly data points
+      const step = Math.max(1, Math.floor(prices.length / 24));
+      for (let i = 0; i < Math.min(24, prices.length); i += step) {
+        const hour = i;
+        dataPoints.push({
+          time: `${hour.toString().padStart(2, '0')}:00`,
+          price: prices[i] || 0
+        });
+      }
+    } else if (period === '7D') {
+      // For 7D, use daily data points
+      const step = Math.max(1, Math.floor(prices.length / 7));
+      for (let i = 0; i < Math.min(7, prices.length); i += step) {
+        dataPoints.push({
+          time: `Day ${i + 1}`,
+          price: prices[i] || 0
+        });
+      }
+    } else if (period === '30D') {
+      // For 30D, use weekly or daily data points
+      const step = Math.max(1, Math.floor(prices.length / 30));
+      for (let i = 0; i < Math.min(30, prices.length); i += step) {
+        dataPoints.push({
+          time: `Day ${i + 1}`,
+          price: prices[i] || 0
+        });
+      }
+    }
+    
+    return dataPoints;
+  };
+
+  const fetchHistoricalData = async (coinId: string, period: TimePeriod) => {
+    try {
+      let days = '1';
+      let interval = 'hourly';
+      
+      if (period === '7D') {
+        days = '7';
+        interval = 'daily';
+      } else if (period === '30D') {
+        days = '30';
+        interval = 'daily';
+      }
+      
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=${interval}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        }
+      );
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      
+      if (data.prices && data.prices.length > 0) {
+        return data.prices.map((price: [number, number], index: number) => {
+          let timeLabel = '';
+          
+          if (period === '24H') {
+            const date = new Date(price[0]);
+            timeLabel = `${date.getHours().toString().padStart(2, '0')}:00`;
+          } else if (period === '7D') {
+            const date = new Date(price[0]);
+            timeLabel = date.toLocaleDateString('en-US', { weekday: 'short' });
+          } else {
+            const date = new Date(price[0]);
+            timeLabel = `${date.getMonth() + 1}/${date.getDate()}`;
+          }
+          
+          return {
+            time: timeLabel,
+            price: price[1]
+          };
+        });
+      }
+      
+      return [];
+    } catch (error) {
+      console.error(`Error fetching historical data for ${coinId}:`, error);
+      return [];
+    }
+  };
+
+  const fetchLiveTokenData = async (period: TimePeriod = timePeriod) => {
+    setIsLoading(true);
+    try {
+      setApiError(false);
+      const tokenIds = Object.keys(tokenMapping).join(',');
+      
+      // Get current prices and basic data
+      const pricesResponse = await fetch(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${tokenIds}&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=${period === '24H' ? '24h' : period === '7D' ? '7d' : '30d'}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        }
+      );
+      
+      if (!pricesResponse.ok) throw new Error(`HTTP error! status: ${pricesResponse.status}`);
+      const pricesData = await pricesResponse.json();
+      
+      // Fetch historical data for charts
+      const tokensWithHistory = await Promise.all(
+        pricesData.map(async (token: any) => {
+          const mapping = tokenMapping[token.id as keyof typeof tokenMapping];
+          if (!mapping) return null;
+          
+          const sparklineData = await fetchHistoricalData(token.id, period);
+          
+          const changeKey = period === '24H' ? 'price_change_percentage_24h' : 
+                           period === '7D' ? 'price_change_percentage_7d_in_currency' :
+                           'price_change_percentage_30d_in_currency';
+          
+          const changePercent = token[changeKey] || token.price_change_percentage_24h || 0;
+          
+          return {
+            symbol: mapping.symbol,
+            name: token.name,
+            price: token.current_price,
+            change: changePercent > 0 
+              ? `+${changePercent.toFixed(2)}%`
+              : `${changePercent.toFixed(2)}%`,
+            changePercent: changePercent,
+            volume: formatVolume(token.total_volume),
+            marketCap: formatVolume(token.market_cap),
+            color: mapping.color,
+            mintAddress: mapping.mintAddress,
+            sparklineData: sparklineData.length > 0 ? sparklineData : generateFallbackData(token.current_price, period)
+          };
+        })
+      );
+      
+      const validTokens = tokensWithHistory.filter(Boolean) as TokenData[];
+      
+      // Add CCTR token
+      const cctrToken = {
+        ...CCTR_TOKEN,
+        sparklineData: generateFallbackData(CCTR_TOKEN.price, period)
+      };
+      
+      const allTokens = [cctrToken, ...validTokens];
+      setSolanaAssets(allTokens);
+      setLastUpdate(new Date());
+      
+      // Update top tokens data
+      await fetchTopTokensData();
+      
+      toast({
+        title: "Data Updated",
+        description: `Live ${period} data refreshed successfully`,
+      });
+      
+    } catch (error) {
+      console.error('Error fetching live token data:', error);
+      setApiError(true);
+      
+      toast({
+        title: "Using Cached Data",
+        description: "Live data unavailable, showing cached information.",
+        variant: "default"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateFallbackData = (basePrice: number, period: TimePeriod) => {
+    const dataPoints = period === '24H' ? 24 : period === '7D' ? 7 : 30;
+    const variance = basePrice * 0.05; // 5% variance
+    
+    return Array.from({ length: dataPoints }, (_, i) => {
+      const randomChange = (Math.random() - 0.5) * variance;
+      const trendChange = period === '30D' ? (i * 0.001) : 0;
+      
+      let timeLabel = '';
+      if (period === '24H') {
+        timeLabel = `${i.toString().padStart(2, '0')}:00`;
+      } else if (period === '7D') {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        timeLabel = days[i % 7];
+      } else {
+        timeLabel = `Day ${i + 1}`;
+      }
+      
+      return {
+        time: timeLabel,
+        price: Math.max(0.001, basePrice + randomChange + trendChange)
+      };
+    });
+  };
 
   const fetchTopTokensData = async () => {
     try {
@@ -300,132 +398,6 @@ export const SolanaDexChart = () => {
     }
   };
 
-  const fetchLiveTokenData = async (period: TimePeriod = timePeriod) => {
-    setIsLoading(true);
-    try {
-      setApiError(false);
-      const tokenIds = Object.keys(tokenMapping).join(',');
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${tokenIds}&order=market_cap_desc&per_page=20&page=1&sparkline=true&price_change_percentage=${period === '24H' ? '24h' : period === '7D' ? '7d' : '30d'}`,
-        {
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-          }
-        }
-      );
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      const formattedTokens: TokenData[] = data.map((token: any) => {
-        const mapping = tokenMapping[token.id as keyof typeof tokenMapping];
-        if (!mapping) return null;
-        
-        // Create sparkline data based on the selected period
-        let sparklineData;
-        if (period === '24H') {
-          sparklineData = token.sparkline_in_7d?.price?.slice(-24)?.map((price: number, index: number) => ({
-            time: `${index}:00`,
-            price: price
-          })) || [];
-        } else if (period === '7D') {
-          sparklineData = token.sparkline_in_7d?.price?.slice(-168)?.filter((_: any, index: number) => index % 7 === 0)?.map((price: number, index: number) => ({
-            time: `Day ${index + 1}`,
-            price: price
-          })) || [];
-        } else {
-          sparklineData = token.sparkline_in_7d?.price?.slice(-30)?.map((price: number, index: number) => ({
-            time: `Day ${index + 1}`,
-            price: price
-          })) || [];
-        }
-        
-        const changePercent = token[`price_change_percentage_${period === '24H' ? '24h' : period === '7D' ? '7d' : '30d'}`] || token.price_change_percentage_24h;
-        
-        return {
-          symbol: mapping.symbol,
-          name: token.name,
-          price: token.current_price,
-          change: changePercent > 0 
-            ? `+${changePercent.toFixed(1)}%`
-            : `${changePercent.toFixed(1)}%`,
-          changePercent: changePercent,
-          volume: formatVolume(token.total_volume),
-          marketCap: formatVolume(token.market_cap),
-          color: mapping.color,
-          mintAddress: mapping.mintAddress,
-          sparklineData: sparklineData
-        };
-      }).filter(Boolean);
-      
-      // Sort by change percentage to show top gainers first
-      const sortedTokens = formattedTokens.sort((a, b) => b.changePercent - a.changePercent);
-      
-      // Update CCTR token with period-specific data
-      const updatedCCTR = {
-        ...CCTR_TOKEN,
-        sparklineData: generateCCTRData(period)
-      };
-      
-      setSolanaAssets([updatedCCTR, ...sortedTokens]);
-      setLastUpdate(new Date());
-      
-      // Also fetch top tokens data
-      await fetchTopTokensData();
-      
-    } catch (error) {
-      console.error('Error fetching live token data:', error);
-      setApiError(true);
-      
-      // Use mock data when API fails
-      const updatedCCTR = {
-        ...CCTR_TOKEN,
-        sparklineData: generateCCTRData(period)
-      };
-      
-      setSolanaAssets([updatedCCTR, ...mockTokenData]);
-      setLastUpdate(new Date());
-      
-      // Use mock data for top tokens too
-      await fetchTopTokensData();
-      
-      toast({
-        title: "Using Offline Data",
-        description: "Live data unavailable, showing cached information.",
-        variant: "default"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const generateCCTRData = (period: TimePeriod) => {
-    const basePrice = 0.052;
-    const dataPoints = period === '24H' ? 24 : period === '7D' ? 7 : 30;
-    const timeUnit = period === '24H' ? 'hour' : 'day';
-    
-    return Array.from({ length: dataPoints }, (_, i) => {
-      const variance = (Math.random() - 0.5) * 0.01;
-      const trend = period === '7D' ? i * 0.0005 : period === '30D' ? i * 0.0003 : i * 0.0001;
-      const price = basePrice + trend + variance;
-      
-      return {
-        time: period === '24H' ? `${i}:00` : `${timeUnit} ${i + 1}`,
-        price: Math.max(0.03, price)
-      };
-    });
-  };
-
   const formatVolume = (volume: number): string => {
     if (volume >= 1e9) return `$${(volume / 1e9).toFixed(1)}B`;
     if (volume >= 1e6) return `$${(volume / 1e6).toFixed(1)}M`;
@@ -448,8 +420,8 @@ export const SolanaDexChart = () => {
 
   useEffect(() => {
     fetchLiveTokenData(timePeriod);
-    // Refresh data every 60 seconds to avoid rate limiting
-    const interval = setInterval(() => fetchLiveTokenData(timePeriod), 60000);
+    // Refresh data every 30 seconds for live updates
+    const interval = setInterval(() => fetchLiveTokenData(timePeriod), 30000);
     return () => clearInterval(interval);
   }, [timePeriod]);
 
@@ -458,8 +430,13 @@ export const SolanaDexChart = () => {
     return token ? token.sparklineData : [];
   };
 
+  const getCurrentTokenInfo = () => {
+    return solanaAssets.find(a => a.symbol === selectedAsset);
+  };
+
   const handleTimePeriodChange = (period: TimePeriod) => {
     setTimePeriod(period);
+    setIsLoading(true);
     fetchLiveTokenData(period);
   };
 
@@ -470,9 +447,6 @@ export const SolanaDexChart = () => {
   };
 
   const handleTokenSelect = async (token: any) => {
-    console.log('Selected token:', token);
-    
-    // Add the new token to our assets if it's not already there
     const newTokenData: TokenData = {
       symbol: token.symbol,
       name: token.name,
@@ -525,7 +499,6 @@ export const SolanaDexChart = () => {
       }
       
       const data = await response.json();
-      console.log('Jupiter quote received:', data);
       return data;
     } catch (error) {
       console.error('Error getting quote:', error);
@@ -709,15 +682,6 @@ export const SolanaDexChart = () => {
     return '0.00';
   };
 
-  // Update estimate when swap parameters change
-  React.useEffect(() => {
-    if (swapAmount && parseFloat(swapAmount) > 0) {
-      calculateEstimate(swapAmount).then(setEstimatedOutput);
-    } else {
-      setEstimatedOutput('0.00');
-    }
-  }, [swapAmount, swapFromToken, swapToToken]);
-
   const TokenCard = ({ token, rank }: { token: TopTokenData; rank: number }) => (
     <div className="flex items-center justify-between p-3 rounded-lg border border-neon-purple/30 hover:border-neon-purple hover:bg-neon-purple/5 transition-all">
       <div className="flex items-center gap-3">
@@ -765,6 +729,9 @@ export const SolanaDexChart = () => {
           📈 SOLANA DEX EXCHANGE
           <Badge className={`${apiError ? 'bg-red-500' : 'bg-neon-green'} text-black`}>
             {apiError ? 'OFFLINE MODE' : 'LIVE DATA'}
+          </Badge>
+          <Badge className="bg-neon-purple text-white text-xs">
+            Auto-refresh: 30s
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -853,14 +820,16 @@ export const SolanaDexChart = () => {
             </Card>
           </div>
 
-          {/* Chart and Swap Interface */}
+          {/* Enhanced Chart Section */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Chart */}
             <Card className="vending-machine p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-neon-cyan flex items-center gap-2">
                   📊 {selectedAsset} Price Chart
                   {isLoading && <RefreshCw className="animate-spin" size={16} />}
+                  <Badge className="bg-neon-yellow text-black text-xs">
+                    ${getCurrentTokenInfo()?.price?.toFixed(getCurrentTokenInfo()?.price < 0.01 ? 8 : 2) || '0.00'}
+                  </Badge>
                 </h3>
                 <div className="flex gap-2">
                   <Button 
@@ -875,6 +844,7 @@ export const SolanaDexChart = () => {
                     size="sm" 
                     onClick={() => handleTimePeriodChange('24H')}
                     className={`cyber-button text-xs ${timePeriod === '24H' ? 'bg-neon-cyan text-black' : ''}`}
+                    disabled={isLoading}
                   >
                     24H
                   </Button>
@@ -882,6 +852,7 @@ export const SolanaDexChart = () => {
                     size="sm" 
                     onClick={() => handleTimePeriodChange('7D')}
                     className={`cyber-button text-xs ${timePeriod === '7D' ? 'bg-neon-cyan text-black' : ''}`}
+                    disabled={isLoading}
                   >
                     7D
                   </Button>
@@ -889,6 +860,7 @@ export const SolanaDexChart = () => {
                     size="sm" 
                     onClick={() => handleTimePeriodChange('30D')}
                     className={`cyber-button text-xs ${timePeriod === '30D' ? 'bg-neon-cyan text-black' : ''}`}
+                    disabled={isLoading}
                   >
                     30D
                   </Button>
@@ -898,14 +870,19 @@ export const SolanaDexChart = () => {
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Badge className="bg-neon-green text-black text-xs">
-                    🔥 {timePeriod} CHART
+                    🔥 {timePeriod} LIVE CHART
                   </Badge>
                   <Badge className="bg-neon-cyan text-black text-xs">
                     Last Updated: {lastUpdate.toLocaleTimeString()}
                   </Badge>
+                  <Badge className="bg-neon-purple text-white text-xs">
+                    Points: {getCurrentTokenData().length}
+                  </Badge>
                 </div>
                 <div className="text-sm text-neon-purple">
-                  {solanaAssets.filter(a => a.changePercent > 0).length} gainers • {solanaAssets.filter(a => a.changePercent < 0).length} losers
+                  Change: <span className={getCurrentTokenInfo()?.changePercent && getCurrentTokenInfo()?.changePercent > 0 ? 'text-neon-green' : 'text-red-500'}>
+                    {getCurrentTokenInfo()?.change || '0.00%'}
+                  </span>
                 </div>
               </div>
               
@@ -914,19 +891,24 @@ export const SolanaDexChart = () => {
                   <AreaChart data={getCurrentTokenData()}>
                     <defs>
                       <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00FFFF" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#00FFFF" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#00FFFF" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#00FFFF" stopOpacity={0.1}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                     <XAxis 
                       dataKey="time" 
                       stroke="#00FFFF"
-                      tick={{ fill: '#00FFFF', fontSize: 12 }}
+                      tick={{ fill: '#00FFFF', fontSize: 11 }}
+                      angle={timePeriod === '30D' ? -45 : 0}
+                      textAnchor={timePeriod === '30D' ? 'end' : 'middle'}
+                      height={timePeriod === '30D' ? 60 : 30}
                     />
                     <YAxis 
                       stroke="#00FFFF"
-                      tick={{ fill: '#00FFFF', fontSize: 12 }}
+                      tick={{ fill: '#00FFFF', fontSize: 11 }}
+                      domain={['dataMin - dataMin*0.01', 'dataMax + dataMax*0.01']}
+                      tickFormatter={(value) => value < 0.01 ? value.toFixed(8) : value.toFixed(2)}
                     />
                     <Tooltip 
                       contentStyle={{ 
@@ -934,7 +916,12 @@ export const SolanaDexChart = () => {
                         border: '1px solid #00FFFF',
                         borderRadius: '8px',
                         color: '#00FFFF'
-                      }} 
+                      }}
+                      formatter={(value: any) => [
+                        `$${typeof value === 'number' ? (value < 0.01 ? value.toFixed(8) : value.toFixed(4)) : value}`,
+                        'Price'
+                      ]}
+                      labelFormatter={(label) => `Time: ${label}`}
                     />
                     <Area
                       type="monotone"
@@ -946,6 +933,40 @@ export const SolanaDexChart = () => {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
+              </div>
+
+              {/* Chart Stats */}
+              <div className="grid grid-cols-4 gap-4 mt-4 text-sm">
+                <div className="text-center">
+                  <p className="text-muted-foreground">Period High</p>
+                  <p className="font-bold text-neon-green">
+                    ${getCurrentTokenData().length > 0 ? 
+                      Math.max(...getCurrentTokenData().map(d => d.price)).toFixed(getCurrentTokenInfo()?.price < 0.01 ? 8 : 4) : 
+                      '0.00'
+                    }
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground">Period Low</p>
+                  <p className="font-bold text-neon-pink">
+                    ${getCurrentTokenData().length > 0 ? 
+                      Math.min(...getCurrentTokenData().map(d => d.price)).toFixed(getCurrentTokenInfo()?.price < 0.01 ? 8 : 4) : 
+                      '0.00'
+                    }
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground">Volume</p>
+                  <p className="font-bold text-neon-cyan">
+                    {getCurrentTokenInfo()?.volume || '$0'}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground">Market Cap</p>
+                  <p className="font-bold text-neon-purple">
+                    {getCurrentTokenInfo()?.marketCap || '$0'}
+                  </p>
+                </div>
               </div>
             </Card>
 
@@ -1123,28 +1144,6 @@ export const SolanaDexChart = () => {
                 </div>
               </div>
             </Card>
-
-            {/* Market Stats */}
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div className="text-center">
-                <p className="text-muted-foreground">{timePeriod} High</p>
-                <p className="font-bold text-neon-green">
-                  ${(solanaAssets.find(a => a.symbol === selectedAsset)?.price * 1.12)?.toFixed(4)}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-muted-foreground">{timePeriod} Low</p>
-                <p className="font-bold text-neon-pink">
-                  ${(solanaAssets.find(a => a.symbol === selectedAsset)?.price * 0.88)?.toFixed(4)}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-muted-foreground">Volume</p>
-                <p className="font-bold text-neon-cyan">
-                  {solanaAssets.find(a => a.symbol === selectedAsset)?.volume}
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </CardContent>
