@@ -7,6 +7,7 @@ import { ArrowUpDown, RefreshCw, TrendingUp, TrendingDown, Search, Eye, Flame, A
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
+import { TokenSearch } from './TokenSearch';
 
 interface TokenData {
   symbol: string;
@@ -468,6 +469,49 @@ export const SolanaDexChart = () => {
     setSwapToToken(temp);
   };
 
+  const handleTokenSelect = async (token: any) => {
+    console.log('Selected token:', token);
+    
+    // Add the new token to our assets if it's not already there
+    const newTokenData: TokenData = {
+      symbol: token.symbol,
+      name: token.name,
+      price: token.price || 0.001, // Default price if not available
+      change: token.change24h ? `${token.change24h > 0 ? '+' : ''}${token.change24h.toFixed(2)}%` : '+0.00%',
+      changePercent: token.change24h || 0,
+      volume: '$0', // Will be updated when we get real data
+      marketCap: '$0', // Will be updated when we get real data
+      color: 'neon-cyan',
+      mintAddress: token.mintAddress,
+      sparklineData: Array.from({ length: 24 }, (_, i) => ({
+        time: `${i}:00`,
+        price: (token.price || 0.001) + Math.random() * 0.001 - 0.0005
+      }))
+    };
+
+    // Check if token already exists
+    const existingTokenIndex = solanaAssets.findIndex(asset => asset.mintAddress === token.mintAddress);
+    
+    if (existingTokenIndex === -1) {
+      // Add new token
+      const updatedAssets = [...solanaAssets, newTokenData];
+      setSolanaAssets(updatedAssets);
+      
+      toast({
+        title: "Token Added",
+        description: `${token.symbol} has been added to your watchlist`,
+      });
+    } else {
+      toast({
+        title: "Token Already Added",
+        description: `${token.symbol} is already in your watchlist`,
+      });
+    }
+
+    // Select the token for viewing
+    setSelectedAsset(token.symbol);
+  };
+
   const getQuote = async (inputMint: string, outputMint: string, amount: string) => {
     try {
       const lamports = Math.floor(parseFloat(amount) * Math.pow(10, 9)); // Convert to lamports for SOL, adjust decimals for other tokens
@@ -731,17 +775,12 @@ export const SolanaDexChart = () => {
             <Card className="holographic p-6">
               <h3 className="font-bold text-neon-pink mb-4">🪙 SOLANA ASSETS</h3>
               
-              {/* Search Input */}
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neon-cyan h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search assets..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-black border-neon-cyan/50 text-neon-cyan placeholder:text-neon-cyan/50 focus:border-neon-cyan"
-                />
-              </div>
+              {/* Enhanced Token Search */}
+              <TokenSearch
+                onTokenSelect={handleTokenSelect}
+                placeholder="Search any Solana token..."
+                className="mb-4"
+              />
 
               {/* Asset List */}
               <div className="space-y-3 max-h-96 overflow-y-auto">
