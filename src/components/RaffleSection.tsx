@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -115,7 +116,7 @@ export const RaffleSection = () => {
       description: 'Ultimate rewards for legends',
       rewards: ['2000-5000 CCTR', 'Legendary NFT', 'Physical Prize']
     }
-  ]);
+  ];
 
   const connectWalletForChests = async () => {
     try {
@@ -177,7 +178,7 @@ export const RaffleSection = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header with Authentication Status (same as Trivia) */}
+      {/* Header with Authentication Status */}
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-3xl text-neon-cyan text-center">
@@ -201,6 +202,13 @@ export const RaffleSection = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-pink">🏴‍☠️ MYSTERY TREASURE CHESTS</CardTitle>
           <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
+          {connectedWallet && (
+            <div className="text-center mt-2">
+              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+              </Badge>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -286,6 +294,13 @@ export const RaffleSection = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-green">🎫 LIVE RAFFLES</CardTitle>
           <p className="text-neon-cyan">Enter raffles for a chance to win amazing prizes!</p>
+          {connectedWallet && (
+            <div className="text-center mt-2">
+              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+              </Badge>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -359,7 +374,7 @@ export const RaffleSection = () => {
         </CardContent>
       </Card>
 
-      {/* Connect Wallet Section (same as Trivia) */}
+      {/* Connect Wallet Section */}
       {!isAuthenticated && (
         <Card className="arcade-frame border-neon-pink/30">
           <CardContent className="text-center py-8">
