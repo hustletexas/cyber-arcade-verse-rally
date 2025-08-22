@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -137,7 +138,17 @@ export const Marketplace = () => {
     }
   };
 
-  const handlePurchase = async (nft: any) => {
+  const handlePurchaseOrConnect = async (nft: any) => {
+    // If wallet is not connected, trigger wallet connection flow
+    if (!isWalletConnected) {
+      toast({
+        title: "Connect Wallet",
+        description: "Please connect your wallet to purchase NFTs",
+      });
+      // This will trigger the wallet connection modal/flow in the parent app
+      return;
+    }
+
     const isAuthenticated = await ensureAuthenticated();
     if (!isAuthenticated) return;
 
@@ -334,8 +345,8 @@ export const Marketplace = () => {
                       </div>
                       
                       <Button
-                        onClick={() => handlePurchase(nft)}
-                        disabled={isPurchasing === nft.id || !isWalletConnected}
+                        onClick={() => handlePurchaseOrConnect(nft)}
+                        disabled={isPurchasing === nft.id}
                         className="w-full cyber-button"
                       >
                         {isPurchasing === nft.id ? (
@@ -344,7 +355,7 @@ export const Marketplace = () => {
                             PROCESSING...
                           </div>
                         ) : !isWalletConnected ? (
-                          "CONNECT WALLET"
+                          "🔗 CONNECT WALLET"
                         ) : (
                           "🛒 BUY NOW"
                         )}
