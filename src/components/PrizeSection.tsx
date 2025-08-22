@@ -4,12 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
 
 export const PrizeSection = () => {
   const { user } = useAuth();
-  const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
   const [processingPrize, setProcessingPrize] = useState<string | null>(null);
 
@@ -38,10 +36,10 @@ export const PrizeSection = () => {
   ];
 
   const handleRedeemPrize = async (prize: any) => {
-    if (!user && !isWalletConnected) {
+    if (!user) {
       toast({
         title: "Authentication Required",
-        description: "Please connect your wallet or log in to redeem prizes",
+        description: "Please log in to redeem prizes",
         variant: "destructive"
       });
       return;
@@ -73,8 +71,6 @@ export const PrizeSection = () => {
     }
   };
 
-  const isAuthenticated = user || isWalletConnected;
-
   return (
     <Card className="arcade-frame">
       <CardHeader>
@@ -82,13 +78,6 @@ export const PrizeSection = () => {
           🏆 PRIZE POOL
           <Badge className="bg-neon-green text-black animate-pulse">LIVE REWARDS</Badge>
         </CardTitle>
-        {primaryWallet && (
-          <div className="text-center">
-            <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-              🔗 Wallet: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
-            </Badge>
-          </div>
-        )}
         <p className="text-muted-foreground">
           Earn CCTR tokens and redeem them for amazing prizes!
         </p>
@@ -110,19 +99,17 @@ export const PrizeSection = () => {
                     {prize.name}
                   </h3>
                   <div className="space-y-2">
-                    <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple">
-                      💎 {prize.requirement}
-                    </Badge>
+                    
                   </div>
 
                   <Button 
                     onClick={() => handleRedeemPrize(prize)}
-                    disabled={processingPrize === prize.id || !isAuthenticated}
+                    disabled={processingPrize === prize.id || !user}
                     className="cyber-button w-full"
                   >
                     {processingPrize === prize.id 
                       ? "⏳ PROCESSING..." 
-                      : !isAuthenticated 
+                      : !user 
                         ? "🔐 LOGIN TO REDEEM" 
                         : "🎁 REDEEM PRIZE"
                     }
@@ -142,26 +129,11 @@ export const PrizeSection = () => {
                 Earn CCTR tokens by playing games, participating in tournaments, and engaging with the community
               </p>
               <p className="text-sm text-neon-cyan">
-                The more you play, the more you earn! Redeem your tokens for exclusive prizes.
+                The more you play, the more you earn! Redeem your raffle for exclusive prizes.
               </p>
             </div>
           </Card>
         </div>
-
-        {!isAuthenticated && (
-          <Card className="arcade-frame border-neon-pink/30 mt-6">
-            <CardContent className="text-center py-8">
-              <div className="text-4xl mb-4">🔐</div>
-              <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Wallet</h3>
-              <p className="text-muted-foreground mb-4">
-                Connect your wallet to track progress, earn CCTR tokens, and redeem prizes
-              </p>
-              <Button className="cyber-button" disabled>
-                🚀 Connect Wallet to Continue
-              </Button>
-            </CardContent>
-          </Card>
-        )}
       </CardContent>
     </Card>
   );
