@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
 import { TournamentSection } from '@/components/TournamentSection';
-import { TokenDashboard } from '@/components/TokenDashboard';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
@@ -105,12 +104,7 @@ const Index = () => {
 
         {/* All Sections Stacked Vertically */}
         <div className="space-y-12 md:space-y-16">
-          {/* Dashboard Section */}
-          <section>
-            <TokenDashboard />
-          </section>
-
-          {/* Music Player Section - Added under Dashboard */}
+          {/* Music Player Section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
             </h2>
@@ -119,7 +113,7 @@ const Index = () => {
             </div>
           </section>
 
-          {/* Community Hub Section - Added after Dashboard */}
+          {/* Community Hub Section */}
           <section>
             <CommunityHub />
           </section>
