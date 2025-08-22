@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowUpDown, RefreshCw, TrendingUp, TrendingDown, Search, Eye, Flame, ArrowUp, ArrowDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
+import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 
 interface TokenData {
   symbol: string;
@@ -195,6 +195,7 @@ export const SolanaDexChart = () => {
   const [mostViewedTokens, setMostViewedTokens] = useState<TopTokenData[]>([]);
   const [apiError, setApiError] = useState(false);
   const { toast } = useToast();
+  const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   const fetchTopTokensData = async () => {
     try {
@@ -468,9 +469,18 @@ export const SolanaDexChart = () => {
 
   const getQuote = async (inputMint: string, outputMint: string, amount: string) => {
     try {
-      const lamports = Math.floor(parseFloat(amount) * 1000000000);
-      const response = await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${lamports}&slippageBps=50`);
+      const lamports = Math.floor(parseFloat(amount) * Math.pow(10, 9)); // Convert to lamports for SOL, adjust decimals for other tokens
+      
+      const response = await fetch(
+        `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${lamports}&slippageBps=50`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Quote API error: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Jupiter quote received:', data);
       return data;
     } catch (error) {
       console.error('Error getting quote:', error);
@@ -488,9 +498,24 @@ export const SolanaDexChart = () => {
       return;
     }
 
+    if (!window.solana || !window.solana.isPhantom) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your Phantom wallet to perform swaps",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSwapping(true);
     
     try {
+      // Get wallet public key
+      const walletPublicKey = window.solana.publicKey;
+      if (!walletPublicKey) {
+        throw new Error('Wallet not connected');
+      }
+
       const fromAsset = solanaAssets.find(a => a.symbol === swapFromToken);
       const toAsset = solanaAssets.find(a => a.symbol === swapToToken);
       
@@ -498,41 +523,111 @@ export const SolanaDexChart = () => {
         throw new Error('Asset not found');
       }
 
-      if (!window.solana || !window.solana.isPhantom) {
-        toast({
-          title: "Wallet Not Connected",
-          description: "Please connect your Phantom wallet to perform swaps",
-          variant: "destructive"
-        });
-        window.open(`https://jup.ag/swap/${fromAsset.symbol}-${toAsset.symbol}`, '_blank');
-        return;
-      }
+      toast({
+        title: "Getting Quote...",
+        description: "Fetching best swap route from Jupiter",
+      });
 
+      // Get quote from Jupiter
       const quote = await getQuote(fromAsset.mintAddress, toAsset.mintAddress, swapAmount);
       
       if (!quote) {
-        throw new Error('Unable to get quote');
+        throw new Error('Unable to get quote from Jupiter');
+      }
+
+      // Calculate output amount
+      const outputAmount = quote.outAmount / Math.pow(10, 9); // Adjust for token decimals
+      setEstimatedOutput(outputAmount.toFixed(6));
+
+      toast({
+        title: "Creating Swap Transaction...",
+        description: "Building transaction with Jupiter",
+      });
+
+      // Get swap transaction from Jupiter
+      const swapResponse = await fetch('https://quote-api.jup.ag/v6/swap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          quoteResponse: quote,
+          userPublicKey: walletPublicKey.toString(),
+          wrapAndUnwrapSol: true,
+          dynamicComputeUnitLimit: true,
+          prioritizationFeeLamports: 'auto'
+        }),
+      });
+
+      if (!swapResponse.ok) {
+        throw new Error(`Swap API error: ${swapResponse.status}`);
+      }
+
+      const { swapTransaction } = await swapResponse.json();
+
+      toast({
+        title: "Please Sign Transaction",
+        description: "Confirm the swap in your wallet",
+      });
+
+      // Deserialize the transaction
+      const transactionBuf = Buffer.from(swapTransaction, 'base64');
+      const transaction = VersionedTransaction.deserialize(transactionBuf);
+
+      // Sign and send transaction
+      const signedTransaction = await window.solana.signTransaction(transaction);
+      
+      toast({
+        title: "Sending Transaction...",
+        description: "Broadcasting to Solana network",
+      });
+
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed'
+      });
+
+      toast({
+        title: "Transaction Sent!",
+        description: `TX: ${signature.slice(0, 8)}...${signature.slice(-4)}`,
+      });
+
+      // Wait for confirmation
+      const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+      
+      if (confirmation.value.err) {
+        throw new Error('Transaction failed');
       }
 
       toast({
-        title: "Swap Initiated",
-        description: `Swapping ${swapAmount} ${swapFromToken} for ${estimatedOutput} ${swapToToken}`,
+        title: "Swap Successful! 🎉",
+        description: `Successfully swapped ${swapAmount} ${swapFromToken} for ${outputAmount.toFixed(6)} ${swapToToken}`,
       });
 
-      setTimeout(() => {
-        toast({
-          title: "Swap Successful! 🎉",
-          description: `Successfully swapped ${swapAmount} ${swapFromToken} for ${estimatedOutput} ${swapToToken}`,
-        });
-        setSwapAmount('');
-        setEstimatedOutput('0.00');
-      }, 3000);
+      // Clear form
+      setSwapAmount('');
+      setEstimatedOutput('0.00');
 
-    } catch (error) {
+      // Refresh data
+      await fetchLiveTokenData(timePeriod);
+
+    } catch (error: any) {
       console.error('Swap error:', error);
+      
+      let errorMessage = 'Transaction failed. Please try again.';
+      if (error.message?.includes('User rejected')) {
+        errorMessage = 'Transaction was cancelled by user.';
+      } else if (error.message?.includes('insufficient')) {
+        errorMessage = 'Insufficient balance for this transaction.';
+      } else if (error.message?.includes('slippage')) {
+        errorMessage = 'Price impact too high. Try reducing the amount.';
+      } else if (error.message?.includes('network')) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
       toast({
         title: "Swap Failed",
-        description: error instanceof Error ? error.message : "An error occurred during the swap",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -540,19 +635,37 @@ export const SolanaDexChart = () => {
     }
   };
 
-  const calculateEstimate = (amount: string) => {
-    if (!amount) return '0.00';
+  const calculateEstimate = async (amount: string) => {
+    if (!amount || parseFloat(amount) <= 0) return '0.00';
+    
     const fromAsset = solanaAssets.find(a => a.symbol === swapFromToken);
     const toAsset = solanaAssets.find(a => a.symbol === swapToToken);
+    
     if (fromAsset && toAsset) {
+      try {
+        const quote = await getQuote(fromAsset.mintAddress, toAsset.mintAddress, amount);
+        if (quote) {
+          const outputAmount = quote.outAmount / Math.pow(10, 9); // Adjust for token decimals
+          return outputAmount.toFixed(6);
+        }
+      } catch (error) {
+        console.error('Error getting real-time quote:', error);
+      }
+      
+      // Fallback to simple price calculation
       const estimate = (parseFloat(amount) * fromAsset.price) / toAsset.price;
       return estimate.toFixed(6);
     }
     return '0.00';
   };
 
+  // Update estimate when swap parameters change
   React.useEffect(() => {
-    setEstimatedOutput(calculateEstimate(swapAmount));
+    if (swapAmount && parseFloat(swapAmount) > 0) {
+      calculateEstimate(swapAmount).then(setEstimatedOutput);
+    } else {
+      setEstimatedOutput('0.00');
+    }
   }, [swapAmount, swapFromToken, swapToToken]);
 
   const TokenCard = ({ token, rank }: { token: TopTokenData; rank: number }) => (
@@ -822,6 +935,7 @@ export const SolanaDexChart = () => {
               <h3 className="font-bold text-neon-pink mb-6 flex items-center gap-2">
                 🔄 TOKEN SWAP
                 <Badge className="bg-neon-green text-black text-xs">JUPITER POWERED</Badge>
+                <Badge className="bg-neon-cyan text-black text-xs">MAINNET</Badge>
               </h3>
               
               <div className="space-y-4">
@@ -829,7 +943,9 @@ export const SolanaDexChart = () => {
                 <div className="p-4 rounded-lg border border-neon-cyan/30 bg-neon-cyan/5">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm text-muted-foreground">From</label>
-                    <span className="text-xs text-neon-green">Balance: 12.45 {swapFromToken}</span>
+                    <span className="text-xs text-neon-green">
+                      {window.solana?.isConnected ? 'Wallet Connected' : 'Connect Wallet'}
+                    </span>
                   </div>
                   <div className="flex gap-3">
                     <Input
@@ -869,7 +985,9 @@ export const SolanaDexChart = () => {
                 <div className="p-4 rounded-lg border border-neon-purple/30 bg-neon-purple/5">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm text-muted-foreground">To</label>
-                    <span className="text-xs text-neon-green">Balance: 8.92 {swapToToken}</span>
+                    <span className="text-xs text-neon-green">
+                      Est. Output: {estimatedOutput} {swapToToken}
+                    </span>
                   </div>
                   <div className="flex gap-3">
                     <Input
@@ -895,8 +1013,8 @@ export const SolanaDexChart = () => {
                 {/* Swap Details */}
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Rate:</span>
-                    <span className="text-neon-cyan">1 {swapFromToken} = {calculateEstimate('1')} {swapToToken}</span>
+                    <span className="text-muted-foreground">Network:</span>
+                    <span className="text-neon-cyan">Solana Mainnet</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Slippage:</span>
@@ -904,26 +1022,40 @@ export const SolanaDexChart = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Network Fee:</span>
-                    <span className="text-neon-yellow">~0.0001 SOL</span>
+                    <span className="text-neon-yellow">~0.000005 SOL</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Route:</span>
+                    <span className="text-neon-pink">Jupiter Aggregator</span>
                   </div>
                 </div>
 
                 {/* Execute Swap Button */}
                 <Button 
                   onClick={executeSwap}
-                  disabled={!swapAmount || parseFloat(swapAmount) <= 0 || isSwapping}
+                  disabled={!swapAmount || parseFloat(swapAmount) <= 0 || isSwapping || !window.solana?.isConnected}
                   className="cyber-button w-full h-12 text-lg"
                 >
-                  {isSwapping ? '⏳ SWAPPING...' : '🚀 EXECUTE SWAP'}
+                  {!window.solana?.isConnected 
+                    ? '🔗 CONNECT WALLET FIRST' 
+                    : isSwapping 
+                      ? '⏳ SWAPPING...' 
+                      : '🚀 EXECUTE SWAP ON SOLANA'
+                  }
                 </Button>
 
-                {/* Alternative Jupiter Link */}
-                <div className="text-center">
+                {/* Connection Status and Help */}
+                <div className="text-center space-y-2">
+                  {!window.solana?.isConnected && (
+                    <p className="text-xs text-neon-yellow">
+                      Please connect your Phantom wallet to swap tokens
+                    </p>
+                  )}
                   <button
                     onClick={() => window.open('https://jup.ag/', '_blank')}
                     className="text-xs text-neon-purple hover:text-neon-cyan transition-colors underline"
                   >
-                    Or swap directly on Jupiter ↗
+                    Powered by Jupiter Aggregator ↗
                   </button>
                 </div>
               </div>
