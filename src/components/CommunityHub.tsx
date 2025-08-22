@@ -104,39 +104,31 @@ export const CommunityHub = () => {
   };
 
   const handleDiscordConnect = () => {
+    console.log('Discord button clicked!'); // Debug log
+    
     try {
+      console.log('Opening Discord link...'); // Debug log
+      
       // Show connecting toast
       toast({
         title: "Connecting to Discord",
         description: "Opening Discord server in new tab...",
       });
       
-      // Open Discord link in new tab
-      const discordWindow = window.open('https://discord.gg/Y7yUUssH', '_blank', 'noopener,noreferrer');
+      // Open Discord link in new tab - simplified approach
+      window.open('https://discord.gg/Y7yUUssH', '_blank', 'noopener,noreferrer');
       
-      // Check if popup was blocked
-      if (!discordWindow) {
-        toast({
-          title: "Popup Blocked",
-          description: "Please allow popups and try again, or manually visit the Discord link.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Success feedback after a brief delay
-      setTimeout(() => {
-        toast({
-          title: "Discord Opened",
-          description: "Welcome to the Cyber City Community! 🎮",
-        });
-      }, 1000);
+      // Success feedback
+      toast({
+        title: "Discord Link Opened",
+        description: "Welcome to the Cyber City Community! 🎮",
+      });
       
     } catch (error) {
       console.error('Discord connection error:', error);
       toast({
         title: "Connection Error",
-        description: "Failed to open Discord. Please try again or visit discord.gg/Y7yUUssH manually.",
+        description: "Failed to open Discord. Please try the link manually: discord.gg/Y7yUUssH",
         variant: "destructive",
       });
     }
