@@ -92,11 +92,24 @@ export const TokenPurchase = () => {
     // For now, simulate the process
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Update user balance in database
+    // Get current balance first
+    const { data: currentBalance, error: balanceError } = await supabase
+      .from('user_balances')
+      .select('cctr_balance')
+      .eq('user_id', user!.id)
+      .single();
+
+    if (balanceError) {
+      throw new Error('Could not retrieve current balance');
+    }
+
+    // Update user balance in database by adding the new amount
+    const newBalance = (currentBalance?.cctr_balance || 0) + amount;
     const { error } = await supabase
       .from('user_balances')
       .update({ 
-        cctr_balance: supabase.rpc('increment_balance', { amount: amount })
+        cctr_balance: newBalance,
+        updated_at: new Date().toISOString()
       })
       .eq('user_id', user!.id);
 
