@@ -14,7 +14,7 @@ export const TokenPurchase = () => {
   const { toast } = useToast();
   const { primaryWallet, isWalletConnected, connectWallet } = useMultiWallet();
   const [amount, setAmount] = useState<number>(1000);
-  const [paymentMethod, setPaymentMethod] = useState<string>('paypal');
+  const [paymentMethod, setPaymentMethod] = useState<string>('usdc');
   const [processing, setProcessing] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const tokenPrice = 0.045; // $0.045 per CCTR token
@@ -60,12 +60,8 @@ export const TokenPurchase = () => {
 
     setProcessing(true);
     try {
-      // For crypto payments, handle differently than fiat
-      if (['usdc', 'pyusd', 'solana'].includes(paymentMethod)) {
-        await handleCryptoPurchase();
-      } else {
-        await handleFiatPurchase();
-      }
+      // Handle crypto payments only (removed fiat handling)
+      await handleCryptoPurchase();
     } catch (error: any) {
       toast({
         title: "Payment Failed",
@@ -142,10 +138,6 @@ export const TokenPurchase = () => {
   };
 
   const paymentMethods = [{
-    value: 'paypal',
-    label: '💳 PayPal',
-    icon: '💳'
-  }, {
     value: 'usdc',
     label: '🪙 USDC',
     icon: '🪙'
@@ -307,7 +299,6 @@ export const TokenPurchase = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="paypal">💳 PayPal</SelectItem>
                     <SelectItem value="usdc">🪙 USDC</SelectItem>
                     <SelectItem value="pyusd">💰 PYUSD</SelectItem>
                     <SelectItem value="solana">⚡ Solana</SelectItem>
