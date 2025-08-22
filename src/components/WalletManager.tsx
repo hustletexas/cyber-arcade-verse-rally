@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -52,11 +53,11 @@ export const WalletManager = () => {
       });
 
       const { Keypair } = await import('@solana/web3.js');
-      const bs58 = await import('bs58');
+      const { encode } = await import('bs58');
       
       const newKeypair = Keypair.generate();
       const publicKey = newKeypair.publicKey.toString();
-      const privateKey = bs58.default.encode(newKeypair.secretKey);
+      const privateKey = encode(newKeypair.secretKey);
       
       const walletData = { publicKey, privateKey };
       
@@ -100,9 +101,9 @@ export const WalletManager = () => {
       });
 
       const { Keypair } = await import('@solana/web3.js');
-      const bs58 = await import('bs58');
+      const { decode } = await import('bs58');
       
-      const secretKey = bs58.default.decode(importPrivateKey.trim());
+      const secretKey = decode(importPrivateKey.trim());
       
       const keypair = Keypair.fromSecretKey(secretKey);
       const publicKey = keypair.publicKey.toString();

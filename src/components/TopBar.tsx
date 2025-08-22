@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -80,11 +81,11 @@ export const TopBar = () => {
 
       // Generate a new keypair using Solana web3.js
       const { Keypair } = await import('@solana/web3.js');
-      const bs58 = await import('bs58');
+      const { encode } = await import('bs58');
       
       const keypair = Keypair.generate();
       const publicKey = keypair.publicKey.toString();
-      const privateKey = bs58.encode(keypair.secretKey);
+      const privateKey = encode(keypair.secretKey);
 
       // Save to localStorage with the key expected by useMultiWallet
       const walletData = { publicKey, privateKey };
@@ -364,3 +365,4 @@ export const TopBar = () => {
     </>
   );
 };
+
