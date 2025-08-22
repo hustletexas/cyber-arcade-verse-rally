@@ -9,7 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { useSolanaNFT } from '@/hooks/useSolanaNFT';
+import { useCart } from '@/contexts/CartContext';
+import { ShoppingCart } from 'lucide-react';
 
 const mockNFTs = [
   // Legendary NFTs
@@ -104,7 +105,7 @@ export const Marketplace = () => {
   const { isWalletConnected, primaryWallet } = useMultiWallet();
   const { createOrLoginWithWallet } = useWalletAuth();
   const { balance } = useUserBalance();
-  const { purchaseNFT, isPurchasing } = useSolanaNFT();
+  const { addToCart, getTotalItems, getTotalPrice, setIsOpen } = useCart();
   const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('sol');
   const [filter, setFilter] = useState('all');
 
@@ -122,7 +123,7 @@ export const Marketplace = () => {
 
     toast({
       title: "Connecting wallet…",
-      description: "Authenticating your wallet to proceed with the purchase",
+      description: "Authenticating your wallet to proceed",
     });
 
     try {
@@ -138,35 +139,36 @@ export const Marketplace = () => {
     }
   };
 
-  const handlePurchaseOrConnect = async (nft: any) => {
+  const handleAddToCartOrConnect = async (nft: any) => {
     // If wallet is not connected, trigger wallet connection flow
     if (!isWalletConnected) {
       toast({
         title: "Connect Wallet",
-        description: "Please connect your wallet to purchase NFTs",
+        description: "Please connect your wallet to add NFTs to cart",
       });
-      // This will trigger the wallet connection modal/flow in the parent app
       return;
     }
 
     const isAuthenticated = await ensureAuthenticated();
     if (!isAuthenticated) return;
 
-    // Validate balance for CCTR purchases
-    if (selectedCurrency === 'cctr') {
-      const price = nft.price[selectedCurrency];
-      if (balance.cctr_balance < price) {
-        toast({
-          title: "Insufficient Balance",
-          description: `You need ${price} $CCTR but only have ${balance.cctr_balance} $CCTR`,
-          variant: "destructive"
-        });
-        return;
-      }
-    }
+    // Add NFT to cart with selected currency price
+    const price = nft.price[selectedCurrency];
+    
+    addToCart({
+      id: `nft-${nft.id}`,
+      name: nft.name,
+      price: price,
+      image: nft.image,
+      category: 'nft',
+      selectedSize: selectedCurrency.toUpperCase(),
+      selectedColor: nft.rarity
+    });
 
-    // Execute the purchase
-    await purchaseNFT(nft, selectedCurrency);
+    toast({
+      title: "Added to Cart! 🛒",
+      description: `${nft.name} added to cart for ${price} ${selectedCurrency.toUpperCase()}`,
+    });
   };
 
   const connectPlatform = (platform: string, url: string) => {
@@ -197,6 +199,15 @@ export const Marketplace = () => {
         <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
           🛒 NFT MARKETPLACE
           <Badge className="bg-neon-cyan text-black">SOLANA POWERED</Badge>
+          {getTotalItems() > 0 && (
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="bg-neon-cyan text-black ml-auto hover:bg-neon-cyan/80 flex items-center gap-2"
+            >
+              <ShoppingCart size={16} />
+              {getTotalItems()} items - ${getTotalPrice().toFixed(2)}
+            </Button>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -345,19 +356,16 @@ export const Marketplace = () => {
                       </div>
                       
                       <Button
-                        onClick={() => handlePurchaseOrConnect(nft)}
-                        disabled={isPurchasing === nft.id}
+                        onClick={() => handleAddToCartOrConnect(nft)}
                         className="w-full cyber-button"
                       >
-                        {isPurchasing === nft.id ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            PROCESSING...
-                          </div>
-                        ) : !isWalletConnected ? (
+                        {!isWalletConnected ? (
                           "🔗 CONNECT WALLET"
                         ) : (
-                          "🛒 BUY NOW"
+                          <div className="flex items-center gap-2">
+                            <ShoppingCart size={16} />
+                            ADD TO CART
+                          </div>
                         )}
                       </Button>
                     </div>
@@ -366,6 +374,27 @@ export const Marketplace = () => {
               </Card>
             ))}
           </div>
+
+          {/* Quick Cart Access */}
+          {getTotalItems() > 0 && (
+            <Card className="holographic p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-display text-xl text-neon-pink">🛒 Your Cart</h3>
+                <div className="text-right">
+                  <p className="text-neon-cyan">{getTotalItems()} items</p>
+                  <p className="text-2xl font-bold text-neon-green">${getTotalPrice().toFixed(2)}</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <Button 
+                  onClick={() => setIsOpen(true)}
+                  className="flex-1 cyber-button"
+                >
+                  🚀 VIEW CART & CHECKOUT
+                </Button>
+              </div>
+            </Card>
+          )}
         </div>
       </CardContent>
     </Card>
