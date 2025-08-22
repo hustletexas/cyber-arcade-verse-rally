@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export const TopBar = () => {
   const { user, signOut, loading } = useAuth();
@@ -232,10 +233,6 @@ export const TopBar = () => {
                         </DropdownMenuItem>
                       ))}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
-                        <Settings size={16} className="mr-2" />
-                        Manage Wallets
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
                         Add Wallet
@@ -265,10 +262,6 @@ export const TopBar = () => {
                     <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
                       <DropdownMenuLabel>Wallet Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
-                        <Settings size={16} className="mr-2" />
-                        Manage Wallets
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
                         Add Wallet
@@ -306,19 +299,12 @@ export const TopBar = () => {
         onWalletConnected={connectWallet}
       />
 
-      {showWalletManager && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="relative">
-            <Button
-              onClick={() => setShowWalletManager(false)}
-              className="absolute -top-2 -right-2 z-10 w-8 h-8 p-0 rounded-full bg-neon-pink text-black hover:bg-neon-pink/80"
-            >
-              ✕
-            </Button>
-            <WalletManager />
-          </div>
-        </div>
-      )}
+      {/* Use Dialog to ensure instant, reliable overlay for Wallet Manager */}
+      <Dialog open={showWalletManager} onOpenChange={setShowWalletManager}>
+        <DialogContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 max-w-3xl">
+          <WalletManager />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
