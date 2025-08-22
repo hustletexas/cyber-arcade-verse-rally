@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -112,7 +111,7 @@ export const RaffleSection = () => {
       name: 'Legendary Chest',
       price: { cctr: 5000, sol: 5.0, usdc: 250 },
       rarity: 'legendary',
-      image: '/lovable-uploads/5e47ac9b-6636-4d5e-994c-aba92ae915ac.png',
+      image: '/lovable-uploads/40d6a951-fd19-4d9f-b892-be71f6f300d5.png',
       description: 'Ultimate rewards for legends',
       rewards: ['2000-5000 CCTR', 'Legendary NFT', 'Physical Prize']
     }
