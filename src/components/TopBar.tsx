@@ -207,34 +207,14 @@ export const TopBar = () => {
               {/* Multi-Wallet Connection - Now the primary authentication method */}
               <div className="flex items-center gap-2">
                 {!isWalletConnected ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        className="cyber-button flex items-center gap-2"
-                        size="sm"
-                      >
-                        <Wallet size={16} />
-                        CONNECT WALLET
-                        <ChevronDown size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
-                      <DropdownMenuLabel>Wallet Options</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={handleWalletConnect} className="hover:bg-neon-cyan/10">
-                        <Wallet size={16} className="mr-2" />
-                        Connect External Wallet
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={handleCreateWallet} className="hover:bg-neon-green/10">
-                        <Plus size={16} className="mr-2" />
-                        Create Wallet
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
-                        <Settings size={16} className="mr-2" />
-                        Manage Wallets
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button 
+                    onClick={handleManageWallets}
+                    className="cyber-button flex items-center gap-2"
+                    size="sm"
+                  >
+                    <Settings size={16} />
+                    MANAGE WALLETS
+                  </Button>
                 ) : hasMultipleWallets ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -335,14 +315,6 @@ export const TopBar = () => {
                         <Settings size={16} className="mr-2" />
                         Manage Wallets
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
-                        <Wallet size={16} className="mr-2" />
-                        Add External Wallet
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleCreateWallet} className="hover:bg-neon-green/10">
-                        <Plus size={16} className="mr-2" />
-                        Create Wallet
-                      </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
                         className="text-neon-pink hover:bg-neon-pink/10"
@@ -430,22 +402,13 @@ export const TopBar = () => {
                         <Settings size={16} className="mr-2" />
                         Manage Wallets
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
-                        <Wallet size={16} className="mr-2" />
-                        Add External Wallet
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleCreateWallet} className="hover:bg-neon-green/10">
-                        <Plus size={16} className="mr-2" />
-                        Create Wallet
-                      </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
                         className="text-neon-pink hover:bg-neon-pink/10"
                       >
                         <LogOut size={16} className="mr-2" />
                         Disconnect Wallet
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
+                      </DropdownMenuContent>
                   </DropdownMenu>
                 )}
               </div>
