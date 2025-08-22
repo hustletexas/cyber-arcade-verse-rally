@@ -5,18 +5,44 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { WalletBalanceDisplay } from './WalletBalanceDisplay';
-import { User, Activity, Trophy, History, Settings, Gamepad2, Coins } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { User, Activity, Trophy, History, Settings, Gamepad2, Coins, Shield, Bell, Eye, Wallet, Save } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export const ProfileDashboard = () => {
   const { user } = useAuth();
   const { balance } = useUserBalance();
-  const { primaryWallet, connectedWallets } = useMultiWallet();
+  const { primaryWallet, connectedWallets, disconnectWallet } = useMultiWallet();
+  const { toast } = useToast();
+  
+  // Settings state
+  const [profileSettings, setProfileSettings] = useState({
+    username: user?.user_metadata?.username || '',
+    email: user?.email || '',
+    avatar_url: user?.user_metadata?.avatar_url || ''
+  });
+  
+  const [notificationSettings, setNotificationSettings] = useState({
+    tournamentUpdates: true,
+    prizeAlerts: true,
+    balanceChanges: false,
+    marketingEmails: false
+  });
+  
+  const [privacySettings, setPrivacySettings] = useState({
+    showProfile: true,
+    showBalance: false,
+    showActivity: true,
+    allowDirectMessages: true
+  });
 
   // Fetch tournament data
   const { data: tournamentEntries = [] } = useQuery({
@@ -102,6 +128,48 @@ export const ProfileDashboard = () => {
     totalRewards: tournamentEntries.reduce((sum, entry) => sum + (entry.reward_amount || 0), 0)
   };
 
+  const handleProfileSave = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          username: profileSettings.username,
+          avatar_url: profileSettings.avatar_url,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile settings have been saved successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile settings.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleWalletDisconnect = async (walletType: string) => {
+    try {
+      await disconnectWallet(walletType as any);
+      toast({
+        title: "Wallet Disconnected",
+        description: `${walletType} wallet has been disconnected.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Disconnect Failed",
+        description: "Failed to disconnect wallet.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!user) {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -110,7 +178,7 @@ export const ProfileDashboard = () => {
             <User size={48} className="mx-auto mb-4 text-neon-cyan" />
             <h2 className="text-2xl font-display text-neon-cyan mb-2">Connect Your Wallet</h2>
             <p className="text-muted-foreground mb-4">
-              Connect your Solana wallet to view your profile, NFTs, tournament history, and blockchain activity
+              Connect your Solana wallet to view your profile, tournament history, and blockchain activity
             </p>
             <Button className="cyber-button">
               Connect Wallet
@@ -170,9 +238,9 @@ export const ProfileDashboard = () => {
             <User size={16} className="mr-2" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="nfts" className="data-[state=active]:bg-neon-green data-[state=active]:text-black">
-            <Coins size={16} className="mr-2" />
-            NFTs & Tokens
+          <TabsTrigger value="settings" className="data-[state=active]:bg-neon-green data-[state=active]:text-black">
+            <Settings size={16} className="mr-2" />
+            Account Settings
           </TabsTrigger>
           <TabsTrigger value="tournaments" className="data-[state=active]:bg-neon-purple data-[state=active]:text-black">
             <Gamepad2 size={16} className="mr-2" />
@@ -245,8 +313,239 @@ export const ProfileDashboard = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="nfts" className="space-y-4">
-          <WalletBalanceDisplay />
+        <TabsContent value="settings" className="space-y-6">
+          {/* Profile Settings */}
+          <Card className="holographic">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User size={20} />
+                Profile Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    value={profileSettings.username}
+                    onChange={(e) => setProfileSettings(prev => ({ ...prev, username: e.target.value }))}
+                    className="bg-background/50 border-neon-cyan/30"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    value={profileSettings.email}
+                    disabled
+                    className="bg-background/20 border-neon-cyan/30 opacity-50"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="avatar">Avatar URL</Label>
+                  <Input
+                    id="avatar"
+                    value={profileSettings.avatar_url}
+                    onChange={(e) => setProfileSettings(prev => ({ ...prev, avatar_url: e.target.value }))}
+                    className="bg-background/50 border-neon-cyan/30"
+                    placeholder="https://example.com/avatar.jpg"
+                  />
+                </div>
+              </div>
+              <Button onClick={handleProfileSave} className="cyber-button">
+                <Save size={16} className="mr-2" />
+                Save Profile
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Wallet Settings */}
+          <Card className="holographic">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet size={20} />
+                Wallet Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {connectedWallets.map((wallet, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{wallet.type === 'phantom' ? '👻' : '💰'}</span>
+                      <div>
+                        <p className="font-medium capitalize">{wallet.type} Wallet</p>
+                        <code className="text-xs text-muted-foreground">
+                          {wallet.address.slice(0, 12)}...{wallet.address.slice(-8)}
+                        </code>
+                      </div>
+                      {wallet === primaryWallet && (
+                        <Badge className="bg-neon-green text-black">Primary</Badge>
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => handleWalletDisconnect(wallet.type)}
+                      variant="outline"
+                      size="sm"
+                      className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notification Settings */}
+          <Card className="holographic">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell size={20} />
+                Notification Preferences
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Tournament Updates</p>
+                  <p className="text-sm text-muted-foreground">Get notified about tournament status changes</p>
+                </div>
+                <Switch
+                  checked={notificationSettings.tournamentUpdates}
+                  onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, tournamentUpdates: checked }))}
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Prize Alerts</p>
+                  <p className="text-sm text-muted-foreground">Notifications when you win prizes or rewards</p>
+                </div>
+                <Switch
+                  checked={notificationSettings.prizeAlerts}
+                  onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, prizeAlerts: checked }))}
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Balance Changes</p>
+                  <p className="text-sm text-muted-foreground">Get notified of CCTR balance updates</p>
+                </div>
+                <Switch
+                  checked={notificationSettings.balanceChanges}
+                  onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, balanceChanges: checked }))}
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Marketing Emails</p>
+                  <p className="text-sm text-muted-foreground">Receive promotional content and updates</p>
+                </div>
+                <Switch
+                  checked={notificationSettings.marketingEmails}
+                  onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, marketingEmails: checked }))}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Privacy Settings */}
+          <Card className="holographic">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye size={20} />
+                Privacy & Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Public Profile</p>
+                  <p className="text-sm text-muted-foreground">Allow others to view your profile</p>
+                </div>
+                <Switch
+                  checked={privacySettings.showProfile}
+                  onCheckedChange={(checked) => setPrivacySettings(prev => ({ ...prev, showProfile: checked }))}
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Show Balance</p>
+                  <p className="text-sm text-muted-foreground">Display your CCTR balance publicly</p>
+                </div>
+                <Switch
+                  checked={privacySettings.showBalance}
+                  onCheckedChange={(checked) => setPrivacySettings(prev => ({ ...prev, showBalance: checked }))}
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Show Activity</p>
+                  <p className="text-sm text-muted-foreground">Make your tournament activity visible</p>
+                </div>
+                <Switch
+                  checked={privacySettings.showActivity}
+                  onCheckedChange={(checked) => setPrivacySettings(prev => ({ ...prev, showActivity: checked }))}
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Direct Messages</p>
+                  <p className="text-sm text-muted-foreground">Allow other users to message you</p>
+                </div>
+                <Switch
+                  checked={privacySettings.allowDirectMessages}
+                  onCheckedChange={(checked) => setPrivacySettings(prev => ({ ...prev, allowDirectMessages: checked }))}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security Section */}
+          <Card className="holographic">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield size={20} />
+                Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div>
+                  <p className="font-medium">Two-Factor Authentication</p>
+                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+                </div>
+                <Button variant="outline" className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black">
+                  Enable 2FA
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div>
+                  <p className="font-medium">Change Password</p>
+                  <p className="text-sm text-muted-foreground">Update your account password</p>
+                </div>
+                <Button variant="outline" className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black">
+                  Change Password
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div>
+                  <p className="font-medium">Account Backup</p>
+                  <p className="text-sm text-muted-foreground">Download your account data and transaction history</p>
+                </div>
+                <Button variant="outline" className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black">
+                  Download Backup
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="tournaments" className="space-y-4">
