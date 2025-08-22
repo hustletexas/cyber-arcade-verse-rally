@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,6 @@ import { TournamentSection } from '@/components/TournamentSection';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
-import { PrizeSection } from '@/components/PrizeSection';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { RaffleSection } from '@/components/RaffleSection';
@@ -141,11 +139,6 @@ const Index = () => {
           {/* Raffles Section */}
           <section>
             <RaffleSection />
-          </section>
-
-          {/* Prize Pool Section - Moved after Raffles */}
-          <section>
-            <PrizeSection />
           </section>
 
           {/* Voting Section */}
