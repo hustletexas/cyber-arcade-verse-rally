@@ -211,6 +211,15 @@ export const VotingSection = () => {
                   </p>
                 </div>
               )}
+
+              {user && isWalletConnected && balance.cctr_balance < 1 && (
+                <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
+                  <p className="text-neon-pink font-bold">💰 Insufficient CCTR</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    You need at least 1 CCTR token to cast a vote. Purchase more CCTR to participate.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
