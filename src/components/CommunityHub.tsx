@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { Send, Users, Zap, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -13,6 +16,7 @@ interface Message {
   message: string;
   timestamp: Date;
   isGuest: boolean;
+  walletAddress?: string;
 }
 
 interface Announcement {
@@ -25,6 +29,8 @@ interface Announcement {
 
 export const CommunityHub = () => {
   const { user, loading } = useAuth();
+  const { primaryWallet, isWalletConnected, connectWallet, getWalletIcon } = useMultiWallet();
+  const { createOrLoginWithWallet } = useWalletAuth();
   const { toast } = useToast();
   
   const [messages, setMessages] = useState<Message[]>([
@@ -40,7 +46,8 @@ export const CommunityHub = () => {
       username: 'Player001',
       message: 'Ready for tonight\'s tournament! 🏆',
       timestamp: new Date(Date.now() - 120000),
-      isGuest: true
+      isGuest: true,
+      walletAddress: 'ABC123...XYZ789'
     }
   ]);
 
@@ -71,11 +78,43 @@ export const CommunityHub = () => {
   const [currentMessage, setCurrentMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get username from authenticated user or fallback
+  // Get username from authenticated user or wallet
   const getDisplayName = () => {
     if (user?.user_metadata?.username) return user.user_metadata.username;
     if (user?.email) return user.email.split('@')[0];
+    if (primaryWallet) return `Wallet_${primaryWallet.address.slice(0, 6)}`;
     return 'Anonymous';
+  };
+
+  // Connect Solana wallet function
+  const connectSolanaWallet = async () => {
+    try {
+      if (window.solana && window.solana.isPhantom) {
+        const response = await window.solana.connect();
+        if (response?.publicKey) {
+          await connectWallet('phantom', response.publicKey.toString());
+          await createOrLoginWithWallet(response.publicKey.toString());
+          toast({
+            title: "Wallet Connected!",
+            description: "You can now participate in the chat",
+          });
+        }
+      } else {
+        toast({
+          title: "Phantom Wallet Required",
+          description: "Please install Phantom wallet to connect",
+          variant: "destructive",
+        });
+        window.open('https://phantom.app/', '_blank');
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const scrollToBottom = () => {
@@ -87,13 +126,14 @@ export const CommunityHub = () => {
   }, [messages]);
 
   const handleSendMessage = () => {
-    if (currentMessage.trim() && user) {
+    if (currentMessage.trim() && (user || isWalletConnected)) {
       const newMessage: Message = {
         id: Date.now().toString(),
         username: getDisplayName(),
         message: currentMessage.trim(),
         timestamp: new Date(),
-        isGuest: true
+        isGuest: !user,
+        walletAddress: primaryWallet?.address
       };
       setMessages(prev => [...prev, newMessage]);
       setCurrentMessage('');
@@ -186,6 +226,8 @@ export const CommunityHub = () => {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
+  const isAuthenticated = user || isWalletConnected;
+
   return (
     <section className="w-full">
       <div className="text-center mb-8">
@@ -199,6 +241,21 @@ export const CommunityHub = () => {
         >
           🕹️ CYBER CITY COMMUNITY HQ
         </h2>
+        
+        {/* Authentication Status Badge */}
+        {isAuthenticated && (
+          <div className="mt-4 flex justify-center">
+            {user ? (
+              <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan">
+                👤 Logged in as {getDisplayName()}
+              </Badge>
+            ) : primaryWallet ? (
+              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+                {getWalletIcon(primaryWallet.type)} Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
+              </Badge>
+            ) : null}
+          </div>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
@@ -285,10 +342,17 @@ export const CommunityHub = () => {
                     style={{ boxShadow: '0 0 5px #00ffcc15' }}
                   >
                     <div className="flex items-start justify-between mb-1">
-                      <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
-                        {message.username}
-                        {!message.isGuest && <span className="text-neon-cyan ml-1">👑</span>}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
+                          {message.username}
+                          {!message.isGuest && <span className="text-neon-cyan ml-1">👑</span>}
+                        </span>
+                        {message.walletAddress && (
+                          <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs">
+                            💰 Wallet
+                          </Badge>
+                        )}
+                      </div>
                       <span className="text-neon-purple text-xs">
                         {formatTime(message.timestamp)}
                       </span>
@@ -302,8 +366,8 @@ export const CommunityHub = () => {
               </div>
             </ScrollArea>
 
-            {/* Login Form or Chat Input */}
-            {!user ? (
+            {/* Chat Input or Connection Options */}
+            {!isAuthenticated ? (
               <div className="space-y-3">
                 {/* Discord Connect Button */}
                 <Button 
@@ -321,10 +385,11 @@ export const CommunityHub = () => {
                   CONNECT TO DISCORD
                   <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded"></span>
                 </Button>
-                
+
+                {/* Wallet Connect Button */}
                 <Button 
-                  onClick={() => window.location.href = '/auth'}
-                  className="w-full"
+                  onClick={connectSolanaWallet}
+                  className="w-full hover:scale-105 transition-all duration-200"
                   style={{
                     background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
                     border: '1px solid #00ffcc',
@@ -333,8 +398,22 @@ export const CommunityHub = () => {
                   }}
                   disabled={loading}
                 >
+                  💰 CONNECT WALLET TO CHAT
+                </Button>
+                
+                <Button 
+                  onClick={() => window.location.href = '/auth'}
+                  className="w-full"
+                  style={{
+                    background: 'linear-gradient(45deg, #ff00ff, #aa0088)',
+                    border: '1px solid #ff00ff',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                  disabled={loading}
+                >
                   <Zap size={16} className="mr-2" />
-                  {loading ? 'LOADING...' : 'CONNECT WALLET TO JOIN CHAT'}
+                  {loading ? 'LOADING...' : 'OR LOGIN WITH EMAIL'}
                 </Button>
               </div>
             ) : (
