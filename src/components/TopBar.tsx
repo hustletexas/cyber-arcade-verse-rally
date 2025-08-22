@@ -12,10 +12,12 @@ import { useNavigate } from 'react-router-dom';
 export const TopBar = () => {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showTokenDashboard, setShowTokenDashboard] = useState(false);
-  const { isWalletConnected, disconnectWallet, walletAddress } = useWallet();
-  const { user, logout } = useAuth();
+  const { getConnectedWallet, isWalletConnected } = useWallet();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const connectedWallet = getConnectedWallet();
 
   const handleWalletClick = () => {
     if (isWalletConnected()) {
@@ -27,8 +29,7 @@ export const TopBar = () => {
 
   const handleDisconnect = async () => {
     try {
-      await disconnectWallet();
-      await logout();
+      await signOut();
       setShowTokenDashboard(false);
       toast({
         title: "Disconnected",
@@ -41,6 +42,13 @@ export const TopBar = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleWalletConnected = (walletType: string, address: string) => {
+    toast({
+      title: "Wallet Connected!",
+      description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
+    });
   };
 
   return (
@@ -68,8 +76,8 @@ export const TopBar = () => {
                 onClick={handleWalletClick}
                 className="cyber-button"
               >
-                {isWalletConnected() ? 
-                  `${walletAddress?.slice(0, 4)}...${walletAddress?.slice(-4)}` : 
+                {isWalletConnected() && connectedWallet ? 
+                  `${connectedWallet.address.slice(0, 4)}...${connectedWallet.address.slice(-4)}` : 
                   '🔗 CONNECT WALLET'
                 }
               </Button>
@@ -90,7 +98,8 @@ export const TopBar = () => {
 
       <WalletConnectionModal 
         isOpen={showWalletModal} 
-        onClose={() => setShowWalletModal(false)} 
+        onClose={() => setShowWalletModal(false)}
+        onWalletConnected={handleWalletConnected}
       />
 
       {showTokenDashboard && (
