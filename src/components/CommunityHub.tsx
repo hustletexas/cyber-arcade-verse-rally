@@ -1,19 +1,13 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Users, Zap, MessageCircle } from 'lucide-react';
+import { Send, Users, Zap, MessageCircle, Wifi, WifiOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-
-interface Message {
-  id: string;
-  username: string;
-  message: string;
-  timestamp: Date;
-  isGuest: boolean;
-}
+import { useRealtimeChat } from '@/hooks/useRealtimeChat';
 
 interface Announcement {
   id: string;
@@ -26,31 +20,15 @@ interface Announcement {
 export const CommunityHub = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  const { messages, isLoading: chatLoading, sendMessage, isConnected } = useRealtimeChat();
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      username: 'CyberAdmin',
-      message: 'Welcome to Cyber City Community HQ! 🎮',
-      timestamp: new Date(Date.now() - 300000),
-      isGuest: false
-    },
-    {
-      id: '2',
-      username: 'Player001',
-      message: 'Ready for tonight\'s tournament! 🏆',
-      timestamp: new Date(Date.now() - 120000),
-      isGuest: true
-    }
-  ]);
-
   const [announcements] = useState<Announcement[]>([
     {
       id: '1',
       icon: '📢',
-      title: 'Tournament Rules Updated',
-      content: 'New scoring system implemented for fair gameplay. Check the latest rules in our tournament section.',
-      timestamp: new Date(Date.now() - 86400000)
+      title: 'Live Chat Now Available!',
+      content: 'Join our real-time community chat! Connect with other players instantly without needing Discord.',
+      timestamp: new Date(Date.now() - 3600000)
     },
     {
       id: '2',
@@ -71,13 +49,6 @@ export const CommunityHub = () => {
   const [currentMessage, setCurrentMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get username from authenticated user or fallback
-  const getDisplayName = () => {
-    if (user?.user_metadata?.username) return user.user_metadata.username;
-    if (user?.email) return user.email.split('@')[0];
-    return 'Anonymous';
-  };
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -86,95 +57,17 @@ export const CommunityHub = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (currentMessage.trim() && user) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        username: getDisplayName(),
-        message: currentMessage.trim(),
-        timestamp: new Date(),
-        isGuest: true
-      };
-      setMessages(prev => [...prev, newMessage]);
+      await sendMessage(currentMessage);
       setCurrentMessage('');
-      
-      // Play arcade beep sound (optional)
-      playArcadeBeep();
     }
   };
 
-  const handleDiscordConnect = () => {
-    console.log('Discord button clicked!'); // Debug log
-    
-    try {
-      console.log('Opening Discord link...'); // Debug log
-      
-      // Show connecting toast
-      toast({
-        title: "Opening Discord...",
-        description: "Taking you to our Discord server!",
-      });
-      
-      // Try to open Discord link - use a more reliable approach
-      const discordUrl = 'https://discord.gg/Y7yUUssH';
-      
-      // Create a temporary link element and click it (more reliable than window.open)
-      const link = document.createElement('a');
-      link.href = discordUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      
-      // Append to body, click, then remove
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Provide success feedback after a short delay
-      setTimeout(() => {
-        toast({
-          title: "Discord Link Opened! 🎮",
-          description: "Welcome to the Cyber City Community!",
-        });
-      }, 500);
-      
-    } catch (error) {
-      console.error('Discord connection error:', error);
-      
-      // Fallback: copy link to clipboard
-      try {
-        navigator.clipboard.writeText('https://discord.gg/Y7yUUssH');
-        toast({
-          title: "Link Copied to Clipboard! 📋",
-          description: "Paste this link in your browser: discord.gg/Y7yUUssH",
-        });
-      } catch (clipboardError) {
-        toast({
-          title: "Manual Link Required",
-          description: "Please visit: discord.gg/Y7yUUssH",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const playArcadeBeep = () => {
-    // Create a simple beep sound using Web Audio API
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    } catch (error) {
-      console.log('Audio not supported');
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -268,60 +161,63 @@ export const CommunityHub = () => {
           <CardHeader>
             <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
               💬 LIVE CHAT
-              <div className="flex items-center gap-1 text-sm text-neon-green">
-                <Users size={16} />
-                <span>{messages.length > 0 ? Math.floor(Math.random() * 50) + 10 : 0}</span>
+              <div className="flex items-center gap-2 text-sm">
+                {isConnected ? (
+                  <div className="flex items-center gap-1 text-neon-green">
+                    <Wifi size={16} />
+                    <span>LIVE</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-red-400">
+                    <WifiOff size={16} />
+                    <span>OFFLINE</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1 text-neon-green">
+                  <Users size={16} />
+                  <span>{messages.length > 0 ? Math.floor(Math.random() * 50) + 10 : 0}</span>
+                </div>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col h-96">
             {/* Chat Messages */}
             <ScrollArea className="flex-1 mb-4 pr-2">
-              <div className="space-y-3">
-                {messages.map((message) => (
-                  <div 
-                    key={message.id}
-                    className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
-                    style={{ boxShadow: '0 0 5px #00ffcc15' }}
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
-                        {message.username}
-                        {!message.isGuest && <span className="text-neon-cyan ml-1">👑</span>}
-                      </span>
-                      <span className="text-neon-purple text-xs">
-                        {formatTime(message.timestamp)}
-                      </span>
+              {chatLoading ? (
+                <div className="flex items-center justify-center h-full text-neon-cyan">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neon-cyan"></div>
+                  <span className="ml-2">Loading chat...</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {messages.map((message) => (
+                    <div 
+                      key={message.id}
+                      className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
+                      style={{ boxShadow: '0 0 5px #00ffcc15' }}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <span className={`font-bold text-sm ${message.is_admin ? 'text-neon-pink' : 'text-neon-green'}`}>
+                          {message.username}
+                          {message.is_admin && <span className="text-neon-cyan ml-1">👑</span>}
+                        </span>
+                        <span className="text-neon-purple text-xs">
+                          {formatTime(message.timestamp)}
+                        </span>
+                      </div>
+                      <p className="text-gray-200 text-sm">
+                        {message.message}
+                      </p>
                     </div>
-                    <p className="text-gray-200 text-sm">
-                      {message.message}
-                    </p>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
             </ScrollArea>
 
-            {/* Login Form or Chat Input */}
+            {/* Chat Input */}
             {!user ? (
               <div className="space-y-3">
-                {/* Discord Connect Button */}
-                <Button 
-                  onClick={handleDiscordConnect}
-                  className="w-full hover:scale-105 transition-all duration-200 relative group"
-                  style={{
-                    background: 'linear-gradient(45deg, #5865F2, #4752C4)',
-                    border: '1px solid #5865F2',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    boxShadow: '0 0 15px rgba(88, 101, 242, 0.3)'
-                  }}
-                >
-                  <MessageCircle size={16} className="mr-2" />
-                  CONNECT TO DISCORD
-                  <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded"></span>
-                </Button>
-                
                 <Button 
                   onClick={() => window.location.href = '/auth'}
                   className="w-full"
@@ -334,7 +230,7 @@ export const CommunityHub = () => {
                   disabled={loading}
                 >
                   <Zap size={16} className="mr-2" />
-                  {loading ? 'LOADING...' : 'CONNECT WALLET TO JOIN CHAT'}
+                  {loading ? 'LOADING...' : 'LOGIN TO JOIN CHAT'}
                 </Button>
               </div>
             ) : (
@@ -343,14 +239,15 @@ export const CommunityHub = () => {
                   placeholder="Type your message..."
                   value={currentMessage}
                   onChange={(e) => setCurrentMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  onKeyPress={handleKeyPress}
                   className="flex-1 bg-black/50 border-neon-pink text-white placeholder-gray-400"
+                  disabled={!isConnected}
                 />
                 <Button 
                   onClick={handleSendMessage}
-                  disabled={!currentMessage.trim()}
+                  disabled={!currentMessage.trim() || !isConnected}
                   style={{
-                    background: currentMessage.trim() 
+                    background: currentMessage.trim() && isConnected
                       ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
                       : 'gray',
                     border: '1px solid #ff00ff',
