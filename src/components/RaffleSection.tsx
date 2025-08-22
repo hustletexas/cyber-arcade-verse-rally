@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,18 @@ export const RaffleSection = () => {
       ticketPrice: 50,
       prizeValue: '$800',
       endDate: new Date('2024-12-25'),
+      status: 'active'
+    },
+    {
+      id: '3',
+      title: 'Meta Quest 3 VR Headset',
+      description: 'Latest VR Technology + Elite Strap + Games',
+      image: '/lovable-uploads/4933f71b-6c27-40c9-b87f-b2d11c68045b.png',
+      totalTickets: 300,
+      soldTickets: 180,
+      ticketPrice: 75,
+      prizeValue: '$650',
+      endDate: new Date('2024-12-28'),
       status: 'active'
     }
   ]);
