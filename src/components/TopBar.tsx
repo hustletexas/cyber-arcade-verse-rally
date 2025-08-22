@@ -11,10 +11,12 @@ import { useCart } from '@/contexts/CartContext';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
-import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings, Plus, Coins, Image } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings, Plus, Coins, Image, User, CreditCard, Send, ArrowDownToLine } from 'lucide-react';
 import { WalletConnectionModal } from './WalletConnectionModal';
 import { WalletManager } from './WalletManager';
 import { WalletBalanceDisplay } from './WalletBalanceDisplay';
+import { WalletActions } from './WalletActions';
+import { ProfileDashboard } from './ProfileDashboard';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -47,6 +49,8 @@ export const TopBar = () => {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showWalletManager, setShowWalletManager] = useState(false);
   const [showBalanceDetails, setShowBalanceDetails] = useState(false);
+  const [showWalletActions, setShowWalletActions] = useState(false);
+  const [showProfileDashboard, setShowProfileDashboard] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -66,48 +70,6 @@ export const TopBar = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to logout completely",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleWalletConnect = () => {
-    setShowWalletModal(true);
-  };
-
-  const handleCreateWallet = async () => {
-    console.log('[CreateWallet] Starting wallet generation...');
-    try {
-      toast({
-        title: "Creating Wallet...",
-        description: "Generating a secure Solana wallet",
-      });
-
-      // Generate a new keypair using Solana web3.js
-      const { Keypair } = await import('@solana/web3.js');
-      const bs58 = await import('bs58');
-      
-      const keypair = Keypair.generate();
-      const publicKey = keypair.publicKey.toString();
-      const privateKey = bs58.default.encode(keypair.secretKey);
-
-      // Save to localStorage with the key expected by useMultiWallet
-      const walletData = { publicKey, privateKey };
-      localStorage.setItem('cyberCityWallet', JSON.stringify(walletData));
-
-      // Connect to our multi-wallet system as "created"
-      await connectWallet('created', publicKey);
-
-      toast({
-        title: "Wallet Created Successfully! 🎉",
-        description: `New Solana wallet: ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
-      });
-      console.log('[CreateWallet] Wallet created & connected:', publicKey);
-    } catch (error: any) {
-      console.error('[CreateWallet] Wallet creation error:', error);
-      toast({
-        title: "Creation Failed",
-        description: error?.message || "Failed to create wallet",
         variant: "destructive",
       });
     }
@@ -205,7 +167,7 @@ export const TopBar = () => {
                 )
               )}
 
-              {/* Multi-Wallet Connection - Now the primary authentication method */}
+              {/* Multi-Wallet Connection */}
               <div className="flex items-center gap-2">
                 {!isWalletConnected ? (
                   <Button 
@@ -216,7 +178,7 @@ export const TopBar = () => {
                     <Settings size={16} />
                     MANAGE WALLETS
                   </Button>
-                ) : hasMultipleWallets ? (
+                ) : (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
@@ -239,11 +201,34 @@ export const TopBar = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50 min-w-[300px]">
                       <DropdownMenuLabel className="flex items-center justify-between">
-                        <span>Connected Wallets</span>
+                        <span>Wallet Actions</span>
                         <Badge className="bg-neon-green text-black text-xs">
                           {balance.cctr_balance.toLocaleString()} $CCTR
                         </Badge>
                       </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      
+                      {/* Quick Actions */}
+                      <div className="px-2 py-2 space-y-2">
+                        <Button
+                          onClick={() => setShowWalletActions(true)}
+                          size="sm"
+                          className="cyber-button w-full justify-start"
+                        >
+                          <CreditCard size={14} className="mr-2" />
+                          Buy / Send / Receive
+                        </Button>
+                        <Button
+                          onClick={() => setShowProfileDashboard(true)}
+                          size="sm"
+                          variant="outline"
+                          className="w-full justify-start border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                        >
+                          <User size={14} className="mr-2" />
+                          Profile Dashboard
+                        </Button>
+                      </div>
+
                       <DropdownMenuSeparator />
                       
                       {/* Balance Overview */}
@@ -276,7 +261,7 @@ export const TopBar = () => {
                       </div>
 
                       {/* Wallet Selection */}
-                      {connectedWallets.map((wallet) => (
+                      {hasMultipleWallets && connectedWallets.map((wallet) => (
                         <DropdownMenuItem 
                           key={`${wallet.type}-${wallet.address}`}
                           onClick={() => switchPrimaryWallet(wallet)}
@@ -296,93 +281,6 @@ export const TopBar = () => {
                       ))}
                       
                       <DropdownMenuSeparator />
-                      
-                      {/* NFTs Preview */}
-                      <div className="px-2 py-2">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Image size={14} />
-                            NFTs
-                          </span>
-                          <Badge className="bg-neon-purple text-black text-xs">3 Items</Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Click "View Details" to see your NFT collection
-                        </div>
-                      </div>
-                      
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
-                        <Settings size={16} className="mr-2" />
-                        Manage Wallets
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
-                        className="text-neon-pink hover:bg-neon-pink/10"
-                      >
-                        <LogOut size={16} className="mr-2" />
-                        Disconnect Wallet
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="outline"
-                        size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[200px]"
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            {getWalletIcon(primaryWallet?.type || 'phantom')} 
-                            <span>{primaryWallet?.address.slice(0, 6)}...</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs">
-                            <Coins size={12} />
-                            <span>{balance.cctr_balance.toLocaleString()}</span>
-                          </div>
-                          <ChevronDown size={16} />
-                        </div>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50 min-w-[300px]">
-                      <DropdownMenuLabel className="flex items-center justify-between">
-                        <span>Wallet Details</span>
-                        <Badge className="bg-neon-green text-black text-xs">
-                          {balance.cctr_balance.toLocaleString()} $CCTR
-                        </Badge>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      
-                      {/* Balance Overview */}
-                      <div className="px-2 py-3 border-b border-neon-cyan/20">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-muted-foreground">Balance Overview</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setShowBalanceDetails(true)}
-                            className="text-xs hover:bg-neon-cyan/10"
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-neon-cyan">$CCTR Balance:</span>
-                            <span className="text-neon-green font-bold">{balance.cctr_balance.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-neon-purple">Claimable:</span>
-                            <span className="text-neon-pink font-bold">{balance.claimable_rewards.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">SOL Balance:</span>
-                            <span className="text-neon-yellow">~0.5 SOL</span>
-                          </div>
-                        </div>
-                      </div>
                       
                       {/* NFTs Preview */}
                       <div className="px-2 py-2">
@@ -450,6 +348,34 @@ export const TopBar = () => {
             </DialogDescription>
           </DialogHeader>
           <WalletBalanceDisplay />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showWalletActions} onOpenChange={setShowWalletActions}>
+        <DialogContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-neon-green font-display flex items-center gap-2">
+              💳 Wallet Actions
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Buy, send, and receive tokens with your connected wallet
+            </DialogDescription>
+          </DialogHeader>
+          <WalletActions />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showProfileDashboard} onOpenChange={setShowProfileDashboard}>
+        <DialogContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
+              👤 Profile Dashboard
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              View your profile, activity, achievements, and account settings
+            </DialogDescription>
+          </DialogHeader>
+          <ProfileDashboard />
         </DialogContent>
       </Dialog>
     </>
