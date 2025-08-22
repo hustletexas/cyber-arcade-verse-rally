@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -98,9 +97,6 @@ export const PrizeSection = () => {
                   <h3 className="font-display text-lg font-bold text-neon-pink mb-2">
                     {prize.name}
                   </h3>
-                  <div className="space-y-2">
-                    
-                  </div>
 
                   <Button 
                     onClick={() => handleRedeemPrize(prize)}
