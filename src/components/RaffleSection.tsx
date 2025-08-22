@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -116,7 +115,7 @@ export const RaffleSection = () => {
       description: 'Ultimate rewards for legends',
       rewards: ['2000-5000 CCTR', 'Legendary NFT', 'Physical Prize']
     }
-  ];
+  ]);
 
   const connectWalletForChests = async () => {
     try {
