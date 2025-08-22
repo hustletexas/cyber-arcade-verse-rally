@@ -7,12 +7,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 
 export const TokenDashboard = () => {
   const { user } = useAuth();
   const { balance, loading, claimRewards, adminAirdrop } = useUserBalance();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
+  const { createOrLoginWithWallet } = useWalletAuth();
 
   const tokenPrice = 0.045;
 
@@ -68,6 +72,18 @@ export const TokenDashboard = () => {
     }
   };
 
+  const handleLoginWithWalletOrAuth = async () => {
+    if (isWalletConnected && primaryWallet?.address) {
+      toast({
+        title: "Authenticating...",
+        description: "Logging you in with your connected wallet",
+      });
+      await createOrLoginWithWallet(primaryWallet.address);
+      return;
+    }
+    navigate('/auth');
+  };
+
   if (!user) {
     return (
       <div className="space-y-6">
@@ -83,7 +99,7 @@ export const TokenDashboard = () => {
               Please log in to view your token balance and claim rewards
             </p>
             <Button 
-              onClick={() => navigate('/auth')}
+              onClick={handleLoginWithWalletOrAuth}
               className="cyber-button"
             >
               🔐 LOGIN TO CONTINUE
