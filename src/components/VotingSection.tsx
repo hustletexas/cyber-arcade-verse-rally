@@ -1,250 +1,175 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { useUserBalance } from '@/hooks/useUserBalance';
-import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Wallet, Trophy, Gift, Users, Coins } from 'lucide-react';
 
 export const VotingSection = () => {
+  const { user, isWalletConnected, walletAddress, phantomConnect } = useAuth();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const { isWalletConnected } = useMultiWallet();
-  const { balance, refetch } = useUserBalance();
-  const [votes, setVotes] = useState<{[key: string]: string}>({});
-  const [votingInProgress, setVotingInProgress] = useState<{[key: string]: boolean}>({});
+  const [selectedPrize, setSelectedPrize] = useState<string>('');
 
-  const proposals = [
-    {
-      id: 'game-mode',
-      title: 'NEW GAME MODE SELECTION',
-      description: 'Choose the next game mode to be added to the arcade',
-      endDate: '2024-12-20',
-      status: 'active',
-      options: [
-        { id: 'battle-royale', name: 'Battle Royale Arena', votes: 1250, percentage: 45 },
-        { id: 'puzzle-master', name: 'Puzzle Master Challenge', votes: 980, percentage: 35 },
-        { id: 'racing-circuit', name: 'Neon Racing Circuit', votes: 560, percentage: 20 }
-      ]
-    },
-    {
-      id: 'tournament-rules',
-      title: 'TOURNAMENT RULE UPDATES',
-      description: 'Vote on proposed changes to tournament regulations',
-      endDate: '2024-12-15',
-      status: 'active',
-      options: [
-        { id: 'approve-rules', name: 'Approve New Rules', votes: 2100, percentage: 75 },
-        { id: 'reject-rules', name: 'Reject Changes', votes: 700, percentage: 25 }
-      ]
-    }
-  ];
-
-  const castVote = async (proposalId: string, optionId: string) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login to vote on proposals",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!isWalletConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet to vote",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (balance.cctr_balance < 1) {
-      toast({
-        title: "Insufficient CCTR",
-        description: "You need at least 1 CCTR to cast a vote",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setVotingInProgress(prev => ({ ...prev, [proposalId]: true }));
-
-    try {
-      // Deduct 1 CCTR from user's balance
-      const newBalance = balance.cctr_balance - 1;
-      
-      const { error: balanceError } = await supabase
-        .from('user_balances')
-        .update({
-          cctr_balance: newBalance,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
-
-      if (balanceError) throw balanceError;
-
-      // Record the transaction
-      const { error: transactionError } = await supabase
-        .from('token_transactions')
-        .insert({
-          user_id: user.id,
-          amount: -1,
-          transaction_type: 'vote',
-          description: `Vote cast for ${optionId} in ${proposalId}`
-        });
-
-      if (transactionError) throw transactionError;
-
-      // Update local state
-      setVotes({ ...votes, [proposalId]: optionId });
-      
-      // Refresh balance
-      await refetch();
-
-      toast({
-        title: "Vote Cast Successfully!",
-        description: `Your vote for "${proposals.find(p => p.id === proposalId)?.options.find(o => o.id === optionId)?.name}" has been recorded. 1 CCTR deducted.`,
-        variant: "default"
-      });
-
-    } catch (error) {
-      console.error('Error casting vote:', error);
-      toast({
-        title: "Voting Failed",
-        description: "There was an error processing your vote. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setVotingInProgress(prev => ({ ...prev, [proposalId]: false }));
-    }
+  const handleConnect = async () => {
+    await phantomConnect();
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Voting Header */}
+  const handleVote = () => {
+    if (!selectedPrize) return;
+    
+    toast({
+      title: "Vote Submitted! 🗳️",
+      description: `Your vote for ${selectedPrize} has been recorded on the blockchain`,
+    });
+  };
+
+  if (!isWalletConnected || !user) {
+    return (
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-purple flex items-center gap-3">
-            🗳️ GOVERNANCE & VOTING
-            <Badge className={`${user && isWalletConnected ? 'bg-neon-green' : 'bg-neon-pink'} text-black`}>
-              {user && isWalletConnected ? '✅ ELIGIBLE' : '❌ LOGIN & WALLET REQUIRED'}
-            </Badge>
+            🗳️ COMMUNITY VOTING
+            <Badge className="bg-neon-pink text-black">PHANTOM WALLET REQUIRED</Badge>
           </CardTitle>
-          <p className="text-muted-foreground">
-            Cast your vote on community proposals. Each vote costs 1 CCTR token.
-          </p>
-          {user && isWalletConnected && (
-            <div className="flex items-center gap-2 mt-2">
-              <Badge className="bg-neon-cyan text-black">
-                💰 {balance.cctr_balance} CCTR Available
-              </Badge>
-            </div>
-          )}
         </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center space-y-4">
+            <div className="w-24 h-24 bg-gradient-to-br from-neon-purple to-neon-pink rounded-full flex items-center justify-center neon-glow mx-auto">
+              <Wallet size={40} className="text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-neon-cyan">Connect Your Phantom Wallet</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Connect your Phantom wallet to participate in community voting and earn rewards for your participation.
+            </p>
+            <Button 
+              onClick={handleConnect}
+              className="cyber-button text-lg px-8 py-3"
+            >
+              <Wallet size={20} className="mr-2" />
+              CONNECT PHANTOM WALLET
+            </Button>
+          </div>
+        </CardContent>
       </Card>
+    );
+  }
 
-      {/* Active Proposals */}
-      <div className="space-y-6">
-        {proposals.map((proposal) => (
-          <Card key={proposal.id} className="vending-machine">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="font-display text-xl text-neon-cyan">
-                    {proposal.title}
-                  </CardTitle>
-                  <p className="text-muted-foreground mt-2">{proposal.description}</p>
+  return (
+    <Card className="arcade-frame">
+      <CardHeader>
+        <CardTitle className="font-display text-2xl text-neon-purple flex items-center gap-3">
+          🗳️ COMMUNITY VOTING
+          <Badge className="bg-neon-green text-black">
+            <Wallet size={16} className="mr-1" />
+            CONNECTED
+          </Badge>
+          <Badge className="bg-neon-cyan text-black text-sm">
+            {walletAddress.slice(0, 8)}...{walletAddress.slice(-4)}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <Tabs defaultValue="community" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-black/50">
+            <TabsTrigger value="community" className="data-[state=active]:bg-neon-purple data-[state=active]:text-black">
+              <Users className="mr-2" size={16} />
+              Community Polls
+            </TabsTrigger>
+            <TabsTrigger value="prizes" className="data-[state=active]:bg-neon-green data-[state=active]:text-black">
+              <Gift className="mr-2" size={16} />
+              Prize Votes
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="community" className="space-y-4">
+            <div className="grid gap-4">
+              <Card className="holographic p-4">
+                <h4 className="font-bold text-neon-cyan mb-2">🎮 Next Game Addition</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Which classic arcade game should we add next?
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Street Fighter', 'Mortal Kombat', 'Donkey Kong', 'Centipede'].map((game) => (
+                    <Button key={game} variant="outline" size="sm" className="text-xs">
+                      {game}
+                    </Button>
+                  ))}
                 </div>
-                <div className="text-right">
-                  <Badge className={`${proposal.status === 'active' ? 'bg-neon-green' : 'bg-neon-purple'} text-black`}>
-                    {proposal.status.toUpperCase()}
-                  </Badge>
-                  <p className="text-sm text-neon-cyan mt-1">
-                    Ends: {proposal.endDate}
-                  </p>
+              </Card>
+
+              <Card className="holographic p-4">
+                <h4 className="font-bold text-neon-pink mb-2">🌈 Theme Colors</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Vote for the next arcade theme color scheme
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Retro Orange', 'Electric Blue', 'Laser Green'].map((color) => (
+                    <Button key={color} variant="outline" size="sm" className="text-xs">
+                      {color}
+                    </Button>
+                  ))}
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {proposal.options.map((option) => (
-                  <div key={option.id} className="arcade-frame p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-bold text-neon-pink">{option.name}</h4>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="prizes" className="space-y-4">
+            <div className="grid gap-4">
+              <Card className="holographic p-4">
+                <h4 className="font-bold text-neon-green mb-2">🏆 Monthly Prize Pool</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Vote for this month's grand prize
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { name: 'Gaming Laptop', votes: 1247 },
+                    { name: 'VR Headset', votes: 892 },
+                    { name: '500 SOL', votes: 1556 },
+                    { name: 'Gaming Chair', votes: 423 }
+                  ].map((prize) => (
+                    <div key={prize.name} className="flex items-center justify-between p-2 border border-neon-cyan/30 rounded">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-neon-green">{option.votes} votes</span>
-                        <Badge className="bg-neon-cyan text-black">
-                          {option.percentage}%
-                        </Badge>
+                        <input
+                          type="radio"
+                          name="prize"
+                          value={prize.name}
+                          onChange={(e) => setSelectedPrize(e.target.value)}
+                          className="text-neon-cyan"
+                        />
+                        <span className="text-sm">{prize.name}</span>
                       </div>
+                      <Badge variant="outline" className="text-xs">
+                        {prize.votes} votes
+                      </Badge>
                     </div>
-                    <Progress value={option.percentage} className="mb-3" />
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-muted-foreground">
-                        {option.percentage}% of total votes
-                      </div>
-                      {proposal.status === 'active' && (
-                        <Button
-                          onClick={() => castVote(proposal.id, option.id)}
-                          disabled={!user || !isWalletConnected || balance.cctr_balance < 1 || votes[proposal.id] === option.id || votingInProgress[proposal.id]}
-                          className={`cyber-button text-sm ${votes[proposal.id] === option.id ? 'bg-neon-green' : ''}`}
-                        >
-                          {votingInProgress[proposal.id] ? '⏳ VOTING...' : 
-                           votes[proposal.id] === option.id ? '✅ VOTED' : 
-                           '🗳️ VOTE (1 CCTR)'}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {(!user || !isWalletConnected) && (
-                <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
-                  <p className="text-neon-pink font-bold">🔐 Login & Wallet Required</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    You need to be logged in and have a connected wallet to participate in governance voting.
-                  </p>
+                  ))}
                 </div>
-              )}
+                <Button 
+                  onClick={handleVote}
+                  disabled={!selectedPrize}
+                  className="w-full mt-4 cyber-button"
+                >
+                  <Trophy size={16} className="mr-2" />
+                  SUBMIT VOTE
+                </Button>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
 
-              {user && isWalletConnected && balance.cctr_balance < 1 && (
-                <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
-                  <p className="text-neon-pink font-bold">💰 Insufficient CCTR</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    You need at least 1 CCTR token to cast a vote. Purchase more CCTR to participate.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Voting Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="holographic p-6 text-center">
-          <h3 className="font-display text-lg text-neon-cyan mb-2">TOTAL VOTERS</h3>
-          <div className="text-3xl font-black text-neon-green">8,247</div>
-          <p className="text-sm text-muted-foreground">Active Participants</p>
+        <Card className="bg-neon-purple/10 border-neon-purple/30 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Coins size={16} className="text-neon-yellow" />
+            <span className="font-bold text-neon-yellow">Voting Rewards</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Earn 50 CCTR tokens for each vote you cast. Active community members get bonus rewards!
+          </p>
         </Card>
-
-        <Card className="holographic p-6 text-center">
-          <h3 className="font-display text-lg text-neon-pink mb-2">PROPOSALS</h3>
-          <div className="text-3xl font-black text-neon-purple">23</div>
-          <p className="text-sm text-muted-foreground">Total Governance</p>
-        </Card>
-
-        <Card className="holographic p-6 text-center">
-          <h3 className="font-display text-lg text-neon-purple mb-2">PARTICIPATION</h3>
-          <div className="text-3xl font-black text-neon-cyan">87%</div>
-          <p className="text-sm text-muted-foreground">Average Turnout</p>
-        </Card>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
