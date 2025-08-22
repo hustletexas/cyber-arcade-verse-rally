@@ -252,7 +252,7 @@ export const CommunityHub = () => {
               <div className="space-y-3">
                 {/* Discord Connect Button */}
                 <Button 
-                  onClick={() => window.open('https://discord.gg/cybercityarcade', '_blank')}
+                  onClick={() => window.open('https://discord.gg/Y7yUUssH', '_blank')}
                   className="w-full"
                   style={{
                     background: 'linear-gradient(45deg, #5865F2, #4752C4)',
