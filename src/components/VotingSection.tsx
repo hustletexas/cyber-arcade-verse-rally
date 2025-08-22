@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,14 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useWallet } from '@/hooks/useWallet';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
 
 export const VotingSection = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isWalletConnected } = useWallet();
+  const { isWalletConnected } = useMultiWallet();
   const { balance, refetch } = useUserBalance();
   const [votes, setVotes] = useState<{[key: string]: string}>({});
   const [votingInProgress, setVotingInProgress] = useState<{[key: string]: boolean}>({});
@@ -54,7 +53,7 @@ export const VotingSection = () => {
       return;
     }
 
-    if (!isWalletConnected()) {
+    if (!isWalletConnected) {
       toast({
         title: "Wallet Required",
         description: "Please connect your wallet to vote",
@@ -131,14 +130,14 @@ export const VotingSection = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-purple flex items-center gap-3">
             🗳️ GOVERNANCE & VOTING
-            <Badge className={`${user && isWalletConnected() ? 'bg-neon-green' : 'bg-neon-pink'} text-black`}>
-              {user && isWalletConnected() ? '✅ ELIGIBLE' : '❌ LOGIN & WALLET REQUIRED'}
+            <Badge className={`${user && isWalletConnected ? 'bg-neon-green' : 'bg-neon-pink'} text-black`}>
+              {user && isWalletConnected ? '✅ ELIGIBLE' : '❌ LOGIN & WALLET REQUIRED'}
             </Badge>
           </CardTitle>
           <p className="text-muted-foreground">
             Cast your vote on community proposals. Each vote costs 1 CCTR token.
           </p>
-          {user && isWalletConnected() && (
+          {user && isWalletConnected && (
             <div className="flex items-center gap-2 mt-2">
               <Badge className="bg-neon-cyan text-black">
                 💰 {balance.cctr_balance} CCTR Available
@@ -191,7 +190,7 @@ export const VotingSection = () => {
                       {proposal.status === 'active' && (
                         <Button
                           onClick={() => castVote(proposal.id, option.id)}
-                          disabled={!user || !isWalletConnected() || balance.cctr_balance < 1 || votes[proposal.id] === option.id || votingInProgress[proposal.id]}
+                          disabled={!user || !isWalletConnected || balance.cctr_balance < 1 || votes[proposal.id] === option.id || votingInProgress[proposal.id]}
                           className={`cyber-button text-sm ${votes[proposal.id] === option.id ? 'bg-neon-green' : ''}`}
                         >
                           {votingInProgress[proposal.id] ? '⏳ VOTING...' : 
@@ -204,7 +203,7 @@ export const VotingSection = () => {
                 ))}
               </div>
 
-              {(!user || !isWalletConnected()) && (
+              {(!user || !isWalletConnected) && (
                 <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
                   <p className="text-neon-pink font-bold">🔐 Login & Wallet Required</p>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -213,7 +212,7 @@ export const VotingSection = () => {
                 </div>
               )}
 
-              {user && isWalletConnected() && balance.cctr_balance < 1 && (
+              {user && isWalletConnected && balance.cctr_balance < 1 && (
                 <div className="mt-4 p-4 border-2 border-neon-pink rounded-lg bg-neon-pink/10">
                   <p className="text-neon-pink font-bold">💰 Insufficient CCTR</p>
                   <p className="text-sm text-muted-foreground mt-1">
