@@ -9,9 +9,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings, Plus } from 'lucide-react';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings, Plus, Coins, Image } from 'lucide-react';
 import { WalletConnectionModal } from './WalletConnectionModal';
 import { WalletManager } from './WalletManager';
+import { WalletBalanceDisplay } from './WalletBalanceDisplay';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -27,6 +29,7 @@ export const TopBar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { getTotalItems, setIsOpen } = useCart();
+  const { balance } = useUserBalance();
   const { 
     connectedWallets, 
     primaryWallet, 
@@ -42,6 +45,7 @@ export const TopBar = () => {
   
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showWalletManager, setShowWalletManager] = useState(false);
+  const [showBalanceDetails, setShowBalanceDetails] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -237,16 +241,60 @@ export const TopBar = () => {
                       <Button 
                         variant="outline"
                         size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[200px]"
                       >
-                        {getWalletIcon(primaryWallet?.type || 'phantom')} 
-                        {primaryWallet?.address.slice(0, 6)}...
-                        <ChevronDown size={16} className="ml-1" />
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            {getWalletIcon(primaryWallet?.type || 'phantom')} 
+                            <span>{primaryWallet?.address.slice(0, 6)}...</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs">
+                            <Coins size={12} />
+                            <span>{balance.cctr_balance.toLocaleString()}</span>
+                          </div>
+                          <ChevronDown size={16} />
+                        </div>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
-                      <DropdownMenuLabel>Connected Wallets</DropdownMenuLabel>
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50 min-w-[300px]">
+                      <DropdownMenuLabel className="flex items-center justify-between">
+                        <span>Connected Wallets</span>
+                        <Badge className="bg-neon-green text-black text-xs">
+                          {balance.cctr_balance.toLocaleString()} $CCTR
+                        </Badge>
+                      </DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      
+                      {/* Balance Overview */}
+                      <div className="px-2 py-3 border-b border-neon-cyan/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">Balance Overview</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setShowBalanceDetails(true)}
+                            className="text-xs hover:bg-neon-cyan/10"
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-neon-cyan">$CCTR Balance:</span>
+                            <span className="text-neon-green font-bold">{balance.cctr_balance.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-neon-purple">Claimable:</span>
+                            <span className="text-neon-pink font-bold">{balance.claimable_rewards.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">SOL Balance:</span>
+                            <span className="text-neon-yellow">~0.5 SOL</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Wallet Selection */}
                       {connectedWallets.map((wallet) => (
                         <DropdownMenuItem 
                           key={`${wallet.type}-${wallet.address}`}
@@ -265,6 +313,23 @@ export const TopBar = () => {
                           )}
                         </DropdownMenuItem>
                       ))}
+                      
+                      <DropdownMenuSeparator />
+                      
+                      {/* NFTs Preview */}
+                      <div className="px-2 py-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Image size={14} />
+                            NFTs
+                          </span>
+                          <Badge className="bg-neon-purple text-black text-xs">3 Items</Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Click "View Details" to see your NFT collection
+                        </div>
+                      </div>
+                      
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
                         <Settings size={16} className="mr-2" />
@@ -293,15 +358,73 @@ export const TopBar = () => {
                       <Button 
                         variant="outline"
                         size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[200px]"
                       >
-                        {getWalletIcon(primaryWallet?.type || 'phantom')} 
-                        {primaryWallet?.address.slice(0, 6)}...
-                        <ChevronDown size={16} className="ml-1" />
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            {getWalletIcon(primaryWallet?.type || 'phantom')} 
+                            <span>{primaryWallet?.address.slice(0, 6)}...</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs">
+                            <Coins size={12} />
+                            <span>{balance.cctr_balance.toLocaleString()}</span>
+                          </div>
+                          <ChevronDown size={16} />
+                        </div>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50">
-                      <DropdownMenuLabel>Wallet Actions</DropdownMenuLabel>
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50 min-w-[300px]">
+                      <DropdownMenuLabel className="flex items-center justify-between">
+                        <span>Wallet Details</span>
+                        <Badge className="bg-neon-green text-black text-xs">
+                          {balance.cctr_balance.toLocaleString()} $CCTR
+                        </Badge>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      
+                      {/* Balance Overview */}
+                      <div className="px-2 py-3 border-b border-neon-cyan/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">Balance Overview</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setShowBalanceDetails(true)}
+                            className="text-xs hover:bg-neon-cyan/10"
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-neon-cyan">$CCTR Balance:</span>
+                            <span className="text-neon-green font-bold">{balance.cctr_balance.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-neon-purple">Claimable:</span>
+                            <span className="text-neon-pink font-bold">{balance.claimable_rewards.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">SOL Balance:</span>
+                            <span className="text-neon-yellow">~0.5 SOL</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* NFTs Preview */}
+                      <div className="px-2 py-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Image size={14} />
+                            NFTs
+                          </span>
+                          <Badge className="bg-neon-purple text-black text-xs">3 Items</Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Click "View Details" to see your NFT collection
+                        </div>
+                      </div>
+                      
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
                         <Settings size={16} className="mr-2" />
@@ -348,6 +471,20 @@ export const TopBar = () => {
             </DialogDescription>
           </DialogHeader>
           <WalletManager />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showBalanceDetails} onOpenChange={setShowBalanceDetails}>
+        <DialogContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
+              💰 Wallet Balance & Assets
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              View your complete wallet balance, tokens, and NFT collection
+            </DialogDescription>
+          </DialogHeader>
+          <WalletBalanceDisplay />
         </DialogContent>
       </Dialog>
     </>
