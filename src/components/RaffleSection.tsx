@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -103,7 +104,7 @@ export const RaffleSection = () => {
       name: 'Epic Chest',
       price: { cctr: 1500, sol: 1.5, usdc: 75 },
       rarity: 'epic',
-      image: '/lovable-uploads/7aefc14a-b1ec-4889-8990-4f12e95eec7d.png',
+      image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
       description: 'Premium rewards for champions',
       rewards: ['500-1000 CCTR', 'Epic NFT', 'Tournament Entry']
     },
@@ -392,3 +393,4 @@ export const RaffleSection = () => {
     </div>
   );
 };
+
