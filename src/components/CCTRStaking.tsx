@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Coins, TrendingUp, Clock, Zap, Lock, Unlock } from 'lucide-react';
+import { Coins, TrendingUp, Clock, Zap, Lock, Unlock, Wallet, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useWallet } from '@/hooks/useWallet';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 
 interface StakingPool {
   id: string;
@@ -67,9 +67,33 @@ export const CCTRStaking = () => {
   const [userBalance, setUserBalance] = useState(5000); // Mock CCTR balance
   const [totalRewards, setTotalRewards] = useState(0);
   const { toast } = useToast();
-  const { isWalletConnected, getConnectedWallet } = useWallet();
+  const { primaryWallet, isWalletConnected, connectWallet } = useMultiWallet();
 
   const currentPool = pools.find(p => p.id === selectedPool);
+
+  // Connect Phantom wallet
+  const handleConnectWallet = async () => {
+    try {
+      if (window.solana && window.solana.isPhantom) {
+        const response = await window.solana.connect();
+        const address = response.publicKey.toString();
+        await connectWallet('phantom', address);
+      } else {
+        toast({
+          title: "Phantom Wallet Not Found",
+          description: "Please install Phantom wallet to connect",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to Phantom wallet",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Simulate rewards accumulation
   useEffect(() => {
@@ -96,10 +120,10 @@ export const CCTRStaking = () => {
   }, [pools]);
 
   const handleStake = async () => {
-    if (!isWalletConnected()) {
+    if (!isWalletConnected) {
       toast({
         title: "Wallet Not Connected",
-        description: "Please connect your wallet to stake CCTR tokens",
+        description: "Please connect your Solana wallet to stake CCTR tokens",
         variant: "destructive"
       });
       return;
@@ -267,11 +291,36 @@ export const CCTRStaking = () => {
   return (
     <Card className="holographic p-6 mt-6">
       <CardHeader className="pb-4">
-        <CardTitle className="font-display text-xl text-neon-green flex items-center gap-3">
-          <Coins className="h-5 w-5" />
-          CCTR STAKING POOLS
-          <Badge className="bg-neon-cyan text-black text-xs">LIVE REWARDS</Badge>
-        </CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="font-display text-xl text-neon-green flex items-center gap-3">
+            <Coins className="h-5 w-5" />
+            CCTR STAKING POOLS
+            <Badge className="bg-neon-cyan text-black text-xs">LIVE REWARDS</Badge>
+          </CardTitle>
+          
+          {/* Wallet Authentication Section */}
+          <div className="flex items-center gap-3">
+            {!isWalletConnected ? (
+              <Button 
+                onClick={handleConnectWallet}
+                className="cyber-button text-sm"
+              >
+                <Wallet className="h-4 w-4 mr-2" />
+                CONNECT PHANTOM
+              </Button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Badge className="bg-neon-green text-black text-sm flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  AUTHENTICATED
+                </Badge>
+                <div className="text-xs text-neon-cyan">
+                  {primaryWallet?.address?.slice(0, 6)}...{primaryWallet?.address?.slice(-4)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-6">
@@ -294,7 +343,7 @@ export const CCTRStaking = () => {
           <div className="text-center p-3 rounded-lg border border-neon-yellow/30 bg-neon-yellow/5">
             <Button 
               onClick={handleClaimRewards}
-              disabled={totalRewards <= 0}
+              disabled={totalRewards <= 0 || !isWalletConnected}
               className="cyber-button w-full h-8 text-xs"
             >
               <Zap className="h-3 w-3 mr-1" />
@@ -367,23 +416,23 @@ export const CCTRStaking = () => {
                     value={stakeAmount}
                     onChange={(e) => setStakeAmount(e.target.value)}
                     className="bg-black border-neon-green/50 text-neon-green"
-                    disabled={isStaking}
+                    disabled={isStaking || !isWalletConnected}
                   />
                   <Button
                     onClick={() => setStakeAmount(userBalance.toString())}
                     size="sm"
                     className="cyber-button text-xs"
-                    disabled={isStaking}
+                    disabled={isStaking || !isWalletConnected}
                   >
                     MAX
                   </Button>
                 </div>
                 <Button
                   onClick={handleStake}
-                  disabled={!stakeAmount || parseFloat(stakeAmount) <= 0 || isStaking}
+                  disabled={!stakeAmount || parseFloat(stakeAmount) <= 0 || isStaking || !isWalletConnected}
                   className="cyber-button w-full"
                 >
-                  {isStaking ? '⏳ STAKING...' : '🔒 STAKE CCTR'}
+                  {!isWalletConnected ? '🔗 CONNECT WALLET' : isStaking ? '⏳ STAKING...' : '🔒 STAKE CCTR'}
                 </Button>
               </div>
             </div>
@@ -406,23 +455,23 @@ export const CCTRStaking = () => {
                     value={unstakeAmount}
                     onChange={(e) => setUnstakeAmount(e.target.value)}
                     className="bg-black border-neon-pink/50 text-neon-pink"
-                    disabled={isUnstaking}
+                    disabled={isUnstaking || !isWalletConnected}
                   />
                   <Button
                     onClick={() => setUnstakeAmount(currentPool.userStaked.toString())}
                     size="sm"
                     className="cyber-button text-xs"
-                    disabled={isUnstaking || currentPool.userStaked <= 0}
+                    disabled={isUnstaking || currentPool.userStaked <= 0 || !isWalletConnected}
                   >
                     MAX
                   </Button>
                 </div>
                 <Button
                   onClick={handleUnstake}
-                  disabled={!unstakeAmount || parseFloat(unstakeAmount) <= 0 || isUnstaking || currentPool.userStaked <= 0}
+                  disabled={!unstakeAmount || parseFloat(unstakeAmount) <= 0 || isUnstaking || currentPool.userStaked <= 0 || !isWalletConnected}
                   className="cyber-button w-full"
                 >
-                  {isUnstaking ? '⏳ UNSTAKING...' : '🔓 UNSTAKE CCTR'}
+                  {!isWalletConnected ? '🔗 CONNECT WALLET' : isUnstaking ? '⏳ UNSTAKING...' : '🔓 UNSTAKE CCTR'}
                 </Button>
               </div>
             </div>
