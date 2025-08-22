@@ -7,7 +7,6 @@ import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
-import { SolanaDexChart } from '@/components/SolanaDexChart';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
 import { CCTRStaking } from '@/components/CCTRStaking';
@@ -146,12 +145,7 @@ const Index = () => {
             <VotingSection />
           </section>
 
-          {/* DEX Section - Moved under Voting */}
-          <section>
-            <SolanaDexChart />
-          </section>
-
-          {/* Buy CCTR Section - Moved under DEX */}
+          {/* Buy CCTR Section - Moved under Voting */}
           <section>
             <TokenPurchase />
           </section>
