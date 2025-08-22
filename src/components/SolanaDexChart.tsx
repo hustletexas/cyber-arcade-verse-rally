@@ -194,6 +194,7 @@ export const SolanaDexChart = () => {
   const [trendingTokens, setTrendingTokens] = useState<TopTokenData[]>([]);
   const [mostViewedTokens, setMostViewedTokens] = useState<TopTokenData[]>([]);
   const [apiError, setApiError] = useState(false);
+  const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
   const { toast } = useToast();
   const connection = new Connection('https://api.mainnet-beta.solana.com');
 
@@ -510,10 +511,15 @@ export const SolanaDexChart = () => {
     setIsSwapping(true);
     
     try {
-      // Get wallet public key
-      const walletPublicKey = window.solana.publicKey;
-      if (!walletPublicKey) {
-        throw new Error('Wallet not connected');
+      // Connect wallet if not already connected
+      let publicKey = walletPublicKey;
+      if (!publicKey) {
+        const response = await window.solana.connect();
+        if (!response?.publicKey) {
+          throw new Error('Failed to connect wallet');
+        }
+        publicKey = response.publicKey.toString();
+        setWalletPublicKey(publicKey);
       }
 
       const fromAsset = solanaAssets.find(a => a.symbol === swapFromToken);
@@ -552,7 +558,7 @@ export const SolanaDexChart = () => {
         },
         body: JSON.stringify({
           quoteResponse: quote,
-          userPublicKey: walletPublicKey.toString(),
+          userPublicKey: publicKey,
           wrapAndUnwrapSol: true,
           dynamicComputeUnitLimit: true,
           prioritizationFeeLamports: 'auto'
@@ -689,6 +695,24 @@ export const SolanaDexChart = () => {
       </div>
     </div>
   );
+
+  useEffect(() => {
+    const checkWalletConnection = async () => {
+      if (window.solana && window.solana.isPhantom) {
+        try {
+          if (window.solana.isConnected) {
+            const response = await window.solana.connect({ onlyIfTrusted: true });
+            if (response?.publicKey) {
+              setWalletPublicKey(response.publicKey.toString());
+            }
+          }
+        } catch (error) {
+          console.log('Wallet not auto-connected');
+        }
+      }
+    };
+    checkWalletConnection();
+  }, []);
 
   return (
     <Card className="arcade-frame">
@@ -1033,10 +1057,10 @@ export const SolanaDexChart = () => {
                 {/* Execute Swap Button */}
                 <Button 
                   onClick={executeSwap}
-                  disabled={!swapAmount || parseFloat(swapAmount) <= 0 || isSwapping || !window.solana?.isConnected}
+                  disabled={!swapAmount || parseFloat(swapAmount) <= 0 || isSwapping || !walletPublicKey}
                   className="cyber-button w-full h-12 text-lg"
                 >
-                  {!window.solana?.isConnected 
+                  {!walletPublicKey
                     ? '🔗 CONNECT WALLET FIRST' 
                     : isSwapping 
                       ? '⏳ SWAPPING...' 
@@ -1046,7 +1070,7 @@ export const SolanaDexChart = () => {
 
                 {/* Connection Status and Help */}
                 <div className="text-center space-y-2">
-                  {!window.solana?.isConnected && (
+                  {!walletPublicKey && (
                     <p className="text-xs text-neon-yellow">
                       Please connect your Phantom wallet to swap tokens
                     </p>
