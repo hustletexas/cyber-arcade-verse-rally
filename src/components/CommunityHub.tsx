@@ -111,26 +111,49 @@ export const CommunityHub = () => {
       
       // Show connecting toast
       toast({
-        title: "Connecting to Discord",
-        description: "Opening Discord server in new tab...",
+        title: "Opening Discord...",
+        description: "Taking you to our Discord server!",
       });
       
-      // Open Discord link in new tab - simplified approach
-      window.open('https://discord.gg/Y7yUUssH', '_blank', 'noopener,noreferrer');
+      // Try to open Discord link - use a more reliable approach
+      const discordUrl = 'https://discord.gg/Y7yUUssH';
       
-      // Success feedback
-      toast({
-        title: "Discord Link Opened",
-        description: "Welcome to the Cyber City Community! 🎮",
-      });
+      // Create a temporary link element and click it (more reliable than window.open)
+      const link = document.createElement('a');
+      link.href = discordUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      
+      // Append to body, click, then remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Provide success feedback after a short delay
+      setTimeout(() => {
+        toast({
+          title: "Discord Link Opened! 🎮",
+          description: "Welcome to the Cyber City Community!",
+        });
+      }, 500);
       
     } catch (error) {
       console.error('Discord connection error:', error);
-      toast({
-        title: "Connection Error",
-        description: "Failed to open Discord. Please try the link manually: discord.gg/Y7yUUssH",
-        variant: "destructive",
-      });
+      
+      // Fallback: copy link to clipboard
+      try {
+        navigator.clipboard.writeText('https://discord.gg/Y7yUUssH');
+        toast({
+          title: "Link Copied to Clipboard! 📋",
+          description: "Paste this link in your browser: discord.gg/Y7yUUssH",
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "Manual Link Required",
+          description: "Please visit: discord.gg/Y7yUUssH",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -285,7 +308,7 @@ export const CommunityHub = () => {
                 {/* Discord Connect Button */}
                 <Button 
                   onClick={handleDiscordConnect}
-                  className="w-full hover:scale-105 transition-all duration-200"
+                  className="w-full hover:scale-105 transition-all duration-200 relative group"
                   style={{
                     background: 'linear-gradient(45deg, #5865F2, #4752C4)',
                     border: '1px solid #5865F2',
@@ -296,6 +319,7 @@ export const CommunityHub = () => {
                 >
                   <MessageCircle size={16} className="mr-2" />
                   CONNECT TO DISCORD
+                  <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded"></span>
                 </Button>
                 
                 <Button 
