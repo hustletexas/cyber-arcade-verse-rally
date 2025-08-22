@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -243,7 +244,7 @@ export const TokenPurchase = () => {
 
             {/* Purchase Button */}
             <Button onClick={handlePurchase} disabled={processing || !amount || !user} className="w-full cyber-button text-lg py-6">
-              {processing ? "💳 Processing..." : !user ? "🔐 LOGIN TO PURCHASE" : `💰 BUY ${amount.toLocaleString()} $CCTR`}
+              {processing ? "💳 Processing..." : !user ? "🔐 LOGIN TO PURCHASE" : `WALLET CONNECT`}
             </Button>
           </div>
 
