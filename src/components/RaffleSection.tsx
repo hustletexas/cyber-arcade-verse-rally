@@ -10,7 +10,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
-import { Gift, Trophy, Ticket, Users, Clock, Wallet } from 'lucide-react';
+import { Gift, Trophy, Ticket, Users, Clock, Wallet, CheckCircle, XCircle } from 'lucide-react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface Raffle {
@@ -445,18 +445,52 @@ export const RaffleSection = () => {
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-xl font-bold text-neon-pink mb-2">🏴‍☠️ MYSTERY TREASURE CHESTS</h3>
-        <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
-        {user && isWalletConnected && (
-          <div className="flex items-center justify-center gap-4 mt-4">
-            <Badge className="bg-neon-green text-black">
-              <Wallet size={14} className="mr-1" />
-              {primaryWallet?.address.slice(0, 6)}...{primaryWallet?.address.slice(-4)}
-            </Badge>
-            <Badge className="bg-neon-cyan text-black">
-              💎 {balance.cctr_balance.toLocaleString()} CCTR
-            </Badge>
+        <p className="text-neon-cyan mb-4">Each chest contains random prizes! Higher rarity = Better rewards!</p>
+        
+        <div className="flex flex-col items-center gap-3 p-4 bg-black/30 rounded-lg border border-neon-cyan/30 mx-auto max-w-md">
+          <div className="flex items-center gap-3">
+            {user ? (
+              <Badge className="bg-neon-green text-black flex items-center gap-1">
+                <CheckCircle size={14} />
+                AUTHENTICATED
+              </Badge>
+            ) : (
+              <Badge className="bg-red-500 text-white flex items-center gap-1">
+                <XCircle size={14} />
+                NOT LOGGED IN
+              </Badge>
+            )}
+            
+            {isWalletConnected && primaryWallet ? (
+              <Badge className="bg-neon-purple text-white flex items-center gap-1">
+                <Wallet size={14} />
+                WALLET CONNECTED
+              </Badge>
+            ) : (
+              <Badge className="bg-gray-500 text-white flex items-center gap-1">
+                <Wallet size={14} />
+                NO WALLET
+              </Badge>
+            )}
           </div>
-        )}
+
+          {user && isWalletConnected && primaryWallet && (
+            <div className="flex flex-col items-center gap-2 text-sm">
+              <div className="text-neon-cyan">
+                Wallet: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-6)}
+              </div>
+              <Badge className="bg-neon-cyan text-black">
+                💎 {balance.cctr_balance.toLocaleString()} CCTR
+              </Badge>
+            </div>
+          )}
+
+          {(!user || !isWalletConnected) && (
+            <p className="text-neon-pink text-sm">
+              Connect wallet and login to play treasure chests!
+            </p>
+          )}
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
