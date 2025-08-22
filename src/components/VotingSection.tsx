@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const VotingSection = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isWalletConnected, getConnectedWallet } = useWallet();
+  const { isWalletConnected } = useWallet();
   const { balance, refetch } = useUserBalance();
   const [votes, setVotes] = useState<{[key: string]: string}>({});
   const [votingInProgress, setVotingInProgress] = useState<{[key: string]: boolean}>({});
@@ -123,8 +124,6 @@ export const VotingSection = () => {
     }
   };
 
-  const connectedWallet = getConnectedWallet();
-
   return (
     <div className="space-y-6">
       {/* Voting Header */}
@@ -140,15 +139,10 @@ export const VotingSection = () => {
             Cast your vote on community proposals. Each vote costs 1 CCTR token.
           </p>
           {user && isWalletConnected() && (
-            <div className="flex flex-wrap items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2">
               <Badge className="bg-neon-cyan text-black">
                 💰 {balance.cctr_balance} CCTR Available
               </Badge>
-              {connectedWallet && (
-                <Badge className="bg-neon-purple text-white">
-                  🔗 {connectedWallet.address.slice(0, 4)}...{connectedWallet.address.slice(-4)}
-                </Badge>
-              )}
             </div>
           )}
         </CardHeader>
