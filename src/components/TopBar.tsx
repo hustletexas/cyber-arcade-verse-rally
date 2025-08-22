@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Wallet, LogOut, Settings, Plus } from 'lucide-react';
 import { WalletConnectionModal } from './WalletConnectionModal';
 import { WalletManager } from './WalletManager';
 import { 
@@ -76,6 +76,51 @@ export const TopBar = () => {
 
   const handleWalletConnect = () => {
     setShowWalletModal(true);
+  };
+
+  const handleCreateWallet = async () => {
+    try {
+      toast({
+        title: "Creating Wallet...",
+        description: "Generating secure Solana wallet with thirdweb",
+      });
+
+      // Import thirdweb SDK
+      const { ThirdwebSDK } = await import('@thirdweb-dev/sdk/solana');
+      
+      // Initialize thirdweb SDK for Solana
+      const sdk = new ThirdwebSDK("devnet"); // Use devnet for testing, mainnet for production
+      
+      // Generate a new wallet
+      const wallet = sdk.wallet.generate();
+      const address = await wallet.getAddress();
+      
+      // Store wallet data securely
+      const walletData = {
+        publicKey: address,
+        privateKey: wallet.privateKey,
+        type: 'thirdweb-created'
+      };
+      
+      // Save to localStorage for now (in production, consider more secure storage)
+      localStorage.setItem('thirdwebWallet', JSON.stringify(walletData));
+      
+      // Connect the wallet to our multi-wallet system
+      await connectWallet('created', address);
+      
+      toast({
+        title: "Wallet Created Successfully! 🎉",
+        description: `New Solana wallet created: ${address.slice(0, 8)}...${address.slice(-4)}`,
+      });
+      
+    } catch (error: any) {
+      console.error('Thirdweb wallet creation error:', error);
+      toast({
+        title: "Creation Failed",
+        description: error.message || "Failed to create wallet with thirdweb",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDisconnectWallet = async (walletType: string) => {
@@ -193,6 +238,10 @@ export const TopBar = () => {
                         <Wallet size={16} className="mr-2" />
                         Connect External Wallet
                       </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleCreateWallet} className="hover:bg-neon-green/10">
+                        <Plus size={16} className="mr-2" />
+                        Create Wallet
+                      </DropdownMenuItem>
                       <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
                         <Settings size={16} className="mr-2" />
                         Manage Wallets
@@ -240,7 +289,11 @@ export const TopBar = () => {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
-                        Add Wallet
+                        Add External Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleCreateWallet} className="hover:bg-neon-green/10">
+                        <Plus size={16} className="mr-2" />
+                        Create Wallet
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
@@ -273,7 +326,11 @@ export const TopBar = () => {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleWalletConnect} className="hover:bg-neon-cyan/10">
                         <Wallet size={16} className="mr-2" />
-                        Add Wallet
+                        Add External Wallet
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleCreateWallet} className="hover:bg-neon-green/10">
+                        <Plus size={16} className="mr-2" />
+                        Create Wallet
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}

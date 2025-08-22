@@ -43,6 +43,7 @@
     "@solana/web3.js": "^1.98.2",
     "@supabase/supabase-js": "^2.50.0",
     "@tanstack/react-query": "^5.56.2",
+    "@thirdweb-dev/sdk": "^4.0.99",
     "@walletconnect/client": "^1.8.0",
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",
