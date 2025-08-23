@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const ProfileDashboard = () => {
   const { user } = useAuth();
   const { balance } = useUserBalance();
-  const { primaryWallet, connectedWallets, disconnectWallet } = useMultiWallet();
+  const { primaryWallet, connectedWallets, disconnectWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
   
   // Settings state
@@ -46,9 +45,9 @@ export const ProfileDashboard = () => {
 
   // Fetch tournament data
   const { data: tournamentEntries = [] } = useQuery({
-    queryKey: ['tournament-entries', user?.id],
+    queryKey: ['tournament-entries', primaryWallet?.address],
     queryFn: async () => {
-      if (!user) return [];
+      if (!primaryWallet?.address) return [];
       const { data, error } = await supabase
         .from('solana_tournament_entries')
         .select(`
@@ -61,13 +60,13 @@ export const ProfileDashboard = () => {
             end_time
           )
         `)
-        .eq('user_id', user.id)
+        .eq('wallet_address', primaryWallet.address)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user
+    enabled: !!primaryWallet?.address
   });
 
   // Fetch recent activity from token transactions
@@ -108,7 +107,7 @@ export const ProfileDashboard = () => {
     {
       name: 'Wallet Connected',
       description: 'Connect a Solana wallet',
-      earned: !!primaryWallet
+      earned: isWalletConnected
     },
     {
       name: 'High Roller',
@@ -129,6 +128,8 @@ export const ProfileDashboard = () => {
   };
 
   const handleProfileSave = async () => {
+    if (!user) return;
+    
     try {
       const { error } = await supabase
         .from('profiles')
@@ -137,7 +138,7 @@ export const ProfileDashboard = () => {
           avatar_url: profileSettings.avatar_url,
           updated_at: new Date().toISOString()
         })
-        .eq('id', user?.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
@@ -170,24 +171,29 @@ export const ProfileDashboard = () => {
     }
   };
 
-  if (!user) {
+  // Show wallet connection prompt if no wallet is connected
+  if (!isWalletConnected || !primaryWallet) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Card className="arcade-frame">
           <CardContent className="p-8 text-center">
             <User size={48} className="mx-auto mb-4 text-neon-cyan" />
-            <h2 className="text-2xl font-display text-neon-cyan mb-2">Connect Your Wallet</h2>
+            <h2 className="text-2xl font-display text-neon-cyan mb-2">Connect Your Solana Wallet</h2>
             <p className="text-muted-foreground mb-4">
               Connect your Solana wallet to view your profile, tournament history, and blockchain activity
             </p>
-            <Button className="cyber-button">
-              Connect Wallet
-            </Button>
+            <p className="text-sm text-muted-foreground">
+              Use the wallet connection button in the top navigation to get started
+            </p>
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  // Get display info from wallet or user
+  const displayName = user?.user_metadata?.username || primaryWallet.address.slice(0, 8) + '...';
+  const displayEmail = user?.email || `${primaryWallet.type} wallet`;
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -196,24 +202,22 @@ export const ProfileDashboard = () => {
         <CardContent className="p-6">
           <div className="flex items-center gap-6">
             <Avatar className="w-20 h-20 border-4 border-neon-cyan">
-              <AvatarImage src={user.user_metadata?.avatar_url} />
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
               <AvatarFallback className="bg-neon-purple text-black font-bold text-2xl">
-                {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
+                {displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             
             <div className="flex-1">
               <h2 className="text-2xl font-display text-neon-cyan">
-                {user.user_metadata?.username || user.email?.split('@')[0]}
+                {displayName}
               </h2>
-              <p className="text-muted-foreground">{user.email}</p>
+              <p className="text-muted-foreground">{displayEmail}</p>
               <div className="flex items-center gap-2 mt-2">
-                <Badge className="bg-neon-green text-black">VERIFIED</Badge>
-                {primaryWallet && (
-                  <Badge className="bg-neon-purple text-black">
-                    SOLANA CONNECTED
-                  </Badge>
-                )}
+                <Badge className="bg-neon-green text-black">WALLET CONNECTED</Badge>
+                <Badge className="bg-neon-purple text-black">
+                  {primaryWallet.type.toUpperCase()}
+                </Badge>
               </div>
             </div>
 
@@ -294,7 +298,7 @@ export const ProfileDashboard = () => {
                   {connectedWallets.map((wallet, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-background/20 rounded">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{wallet.type === 'phantom' ? '👻' : '💰'}</span>
+                        <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}</span>
                         <div>
                           <span className="capitalize font-medium">{wallet.type}</span>
                           {wallet === primaryWallet && (
@@ -373,7 +377,7 @@ export const ProfileDashboard = () => {
                 {connectedWallets.map((wallet, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <span className="text-lg">{wallet.type === 'phantom' ? '👻' : '💰'}</span>
+                      <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}</span>
                       <div>
                         <p className="font-medium capitalize">{wallet.type} Wallet</p>
                         <code className="text-xs text-muted-foreground">
