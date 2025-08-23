@@ -15,18 +15,20 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { useToast } from '@/hooks/use-toast';
-import { useWallet } from '@/hooks/useWallet';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useNFTMinting } from '@/hooks/useNFTMinting';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { toast } = useToast();
-  const { isWalletConnected } = useWallet();
+  const { isWalletConnected } = useMultiWallet();
+  const { mintFreeNFT, isMinting } = useNFTMinting();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  const mintFreeNFT = async () => {
-    if (!isWalletConnected()) {
+  const handleMintNFT = async () => {
+    if (!isWalletConnected) {
       toast({
         title: "Wallet Required",
         description: "Please connect your wallet first to mint your free NFT",
@@ -35,18 +37,7 @@ const Index = () => {
       return;
     }
 
-    toast({
-      title: "Minting NFT",
-      description: "Free NFT mint in progress..."
-    });
-
-    // Simulate minting process
-    setTimeout(() => {
-      toast({
-        title: "NFT Minted Successfully!",
-        description: "Your free Cyber City Arcade NFT has been minted to your wallet"
-      });
-    }, 3000);
+    await mintFreeNFT();
   };
 
   return (
@@ -88,13 +79,23 @@ const Index = () => {
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
 
-          {/* Centered Mint Free NFT Button */}
+          {/* Updated Mint Free NFT Button */}
           <div className="flex justify-center mb-6 md:mb-8 px-4">
             <Button 
-              onClick={mintFreeNFT} 
-              className="cyber-button flex items-center gap-2 text-lg px-8 py-4"
+              onClick={handleMintNFT} 
+              disabled={isMinting}
+              className="cyber-button flex items-center gap-2 text-lg px-8 py-4 disabled:opacity-50"
             >
-              🔨 MINT FREE NFT
+              {isMinting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  MINTING...
+                </>
+              ) : (
+                <>
+                  🔨 MINT FREE NFT
+                </>
+              )}
             </Button>
           </div>
         </div>
