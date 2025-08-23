@@ -7,13 +7,52 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
   public: {
     Tables: {
+      nft_mints: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          mint_address: string
+          nft_name: string
+          status: string
+          transaction_hash: string
+          updated_at: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          mint_address: string
+          nft_name: string
+          status?: string
+          transaction_hash: string
+          updated_at?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          mint_address?: string
+          nft_name?: string
+          status?: string
+          transaction_hash?: string
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       nft_purchases: {
         Row: {
           created_at: string
@@ -577,9 +616,9 @@ export type Database = {
     Functions: {
       complete_solana_tournament: {
         Args: {
+          admin_wallet_param: string
           tournament_id_param: string
           winner_wallet_param: string
-          admin_wallet_param: string
         }
         Returns: Json
       }
@@ -590,9 +629,9 @@ export type Database = {
       join_solana_tournament: {
         Args: {
           tournament_id_param: string
-          wallet_address_param: string
           transaction_hash_param: string
           user_id_param?: string
+          wallet_address_param: string
         }
         Returns: Json
       }
