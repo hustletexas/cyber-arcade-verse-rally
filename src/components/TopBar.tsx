@@ -181,7 +181,7 @@ export const TopBar = () => {
                       <Button 
                         variant="outline"
                         size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[160px] h-8"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[140px] h-8"
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-1">
@@ -196,21 +196,20 @@ export const TopBar = () => {
                         </div>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50 min-w-[280px]">
-                      <DropdownMenuLabel className="flex items-center justify-between">
-                        <span className="text-sm">Wallet Actions</span>
-                        <Badge className="bg-neon-green text-black text-xs">
+                    <DropdownMenuContent className="bg-background/98 backdrop-blur-lg border border-neon-cyan/20 shadow-2xl shadow-neon-cyan/10 z-50 min-w-[260px] rounded-xl">
+                      <DropdownMenuLabel className="flex items-center justify-between border-b border-neon-cyan/10 pb-2">
+                        <span className="text-sm font-bold text-neon-cyan">Wallet Actions</span>
+                        <Badge className="bg-gradient-to-r from-neon-green to-neon-cyan text-black text-xs font-bold px-2">
                           {balance.cctr_balance.toLocaleString()} $CCTR
                         </Badge>
                       </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
                       
                       {/* Quick Actions */}
-                      <div className="px-2 py-2 space-y-2">
+                      <div className="px-2 py-3 space-y-2 border-b border-neon-cyan/10">
                         <Button
                           onClick={() => setShowWalletActions(true)}
                           size="sm"
-                          className="cyber-button w-full justify-start text-xs"
+                          className="cyber-button w-full justify-start text-xs h-8 bg-gradient-to-r from-neon-pink to-neon-purple hover:from-neon-cyan hover:to-neon-green"
                         >
                           <CreditCard size={12} className="mr-2" />
                           Buy / Send / Receive
@@ -219,89 +218,90 @@ export const TopBar = () => {
                           onClick={() => setShowProfileDashboard(true)}
                           size="sm"
                           variant="outline"
-                          className="w-full justify-start border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs"
+                          className="w-full justify-start border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 hover:border-neon-cyan text-xs h-8"
                         >
                           <User size={12} className="mr-2" />
                           Profile Dashboard
                         </Button>
                       </div>
 
-                      <DropdownMenuSeparator />
-                      
                       {/* Token Balances */}
-                      <div className="px-3 py-2 border-b border-neon-cyan/20">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-muted-foreground">Token Balances</span>
+                      <div className="px-3 py-3 border-b border-neon-cyan/10">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-semibold text-neon-purple">Token Balances</span>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => setShowBalanceDetails(true)}
-                            className="text-xs hover:bg-neon-cyan/10 h-6"
+                            className="text-xs hover:bg-neon-cyan/10 h-6 text-neon-cyan hover:text-neon-green"
                           >
                             View All
                           </Button>
                         </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-neon-cyan">$CCTR:</span>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center text-xs bg-neon-cyan/5 rounded-lg px-2 py-1">
+                            <span className="text-neon-cyan font-medium">$CCTR:</span>
                             <span className="text-neon-green font-bold">{balance.cctr_balance.toLocaleString()}</span>
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-neon-yellow">SOL:</span>
-                            <span className="text-neon-yellow">~0.5</span>
+                          <div className="flex justify-between items-center text-xs bg-yellow-500/5 rounded-lg px-2 py-1">
+                            <span className="text-yellow-400 font-medium">SOL:</span>
+                            <span className="text-yellow-400 font-bold">~0.5</span>
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-blue-400">USDC:</span>
-                            <span className="text-blue-400">25.00</span>
+                          <div className="flex justify-between items-center text-xs bg-blue-500/5 rounded-lg px-2 py-1">
+                            <span className="text-blue-400 font-medium">USDC:</span>
+                            <span className="text-blue-400 font-bold">25.00</span>
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-orange-400">BONK:</span>
-                            <span className="text-orange-400">1.2M</span>
+                          <div className="flex justify-between items-center text-xs bg-orange-500/5 rounded-lg px-2 py-1">
+                            <span className="text-orange-400 font-medium">BONK:</span>
+                            <span className="text-orange-400 font-bold">1.2M</span>
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-purple-400">RAY:</span>
-                            <span className="text-purple-400">12.5</span>
+                          <div className="flex justify-between items-center text-xs bg-purple-500/5 rounded-lg px-2 py-1">
+                            <span className="text-purple-400 font-medium">RAY:</span>
+                            <span className="text-purple-400 font-bold">12.5</span>
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-neon-purple">Claimable:</span>
+                          <div className="flex justify-between items-center text-xs bg-neon-pink/5 rounded-lg px-2 py-1">
+                            <span className="text-neon-purple font-medium">Claimable:</span>
                             <span className="text-neon-pink font-bold">{balance.claimable_rewards.toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Wallet Selection */}
-                      {hasMultipleWallets && connectedWallets.map((wallet) => (
-                        <DropdownMenuItem 
-                          key={`${wallet.type}-${wallet.address}`}
-                          onClick={() => switchPrimaryWallet(wallet)}
-                          className="flex items-center gap-2 hover:bg-neon-cyan/10"
-                        >
-                          <span>{getWalletIcon(wallet.type)}</span>
-                          <span className="flex-1 text-sm">
-                            {wallet.type.charAt(0).toUpperCase() + wallet.type.slice(1)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {wallet.address.slice(0, 4)}...
-                          </span>
-                          {primaryWallet?.address === wallet.address && (
-                            <Badge className="bg-neon-green text-black text-xs">Primary</Badge>
-                          )}
-                        </DropdownMenuItem>
-                      ))}
-                      
-                      <DropdownMenuSeparator />
+                      {hasMultipleWallets && (
+                        <div className="px-2 py-2 border-b border-neon-cyan/10">
+                          <span className="text-xs font-semibold text-neon-purple mb-2 block">Connected Wallets</span>
+                          {connectedWallets.map((wallet) => (
+                            <DropdownMenuItem 
+                              key={`${wallet.type}-${wallet.address}`}
+                              onClick={() => switchPrimaryWallet(wallet)}
+                              className="flex items-center gap-2 hover:bg-neon-cyan/10 rounded-lg my-1"
+                            >
+                              <span>{getWalletIcon(wallet.type)}</span>
+                              <span className="flex-1 text-sm">
+                                {wallet.type.charAt(0).toUpperCase() + wallet.type.slice(1)}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {wallet.address.slice(0, 4)}...
+                              </span>
+                              {primaryWallet?.address === wallet.address && (
+                                <Badge className="bg-neon-green text-black text-xs">Primary</Badge>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </div>
+                      )}
                       
                       {/* Connect & Support */}
-                      <div className="px-2 py-2">
+                      <div className="px-3 py-3 border-b border-neon-cyan/10">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-muted-foreground">Connect & Support</span>
+                          <span className="text-sm font-semibold text-neon-purple">Connect & Support</span>
                         </div>
-                        <div className="flex justify-between text-xs mb-2">
+                        <div className="flex justify-between text-xs mb-3">
                           <a 
                             href="https://x.com/cybercityarcade" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                            className="text-blue-400 hover:text-blue-300 flex items-center gap-1 hover:bg-blue-500/10 px-2 py-1 rounded-lg transition-all"
                           >
                             🐦 Twitter
                           </a>
@@ -309,7 +309,7 @@ export const TopBar = () => {
                             href="https://discord.gg/cybercityarcade" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                            className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 hover:bg-indigo-500/10 px-2 py-1 rounded-lg transition-all"
                           >
                             💬 Discord
                           </a>
@@ -317,7 +317,7 @@ export const TopBar = () => {
                             href="https://instagram.com/cybercityarcade" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-pink-400 hover:text-pink-300 flex items-center gap-1"
+                            className="text-pink-400 hover:text-pink-300 flex items-center gap-1 hover:bg-pink-500/10 px-2 py-1 rounded-lg transition-all"
                           >
                             📷 Instagram
                           </a>
@@ -325,24 +325,25 @@ export const TopBar = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="w-full justify-start border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs h-6"
+                          className="w-full justify-center border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:border-yellow-500 text-xs h-7"
                         >
                           🎧 Support
                         </Button>
                       </div>
                       
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
-                        <Settings size={14} className="mr-2" />
-                        <span className="text-sm">Manage Wallets</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
-                        className="text-neon-pink hover:bg-neon-pink/10"
-                      >
-                        <LogOut size={14} className="mr-2" />
-                        <span className="text-sm">Disconnect Wallet</span>
-                      </DropdownMenuItem>
+                      <div className="px-2 py-2">
+                        <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10 rounded-lg">
+                          <Settings size={14} className="mr-2" />
+                          <span className="text-sm">Manage Wallets</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
+                          className="text-neon-pink hover:bg-neon-pink/10 rounded-lg"
+                        >
+                          <LogOut size={14} className="mr-2" />
+                          <span className="text-sm">Disconnect Wallet</span>
+                        </DropdownMenuItem>
+                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
