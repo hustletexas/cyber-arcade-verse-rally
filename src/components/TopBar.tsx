@@ -99,17 +99,18 @@ export const TopBar = () => {
   return (
     <>
       <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Button 
                 onClick={() => setIsOpen(true)}
                 className="cyber-button flex items-center gap-2 relative"
+                size="sm"
               >
-                <ShoppingCart size={16} />
+                <ShoppingCart size={14} />
                 CART
                 {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-neon-pink text-black min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs">
+                  <Badge className="absolute -top-1 -right-1 bg-neon-pink text-black min-w-[16px] h-4 rounded-full flex items-center justify-center text-xs">
                     {getTotalItems()}
                   </Badge>
                 )}
@@ -117,7 +118,7 @@ export const TopBar = () => {
             </div>
 
             <div className="flex items-center">
-              <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
                 <img 
                   src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
                   alt="Cyber City Arcade Logo" 
@@ -126,40 +127,36 @@ export const TopBar = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {loading ? (
-                <div className="text-neon-cyan">Loading...</div>
+                <div className="text-neon-cyan text-sm">Loading...</div>
               ) : (
                 user && (
-                  <Card className="arcade-frame px-4 py-2">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-8 h-8 border-2 border-neon-cyan">
+                  <Card className="arcade-frame px-3 py-1">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-6 h-6 border border-neon-cyan">
                         <AvatarImage src={user.user_metadata?.avatar_url} />
-                        <AvatarFallback className="bg-neon-purple text-black font-bold">
+                        <AvatarFallback className="bg-neon-purple text-black font-bold text-xs">
                           {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="text-sm">
+                      <div className="text-xs">
                         <p className="font-bold text-neon-cyan">
                           {user.user_metadata?.username || user.email?.split('@')[0]}
                         </p>
-                        <p className="text-neon-purple text-xs">{user.email}</p>
                         {primaryWallet && (
                           <p className="text-neon-green text-xs">
-                            {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 6)}...
+                            {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 4)}...
                           </p>
                         )}
                       </div>
-                      <Badge className="bg-neon-green text-black">
-                        🔐 AUTHENTICATED
-                      </Badge>
                       <Button 
                         onClick={handleSignOut}
                         variant="outline" 
                         size="sm"
-                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-xs px-2 py-1 h-6"
                       >
-                        <LogOut size={14} />
+                        <LogOut size={12} />
                         Logout
                       </Button>
                     </div>
@@ -175,8 +172,8 @@ export const TopBar = () => {
                     className="cyber-button flex items-center gap-2"
                     size="sm"
                   >
-                    <Settings size={16} />
-                    MANAGE WALLETS
+                    <Settings size={14} />
+                    WALLETS
                   </Button>
                 ) : (
                   <DropdownMenu>
@@ -184,24 +181,24 @@ export const TopBar = () => {
                       <Button 
                         variant="outline"
                         size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[200px]"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[160px] h-8"
                       >
                         <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             {getWalletIcon(primaryWallet?.type || 'phantom')} 
-                            <span>{primaryWallet?.address.slice(0, 6)}...</span>
+                            <span className="text-xs">{primaryWallet?.address.slice(0, 4)}...</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs">
-                            <Coins size={12} />
+                            <Coins size={10} />
                             <span>{balance.cctr_balance.toLocaleString()}</span>
                           </div>
-                          <ChevronDown size={16} />
+                          <ChevronDown size={12} />
                         </div>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50 min-w-[300px]">
+                    <DropdownMenuContent className="arcade-frame bg-background/95 backdrop-blur-sm border-neon-cyan/30 z-50 min-w-[280px]">
                       <DropdownMenuLabel className="flex items-center justify-between">
-                        <span>Wallet Actions</span>
+                        <span className="text-sm">Wallet Actions</span>
                         <Badge className="bg-neon-green text-black text-xs">
                           {balance.cctr_balance.toLocaleString()} $CCTR
                         </Badge>
@@ -213,49 +210,61 @@ export const TopBar = () => {
                         <Button
                           onClick={() => setShowWalletActions(true)}
                           size="sm"
-                          className="cyber-button w-full justify-start"
+                          className="cyber-button w-full justify-start text-xs"
                         >
-                          <CreditCard size={14} className="mr-2" />
+                          <CreditCard size={12} className="mr-2" />
                           Buy / Send / Receive
                         </Button>
                         <Button
                           onClick={() => setShowProfileDashboard(true)}
                           size="sm"
                           variant="outline"
-                          className="w-full justify-start border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                          className="w-full justify-start border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs"
                         >
-                          <User size={14} className="mr-2" />
+                          <User size={12} className="mr-2" />
                           Profile Dashboard
                         </Button>
                       </div>
 
                       <DropdownMenuSeparator />
                       
-                      {/* Balance Overview */}
-                      <div className="px-2 py-3 border-b border-neon-cyan/20">
+                      {/* Token Balances */}
+                      <div className="px-3 py-2 border-b border-neon-cyan/20">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-muted-foreground">Balance Overview</span>
+                          <span className="text-sm text-muted-foreground">Token Balances</span>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => setShowBalanceDetails(true)}
-                            className="text-xs hover:bg-neon-cyan/10"
+                            className="text-xs hover:bg-neon-cyan/10 h-6"
                           >
-                            View Details
+                            View All
                           </Button>
                         </div>
                         <div className="space-y-1">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-neon-cyan">$CCTR Balance:</span>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-neon-cyan">$CCTR:</span>
                             <span className="text-neon-green font-bold">{balance.cctr_balance.toLocaleString()}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-neon-yellow">SOL:</span>
+                            <span className="text-neon-yellow">~0.5</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-blue-400">USDC:</span>
+                            <span className="text-blue-400">25.00</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-orange-400">BONK:</span>
+                            <span className="text-orange-400">1.2M</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-purple-400">RAY:</span>
+                            <span className="text-purple-400">12.5</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
                             <span className="text-neon-purple">Claimable:</span>
                             <span className="text-neon-pink font-bold">{balance.claimable_rewards.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">SOL Balance:</span>
-                            <span className="text-neon-yellow">~0.5 SOL</span>
                           </div>
                         </div>
                       </div>
@@ -268,11 +277,11 @@ export const TopBar = () => {
                           className="flex items-center gap-2 hover:bg-neon-cyan/10"
                         >
                           <span>{getWalletIcon(wallet.type)}</span>
-                          <span className="flex-1">
+                          <span className="flex-1 text-sm">
                             {wallet.type.charAt(0).toUpperCase() + wallet.type.slice(1)}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {wallet.address.slice(0, 6)}...
+                            {wallet.address.slice(0, 4)}...
                           </span>
                           {primaryWallet?.address === wallet.address && (
                             <Badge className="bg-neon-green text-black text-xs">Primary</Badge>
@@ -282,31 +291,57 @@ export const TopBar = () => {
                       
                       <DropdownMenuSeparator />
                       
-                      {/* NFTs Preview */}
+                      {/* Connect & Support */}
                       <div className="px-2 py-2">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Image size={14} />
-                            NFTs
-                          </span>
-                          <Badge className="bg-neon-purple text-black text-xs">3 Items</Badge>
+                          <span className="text-sm text-muted-foreground">Connect & Support</span>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          Click "View Details" to see your NFT collection
+                        <div className="flex justify-between text-xs mb-2">
+                          <a 
+                            href="https://x.com/cybercityarcade" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                          >
+                            🐦 Twitter
+                          </a>
+                          <a 
+                            href="https://discord.gg/cybercityarcade" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                          >
+                            💬 Discord
+                          </a>
+                          <a 
+                            href="https://instagram.com/cybercityarcade" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-pink-400 hover:text-pink-300 flex items-center gap-1"
+                          >
+                            📷 Instagram
+                          </a>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full justify-start border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs h-6"
+                        >
+                          🎧 Support
+                        </Button>
                       </div>
                       
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={handleManageWallets} className="hover:bg-neon-cyan/10">
-                        <Settings size={16} className="mr-2" />
-                        Manage Wallets
+                        <Settings size={14} className="mr-2" />
+                        <span className="text-sm">Manage Wallets</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDisconnectWallet(primaryWallet?.type || 'phantom')}
                         className="text-neon-pink hover:bg-neon-pink/10"
                       >
-                        <LogOut size={16} className="mr-2" />
-                        Disconnect Wallet
+                        <LogOut size={14} className="mr-2" />
+                        <span className="text-sm">Disconnect Wallet</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
