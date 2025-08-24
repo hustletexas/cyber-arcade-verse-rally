@@ -211,7 +211,7 @@ export const TopBar = () => {
                           className="cyber-button w-full justify-start text-xs h-8 bg-gradient-to-r from-neon-pink to-neon-purple hover:from-neon-cyan hover:to-neon-green"
                         >
                           <CreditCard size={12} className="mr-2" />
-                          Buy / Send / Swap / Receive
+                          <span className="truncate">Buy • Send • Swap • Receive</span>
                         </Button>
                         <Button
                           onClick={() => setShowProfileDashboard(true)}
