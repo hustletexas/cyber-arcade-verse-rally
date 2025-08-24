@@ -166,7 +166,7 @@ export const TriviaGame = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with Navigation */}
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-3xl text-neon-cyan text-center">
@@ -182,33 +182,33 @@ export const TriviaGame = () => {
               </Badge>
             </div>
           )}
+          
+          {/* Navigation Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mt-6">
+            <Button
+              onClick={() => setCurrentView('menu')}
+              variant={currentView === 'menu' ? 'default' : 'outline'}
+              className="cyber-button"
+            >
+              🏠 Main Menu
+            </Button>
+            <Button
+              onClick={() => setCurrentView('leaderboard')}
+              variant="outline"
+              className="cyber-button"
+            >
+              🏆 Leaderboard
+            </Button>
+            <Button
+              onClick={() => setCurrentView('rewards')}
+              variant="outline"
+              className="cyber-button"
+            >
+              💰 Rewards
+            </Button>
+          </div>
         </CardHeader>
       </Card>
-
-      {/* Navigation */}
-      <div className="flex flex-wrap justify-center gap-4 mb-8">
-        <Button
-          onClick={() => setCurrentView('menu')}
-          variant={currentView === 'menu' ? 'default' : 'outline'}
-          className="cyber-button"
-        >
-          🏠 Main Menu
-        </Button>
-        <Button
-          onClick={() => setCurrentView('leaderboard')}
-          variant="outline"
-          className="cyber-button"
-        >
-          🏆 Leaderboard
-        </Button>
-        <Button
-          onClick={() => setCurrentView('rewards')}
-          variant="outline"
-          className="cyber-button"
-        >
-          💰 Rewards
-        </Button>
-      </div>
 
       {/* User Stats */}
       {isAuthenticated && (
