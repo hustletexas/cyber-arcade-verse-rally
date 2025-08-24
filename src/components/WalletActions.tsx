@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
-import { Copy, Send, ArrowDownToLine, CreditCard, QrCode } from 'lucide-react';
+import { Copy, Send, ArrowDownToLine, CreditCard, QrCode, ArrowUpDown, RefreshCw } from 'lucide-react';
 
 export const WalletActions = () => {
   const { toast } = useToast();
@@ -18,6 +18,19 @@ export const WalletActions = () => {
   const [sendAmount, setSendAmount] = useState('');
   const [recipientAddress, setRecipientAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+  const [swapFromToken, setSwapFromToken] = useState('CCTR');
+  const [swapToToken, setSwapToToken] = useState('SOL');
+  const [swapAmount, setSwapAmount] = useState('');
+  const [estimatedOutput, setEstimatedOutput] = useState('0');
+
+  // Available tokens for swapping
+  const availableTokens = [
+    { symbol: 'CCTR', name: 'Cyber City Token', balance: balance.cctr_balance },
+    { symbol: 'SOL', name: 'Solana', balance: 0.5 },
+    { symbol: 'USDC', name: 'USD Coin', balance: 25.00 },
+    { symbol: 'BONK', name: 'Bonk', balance: 1200000 },
+    { symbol: 'RAY', name: 'Raydium', balance: 12.5 }
+  ];
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -33,6 +46,65 @@ export const WalletActions = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const calculateSwapEstimate = (amount: string, fromToken: string, toToken: string) => {
+    if (!amount || parseFloat(amount) <= 0) return '0';
+    
+    // Simple mock exchange rates for demo purposes
+    const rates: { [key: string]: number } = {
+      'CCTR': 0.045,  // $0.045 per CCTR
+      'SOL': 95.00,   // $95 per SOL
+      'USDC': 1.00,   // $1 per USDC
+      'BONK': 0.000015, // $0.000015 per BONK
+      'RAY': 1.85     // $1.85 per RAY
+    };
+
+    const fromValue = parseFloat(amount) * rates[fromToken];
+    const toAmount = fromValue / rates[toToken];
+    return toAmount.toFixed(6);
+  };
+
+  const handleSwapAmountChange = (value: string) => {
+    setSwapAmount(value);
+    const estimate = calculateSwapEstimate(value, swapFromToken, swapToToken);
+    setEstimatedOutput(estimate);
+  };
+
+  const handleTokenSwap = () => {
+    setSwapFromToken(swapToToken);
+    setSwapToToken(swapFromToken);
+    if (swapAmount) {
+      const estimate = calculateSwapEstimate(swapAmount, swapToToken, swapFromToken);
+      setEstimatedOutput(estimate);
+    }
+  };
+
+  const handleExecuteSwap = async () => {
+    if (!swapAmount || parseFloat(swapAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid amount to swap",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const fromTokenData = availableTokens.find(t => t.symbol === swapFromToken);
+    if (!fromTokenData || parseFloat(swapAmount) > fromTokenData.balance) {
+      toast({
+        title: "Insufficient Balance",
+        description: `You don't have enough ${swapFromToken} to swap`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Swap Initiated",
+      description: `Swapping ${swapAmount} ${swapFromToken} for ${estimatedOutput} ${swapToToken}...`,
+    });
+    // Blockchain swap transaction would go here
   };
 
   const handleBuy = async () => {
@@ -89,10 +161,14 @@ export const WalletActions = () => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="buy" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 arcade-frame">
+        <TabsList className="grid w-full grid-cols-4 arcade-frame">
           <TabsTrigger value="buy" className="data-[state=active]:bg-neon-green data-[state=active]:text-black">
             <CreditCard size={16} className="mr-2" />
             Buy
+          </TabsTrigger>
+          <TabsTrigger value="swap" className="data-[state=active]:bg-neon-pink data-[state=active]:text-black">
+            <ArrowUpDown size={16} className="mr-2" />
+            Swap
           </TabsTrigger>
           <TabsTrigger value="send" className="data-[state=active]:bg-neon-cyan data-[state=active]:text-black">
             <Send size={16} className="mr-2" />
@@ -144,6 +220,107 @@ export const WalletActions = () => {
 
               <Button onClick={handleBuy} className="cyber-button w-full">
                 Buy $CCTR
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="swap" className="space-y-4">
+          <Card className="holographic">
+            <CardHeader>
+              <CardTitle className="text-neon-pink flex items-center gap-2">
+                <ArrowUpDown size={20} />
+                Swap Tokens
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* From Token Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">From</Label>
+                <div className="flex gap-2">
+                  <Select value={swapFromToken} onValueChange={setSwapFromToken}>
+                    <SelectTrigger className="w-[120px] bg-background/50 border-neon-pink">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTokens.map((token) => (
+                        <SelectItem key={token.symbol} value={token.symbol}>
+                          {token.symbol}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={swapAmount}
+                    onChange={(e) => handleSwapAmountChange(e.target.value)}
+                    className="bg-background/50 border-neon-pink flex-1"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Available: {availableTokens.find(t => t.symbol === swapFromToken)?.balance.toLocaleString()} {swapFromToken}
+                </p>
+              </div>
+
+              {/* Swap Direction Button */}
+              <div className="flex justify-center">
+                <Button
+                  onClick={handleTokenSwap}
+                  variant="outline"
+                  size="sm"
+                  className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black rounded-full w-10 h-10 p-0"
+                >
+                  <RefreshCw size={16} />
+                </Button>
+              </div>
+
+              {/* To Token Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">To</Label>
+                <div className="flex gap-2">
+                  <Select value={swapToToken} onValueChange={setSwapToToken}>
+                    <SelectTrigger className="w-[120px] bg-background/50 border-neon-pink">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTokens.filter(t => t.symbol !== swapFromToken).map((token) => (
+                        <SelectItem key={token.symbol} value={token.symbol}>
+                          {token.symbol}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex-1 bg-background/50 border border-neon-pink rounded-md px-3 py-2 text-neon-green">
+                    ≈ {estimatedOutput}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Balance: {availableTokens.find(t => t.symbol === swapToToken)?.balance.toLocaleString()} {swapToToken}
+                </p>
+              </div>
+
+              {/* Swap Details */}
+              {swapAmount && parseFloat(swapAmount) > 0 && (
+                <div className="bg-muted/20 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Exchange Rate:</span>
+                    <span className="text-neon-cyan">1 {swapFromToken} ≈ {calculateSwapEstimate('1', swapFromToken, swapToToken)} {swapToToken}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Network Fee:</span>
+                    <span className="text-yellow-400">~0.0001 SOL</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Slippage Tolerance:</span>
+                    <span className="text-neon-purple">0.5%</span>
+                  </div>
+                </div>
+              )}
+
+              <Button onClick={handleExecuteSwap} className="cyber-button w-full">
+                <ArrowUpDown className="mr-2" size={16} />
+                Execute Swap
               </Button>
             </CardContent>
           </Card>
