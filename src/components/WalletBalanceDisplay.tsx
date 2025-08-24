@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,14 +29,14 @@ export const WalletBalanceDisplay = () => {
   const mockNFTs: SolanaNFT[] = [
     {
       mint: "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-      name: "Cyber Punk #1234",
-      image: "/lovable-uploads/29ba2fef-23a8-4456-933b-1d8ab31c0a99.png",
+      name: "Cyber City Arcade Genesis #001",
+      image: "/lovable-uploads/618813b4-8ef1-495f-b103-dd4f3612befb.png",
       collection: "Cyber City Collection",
-      description: "A rare cyberpunk character from the Cyber City metaverse",
+      description: "Genesis NFT from Cyber City Arcade - Your gateway to the ultimate Web3 gaming experience",
       attributes: [
-        { trait_type: "Rarity", value: "Legendary" },
+        { trait_type: "Rarity", value: "Genesis" },
         { trait_type: "Power", value: "9000" },
-        { trait_type: "Element", value: "Neon" }
+        { trait_type: "Element", value: "Cyber" }
       ]
     },
     {
