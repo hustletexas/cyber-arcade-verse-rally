@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { LiveTournaments } from '@/components/LiveTournaments';
 import { TriviaGame } from '@/components/TriviaGame';
 import { CommunityHub } from '@/components/CommunityHub';
-import { LiveStreaming } from '@/components/LiveStreaming';
 import { Marketplace } from '@/components/Marketplace';
 import { CCTRStaking } from '@/components/CCTRStaking';
 import { DexSwap } from '@/components/dex/DexSwap';
@@ -30,7 +29,7 @@ export default function Index() {
       case 'community':
         return <CommunityHub />;
       case 'streaming':
-        return <LiveStreaming />;
+        return <div className="text-center p-8"><h2 className="text-2xl font-bold text-neon-cyan">Live Streaming Coming Soon!</h2></div>;
       case 'marketplace':
         return <Marketplace />;
       case 'staking':
