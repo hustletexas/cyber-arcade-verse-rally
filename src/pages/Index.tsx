@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { TopBar } from '@/components/TopBar';
 import { TournamentSection } from '@/components/TournamentSection';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
+import { CommunityMarketplace } from '@/components/CommunityMarketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { RaffleSection } from '@/components/RaffleSection';
@@ -114,6 +116,11 @@ const Index = () => {
           {/* Community Hub Section */}
           <section>
             <CommunityHub />
+          </section>
+
+          {/* Community Marketplace Section - Added new P2P marketplace */}
+          <section>
+            <CommunityMarketplace />
           </section>
 
           {/* Merchandise Store Section */}
