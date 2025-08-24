@@ -460,12 +460,6 @@ export const TournamentSection = () => {
     }
   ];
 
-  // Get all active tournaments from all categories
-  const getActiveTournaments = () => {
-    const allTournaments = [...cryptoTournaments, ...classicTournaments, ...fightingTournaments, ...shooterTournaments];
-    return allTournaments.filter(tournament => tournament.status === 'live');
-  };
-
   const voteForTournament = (tournamentId: string) => {
     if (!user && !isWalletConnected) {
       toast({
@@ -676,22 +670,6 @@ export const TournamentSection = () => {
 
       {activeView !== 'admin' && (
         <>
-          <Card className="arcade-frame">
-            <CardHeader>
-              <CardTitle className="font-display text-xl text-neon-cyan flex items-center gap-3">
-                ⚡ ACTIVE TOURNAMENTS
-                <Badge className="bg-neon-red text-white animate-pulse">ACTIVE</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {getActiveTournaments().map((tournament) => (
-                  <TournamentCard key={tournament.id} tournament={tournament} />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Crypto Games Tab */}
           {activeView === 'crypto' && (
             <Card className="arcade-frame">
