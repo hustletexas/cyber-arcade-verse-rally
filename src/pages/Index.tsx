@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LiveTournaments } from '@/components/LiveTournaments';
@@ -6,7 +7,7 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { LiveStreaming } from '@/components/LiveStreaming';
 import { Marketplace } from '@/components/Marketplace';
 import { CCTRStaking } from '@/components/CCTRStaking';
-import { DexSwap } from '@/components/DexSwap';
+import { DexSwap } from '@/components/dex/DexSwap';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
