@@ -98,7 +98,7 @@ export const TopBar = () => {
   return (
     <>
       <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-3 py-2">
+        <div className="container mx-auto px-3 py-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Button 
@@ -117,7 +117,7 @@ export const TopBar = () => {
             </div>
 
             <div className="flex items-center">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
                 <img 
                   src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
                   alt="Cyber City Arcade Logo" 
@@ -131,16 +131,16 @@ export const TopBar = () => {
                 <div className="text-neon-cyan text-sm">Loading...</div>
               ) : (
                 user && (
-                  <Card className="arcade-frame px-3 py-1">
+                  <Card className="arcade-frame px-2 py-1">
                     <div className="flex items-center gap-2">
-                      <Avatar className="w-6 h-6 border border-neon-cyan">
+                      <Avatar className="w-5 h-5 border border-neon-cyan">
                         <AvatarImage src={user.user_metadata?.avatar_url} />
                         <AvatarFallback className="bg-neon-purple text-black font-bold text-xs">
                           {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-xs">
-                        <p className="font-bold text-neon-cyan">
+                        <p className="font-bold text-neon-cyan text-xs">
                           {user.user_metadata?.username || user.email?.split('@')[0]}
                         </p>
                         {primaryWallet && (
@@ -153,9 +153,9 @@ export const TopBar = () => {
                         onClick={handleSignOut}
                         variant="outline" 
                         size="sm"
-                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-xs px-2 py-1 h-6"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-xs px-2 py-1 h-5"
                       >
-                        <LogOut size={12} />
+                        <LogOut size={10} />
                         Logout
                       </Button>
                     </div>
@@ -180,7 +180,7 @@ export const TopBar = () => {
                       <Button 
                         variant="outline"
                         size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[140px] h-8"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[140px] h-7"
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-1">
