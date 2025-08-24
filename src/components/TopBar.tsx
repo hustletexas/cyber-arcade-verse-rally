@@ -98,18 +98,18 @@ export const TopBar = () => {
   return (
     <>
       <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-3 py-1">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-2 py-0.5">
+          <div className="flex items-center justify-between h-8">
             <div className="flex items-center">
               <Button 
                 onClick={() => setIsOpen(true)}
-                className="cyber-button flex items-center gap-2 relative"
+                className="cyber-button flex items-center gap-1 relative text-xs h-6 px-2"
                 size="sm"
               >
-                <ShoppingCart size={14} />
+                <ShoppingCart size={10} />
                 CART
                 {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-neon-pink text-black min-w-[16px] h-4 rounded-full flex items-center justify-center text-xs">
+                  <Badge className="absolute -top-1 -right-1 bg-neon-pink text-black min-w-[12px] h-3 rounded-full flex items-center justify-center text-xs">
                     {getTotalItems()}
                   </Badge>
                 )}
@@ -117,7 +117,7 @@ export const TopBar = () => {
             </div>
 
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
                 <img 
                   src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
                   alt="Cyber City Arcade Logo" 
@@ -126,25 +126,25 @@ export const TopBar = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {loading ? (
-                <div className="text-neon-cyan text-sm">Loading...</div>
+                <div className="text-neon-cyan text-xs">Loading...</div>
               ) : (
                 user && (
-                  <Card className="arcade-frame px-2 py-1">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-5 h-5 border border-neon-cyan">
+                  <Card className="arcade-frame px-1 py-0.5">
+                    <div className="flex items-center gap-1">
+                      <Avatar className="w-4 h-4 border border-neon-cyan">
                         <AvatarImage src={user.user_metadata?.avatar_url} />
                         <AvatarFallback className="bg-neon-purple text-black font-bold text-xs">
                           {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-xs">
-                        <p className="font-bold text-neon-cyan text-xs">
+                        <p className="font-bold text-neon-cyan text-xs leading-none">
                           {user.user_metadata?.username || user.email?.split('@')[0]}
                         </p>
                         {primaryWallet && (
-                          <p className="text-neon-green text-xs">
+                          <p className="text-neon-green text-xs leading-none">
                             {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 4)}...
                           </p>
                         )}
@@ -153,9 +153,9 @@ export const TopBar = () => {
                         onClick={handleSignOut}
                         variant="outline" 
                         size="sm"
-                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-xs px-2 py-1 h-5"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-xs px-1 py-0.5 h-4"
                       >
-                        <LogOut size={10} />
+                        <LogOut size={8} />
                         Logout
                       </Button>
                     </div>
@@ -164,14 +164,14 @@ export const TopBar = () => {
               )}
 
               {/* Multi-Wallet Connection */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 {!isWalletConnected ? (
                   <Button 
                     onClick={handleManageWallets}
-                    className="cyber-button flex items-center gap-2"
+                    className="cyber-button flex items-center gap-1 text-xs h-6 px-2"
                     size="sm"
                   >
-                    <Settings size={14} />
+                    <Settings size={10} />
                     WALLETS
                   </Button>
                 ) : (
@@ -180,7 +180,7 @@ export const TopBar = () => {
                       <Button 
                         variant="outline"
                         size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[140px] h-7"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[120px] h-6"
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-1">
@@ -188,10 +188,10 @@ export const TopBar = () => {
                             <span className="text-xs">{primaryWallet?.address.slice(0, 4)}...</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs">
-                            <Coins size={10} />
+                            <Coins size={8} />
                             <span>{balance.cctr_balance.toLocaleString()}</span>
                           </div>
-                          <ChevronDown size={12} />
+                          <ChevronDown size={10} />
                         </div>
                       </Button>
                     </DropdownMenuTrigger>
