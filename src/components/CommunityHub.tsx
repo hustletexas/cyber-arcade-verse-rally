@@ -140,8 +140,7 @@ export const CommunityHub = () => {
         message: currentMessage.trim(),
         timestamp: new Date(),
         isGuest: !user,
-        walletAddress: primaryWallet?.address,
-        type: 'text'
+        walletAddress: primaryWallet?.address
       };
       setMessages(prev => [...prev, newMessage]);
       setCurrentMessage('');
@@ -253,7 +252,7 @@ export const CommunityHub = () => {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const isAuthenticated = Boolean(user) || isWalletConnected;
+  const isAuthenticated = user || isWalletConnected;
 
   return (
     <section className="w-full">
