@@ -9,14 +9,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useToast } from '@/hooks/use-toast';
+import { VoiceChat } from './VoiceChat';
+import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 
 interface Message {
   id: string;
   username: string;
-  message: string;
+  message?: string;
   timestamp: Date;
   isGuest: boolean;
   walletAddress?: string;
+  type: 'text' | 'voice';
+  audioBlob?: Blob;
+  duration?: number;
 }
 
 interface Announcement {
@@ -39,7 +44,8 @@ export const CommunityHub = () => {
       username: 'CyberAdmin',
       message: 'Welcome to Cyber City Community HQ! 🎮',
       timestamp: new Date(Date.now() - 300000),
-      isGuest: false
+      isGuest: false,
+      type: 'text'
     },
     {
       id: '2',
@@ -47,7 +53,8 @@ export const CommunityHub = () => {
       message: 'Ready for tonight\'s tournament! 🏆',
       timestamp: new Date(Date.now() - 120000),
       isGuest: true,
-      walletAddress: 'ABC123...XYZ789'
+      walletAddress: 'ABC123...XYZ789',
+      type: 'text'
     }
   ]);
 
@@ -139,6 +146,25 @@ export const CommunityHub = () => {
       setCurrentMessage('');
       
       // Play arcade beep sound (optional)
+      playArcadeBeep();
+    }
+  };
+
+  const handleVoiceMessage = (audioBlob: Blob, duration: number) => {
+    if (user || isWalletConnected) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        username: getDisplayName(),
+        timestamp: new Date(),
+        isGuest: !user,
+        walletAddress: primaryWallet?.address,
+        type: 'voice',
+        audioBlob,
+        duration
+      };
+      setMessages(prev => [...prev, newMessage]);
+      
+      // Play arcade beep sound
       playArcadeBeep();
     }
   };
@@ -341,7 +367,7 @@ export const CommunityHub = () => {
                     className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
                     style={{ boxShadow: '0 0 5px #00ffcc15' }}
                   >
-                    <div className="flex items-start justify-between mb-1">
+                    <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
                           {message.username}
@@ -357,9 +383,20 @@ export const CommunityHub = () => {
                         {formatTime(message.timestamp)}
                       </span>
                     </div>
-                    <p className="text-gray-200 text-sm">
-                      {message.message}
-                    </p>
+                    
+                    {/* Message Content */}
+                    {message.type === 'text' ? (
+                      <p className="text-gray-200 text-sm">
+                        {message.message}
+                      </p>
+                    ) : (
+                      <VoiceMessagePlayer
+                        audioBlob={message.audioBlob!}
+                        duration={message.duration!}
+                        username={message.username}
+                        isOwnMessage={message.username === getDisplayName()}
+                      />
+                    )}
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
@@ -417,27 +454,36 @@ export const CommunityHub = () => {
                 </Button>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Type your message..."
-                  value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  className="flex-1 bg-black/50 border-neon-pink text-white placeholder-gray-400"
+              <div className="space-y-2">
+                {/* Voice Chat Component */}
+                <VoiceChat 
+                  onVoiceMessage={handleVoiceMessage}
+                  isConnected={isAuthenticated}
                 />
-                <Button 
-                  onClick={handleSendMessage}
-                  disabled={!currentMessage.trim()}
-                  style={{
-                    background: currentMessage.trim() 
-                      ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
-                      : 'gray',
-                    border: '1px solid #ff00ff',
-                    color: 'white'
-                  }}
-                >
-                  <Send size={16} />
-                </Button>
+                
+                {/* Text Input */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Type your message..."
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    className="flex-1 bg-black/50 border-neon-pink text-white placeholder-gray-400"
+                  />
+                  <Button 
+                    onClick={handleSendMessage}
+                    disabled={!currentMessage.trim()}
+                    style={{
+                      background: currentMessage.trim() 
+                        ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
+                        : 'gray',
+                      border: '1px solid #ff00ff',
+                      color: 'white'
+                    }}
+                  >
+                    <Send size={16} />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
