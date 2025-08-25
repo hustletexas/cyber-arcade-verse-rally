@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
+import { TournamentSection } from '@/components/TournamentSection';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { CommunityMarketplace } from '@/components/CommunityMarketplace';
@@ -135,7 +136,12 @@ const Index = () => {
             <Marketplace />
           </section>
 
-          {/* Trivia Section */}
+          {/* Tournaments Section - Now includes Live Tournaments and Statistics */}
+          <section data-section="solana-portal">
+            <TournamentSection />
+          </section>
+
+          {/* Trivia Section - Added under Tournament Section */}
           <section>
             <TriviaGame />
           </section>
