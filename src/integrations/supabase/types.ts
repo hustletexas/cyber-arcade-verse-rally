@@ -14,60 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      nft_creation_orders: {
-        Row: {
-          artwork_url: string | null
-          cctr_cost: number
-          created_at: string
-          creator_name: string
-          description: string | null
-          id: string
-          metadata: Json | null
-          mint_address: string | null
-          music_url: string | null
-          nft_type: string
-          status: string
-          title: string
-          transaction_hash: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          artwork_url?: string | null
-          cctr_cost?: number
-          created_at?: string
-          creator_name: string
-          description?: string | null
-          id?: string
-          metadata?: Json | null
-          mint_address?: string | null
-          music_url?: string | null
-          nft_type?: string
-          status?: string
-          title: string
-          transaction_hash?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          artwork_url?: string | null
-          cctr_cost?: number
-          created_at?: string
-          creator_name?: string
-          description?: string | null
-          id?: string
-          metadata?: Json | null
-          mint_address?: string | null
-          music_url?: string | null
-          nft_type?: string
-          status?: string
-          title?: string
-          transaction_hash?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       nft_mints: {
         Row: {
           created_at: string
@@ -465,7 +411,6 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
-          nft_order_id: string | null
           tournament_id: string | null
           transaction_type: string
           user_id: string | null
@@ -475,7 +420,6 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
-          nft_order_id?: string | null
           tournament_id?: string | null
           transaction_type: string
           user_id?: string | null
@@ -485,19 +429,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
-          nft_order_id?: string | null
           tournament_id?: string | null
           transaction_type?: string
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "token_transactions_nft_order_id_fkey"
-            columns: ["nft_order_id"]
-            isOneToOne: false
-            referencedRelation: "nft_creation_orders"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "token_transactions_tournament_id_fkey"
             columns: ["tournament_id"]
