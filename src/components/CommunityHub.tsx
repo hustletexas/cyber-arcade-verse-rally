@@ -1,88 +1,128 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { VoiceChat } from '@/components/VoiceChat';
-import { VoiceMessagePlayer } from '@/components/VoiceMessagePlayer';
-import { 
-  MessageSquare, 
-  Send, 
-  Users, 
-  Trophy, 
-  Star,
-  Bot,
-  Music,
-  Palette,
-  Sparkles,
-  Gamepad2,
-  Brain,
-  Headphones,
-  Brush
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Send, Users, Zap, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-
-interface User {
-  id: string;
-  username: string;
-  walletAddress?: string;
-  isGuest: boolean;
-}
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { useToast } from '@/hooks/use-toast';
+import { VoiceChat } from './VoiceChat';
+import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 
 interface Message {
   id: string;
   username: string;
   message?: string;
-  audioBlob?: Blob;
-  audioDuration?: number;
   timestamp: Date;
   isGuest: boolean;
   walletAddress?: string;
   type: 'text' | 'voice';
+  audioBlob?: Blob;
+  duration?: number;
 }
 
-interface ArtRequest {
+interface Announcement {
   id: string;
-  username: string;
-  prompt: string;
-  style: string;
+  icon: string;
+  title: string;
+  content: string;
   timestamp: Date;
-  status: 'pending' | 'generating' | 'completed';
-  imageUrl?: string;
-}
-
-interface MusicRequest {
-  id: string;
-  username: string;
-  prompt: string;
-  genre: string;
-  timestamp: Date;
-  status: 'pending' | 'generating' | 'completed';
-  audioUrl?: string;
 }
 
 export const CommunityHub = () => {
-  const { toast } = useToast();
   const { user, loading } = useAuth();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
-  const [artRequests, setArtRequests] = useState<ArtRequest[]>([]);
-  const [musicRequests, setMusicRequests] = useState<MusicRequest[]>([]);
-  const [artPrompt, setArtPrompt] = useState('');
-  const [artStyle, setArtStyle] = useState('cyberpunk');
-  const [musicPrompt, setMusicPrompt] = useState('');
-  const [musicGenre, setMusicGenre] = useState('electronic');
-  const [coachQuery, setCoachQuery] = useState('');
-  const [coachResponse, setCoachResponse] = useState('');
+  const { primaryWallet, isWalletConnected, connectWallet, getWalletIcon } = useMultiWallet();
+  const { createOrLoginWithWallet } = useWalletAuth();
+  const { toast } = useToast();
+  
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      username: 'CyberAdmin',
+      message: 'Welcome to Cyber City Community HQ! 🎮',
+      timestamp: new Date(Date.now() - 300000),
+      isGuest: false,
+      type: 'text'
+    },
+    {
+      id: '2',
+      username: 'Player001',
+      message: 'Ready for tonight\'s tournament! 🏆',
+      timestamp: new Date(Date.now() - 120000),
+      isGuest: true,
+      walletAddress: 'ABC123...XYZ789',
+      type: 'text'
+    }
+  ]);
+
+  const [announcements] = useState<Announcement[]>([
+    {
+      id: '1',
+      icon: '📢',
+      title: 'Tournament Rules Updated',
+      content: 'New scoring system implemented for fair gameplay. Check the latest rules in our tournament section.',
+      timestamp: new Date(Date.now() - 86400000)
+    },
+    {
+      id: '2',
+      icon: '🏆',
+      title: 'Weekly Championship',
+      content: 'Join our weekly championship every Friday at 8PM EST. Prize pool: 1000 $CCTR tokens!',
+      timestamp: new Date(Date.now() - 172800000)
+    },
+    {
+      id: '3',
+      icon: '🎁',
+      title: 'How to Earn $CCTR',
+      content: 'Participate in tournaments, complete daily challenges, trade NFTs, and engage with the community to earn rewards.',
+      timestamp: new Date(Date.now() - 259200000)
+    }
+  ]);
+
+  const [currentMessage, setCurrentMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get username from authenticated user or wallet
+  const getDisplayName = () => {
+    if (user?.user_metadata?.username) return user.user_metadata.username;
+    if (user?.email) return user.email.split('@')[0];
+    if (primaryWallet) return `Wallet_${primaryWallet.address.slice(0, 6)}`;
+    return 'Anonymous';
+  };
+
+  // Connect Solana wallet function
+  const connectSolanaWallet = async () => {
+    try {
+      if (window.solana && window.solana.isPhantom) {
+        const response = await window.solana.connect();
+        if (response?.publicKey) {
+          await connectWallet('phantom', response.publicKey.toString());
+          await createOrLoginWithWallet(response.publicKey.toString());
+          toast({
+            title: "Wallet Connected!",
+            description: "You can now participate in the chat",
+          });
+        }
+      } else {
+        toast({
+          title: "Phantom Wallet Required",
+          description: "Please install Phantom wallet to connect",
+          variant: "destructive",
+        });
+        window.open('https://phantom.app/', '_blank');
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -92,482 +132,364 @@ export const CommunityHub = () => {
     scrollToBottom();
   }, [messages]);
 
-  const connectToChat = () => {
-    if (!user && !loading) {
-      // Guest user
-      const guestUser: User = {
-        id: `guest_${Date.now()}`,
-        username: `Guest${Math.floor(Math.random() * 1000)}`,
-        isGuest: true
+  const handleSendMessage = () => {
+    if (currentMessage.trim() && (user || isWalletConnected)) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        username: getDisplayName(),
+        message: currentMessage.trim(),
+        timestamp: new Date(),
+        isGuest: !user,
+        walletAddress: primaryWallet?.address,
+        type: 'text'
       };
-      setCurrentUser(guestUser);
-    } else if (user) {
-      // Authenticated user
-      const authenticatedUser: User = {
-        id: user.id,
-        username: user.email?.split('@')[0] || 'Player',
-        walletAddress: user.user_metadata?.wallet_address,
-        isGuest: false
-      };
-      setCurrentUser(authenticatedUser);
+      setMessages(prev => [...prev, newMessage]);
+      setCurrentMessage('');
+      
+      // Play arcade beep sound (optional)
+      playArcadeBeep();
     }
-    
-    setIsConnected(true);
-    toast({
-      title: "Connected to Community Hub! 🌟",
-      description: "Welcome to the cyber city community",
-    });
-
-    // Add welcome message
-    const welcomeMessage: Message = {
-      id: `welcome_${Date.now()}`,
-      username: 'System',
-      message: `Welcome ${currentUser?.username || 'Player'}! 🎮 Share your gaming experiences!`,
-      timestamp: new Date(),
-      isGuest: false,
-      walletAddress: '',
-      type: 'text'
-    };
-    setMessages([welcomeMessage]);
-  };
-
-  const sendMessage = () => {
-    if (!newMessage.trim() || !currentUser) return;
-
-    const message: Message = {
-      id: `msg_${Date.now()}`,
-      username: currentUser.username,
-      message: newMessage,
-      timestamp: new Date(),
-      isGuest: currentUser.isGuest,
-      walletAddress: currentUser.walletAddress || '',
-      type: 'text'
-    };
-
-    setMessages(prev => [...prev, message]);
-    setNewMessage('');
-
-    toast({
-      title: "Message Sent! 📤",
-      description: "Your message has been shared with the community",
-    });
   };
 
   const handleVoiceMessage = (audioBlob: Blob, duration: number) => {
-    if (!currentUser) return;
-
-    const voiceMessage: Message = {
-      id: `voice_${Date.now()}`,
-      username: currentUser.username,
-      audioBlob,
-      audioDuration: duration,
-      timestamp: new Date(),
-      isGuest: currentUser.isGuest,
-      walletAddress: currentUser.walletAddress || '',
-      type: 'voice'
-    };
-
-    setMessages(prev => [...prev, voiceMessage]);
+    if (user || isWalletConnected) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        username: getDisplayName(),
+        timestamp: new Date(),
+        isGuest: !user,
+        walletAddress: primaryWallet?.address,
+        type: 'voice',
+        audioBlob,
+        duration
+      };
+      setMessages(prev => [...prev, newMessage]);
+      
+      // Play arcade beep sound
+      playArcadeBeep();
+    }
   };
 
-  const requestAIArt = () => {
-    if (!artPrompt.trim() || !currentUser) return;
-
-    const request: ArtRequest = {
-      id: `art_${Date.now()}`,
-      username: currentUser.username,
-      prompt: artPrompt,
-      style: artStyle,
-      timestamp: new Date(),
-      status: 'generating'
-    };
-
-    setArtRequests(prev => [...prev, request]);
-    setArtPrompt('');
-
-    // Simulate AI art generation
-    setTimeout(() => {
-      setArtRequests(prev => 
-        prev.map(req => 
-          req.id === request.id 
-            ? { ...req, status: 'completed', imageUrl: '/placeholder.svg' }
-            : req
-        )
-      );
-    }, 3000);
-
-    toast({
-      title: "AI Art Request Submitted! 🎨",
-      description: "Your NFT artwork is being generated...",
-    });
+  const handleDiscordConnect = () => {
+    console.log('Discord button clicked!'); // Debug log
+    
+    try {
+      console.log('Opening Discord link...'); // Debug log
+      
+      // Show connecting toast
+      toast({
+        title: "Opening Discord...",
+        description: "Taking you to our Discord server!",
+      });
+      
+      // Try to open Discord link - use a more reliable approach
+      const discordUrl = 'https://discord.gg/Y7yUUssH';
+      
+      // Create a temporary link element and click it (more reliable than window.open)
+      const link = document.createElement('a');
+      link.href = discordUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      
+      // Append to body, click, then remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Provide success feedback after a short delay
+      setTimeout(() => {
+        toast({
+          title: "Discord Link Opened! 🎮",
+          description: "Welcome to the Cyber City Community!",
+        });
+      }, 500);
+      
+    } catch (error) {
+      console.error('Discord connection error:', error);
+      
+      // Fallback: copy link to clipboard
+      try {
+        navigator.clipboard.writeText('https://discord.gg/Y7yUUssH');
+        toast({
+          title: "Link Copied to Clipboard! 📋",
+          description: "Paste this link in your browser: discord.gg/Y7yUUssH",
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "Manual Link Required",
+          description: "Please visit: discord.gg/Y7yUUssH",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
-  const requestAIMusic = () => {
-    if (!musicPrompt.trim() || !currentUser) return;
-
-    const request: MusicRequest = {
-      id: `music_${Date.now()}`,
-      username: currentUser.username,
-      prompt: musicPrompt,
-      genre: musicGenre,
-      timestamp: new Date(),
-      status: 'generating'
-    };
-
-    setMusicRequests(prev => [...prev, request]);
-    setMusicPrompt('');
-
-    // Simulate AI music generation
-    setTimeout(() => {
-      setMusicRequests(prev => 
-        prev.map(req => 
-          req.id === request.id 
-            ? { ...req, status: 'completed', audioUrl: '#' }
-            : req
-        )
-      );
-    }, 5000);
-
-    toast({
-      title: "AI Music Request Submitted! 🎵",
-      description: "Your NFT music is being generated...",
-    });
+  const playArcadeBeep = () => {
+    // Create a simple beep sound using Web Audio API
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+      console.log('Audio not supported');
+    }
   };
 
-  const askGamingCoach = () => {
-    if (!coachQuery.trim()) return;
-
-    // Simulate AI coach response
-    const responses = [
-      "Focus on your positioning and map awareness. Always check your minimap!",
-      "Practice your aim daily with aim trainers. Consistency is key!",
-      "Learn from your mistakes by reviewing replays of your games.",
-      "Master one character/weapon at a time before moving to others.",
-      "Communication is crucial in team games - use your mic effectively!",
-      "Take breaks to avoid fatigue. Fresh mind = better performance!",
-      "Study pro players and learn their strategies and techniques.",
-      "Stay positive and maintain good mental health for peak performance."
-    ];
-
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-    setCoachResponse(`🎮 Gaming Coach: ${randomResponse}`);
-    setCoachQuery('');
-
-    toast({
-      title: "Coach Response Ready! 🏆",
-      description: "Your AI gaming coach has provided feedback",
-    });
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+
+  const isAuthenticated = Boolean(user) || isWalletConnected;
 
   return (
-    <Card className="border-neon-purple/30 bg-black/90 backdrop-blur-sm">
-      <CardHeader>
-        <CardTitle className="text-center text-neon-cyan flex items-center justify-center gap-2">
-          <Users className="w-6 h-6" />
-          Community Hub
-          <Sparkles className="w-6 h-6" />
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-black/50">
-            <TabsTrigger value="chat" className="text-neon-cyan">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Chat
-            </TabsTrigger>
-            <TabsTrigger value="coach" className="text-neon-purple">
-              <Brain className="w-4 h-4 mr-2" />
-              AI Coach
-            </TabsTrigger>
-            <TabsTrigger value="music" className="text-neon-green">
-              <Headphones className="w-4 h-4 mr-2" />
-              NFT Music
-            </TabsTrigger>
-            <TabsTrigger value="art" className="text-neon-pink">
-              <Brush className="w-4 h-4 mr-2" />
-              NFT Art
-            </TabsTrigger>
-          </TabsList>
+    <section className="w-full">
+      <div className="text-center mb-8">
+        <h2 
+          className="text-xl font-bold text-neon-pink"
+          style={{
+            fontFamily: 'Orbitron, monospace',
+            textShadow: '0 0 10px #ff00ff, 0 0 20px #ff00ff',
+            filter: 'drop-shadow(0 0 8px #ff00ff)'
+          }}
+        >
+          🕹️ CYBER CITY COMMUNITY HQ
+        </h2>
+        
+        {/* Authentication Status Badge */}
+        {isAuthenticated && (
+          <div className="mt-4 flex justify-center">
+            {user ? (
+              <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan">
+                👤 Logged in as {getDisplayName()}
+              </Badge>
+            ) : primaryWallet ? (
+              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+                {getWalletIcon(primaryWallet.type)} Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
+              </Badge>
+            ) : null}
+          </div>
+        )}
+      </div>
 
-          {/* Live Chat Tab */}
-          <TabsContent value="chat" className="space-y-4">
-            {!isConnected ? (
-              <div className="text-center space-y-4">
-                <div className="p-6 border border-neon-cyan/30 rounded-lg bg-neon-cyan/5">
-                  <Users className="w-12 h-12 mx-auto text-neon-cyan mb-4" />
-                  <h3 className="text-xl font-bold text-neon-cyan mb-2">Join the Community</h3>
-                  <p className="text-gray-400 mb-4">
-                    Connect with gamers worldwide • Share strategies • Voice chat available
-                  </p>
-                  <Button 
-                    onClick={connectToChat}
-                    className="cyber-button"
+      <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+        {/* LEFT PANEL: Community Info */}
+        <Card 
+          className="overflow-hidden"
+          style={{ 
+            background: '#0f0f0f',
+            border: '2px solid #00ffcc',
+            borderRadius: '12px',
+            boxShadow: `
+              0 0 20px #00ffcc30,
+              0 0 40px #ff00ff20,
+              inset 0 0 20px #00ffcc05
+            `
+          }}
+        >
+          <CardHeader>
+            <CardTitle className="text-neon-cyan font-display text-xl md:text-2xl flex items-center gap-2">
+              📢 COMMUNITY UPDATES
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-96 pr-4">
+              <div className="space-y-4">
+                {announcements.map((announcement) => (
+                  <div 
+                    key={announcement.id}
+                    className="p-4 rounded-lg border border-neon-purple/30 bg-black/30 hover:bg-black/50 transition-all duration-300"
+                    style={{ boxShadow: '0 0 10px #bf00ff20' }}
                   >
-                    🚀 CONNECT TO CHAT
-                  </Button>
-                </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">{announcement.icon}</span>
+                      <div className="flex-1">
+                        <h3 className="text-neon-pink font-bold text-lg mb-2">
+                          {announcement.title}
+                        </h3>
+                        <p className="text-gray-300 text-sm mb-3 leading-relaxed">
+                          {announcement.content}
+                        </p>
+                        <span className="text-neon-cyan text-xs">
+                          {formatDate(announcement.timestamp)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        {/* RIGHT PANEL: Live Chat */}
+        <Card 
+          className="overflow-hidden"
+          style={{ 
+            background: '#0f0f0f',
+            border: '2px solid #ff00ff',
+            borderRadius: '12px',
+            boxShadow: `
+              0 0 20px #ff00ff30,
+              0 0 40px #00ffcc20,
+              inset 0 0 20px #ff00ff05
+            `
+          }}
+        >
+          <CardHeader>
+            <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
+              💬 LIVE CHAT
+              <div className="flex items-center gap-1 text-sm text-neon-green">
+                <Users size={16} />
+                <span>{messages.length > 0 ? Math.floor(Math.random() * 50) + 10 : 0}</span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col h-96">
+            {/* Chat Messages */}
+            <ScrollArea className="flex-1 mb-4 pr-2">
+              <div className="space-y-3">
+                {messages.map((message) => (
+                  <div 
+                    key={message.id}
+                    className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
+                    style={{ boxShadow: '0 0 5px #00ffcc15' }}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
+                          {message.username}
+                          {!message.isGuest && <span className="text-neon-cyan ml-1">👑</span>}
+                        </span>
+                        {message.walletAddress && (
+                          <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs">
+                            💰 Wallet
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-neon-purple text-xs">
+                        {formatTime(message.timestamp)}
+                      </span>
+                    </div>
+                    
+                    {/* Message Content */}
+                    {message.type === 'text' ? (
+                      <p className="text-gray-200 text-sm">
+                        {message.message}
+                      </p>
+                    ) : (
+                      <VoiceMessagePlayer
+                        audioBlob={message.audioBlob!}
+                        duration={message.duration!}
+                        username={message.username}
+                        isOwnMessage={message.username === getDisplayName()}
+                      />
+                    )}
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Chat Input or Connection Options */}
+            {!isAuthenticated ? (
+              <div className="space-y-3">
+                {/* Discord Connect Button */}
+                <Button 
+                  onClick={handleDiscordConnect}
+                  className="w-full hover:scale-105 transition-all duration-200 relative group"
+                  style={{
+                    background: 'linear-gradient(45deg, #5865F2, #4752C4)',
+                    border: '1px solid #5865F2',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    boxShadow: '0 0 15px rgba(88, 101, 242, 0.3)'
+                  }}
+                >
+                  <MessageCircle size={16} className="mr-2" />
+                  CONNECT TO DISCORD
+                  <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded"></span>
+                </Button>
+
+                {/* Wallet Connect Button */}
+                <Button 
+                  onClick={connectSolanaWallet}
+                  className="w-full hover:scale-105 transition-all duration-200"
+                  style={{
+                    background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                    border: '1px solid #00ffcc',
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}
+                  disabled={loading}
+                >
+                  💰 CONNECT WALLET TO CHAT
+                </Button>
+                
+                <Button 
+                  onClick={() => window.location.href = '/auth'}
+                  className="w-full"
+                  style={{
+                    background: 'linear-gradient(45deg, #ff00ff, #aa0088)',
+                    border: '1px solid #ff00ff',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                  disabled={loading}
+                >
+                  <Zap size={16} className="mr-2" />
+                  {loading ? 'LOADING...' : 'OR LOGIN WITH EMAIL'}
+                </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                {/* Chat Messages */}
-                <ScrollArea className="h-96 p-4 border border-neon-purple/30 rounded-lg bg-black/40">
-                  <div className="space-y-3">
-                    {messages.map((msg) => (
-                      <div 
-                        key={msg.id} 
-                        className={`flex ${msg.username === currentUser?.username ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div 
-                          className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
-                            msg.username === currentUser?.username
-                              ? 'bg-neon-pink/20 border border-neon-pink/30'
-                              : 'bg-neon-cyan/20 border border-neon-cyan/30'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-xs font-semibold ${
-                              msg.isGuest ? 'text-yellow-400' : 'text-neon-green'
-                            }`}>
-                              {msg.username}
-                            </span>
-                            {!msg.isGuest && (
-                              <Badge className="bg-neon-green/20 text-neon-green text-xs">
-                                Verified
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          {msg.type === 'voice' && msg.audioBlob ? (
-                            <VoiceMessagePlayer
-                              audioBlob={msg.audioBlob}
-                              duration={msg.audioDuration || 0}
-                              username={msg.username}
-                              isOwnMessage={msg.username === currentUser?.username}
-                            />
-                          ) : (
-                            <p className="text-white text-sm">{msg.message}</p>
-                          )}
-                          
-                          <span className="text-xs text-gray-500">
-                            {msg.timestamp.toLocaleTimeString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
-
-                {/* Message Input */}
-                <div className="flex gap-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="flex-1 bg-black/50 border-neon-purple/30"
-                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  />
-                  <Button onClick={sendMessage} className="cyber-button px-3">
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Voice Chat */}
+              <div className="space-y-2">
+                {/* Voice Chat Component */}
                 <VoiceChat 
                   onVoiceMessage={handleVoiceMessage}
-                  isConnected={isConnected}
+                  isConnected={isAuthenticated}
                 />
+                
+                {/* Text Input */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Type your message..."
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    className="flex-1 bg-black/50 border-neon-pink text-white placeholder-gray-400"
+                  />
+                  <Button 
+                    onClick={handleSendMessage}
+                    disabled={!currentMessage.trim()}
+                    style={{
+                      background: currentMessage.trim() 
+                        ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
+                        : 'gray',
+                      border: '1px solid #ff00ff',
+                      color: 'white'
+                    }}
+                  >
+                    <Send size={16} />
+                  </Button>
+                </div>
               </div>
             )}
-          </TabsContent>
-
-          {/* AI Gaming Coach Tab */}
-          <TabsContent value="coach" className="space-y-4">
-            <Card className="border-neon-purple/30 bg-black/50">
-              <CardHeader>
-                <CardTitle className="text-neon-purple flex items-center gap-2">
-                  <Brain className="w-5 h-5" />
-                  AI Gaming Coach & Assistant
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 border border-neon-green/30 rounded-lg bg-neon-green/5">
-                  <h4 className="text-neon-green font-semibold mb-2 flex items-center gap-2">
-                    <Gamepad2 className="w-4 h-4" />
-                    Ask Your Coach
-                  </h4>
-                  <p className="text-gray-400 text-sm mb-3">
-                    Get personalized gaming advice, strategy tips, and performance insights
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      value={coachQuery}
-                      onChange={(e) => setCoachQuery(e.target.value)}
-                      placeholder="Ask about strategies, techniques, or gameplay..."
-                      className="flex-1 bg-black/50 border-neon-green/30"
-                    />
-                    <Button onClick={askGamingCoach} className="cyber-button">
-                      <Bot className="w-4 h-4 mr-2" />
-                      Ask
-                    </Button>
-                  </div>
-                </div>
-
-                {coachResponse && (
-                  <div className="p-4 border border-neon-cyan/30 rounded-lg bg-neon-cyan/5">
-                    <h4 className="text-neon-cyan font-semibold mb-2">Coach Response:</h4>
-                    <p className="text-white">{coachResponse}</p>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 border border-neon-purple/30 rounded-lg bg-neon-purple/5 text-center">
-                    <Trophy className="w-8 h-8 mx-auto text-neon-purple mb-2" />
-                    <h5 className="text-neon-purple font-semibold">Performance Analytics</h5>
-                    <p className="text-xs text-gray-400">Coming Soon</p>
-                  </div>
-                  <div className="p-3 border border-neon-pink/30 rounded-lg bg-neon-pink/5 text-center">
-                    <Star className="w-8 h-8 mx-auto text-neon-pink mb-2" />
-                    <h5 className="text-neon-pink font-semibold">Skill Assessment</h5>
-                    <p className="text-xs text-gray-400">Coming Soon</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* NFT Music Creator Tab */}
-          <TabsContent value="music" className="space-y-4">
-            <Card className="border-neon-green/30 bg-black/50">
-              <CardHeader>
-                <CardTitle className="text-neon-green flex items-center gap-2">
-                  <Music className="w-5 h-5" />
-                  AI Music Creator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <Textarea
-                    value={musicPrompt}
-                    onChange={(e) => setMusicPrompt(e.target.value)}
-                    placeholder="Describe the music you want to create... (e.g., 'Epic battle music with orchestral elements')"
-                    className="bg-black/50 border-neon-green/30"
-                  />
-                  <select
-                    value={musicGenre}
-                    onChange={(e) => setMusicGenre(e.target.value)}
-                    className="w-full p-2 bg-black/50 border border-neon-green/30 rounded text-white"
-                  >
-                    <option value="electronic">Electronic</option>
-                    <option value="orchestral">Orchestral</option>
-                    <option value="synthwave">Synthwave</option>
-                    <option value="ambient">Ambient</option>
-                    <option value="rock">Rock</option>
-                  </select>
-                  <Button onClick={requestAIMusic} className="w-full cyber-button">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Generate NFT Music
-                  </Button>
-                </div>
-
-                <ScrollArea className="h-48">
-                  <div className="space-y-2">
-                    {musicRequests.map((request) => (
-                      <div key={request.id} className="p-3 border border-neon-green/30 rounded-lg bg-neon-green/5">
-                        <div className="flex justify-between items-start mb-2">
-                          <h5 className="text-neon-green font-semibold text-sm">{request.prompt}</h5>
-                          <Badge className={`text-xs ${
-                            request.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                            request.status === 'generating' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-gray-500/20 text-gray-400'
-                          }`}>
-                            {request.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-400">Genre: {request.genre}</p>
-                        {request.status === 'completed' && (
-                          <Button size="sm" className="mt-2 cyber-button text-xs">
-                            Mint as NFT
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* NFT AI Art Creator Tab */}
-          <TabsContent value="art" className="space-y-4">
-            <Card className="border-neon-pink/30 bg-black/50">
-              <CardHeader>
-                <CardTitle className="text-neon-pink flex items-center gap-2">
-                  <Palette className="w-5 h-5" />
-                  AI Art Creator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <Textarea
-                    value={artPrompt}
-                    onChange={(e) => setArtPrompt(e.target.value)}
-                    placeholder="Describe the artwork you want to create... (e.g., 'Cyberpunk warrior in neon city')"
-                    className="bg-black/50 border-neon-pink/30"
-                  />
-                  <select
-                    value={artStyle}
-                    onChange={(e) => setArtStyle(e.target.value)}
-                    className="w-full p-2 bg-black/50 border border-neon-pink/30 rounded text-white"
-                  >
-                    <option value="cyberpunk">Cyberpunk</option>
-                    <option value="anime">Anime</option>
-                    <option value="realistic">Realistic</option>
-                    <option value="abstract">Abstract</option>
-                    <option value="pixel-art">Pixel Art</option>
-                  </select>
-                  <Button onClick={requestAIArt} className="w-full cyber-button">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Generate NFT Artwork
-                  </Button>
-                </div>
-
-                <ScrollArea className="h-48">
-                  <div className="space-y-2">
-                    {artRequests.map((request) => (
-                      <div key={request.id} className="p-3 border border-neon-pink/30 rounded-lg bg-neon-pink/5">
-                        <div className="flex justify-between items-start mb-2">
-                          <h5 className="text-neon-pink font-semibold text-sm">{request.prompt}</h5>
-                          <Badge className={`text-xs ${
-                            request.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                            request.status === 'generating' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-gray-500/20 text-gray-400'
-                          }`}>
-                            {request.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-400">Style: {request.style}</p>
-                        {request.status === 'completed' && request.imageUrl && (
-                          <div className="mt-2 space-y-2">
-                            <img 
-                              src={request.imageUrl} 
-                              alt="Generated art" 
-                              className="w-full h-24 object-cover rounded border border-neon-pink/30"
-                            />
-                            <Button size="sm" className="cyber-button text-xs">
-                              Mint as NFT
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
   );
 };
