@@ -21,6 +21,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useNFTMinting } from '@/hooks/useNFTMinting';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { AIGamingCoach } from '@/components/AIGamingCoach';
 
 const Index = () => {
   const { toast } = useToast();
@@ -61,7 +62,6 @@ const Index = () => {
       </div>
 
       <TopBar />
-
       <main className="container mx-auto px-4 py-8 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-8 md:mb-12">
@@ -117,7 +117,10 @@ const Index = () => {
           <section>
             <CommunityHub />
           </section>
-
+          {/* AI Gaming Coach Section - NEW */}
+          <section>
+            <AIGamingCoach />
+          </section>
           {/* Community Marketplace Section - Added new P2P marketplace */}
           <section>
             <CommunityMarketplace />
@@ -164,7 +167,6 @@ const Index = () => {
           </section>
         </div>
       </main>
-
       {/* Footer */}
       <footer className="border-t border-neon-cyan/30 mt-12 md:mt-20 py-6 md:py-8">
         <div className="container mx-auto px-4">

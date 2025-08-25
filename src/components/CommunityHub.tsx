@@ -140,12 +140,11 @@ export const CommunityHub = () => {
         message: currentMessage.trim(),
         timestamp: new Date(),
         isGuest: !user,
-        walletAddress: primaryWallet?.address
+        walletAddress: primaryWallet?.address,
+        type: 'text',
       };
       setMessages(prev => [...prev, newMessage]);
       setCurrentMessage('');
-      
-      // Play arcade beep sound (optional)
       playArcadeBeep();
     }
   };
@@ -252,7 +251,7 @@ export const CommunityHub = () => {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const isAuthenticated = user || isWalletConnected;
+  const isAuthenticated = !!user || isWalletConnected;
 
   return (
     <section className="w-full">
