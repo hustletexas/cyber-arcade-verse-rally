@@ -5,12 +5,15 @@ skip-lint = false
 
 [programs.localnet]
 voting_dao = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+avatar_metaverse = "AvatarMetaverse11111111111111111111111111111"
 
 [programs.devnet]
 voting_dao = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+avatar_metaverse = "AvatarMetaverse11111111111111111111111111111"
 
 [programs.mainnet]
 voting_dao = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+avatar_metaverse = "AvatarMetaverse11111111111111111111111111111"
 
 [registry]
 url = "https://api.apr.dev"
@@ -25,3 +28,7 @@ test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 [[test.genesis]]
 address = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
 program = "target/deploy/voting_dao.so"
+
+[[test.genesis]]
+address = "AvatarMetaverse11111111111111111111111111111"
+program = "target/deploy/avatar_metaverse.so"
