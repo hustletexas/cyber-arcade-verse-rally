@@ -137,7 +137,7 @@ const Index = () => {
           </section>
 
           {/* Tournaments Section - Now includes Live Tournaments and Statistics */}
-          <section>
+          <section data-section="solana-portal">
             <TournamentSection />
           </section>
 
