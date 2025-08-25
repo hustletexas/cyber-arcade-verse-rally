@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -99,18 +98,18 @@ export const TopBar = () => {
   return (
     <>
       <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-2 py-2">
-          <div className="flex items-center justify-between h-12">
+        <div className="container mx-auto px-2 py-4">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <Button 
                 onClick={() => setIsOpen(true)}
-                className="cyber-button flex items-center gap-2 relative text-sm h-8 px-3"
+                className="cyber-button flex items-center gap-2 relative text-sm h-10 px-4"
                 size="sm"
               >
-                <ShoppingCart size={14} />
+                <ShoppingCart size={16} />
                 CART
                 {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-neon-pink text-black min-w-[16px] h-4 rounded-full flex items-center justify-center text-xs">
+                  <Badge className="absolute -top-1 -right-1 bg-neon-pink text-black min-w-[18px] h-5 rounded-full flex items-center justify-center text-xs">
                     {getTotalItems()}
                   </Badge>
                 )}
@@ -118,7 +117,7 @@ export const TopBar = () => {
             </div>
 
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
                 <img 
                   src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
                   alt="Cyber City Arcade Logo" 
@@ -132,9 +131,9 @@ export const TopBar = () => {
                 <div className="text-neon-cyan text-sm">Loading...</div>
               ) : (
                 user && (
-                  <Card className="arcade-frame px-2 py-1">
+                  <Card className="arcade-frame px-3 py-2">
                     <div className="flex items-center gap-2">
-                      <Avatar className="w-6 h-6 border border-neon-cyan">
+                      <Avatar className="w-8 h-8 border border-neon-cyan">
                         <AvatarImage src={user.user_metadata?.avatar_url} />
                         <AvatarFallback className="bg-neon-purple text-black font-bold text-sm">
                           {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
@@ -154,9 +153,9 @@ export const TopBar = () => {
                         onClick={handleSignOut}
                         variant="outline" 
                         size="sm"
-                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-sm px-2 py-1 h-6"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-sm px-3 py-1 h-8"
                       >
-                        <LogOut size={12} />
+                        <LogOut size={14} />
                         Logout
                       </Button>
                     </div>
@@ -169,10 +168,10 @@ export const TopBar = () => {
                 {!isWalletConnected ? (
                   <Button 
                     onClick={handleManageWallets}
-                    className="cyber-button flex items-center gap-2 text-sm h-8 px-3"
+                    className="cyber-button flex items-center gap-2 text-sm h-10 px-4"
                     size="sm"
                   >
-                    <Settings size={14} />
+                    <Settings size={16} />
                     WALLETS
                   </Button>
                 ) : (
@@ -181,7 +180,7 @@ export const TopBar = () => {
                       <Button 
                         variant="outline"
                         size="sm"
-                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[120px] h-6"
+                        className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black min-w-[140px] h-8"
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-1">
