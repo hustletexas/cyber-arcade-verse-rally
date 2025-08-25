@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -98,18 +99,18 @@ export const TopBar = () => {
   return (
     <>
       <header className="border-b border-neon-cyan/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-2 py-0.5">
-          <div className="flex items-center justify-between h-8">
+        <div className="container mx-auto px-2 py-2">
+          <div className="flex items-center justify-between h-12">
             <div className="flex items-center">
               <Button 
                 onClick={() => setIsOpen(true)}
-                className="cyber-button flex items-center gap-1 relative text-xs h-6 px-2"
+                className="cyber-button flex items-center gap-2 relative text-sm h-8 px-3"
                 size="sm"
               >
-                <ShoppingCart size={10} />
+                <ShoppingCart size={14} />
                 CART
                 {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-neon-pink text-black min-w-[12px] h-3 rounded-full flex items-center justify-center text-xs">
+                  <Badge className="absolute -top-1 -right-1 bg-neon-pink text-black min-w-[16px] h-4 rounded-full flex items-center justify-center text-xs">
                     {getTotalItems()}
                   </Badge>
                 )}
@@ -117,7 +118,7 @@ export const TopBar = () => {
             </div>
 
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden neon-glow border-2 border-neon-cyan/50 bg-transparent">
                 <img 
                   src="/lovable-uploads/c084d8de-a04e-4e1e-9e0c-ea179d67f5a7.png" 
                   alt="Cyber City Arcade Logo" 
@@ -126,25 +127,25 @@ export const TopBar = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               {loading ? (
-                <div className="text-neon-cyan text-xs">Loading...</div>
+                <div className="text-neon-cyan text-sm">Loading...</div>
               ) : (
                 user && (
-                  <Card className="arcade-frame px-1 py-0.5">
-                    <div className="flex items-center gap-1">
-                      <Avatar className="w-4 h-4 border border-neon-cyan">
+                  <Card className="arcade-frame px-2 py-1">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-6 h-6 border border-neon-cyan">
                         <AvatarImage src={user.user_metadata?.avatar_url} />
-                        <AvatarFallback className="bg-neon-purple text-black font-bold text-xs">
+                        <AvatarFallback className="bg-neon-purple text-black font-bold text-sm">
                           {user.user_metadata?.username?.charAt(0) || user.email?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="text-xs">
-                        <p className="font-bold text-neon-cyan text-xs leading-none">
+                      <div className="text-sm">
+                        <p className="font-bold text-neon-cyan text-sm leading-none">
                           {user.user_metadata?.username || user.email?.split('@')[0]}
                         </p>
                         {primaryWallet && (
-                          <p className="text-neon-green text-xs leading-none">
+                          <p className="text-neon-green text-xs leading-none mt-0.5">
                             {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 4)}...
                           </p>
                         )}
@@ -153,9 +154,9 @@ export const TopBar = () => {
                         onClick={handleSignOut}
                         variant="outline" 
                         size="sm"
-                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-xs px-1 py-0.5 h-4"
+                        className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-1 text-sm px-2 py-1 h-6"
                       >
-                        <LogOut size={8} />
+                        <LogOut size={12} />
                         Logout
                       </Button>
                     </div>
@@ -164,14 +165,14 @@ export const TopBar = () => {
               )}
 
               {/* Multi-Wallet Connection */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 {!isWalletConnected ? (
                   <Button 
                     onClick={handleManageWallets}
-                    className="cyber-button flex items-center gap-1 text-xs h-6 px-2"
+                    className="cyber-button flex items-center gap-2 text-sm h-8 px-3"
                     size="sm"
                   >
-                    <Settings size={10} />
+                    <Settings size={14} />
                     WALLETS
                   </Button>
                 ) : (
