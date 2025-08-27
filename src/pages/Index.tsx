@@ -186,6 +186,13 @@ const Index = () => {
             >
               Terms
             </button>
+            <span className="text-neon-purple">•</span>
+            <button 
+              onClick={() => window.open('#', '_blank')} 
+              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
+            >
+              About
+            </button>
           </div>
           
           <div className="text-center">
