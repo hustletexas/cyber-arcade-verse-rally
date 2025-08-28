@@ -8,12 +8,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useSolanaScore } from '@/hooks/useSolanaScore';
-import { Brain, Zap, MessageCircle } from 'lucide-react';
+import { Brain, Zap, MessageCircle, CheckCircle } from 'lucide-react';
 
 export const AIGamingCoach = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { primaryWallet, isWalletConnected } = useMultiWallet();
+  const { primaryWallet, isWalletConnected, getWalletIcon } = useMultiWallet();
   const { submitScore, isSubmitting } = useSolanaScore();
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
@@ -116,6 +116,31 @@ export const AIGamingCoach = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Wallet Connection Status */}
+        <div className="flex items-center justify-between p-3 rounded-lg border border-neon-cyan/20 bg-card/50">
+          <div className="flex items-center gap-2">
+            {isWalletConnected && primaryWallet ? (
+              <>
+                <CheckCircle className="w-5 h-5 text-neon-green" />
+                <span className="text-neon-green font-medium">Wallet Connected</span>
+                <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30">
+                  {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 8)}...
+                </Badge>
+              </>
+            ) : (
+              <>
+                <div className="w-5 h-5 rounded-full border-2 border-neon-pink"></div>
+                <span className="text-neon-pink font-medium">Wallet Required</span>
+              </>
+            )}
+          </div>
+          {user && isWalletConnected && (
+            <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30">
+              Ready to Ask AI
+            </Badge>
+          )}
+        </div>
+
         {/* Question Input */}
         <div className="space-y-4">
           <div className="flex gap-3">
