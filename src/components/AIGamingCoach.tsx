@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useSolanaScore } from '@/hooks/useSolanaScore';
 import { Brain, Zap, MessageCircle, CheckCircle } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export const AIGamingCoach = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { primaryWallet, isWalletConnected, getWalletIcon } = useMultiWallet();
+  const { isAuthenticating } = useWalletAuth();
   const { submitScore, isSubmitting } = useSolanaScore();
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
@@ -25,7 +27,7 @@ export const AIGamingCoach = () => {
     if (!user) {
       toast({
         title: "Login Required",
-        description: "Please login to ask the AI Gaming Coach",
+        description: "Please connect your wallet to login and use AI Gaming Coach",
         variant: "destructive",
       });
       return;
@@ -33,7 +35,7 @@ export const AIGamingCoach = () => {
 
     if (!isWalletConnected || !primaryWallet) {
       toast({
-        title: "Wallet Required",
+        title: "Wallet Required", 
         description: "Please connect your wallet to pay for AI coaching",
         variant: "destructive",
       });
@@ -103,6 +105,46 @@ export const AIGamingCoach = () => {
     }
   };
 
+  // Show authentication status
+  const getAuthStatus = () => {
+    if (isAuthenticating) {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 animate-spin rounded-full border-2 border-neon-cyan border-t-transparent"></div>
+          <span className="text-neon-cyan font-medium">Authenticating...</span>
+        </div>
+      );
+    }
+
+    if (user && isWalletConnected) {
+      return (
+        <>
+          <CheckCircle className="w-5 h-5 text-neon-green" />
+          <span className="text-neon-green font-medium">Wallet Connected & Authenticated</span>
+          <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30">
+            {getWalletIcon(primaryWallet?.type || 'phantom')} {primaryWallet?.address.slice(0, 8)}...
+          </Badge>
+        </>
+      );
+    }
+
+    if (isWalletConnected && !user) {
+      return (
+        <>
+          <div className="w-5 h-5 animate-spin rounded-full border-2 border-neon-cyan border-t-transparent"></div>
+          <span className="text-neon-cyan font-medium">Wallet Connected - Logging in...</span>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="w-5 h-5 rounded-full border-2 border-neon-pink"></div>
+        <span className="text-neon-pink font-medium">Connect Wallet to Login</span>
+      </>
+    );
+  };
+
   return (
     <Card className="arcade-frame">
       <CardHeader>
@@ -119,20 +161,7 @@ export const AIGamingCoach = () => {
         {/* Wallet Connection Status */}
         <div className="flex items-center justify-between p-3 rounded-lg border border-neon-cyan/20 bg-card/50">
           <div className="flex items-center gap-2">
-            {isWalletConnected && primaryWallet ? (
-              <>
-                <CheckCircle className="w-5 h-5 text-neon-green" />
-                <span className="text-neon-green font-medium">Wallet Connected</span>
-                <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30">
-                  {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 8)}...
-                </Badge>
-              </>
-            ) : (
-              <>
-                <div className="w-5 h-5 rounded-full border-2 border-neon-pink"></div>
-                <span className="text-neon-pink font-medium">Wallet Required</span>
-              </>
-            )}
+            {getAuthStatus()}
           </div>
           {user && isWalletConnected && (
             <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30">
@@ -149,11 +178,11 @@ export const AIGamingCoach = () => {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="flex-1 cyber-input"
-              disabled={isLoading || isSubmitting}
+              disabled={isLoading || isSubmitting || isAuthenticating}
             />
             <Button
               onClick={handleAskQuestion}
-              disabled={isLoading || isSubmitting || !question.trim() || !user || !isWalletConnected}
+              disabled={isLoading || isSubmitting || !question.trim() || !user || !isWalletConnected || isAuthenticating}
               className="cyber-button"
             >
               <MessageCircle size={16} className="mr-2" />
@@ -162,11 +191,11 @@ export const AIGamingCoach = () => {
           </div>
 
           {/* Status Messages */}
-          {!user && (
-            <p className="text-yellow-400 text-sm">⚠️ Please login to use AI Gaming Coach</p>
+          {!isWalletConnected && (
+            <p className="text-yellow-400 text-sm">⚠️ Please connect your wallet to login and use AI Gaming Coach</p>
           )}
-          {user && !isWalletConnected && (
-            <p className="text-yellow-400 text-sm">⚠️ Please connect your wallet to pay for coaching</p>
+          {isWalletConnected && !user && !isAuthenticating && (
+            <p className="text-yellow-400 text-sm">⚠️ Wallet authentication in progress...</p>
           )}
         </div>
 
@@ -192,18 +221,21 @@ export const AIGamingCoach = () => {
             <button
               onClick={() => setQuestion("How can I improve my reaction time?")}
               className="text-left p-2 rounded hover:bg-gray-800 transition-colors text-gray-400"
+              disabled={isAuthenticating}
             >
               • How can I improve my reaction time?
             </button>
             <button
               onClick={() => setQuestion("What's the best strategy for tournaments?")}
               className="text-left p-2 rounded hover:bg-gray-800 transition-colors text-gray-400"
+              disabled={isAuthenticating}
             >
               • What's the best strategy for tournaments?
             </button>
             <button
               onClick={() => setQuestion("How to build better team communication?")}
               className="text-left p-2 rounded hover:bg-gray-800 transition-colors text-gray-400"
+              disabled={isAuthenticating}
             >
               • How to build better team communication?
             </button>
