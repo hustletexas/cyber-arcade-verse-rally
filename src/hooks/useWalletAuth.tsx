@@ -14,6 +14,7 @@ export const useWalletAuth = () => {
   const authInProgressRef = useRef(false);
   const lastAttemptedAddressRef = useRef<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isSmartContractReady, setIsSmartContractReady] = useState(false);
 
   const getWalletEmail = (walletAddress: string) =>
     `${walletAddress.toLowerCase().slice(0, 8)}.wallet@cybercity.app`;
@@ -32,6 +33,36 @@ export const useWalletAuth = () => {
     return { signInError };
   };
 
+  const initializeSmartContractConnection = async (walletAddress: string) => {
+    try {
+      // Check if wallet is still connected to the browser extension
+      let isStillConnected = false;
+      
+      if (primaryWallet?.type === 'phantom' && window.solana?.isPhantom) {
+        isStillConnected = window.solana.isConnected;
+      } else if (primaryWallet?.type === 'solflare' && window.solflare?.isSolflare) {
+        isStillConnected = window.solflare.isConnected;
+      } else if (primaryWallet?.type === 'backpack' && window.backpack?.isBackpack) {
+        isStillConnected = window.backpack.isConnected;
+      } else if (primaryWallet?.type === 'coinbase' && window.ethereum?.isCoinbaseWallet) {
+        // For Ethereum wallets, check if accounts are still available
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        isStillConnected = accounts && accounts.length > 0;
+      }
+
+      if (isStillConnected) {
+        setIsSmartContractReady(true);
+        console.log(`Smart contract connection ready for ${primaryWallet?.type} wallet`);
+      } else {
+        setIsSmartContractReady(false);
+        console.log('Wallet disconnected from browser extension');
+      }
+    } catch (error) {
+      console.error('Error checking smart contract connection:', error);
+      setIsSmartContractReady(false);
+    }
+  };
+
   const createOrLoginWithWallet = async (walletAddress: string) => {
     if (!walletAddress) return;
 
@@ -41,7 +72,7 @@ export const useWalletAuth = () => {
       return;
     }
 
-    // Enhanced cooldown check - longer cooldown for email confirmation scenarios
+    // Enhanced cooldown check - shorter cooldown for better UX
     const cooldownKey = `wallet-auth-cooldown:${walletAddress}`;
     const emailConfirmKey = `wallet-email-confirm:${walletAddress}`;
     const last = localStorage.getItem(cooldownKey);
@@ -50,25 +81,31 @@ export const useWalletAuth = () => {
     const walletEmail = getWalletEmail(walletAddress);
 
     // If we're in email confirmation state, use longer cooldown
-    if (emailConfirmTime && now - Number(emailConfirmTime) < 300_000) { // 5 minutes
-      console.log('[WalletAuth] Email confirmation pending, skipping auto-auth.');
+    if (emailConfirmTime && now - Number(emailConfirmTime) < 120_000) { // 2 minutes
+      console.log('[WalletAuth] Email confirmation pending, attempting sign-in.');
+      const { signInError } = await signInWithWalletCreds(walletAddress);
+      if (!signInError) {
+        localStorage.removeItem(emailConfirmKey);
+        setIsAuthenticating(false);
+        await initializeSmartContractConnection(walletAddress);
+        toast({ 
+          title: "Welcome back!", 
+          description: "Wallet authenticated and smart contract ready" 
+        });
+      }
       return;
     }
 
-    // Regular cooldown check
-    if (last && now - Number(last) < 60_000) {
-      console.log('[WalletAuth] Cooldown active, attempting sign-in only.');
+    // Regular cooldown check - reduced to 30 seconds
+    if (last && now - Number(last) < 30_000) {
+      console.log('[WalletAuth] Quick retry - attempting sign-in only.');
       const { signInError } = await signInWithWalletCreds(walletAddress);
       if (!signInError) {
-        // Clear email confirmation state on successful login
         localStorage.removeItem(emailConfirmKey);
-        toast({ title: "Welcome back!", description: "Logged in with your connected wallet" });
-      } else if (signInError.message?.includes('email_not_confirmed')) {
-        // Set email confirmation state
-        localStorage.setItem(emailConfirmKey, String(now));
-        toast({
-          title: "Please check your email",
-          description: `Confirm your email (${walletEmail}) to complete wallet sign-in.`,
+        await initializeSmartContractConnection(walletAddress);
+        toast({ 
+          title: "Welcome back!", 
+          description: "Wallet authenticated and smart contract ready" 
         });
       }
       return;
@@ -85,9 +122,10 @@ export const useWalletAuth = () => {
       if (!signInError) {
         // Clear any email confirmation state
         localStorage.removeItem(emailConfirmKey);
+        await initializeSmartContractConnection(walletAddress);
         toast({
           title: "Welcome back!",
-          description: "Logged in with your connected wallet",
+          description: "Wallet authenticated and smart contract ready",
         });
         return;
       }
@@ -96,8 +134,8 @@ export const useWalletAuth = () => {
       if (signInError.message?.includes('email_not_confirmed')) {
         localStorage.setItem(emailConfirmKey, String(now));
         toast({
-          title: "Please check your email",
-          description: `Confirm your email (${walletEmail}) to complete wallet sign-in.`,
+          title: "Check your email",
+          description: `Confirm your email (${walletEmail}) to complete wallet authentication.`,
         });
         return;
       }
@@ -113,7 +151,7 @@ export const useWalletAuth = () => {
         return;
       }
 
-      // Set cooldown to avoid 429 thrashing on sign-up bursts
+      // Set cooldown to avoid rate limiting
       localStorage.setItem(cooldownKey, String(now));
 
       // Create the account
@@ -131,21 +169,19 @@ export const useWalletAuth = () => {
 
       if (signUpError) {
         console.error('Sign up error:', signUpError);
-        // If rate limited, extend cooldown and inform user
         if ((signUpError as any)?.status === 429) {
           localStorage.setItem(cooldownKey, String(now));
           toast({
-            title: "Please wait a moment",
-            description: `We're setting up your wallet login. Try again in about a minute.`,
+            title: "Please wait",
+            description: `Setting up wallet authentication. Try again in 30 seconds.`,
           });
           return;
         }
-        // If already registered, the email confirmation is likely pending
         if (signUpError.message?.toLowerCase().includes('already registered')) {
           localStorage.setItem(emailConfirmKey, String(now));
           toast({
             title: "Check your email",
-            description: `Please confirm your email (${walletEmail}) to complete wallet sign-in.`,
+            description: `Please confirm your email (${walletEmail}) to complete authentication.`,
           });
           return;
         }
@@ -157,11 +193,11 @@ export const useWalletAuth = () => {
         return;
       }
 
-      // Account created successfully, set email confirmation state
+      // Account created successfully
       localStorage.setItem(emailConfirmKey, String(now));
       toast({
         title: "Check your email",
-        description: `Please confirm your email (${walletEmail}) to complete wallet sign-in.`,
+        description: `Please confirm your email (${walletEmail}) to complete authentication.`,
       });
 
     } catch (error: any) {
@@ -177,13 +213,13 @@ export const useWalletAuth = () => {
   };
 
   const createWalletAccount = async (walletAddress: string) => {
-    // Delegate to createOrLogin to keep logic in one place
     await createOrLoginWithWallet(walletAddress);
   };
 
   const logoutWallet = async () => {
     try {
       const { error } = await supabase.auth.signOut();
+      setIsSmartContractReady(false);
       if (error) {
         console.error('Logout error:', error);
         toast({
@@ -194,7 +230,7 @@ export const useWalletAuth = () => {
       } else {
         toast({
           title: "Logged Out",
-          description: "Successfully logged out from your wallet account",
+          description: "Disconnected from wallet and smart contracts",
         });
       }
     } catch (error: any) {
@@ -207,21 +243,35 @@ export const useWalletAuth = () => {
     }
   };
 
-  // Auto-login when wallet connects and no user is logged in, with enhanced guard against duplicate attempts
+  // Auto-login when wallet connects and initialize smart contract connection
   useEffect(() => {
     const addr = primaryWallet?.address;
     
-    // Only proceed if we have a wallet address, no current user, wallet is connected, and we're not already processing this address
     if (addr && !user && isWalletConnected && lastAttemptedAddressRef.current !== addr && !authInProgressRef.current) {
       console.log('Auto-authenticating with wallet:', addr);
       createOrLoginWithWallet(addr);
+    } else if (addr && user && isWalletConnected && !isSmartContractReady) {
+      // User is already authenticated, just initialize smart contract connection
+      initializeSmartContractConnection(addr);
     }
-  }, [primaryWallet?.address, user, isWalletConnected]); // Stable dependencies
+  }, [primaryWallet?.address, user, isWalletConnected]);
+
+  // Check smart contract connection periodically
+  useEffect(() => {
+    if (user && isWalletConnected && primaryWallet?.address) {
+      const interval = setInterval(() => {
+        initializeSmartContractConnection(primaryWallet.address);
+      }, 10000); // Check every 10 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [user, isWalletConnected, primaryWallet?.address]);
 
   return {
     createOrLoginWithWallet,
     createWalletAccount,
     logoutWallet,
-    isAuthenticating
+    isAuthenticating,
+    isSmartContractReady
   };
 };
