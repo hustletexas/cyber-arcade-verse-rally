@@ -23,15 +23,6 @@ export const AIGamingCoach = () => {
   const QUESTION_COST = 10; // 10 CCTR per question
 
   const handleAskQuestion = async () => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please connect your wallet to login and use AI Gaming Coach",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!isWalletConnected || !primaryWallet) {
       toast({
         title: "Wallet Required", 
@@ -62,13 +53,13 @@ export const AIGamingCoach = () => {
     setIsLoading(true);
 
     try {
-      // Charge CCTR for the question
+      // Charge CCTR for the question via Edge Function using connected Solana wallet
       const paymentResult = await submitScore(-QUESTION_COST, 'ai_coaching');
       
       if (!paymentResult.success) {
         toast({
           title: "Payment Failed",
-          description: "Unable to charge CCTR for AI coaching. Check your balance.",
+          description: "Unable to charge CCTR for AI coaching. Check your wallet connection.",
           variant: "destructive",
         });
         return;
@@ -124,7 +115,8 @@ export const AIGamingCoach = () => {
       );
     }
 
-    if (user && isWalletConnected && isSmartContractReady) {
+    // Consider Smart Contract ready when wallet + contract are ready, independent of Supabase user
+    if (isWalletConnected && isSmartContractReady) {
       return (
         <>
           <CheckCircle className="w-5 h-5 text-neon-green" />
@@ -136,7 +128,7 @@ export const AIGamingCoach = () => {
       );
     }
 
-    if (user && isWalletConnected && !isSmartContractReady) {
+    if (isWalletConnected && !isSmartContractReady) {
       return (
         <>
           <div className="w-5 h-5 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent"></div>
@@ -145,15 +137,6 @@ export const AIGamingCoach = () => {
             <Link size={12} className="mr-1" />
             Connecting
           </Badge>
-        </>
-      );
-    }
-
-    if (isWalletConnected && !user) {
-      return (
-        <>
-          <div className="w-5 h-5 animate-spin rounded-full border-2 border-neon-cyan border-t-transparent"></div>
-          <span className="text-neon-cyan font-medium">Wallet Connected - Logging in...</span>
         </>
       );
     }
@@ -184,7 +167,7 @@ export const AIGamingCoach = () => {
           <div className="flex items-center gap-2">
             {getConnectionStatus()}
           </div>
-          {user && isWalletConnected && isSmartContractReady && (
+          {isWalletConnected && isSmartContractReady && (
             <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30">
               Ready for AI Coaching
             </Badge>
@@ -203,7 +186,7 @@ export const AIGamingCoach = () => {
             />
             <Button
               onClick={handleAskQuestion}
-              disabled={isLoading || isSubmitting || !question.trim() || !user || !isWalletConnected || isAuthenticating || !isSmartContractReady}
+              disabled={isLoading || isSubmitting || !question.trim() || !isWalletConnected || isAuthenticating || !isSmartContractReady}
               className="cyber-button"
             >
               <MessageCircle size={16} className="mr-2" />
@@ -215,10 +198,7 @@ export const AIGamingCoach = () => {
           {!isWalletConnected && (
             <p className="text-yellow-400 text-sm">⚠️ Connect your wallet to enable AI Gaming Coach</p>
           )}
-          {isWalletConnected && !user && !isAuthenticating && (
-            <p className="text-yellow-400 text-sm">⚠️ Wallet authentication in progress...</p>
-          )}
-          {user && isWalletConnected && !isSmartContractReady && (
+          {isWalletConnected && !isAuthenticating && !isSmartContractReady && (
             <p className="text-yellow-400 text-sm">⚠️ Initializing smart contract connection...</p>
           )}
         </div>

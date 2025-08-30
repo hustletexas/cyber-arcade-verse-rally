@@ -2,38 +2,40 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useWallet } from '@/hooks/useWallet';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 
 export const useSolanaScore = () => {
   const { toast } = useToast();
-  const { getConnectedWallet } = useWallet();
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submitScore = async (score: number, gameType: string = 'trivia') => {
-    const connectedWallet = getConnectedWallet();
-    
-    if (!connectedWallet || connectedWallet.type !== 'phantom') {
+    // Ensure a connected Solana wallet (exclude Coinbase)
+    const supportedTypes = ['phantom', 'solflare', 'backpack', 'created'] as const;
+
+    if (!isWalletConnected || !primaryWallet || !supportedTypes.includes(primaryWallet.type as any)) {
       toast({
-        title: "Wallet Required",
-        description: "Please connect your Phantom wallet to submit scores",
+        title: "Solana Wallet Required",
+        description: "Connect a Solana wallet (Phantom, Solflare, Backpack, or Created) to continue",
         variant: "destructive",
       });
       return { success: false };
     }
 
+    const playerPubkey = primaryWallet.address;
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting score to Solana:', { 
-        playerPubkey: connectedWallet.address, 
+      console.log('Submitting score to Solana via Edge Function:', { 
+        playerPubkey, 
         score, 
-        gameType 
+        gameType,
+        walletType: primaryWallet.type
       });
 
-      // Call the Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('submit-score', {
         body: {
-          playerPubkey: connectedWallet.address,
+          playerPubkey,
           score,
           gameType
         }
@@ -49,7 +51,7 @@ export const useSolanaScore = () => {
         
         toast({
           title: "Score Submitted! 🎉",
-          description: `Earned ${data.tokensEarned} CCTR tokens! TX: ${data.txHash.slice(0, 8)}...`,
+          description: `Earned ${data.tokensEarned} CCTR tokens! TX: ${String(data.txHash).slice(0, 8)}...`,
         });
 
         return { 
