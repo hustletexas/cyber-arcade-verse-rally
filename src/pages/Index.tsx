@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,7 @@ import { useNFTMinting } from '@/hooks/useNFTMinting';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
+import { Web3Gaming } from '@/components/Web3Gaming';
 
 const Index = () => {
   const { toast } = useToast();
@@ -116,10 +116,17 @@ const Index = () => {
           <section>
             <CommunityHub />
           </section>
-          {/* AI Gaming Coach Section - NEW */}
+
+          {/* Web3 Gaming Section - NEW */}
+          <section>
+            <Web3Gaming />
+          </section>
+
+          {/* AI Gaming Coach Section */}
           <section>
             <AIGamingCoach />
           </section>
+
           {/* Community Marketplace Section - Added new P2P marketplace */}
           <section>
             <CommunityMarketplace />
