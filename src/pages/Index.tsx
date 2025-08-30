@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
+import { NodePurchase } from '@/components/NodePurchase';
 
 const Index = () => {
   const { toast } = useToast();
@@ -166,6 +166,11 @@ const Index = () => {
           {/* CCTR Staking Section - Moved under Buy CCTR */}
           <section>
             <CCTRStaking />
+          </section>
+
+          {/* Node Purchase Section - NEW LAST SECTION */}
+          <section>
+            <NodePurchase />
           </section>
         </div>
       </main>
