@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -117,12 +118,12 @@ const Index = () => {
             <CommunityHub />
           </section>
 
-          {/* Web3 Gaming Section - NEW */}
+          {/* Web3 Gaming Section - MOVED ABOVE AI Gaming Coach */}
           <section>
             <Web3Gaming />
           </section>
 
-          {/* AI Gaming Coach Section */}
+          {/* AI Gaming Coach Section - NOW BELOW Web3 Gaming */}
           <section>
             <AIGamingCoach />
           </section>
