@@ -1,236 +1,244 @@
-import React, { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TopBar } from '@/components/TopBar';
-import { VotingSection } from '@/components/VotingSection';
-import { Marketplace } from '@/components/Marketplace';
-import { CommunityMarketplace } from '@/components/CommunityMarketplace';
-import { PlayerDashboard } from '@/components/PlayerDashboard';
-import { MerchandiseStore } from '@/components/MerchandiseStore';
-import { RaffleSection } from '@/components/RaffleSection';
-import { TokenPurchase } from '@/components/TokenPurchase';
-import { CCTRStaking } from '@/components/CCTRStaking';
-import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
-import { CommunityHub } from '@/components/CommunityHub';
-import { CartDrawer } from '@/components/CartDrawer';
-import { TriviaGame } from '@/components/TriviaGame';
-import { useToast } from '@/hooks/use-toast';
-import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { useNFTMinting } from '@/hooks/useNFTMinting';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import { AIGamingCoach } from '@/components/AIGamingCoach';
+import { useWallet } from '@/hooks/useWallet';
+import { ProfileDashboard } from '@/components/ProfileDashboard';
+import { CCTRStaking } from '@/components/CCTRStaking';
+import { TriviaGame } from '@/components/TriviaGame';
+import { TournamentBracket } from '@/components/TournamentBracket';
 import { Web3Gaming } from '@/components/Web3Gaming';
+import { AIGamingCoach } from '@/components/AIGamingCoach';
+import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
+import { SocialFeatures } from '@/components/SocialFeatures';
+import { CommunityMarketplace } from '@/components/CommunityMarketplace';
+import { BlockchainIntegration } from '@/components/BlockchainIntegration';
+import { CommunityHub } from '@/components/CommunityHub';
 import { NodePurchase } from '@/components/NodePurchase';
+import JeopardyGame from "@/components/JeopardyGame";
 
 const Index = () => {
-  const { toast } = useToast();
-  const { isWalletConnected } = useMultiWallet();
-  const { mintFreeNFT, isMinting } = useNFTMinting();
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  const handleMintNFT = async () => {
-    if (!isWalletConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet first to mint your free NFT",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    await mintFreeNFT();
-  };
+  const { user } = useAuth();
+  const { walletState, getConnectedWallet, isWalletConnected } = useWallet();
+  const [currentSection, setCurrentSection] = useState('dashboard');
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Enhanced Animated Background */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
-        
-        {/* Gaming Icons Background */}
-        <div className="absolute top-10 left-10 text-2xl md:text-4xl opacity-30 animate-float">🕹️</div>
-        <div className="absolute top-20 right-20 text-xl md:text-3xl opacity-20 animate-pulse">🎮</div>
-        <div className="absolute bottom-20 left-20 text-xl md:text-3xl opacity-25 animate-bounce">👾</div>
-        <div className="absolute bottom-10 right-10 text-2xl md:text-4xl opacity-30 animate-float">🎯</div>
-        <div className="absolute top-1/3 left-1/4 text-lg md:text-2xl opacity-20 animate-pulse">🏆</div>
-        <div className="absolute top-2/3 right-1/4 text-xl md:text-3xl opacity-25 animate-bounce">⚡</div>
-        <div className="absolute top-1/2 left-10 text-lg md:text-2xl opacity-20 animate-float">🚀</div>
-        <div className="absolute top-1/4 right-1/3 text-xl md:text-3xl opacity-30 animate-pulse">💎</div>
-      </div>
-
-      <TopBar />
-      <main className="container mx-auto px-4 py-8 relative z-10">
-        {/* Enhanced Hero Section */}
-        <div className="text-center mb-8 md:mb-12">
-          {/* Main Logo - Centered */}
-          <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-              alt="Cyber City Arcade" 
-              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" 
-              style={{
-                filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
-              }} 
-            />
-          </div>
-
-          <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
-            The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
-          </p>
-
-          {/* Updated Mint Free NFT Button */}
-          <div className="flex justify-center mb-6 md:mb-8 px-4">
-            <Button 
-              onClick={handleMintNFT} 
-              disabled={isMinting}
-              className="cyber-button flex items-center gap-2 text-lg px-8 py-4 disabled:opacity-50"
-            >
-              {isMinting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  MINTING...
-                </>
-              ) : (
-                <>
-                  🔨 MINT FREE NFT
-                </>
-              )}
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-blue-900">
+      {/* Top Bar */}
+      <header className="bg-black/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="text-2xl font-bold text-white">
+            Cyber City Arcade <Badge className="ml-2">BETA</Badge>
+          </Link>
+          <nav className="flex items-center space-x-4">
+            {user ? (
+              <>
+                <Button variant="secondary" asChild>
+                  <Link to="/profile">My Profile</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/logout">Logout</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                {!isWalletConnected() && (
+                  <Button variant="secondary" asChild>
+                    <Link to="/auth">Login</Link>
+                  </Button>
+                )}
+                <Button variant="outline" asChild>
+                  <Link to="/auth">Register</Link>
+                </Button>
+              </>
+            )}
+          </nav>
         </div>
+      </header>
 
-        {/* All Sections Stacked Vertically */}
-        <div className="space-y-12 md:space-y-16">
-          {/* Music Player Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
-            </h2>
-            <div className="flex justify-center mx-0 px-0">
-              <CyberMusicPlayer />
-            </div>
-          </section>
-
-          {/* Community Hub Section */}
-          <section>
-            <CommunityHub />
-          </section>
-
-          {/* Web3 Gaming Section - MOVED ABOVE AI Gaming Coach */}
-          <section>
-            <Web3Gaming />
-          </section>
-
-          {/* AI Gaming Coach Section - NOW BELOW Web3 Gaming */}
-          <section>
-            <AIGamingCoach />
-          </section>
-
-          {/* Community Marketplace Section - Added new P2P marketplace */}
-          <section>
-            <CommunityMarketplace />
-          </section>
-
-          {/* Merchandise Store Section */}
-          <section>
-            <MerchandiseStore />
-          </section>
-
-          {/* NFT Marketplace Section */}
-          <section>
-            <Marketplace />
-          </section>
-
-          {/* Trivia Section */}
-          <section>
-            <TriviaGame />
-          </section>
-
-          {/* Raffles Section */}
-          <section>
-            <RaffleSection />
-          </section>
-
-          {/* Voting Section */}
-          <section>
-            <VotingSection />
-          </section>
-
-          {/* Buy CCTR Section - Moved under Voting */}
-          <section>
-            <TokenPurchase />
-          </section>
-
-          {/* CCTR Staking Section - Moved under Buy CCTR */}
-          <section>
-            <CCTRStaking />
-          </section>
-
-          {/* Node Purchase Section - NEW LAST SECTION */}
-          <section>
-            <NodePurchase />
-          </section>
-        </div>
-      </main>
-      {/* Footer */}
-      <footer className="border-t border-neon-cyan/30 mt-12 md:mt-20 py-6 md:py-8">
+      {/* Navigation Sections */}
+      <section id="navigation" className="py-12">
         <div className="container mx-auto px-4">
-          {/* Privacy, Support, and Terms Links */}
-          <div className="flex justify-center gap-6 mb-6">
-            <button 
-              onClick={() => window.open('#', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
-            >
-              Privacy Policy
-            </button>
-            <span className="text-neon-purple">•</span>
-            <button 
-              onClick={() => window.open('#', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
-            >
-              Support
-            </button>
-            <span className="text-neon-purple">•</span>
-            <button 
-              onClick={() => window.open('#', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
-            >
-              Terms
-            </button>
-            <span className="text-neon-purple">•</span>
-            <button 
-              onClick={() => window.open('#', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
-            >
-              About
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('dashboard')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">👤</div>
+                <h3 className="font-bold text-lg text-neon-cyan mb-2">Profile</h3>
+                <p className="text-sm text-muted-foreground">View your stats and achievements</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('staking')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">💎</div>
+                <h3 className="font-bold text-lg text-neon-purple mb-2">CCTR Staking</h3>
+                <p className="text-sm text-muted-foreground">Stake CCTR tokens and earn rewards</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('trivia')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🎮</div>
+                <h3 className="font-bold text-lg text-neon-pink mb-2">Gaming Trivia</h3>
+                <p className="text-sm text-muted-foreground">Test your gaming knowledge</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('tournaments')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🏆</div>
+                <h3 className="font-bold text-lg text-neon-green mb-2">Tournaments</h3>
+                <p className="text-sm text-muted-foreground">Compete in gaming tournaments</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('web3games')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🌐</div>
+                <h3 className="font-bold text-lg text-neon-cyan mb-2">Web3 Games</h3>
+                <p className="text-sm text-muted-foreground">Explore blockchain-based games</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('ai-coach')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🤖</div>
+                <h3 className="font-bold text-lg text-neon-purple mb-2">AI Gaming Coach</h3>
+                <p className="text-sm text-muted-foreground">Get AI-powered gaming advice</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('music')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🎵</div>
+                <h3 className="font-bold text-lg text-neon-pink mb-2">Cyber Music</h3>
+                <p className="text-sm text-muted-foreground">Listen to curated cyberpunk music</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('social')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">💬</div>
+                <h3 className="font-bold text-lg text-neon-green mb-2">Social</h3>
+                <p className="text-sm text-muted-foreground">Connect with other gamers</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('marketplace')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🛒</div>
+                <h3 className="font-bold text-lg text-neon-cyan mb-2">Marketplace</h3>
+                <p className="text-sm text-muted-foreground">Buy and sell gaming assets</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('blockchain')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🔗</div>
+                <h3 className="font-bold text-lg text-neon-purple mb-2">Blockchain</h3>
+                <p className="text-sm text-muted-foreground">Explore blockchain integrations</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('community')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">🤝</div>
+                <h3 className="font-bold text-lg text-neon-pink mb-2">Community</h3>
+                <p className="text-sm text-muted-foreground">Join our community discussions</p>
+              </CardContent>
+            </Card>
+
+            <Card className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setCurrentSection('nodes')}>
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-3">⚙️</div>
+                <h3 className="font-bold text-lg text-neon-green mb-2">Solana Nodes</h3>
+                <p className="text-sm text-muted-foreground">Operate Solana validator nodes</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {currentSection === 'dashboard' && <ProfileDashboard />}
+      {currentSection === 'staking' && <CCTRStaking />}
+      {currentSection === 'trivia' && <TriviaGame />}
+      {currentSection === 'tournaments' && <TournamentBracket />}
+      {currentSection === 'web3games' && <Web3Gaming />}
+      {currentSection === 'ai-coach' && <AIGamingCoach />}
+      {currentSection === 'music' && <CyberMusicPlayer />}
+      {currentSection === 'social' && <SocialFeatures />}
+      {currentSection === 'marketplace' && <CommunityMarketplace />}
+      {currentSection === 'blockchain' && <BlockchainIntegration />}
+      {currentSection === 'community' && <CommunityHub />}
+      {currentSection === 'nodes' && <NodePurchase />}
+      {currentSection === 'jeopardy' && <JeopardyGame />}
+
+      {/* Add Jeopardy Game Section */}
+      <section id="jeopardy" className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              🎯 Jeopardy Challenge
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Test your knowledge in our interactive Jeopardy-style game with categories covering blockchain, gaming, and Cyber City Arcade
+            </p>
           </div>
           
-          <div className="text-center">
-            <p className="text-neon-purple font-mono text-sm md:text-base mb-4">
-              © 2024 Cyber City Arcade • Powered by Solana Blockchain
-            </p>
-            <div className="flex flex-wrap justify-center gap-2 md:gap-6 text-xs md:text-sm text-muted-foreground">
-              <span>Solana Network</span>
-              <span>•</span>
-              <button onClick={() => window.open('https://magiceden.io/', '_blank')} className="hover:text-neon-cyan transition-colors cursor-pointer">
-                Magic Eden
-              </button>
-              <span>•</span>
-              <span>PayPal Integration</span>
-              <span>•</span>
-              <span>Phantom Wallet</span>
-              <span>•</span>
-              <span>Coinbase Wallet</span>
-            </div>
+          <div className="max-w-6xl mx-auto">
+            <Card className="arcade-frame p-8 text-center">
+              <div className="space-y-6">
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-neon-cyan mb-4">
+                  Gaming Knowledge Challenge
+                </h3>
+                <p className="text-gray-300 text-lg mb-6">
+                  Compete with friends and test your expertise across multiple categories including blockchain technology, gaming history, and arcade classics
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="p-4 bg-gray-800/50 rounded-lg">
+                    <div className="text-2xl mb-2">🎮</div>
+                    <h4 className="font-bold text-neon-purple">Gaming Categories</h4>
+                    <p className="text-sm text-gray-400">Arcade, Gaming, Retro Classics</p>
+                  </div>
+                  <div className="p-4 bg-gray-800/50 rounded-lg">
+                    <div className="text-2xl mb-2">🔗</div>
+                    <h4 className="font-bold text-neon-cyan">Blockchain Knowledge</h4>
+                    <p className="text-sm text-gray-400">Crypto, DeFi, Smart Contracts</p>
+                  </div>
+                  <div className="p-4 bg-gray-800/50 rounded-lg">
+                    <div className="text-2xl mb-2">🏰</div>
+                    <h4 className="font-bold text-neon-pink">Cyber City Arcade</h4>
+                    <p className="text-sm text-gray-400">Platform-specific trivia</p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => setCurrentSection('jeopardy')}
+                  className="cyber-button text-lg px-8 py-3"
+                >
+                  🚀 Start Jeopardy Game
+                </Button>
+              </div>
+            </Card>
           </div>
         </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-black/50 backdrop-blur-md py-6">
+        <div className="container mx-auto px-4 text-center text-gray-400">
+          <p className="text-sm">
+            © {new Date().getFullYear()} Cyber City Arcade. All rights reserved.
+          </p>
+          <p className="text-xs mt-2">
+            Built with ❤️ using React, Tailwind CSS, and deployed on Vercel.
+          </p>
+        </div>
       </footer>
-      
-      {/* Cart Drawer */}
-      <CartDrawer />
     </div>
   );
 };
