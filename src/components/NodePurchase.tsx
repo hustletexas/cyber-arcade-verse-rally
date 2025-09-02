@@ -157,10 +157,7 @@ export const NodePurchase = () => {
           </TabsContent>
 
           <TabsContent value="rewards">
-            <NodeRewards 
-              userWallet={primaryWallet?.address || ''}
-              isWalletConnected={isWalletConnected}
-            />
+            <NodeRewards />
           </TabsContent>
 
           <TabsContent value="stats">
