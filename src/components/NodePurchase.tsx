@@ -3,164 +3,195 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NodeCards } from './nodes/NodeCards';
-import { NodeInfo } from './nodes/NodeInfo';
-import { NodeRewards } from './nodes/NodeRewards';
-import { NodeStatistics } from './nodes/NodeStatistics';
-import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useAuth } from '@/hooks/useAuth';
+import { NodeInfo } from '@/components/nodes/NodeInfo';
+import { NodeCards } from '@/components/nodes/NodeCards';
+import { NodeRewards } from '@/components/nodes/NodeRewards';
+import { NodeStatistics } from '@/components/nodes/NodeStatistics';
+import { Coins, Server, Zap, TrendingUp } from 'lucide-react';
+
+interface NodeType {
+  id: string;
+  name: string;
+  price: number;
+  dailyReward: number;
+  monthlyReward: number;
+  roi: number;
+  maxSupply: number;
+  currentSupply: number;
+  icon: string;
+  features: string[];
+  description: string;
+}
+
+const nodeTypes: NodeType[] = [
+  {
+    id: 'basic',
+    name: 'Basic Node',
+    price: 10,
+    dailyReward: 0.5,
+    monthlyReward: 15,
+    roi: 150,
+    maxSupply: 1000,
+    currentSupply: 342,
+    icon: '🔷',
+    features: ['Daily SOL rewards', 'Basic staking power', 'Community access'],
+    description: 'Perfect for beginners entering the node ecosystem'
+  },
+  {
+    id: 'premium',
+    name: 'Premium Node',
+    price: 25,
+    dailyReward: 1.5,
+    monthlyReward: 45,
+    roi: 180,
+    maxSupply: 500,
+    currentSupply: 167,
+    icon: '💎',
+    features: ['Higher daily rewards', 'Enhanced staking power', 'Priority support', 'Exclusive events'],
+    description: 'Advanced node for serious validators with enhanced rewards'
+  },
+  {
+    id: 'legendary',
+    name: 'Legendary Node',
+    price: 50,
+    dailyReward: 3.5,
+    monthlyReward: 105,
+    roi: 210,
+    maxSupply: 100,
+    currentSupply: 23,
+    icon: '🏆',
+    features: ['Maximum rewards', 'Ultimate staking power', 'VIP support', 'Governance voting', 'NFT airdrops'],
+    description: 'Elite node with maximum earning potential and exclusive benefits'
+  }
+];
 
 export const NodePurchase = () => {
-  const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('purchase');
+  const { isWalletConnected, primaryWallet } = useMultiWallet();
+  const { user } = useAuth();
+  const [purchasingNode, setPurchasingNode] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<NodeType>(nodeTypes[0]);
 
-  const connectWallet = () => {
-    toast({
-      title: "Connect Wallet",
-      description: "Please connect a Solana wallet to purchase nodes",
-      variant: "destructive"
-    });
+  const handleNodePurchase = async (nodeType: NodeType) => {
+    if (!isWalletConnected) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to purchase a node",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to purchase a node",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPurchasingNode(nodeType.id);
+    
+    try {
+      // Simulate node purchase transaction
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      toast({
+        title: "Node Purchased Successfully!",
+        description: `Your ${nodeType.name} is now active and earning rewards`,
+      });
+      
+      // Update node supply (simulation)
+      nodeType.currentSupply += 1;
+      
+    } catch (error) {
+      console.error('Node purchase error:', error);
+      toast({
+        title: "Purchase Failed",
+        description: "Failed to purchase node. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPurchasingNode(null);
+    }
   };
 
-  const userWallet = primaryWallet?.address || '';
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-3xl text-neon-cyan text-center">
-            ⚡ SOLANA NODE NETWORK
-          </CardTitle>
-          <p className="text-center text-muted-foreground">
-            Purchase and operate validator nodes on the Solana blockchain • Earn daily SOL rewards • Support network decentralization
-          </p>
-          {isWalletConnected && (
-            <div className="text-center mt-2">
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Connected: {userWallet.slice(0, 8)}...{userWallet.slice(-4)}
-              </Badge>
-            </div>
-          )}
-        </CardHeader>
-      </Card>
-
-      {/* Navigation Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex justify-center">
-          <TabsList className="bg-gray-800/50">
-            <TabsTrigger 
-              value="purchase" 
-              className="data-[state=active]:bg-neon-cyan data-[state=active]:text-black"
-            >
-              🛒 Purchase Nodes
-            </TabsTrigger>
-            <TabsTrigger 
-              value="info" 
-              className="data-[state=active]:bg-neon-purple data-[state=active]:text-black"
-            >
-              📚 How It Works
-            </TabsTrigger>
-            <TabsTrigger 
-              value="rewards" 
-              className="data-[state=active]:bg-neon-pink data-[state=active]:text-black"
-            >
-              💰 My Rewards
-            </TabsTrigger>
-            <TabsTrigger 
-              value="stats" 
-              className="data-[state=active]:bg-neon-green data-[state=active]:text-black"
-            >
-              📊 Network Stats
-            </TabsTrigger>
+    <Card className="arcade-frame">
+      <CardHeader>
+        <CardTitle className="font-display text-3xl text-neon-cyan flex items-center gap-3">
+          <Server className="w-8 h-8" />
+          SOLANA NODES
+          <Badge className="bg-neon-green text-black">EARN PASSIVE SOL</Badge>
+        </CardTitle>
+        <p className="text-muted-foreground text-lg">
+          Own validator nodes on Solana blockchain and earn daily SOL rewards
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        <Tabs defaultValue="purchase" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="purchase">Purchase Nodes</TabsTrigger>
+            <TabsTrigger value="info">How It Works</TabsTrigger>
+            <TabsTrigger value="rewards">My Rewards</TabsTrigger>
+            <TabsTrigger value="stats">Statistics</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="purchase" className="space-y-6">
+            <NodeCards 
+              nodeTypes={nodeTypes}
+              onPurchase={handleNodePurchase}
+              purchasingNode={purchasingNode}
+              isWalletConnected={isWalletConnected}
+            />
+          </TabsContent>
+
+          <TabsContent value="info">
+            <NodeInfo />
+          </TabsContent>
+
+          <TabsContent value="rewards">
+            <NodeRewards 
+              userWallet={primaryWallet?.address || ''}
+              isWalletConnected={isWalletConnected}
+            />
+          </TabsContent>
+
+          <TabsContent value="stats">
+            <NodeStatistics nodeTypes={nodeTypes} />
+          </TabsContent>
+        </Tabs>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="holographic p-4 text-center">
+            <Coins className="w-6 h-6 text-neon-green mx-auto mb-2" />
+            <h4 className="text-neon-green font-bold text-sm">TOTAL NODES</h4>
+            <p className="text-lg font-mono">{nodeTypes.reduce((sum, node) => sum + node.currentSupply, 0)}</p>
+          </div>
+          <div className="holographic p-4 text-center">
+            <Server className="w-6 h-6 text-neon-cyan mx-auto mb-2" />
+            <h4 className="text-neon-cyan font-bold text-sm">ACTIVE VALIDATORS</h4>
+            <p className="text-lg font-mono">532</p>
+          </div>
+          <div className="holographic p-4 text-center">
+            <Zap className="w-6 h-6 text-neon-pink mx-auto mb-2" />
+            <h4 className="text-neon-pink font-bold text-sm">DAILY REWARDS</h4>
+            <p className="text-lg font-mono">1,247 SOL</p>
+          </div>
+          <div className="holographic p-4 text-center">
+            <TrendingUp className="w-6 h-6 text-neon-purple mx-auto mb-2" />
+            <h4 className="text-neon-purple font-bold text-sm">AVG ROI</h4>
+            <p className="text-lg font-mono">180%</p>
+          </div>
         </div>
-
-        <TabsContent value="purchase">
-          <NodeCards />
-        </TabsContent>
-
-        <TabsContent value="info">
-          <NodeInfo />
-        </TabsContent>
-
-        <TabsContent value="rewards">
-          <NodeRewards />
-        </TabsContent>
-
-        <TabsContent value="stats">
-          <NodeStatistics />
-        </TabsContent>
-      </Tabs>
-
-      {/* Connection CTA */}
-      {!isWalletConnected && (
-        <Card className="arcade-frame border-neon-pink/30">
-          <CardContent className="text-center py-8">
-            <div className="text-4xl mb-4">🔐</div>
-            <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Solana Wallet</h3>
-            <p className="text-muted-foreground mb-4">
-              Connect your Solana wallet to purchase nodes, track rewards, and participate in the validator network
-            </p>
-            <Button onClick={connectWallet} className="cyber-button">
-              🚀 Connect Wallet
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Network Information */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-cyan">
-              ⚡ Network Benefits
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Support Solana decentralization</li>
-              <li>• Earn passive SOL rewards</li>
-              <li>• Help secure the network</li>
-              <li>• Participate in governance</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-purple">
-              🎯 Node Features
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• 24/7 automated operation</li>
-              <li>• Real-time monitoring</li>
-              <li>• Daily reward distribution</li>
-              <li>• Professional infrastructure</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-pink">
-              💎 Exclusive Perks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Priority tournament access</li>
-              <li>• Bonus CCTR token rewards</li>
-              <li>• Exclusive NFT airdrops</li>
-              <li>• VIP community access</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
