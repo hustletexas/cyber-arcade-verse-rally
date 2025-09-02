@@ -87,11 +87,11 @@ export const FeaturedGames = () => {
             </div>
             <div className="relative">
               <img 
-                src="/lovable-uploads/25b4f405-8edd-4c52-9b77-0d270d1b6c90.png" 
+                src="/lovable-uploads/4b312226-9c9f-4a1c-9c6f-16be0f7b09b8.png" 
                 alt="CyberBrawl.io"
-                className="w-full rounded-lg shadow-2xl"
+                className="w-full h-80 object-cover rounded-lg shadow-2xl"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg" />
             </div>
           </div>
         </CardContent>
