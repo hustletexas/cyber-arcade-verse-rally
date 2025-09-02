@@ -59,22 +59,23 @@ export const FeaturedGames = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
               <Badge className="mb-4 bg-neon-pink text-white">GAME OF THE WEEK</Badge>
-              <h2 className="text-3xl font-bold text-neon-cyan mb-4">Star Atlas</h2>
+              <h2 className="text-3xl font-bold text-neon-cyan mb-4">CyberBrawl.io</h2>
               <p className="text-lg text-muted-foreground mb-6">
-                The ultimate space exploration MMO where you can build fleets, explore galaxies, 
-                and earn real rewards through strategic gameplay on the Solana blockchain.
+                The ultimate multiplayer brawler where cyber warriors clash in intense battles. 
+                Earn rewards, unlock legendary characters, and dominate the arena in this 
+                action-packed Web3 gaming experience.
               </p>
               <div className="flex flex-wrap gap-3 mb-6">
-                <Badge className="bg-neon-green/20 text-neon-green">⭐ 4.8 Rating</Badge>
-                <Badge className="bg-neon-purple/20 text-neon-purple">👥 50K+ Players</Badge>
+                <Badge className="bg-neon-green/20 text-neon-green">⭐ 4.9 Rating</Badge>
+                <Badge className="bg-neon-purple/20 text-neon-purple">👥 100K+ Players</Badge>
                 <Badge className="bg-neon-cyan/20 text-neon-cyan">🌐 Web Based</Badge>
               </div>
               <div className="flex gap-4">
                 <Button 
-                  onClick={() => window.open('https://play.staratlas.com', '_blank')}
+                  onClick={() => window.open('https://cyberbrawl.io', '_blank')}
                   className="cyber-button"
                 >
-                  🚀 PLAY NOW
+                  ⚔️ PLAY NOW
                 </Button>
                 <Button 
                   variant="outline"
@@ -87,7 +88,7 @@ export const FeaturedGames = () => {
             <div className="relative">
               <img 
                 src="/lovable-uploads/25b4f405-8edd-4c52-9b77-0d270d1b6c90.png" 
-                alt="Star Atlas"
+                alt="CyberBrawl.io"
                 className="w-full rounded-lg shadow-2xl"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg" />
