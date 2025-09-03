@@ -21,18 +21,18 @@ const featuredGames = [
     rating: 4.8
   },
   {
-    id: 'aurory',
-    name: 'Aurory',
-    category: 'RPG Adventure',
-    blockchain: 'Solana',
-    image: '/lovable-uploads/40d6a951-fd19-4d9f-b892-be71f6f300d5.png',
-    description: 'Captivating RPG adventure with collectible Nefties',
-    playUrl: 'https://aurory.io/game',
-    downloadUrl: 'https://aurory.io/download',
+    id: 'wilder-world',
+    name: 'Wilder World',
+    category: 'Open World Metaverse',
+    blockchain: 'Ethereum',
+    image: '/lovable-uploads/51af8344-cf64-4bfe-a0a5-128e31280d81.png',
+    description: 'Immersive metaverse with photorealistic graphics and NFT integration',
+    playUrl: 'https://wilderworld.com/play',
+    downloadUrl: 'https://wilderworld.com/download',
     isWebBased: false,
-    rewards: ['AURY', 'Neftie NFTs'],
-    players: '25K+',
-    rating: 4.6
+    rewards: ['WILD', 'Wilder NFTs', 'Land NFTs'],
+    players: '35K+',
+    rating: 4.7
   },
   {
     id: 'defi-land',
