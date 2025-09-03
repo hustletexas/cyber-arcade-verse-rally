@@ -35,18 +35,18 @@ const featuredGames = [
     rating: 4.7
   },
   {
-    id: 'defi-land',
-    name: 'DeFi Land',
-    category: 'Simulation',
-    blockchain: 'Solana',
-    image: '/lovable-uploads/618813b4-8ef1-495f-b103-dd4f3612befb.png',
-    description: 'Gamified DeFi protocol with farming and trading',
-    playUrl: 'https://defiland.app',
-    downloadUrl: null,
-    isWebBased: true,
-    rewards: ['DFL', 'Land NFTs', 'Tool NFTs'],
-    players: '15K+',
-    rating: 4.4
+    id: 'magiccraft',
+    name: 'MagicCraft',
+    category: 'MOBA Strategy',
+    blockchain: 'Polygon',
+    image: '/lovable-uploads/424982ae-ffcd-4769-8e5c-c63cd572d347.png',
+    description: 'Epic MOBA with magical battles and strategic gameplay',
+    playUrl: 'https://magiccraft.io/play',
+    downloadUrl: 'https://magiccraft.io/download',
+    isWebBased: false,
+    rewards: ['MCRT', 'Hero NFTs', 'Spell NFTs'],
+    players: '30K+',
+    rating: 4.5
   }
 ];
 
