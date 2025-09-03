@@ -11,7 +11,7 @@ const featuredGames = [
     name: 'Star Atlas',
     category: 'MMO Strategy',
     blockchain: 'Solana',
-    image: '/lovable-uploads/25b4f405-8edd-4c52-9b77-0d270d1b6c90.png',
+    image: '/lovable-uploads/1070ae3c-2007-492b-ac52-1f15c99e05c1.png',
     description: 'Epic space exploration and combat MMO built on Solana',
     playUrl: 'https://play.staratlas.com',
     downloadUrl: null,
