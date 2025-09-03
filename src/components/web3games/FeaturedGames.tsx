@@ -131,6 +131,48 @@ const featuredGames = [
     rewards: ['OTG', 'Weapon NFTs', 'Character NFTs'],
     players: '150K+',
     rating: 4.7
+  },
+  {
+    id: 'pudgy-party',
+    name: 'Pudgy Party',
+    category: 'Party Game',
+    blockchain: 'Ethereum',
+    image: '/lovable-uploads/pudgy-party.png',
+    description: 'Fun multiplayer party games featuring the beloved Pudgy Penguins NFT collection',
+    playUrl: 'https://pudgyparty.com/play',
+    downloadUrl: null,
+    isWebBased: true,
+    rewards: ['FISH', 'Pudgy NFTs', 'Party Items'],
+    players: '75K+',
+    rating: 4.6
+  },
+  {
+    id: 'arc8',
+    name: 'Arc8',
+    category: 'Mobile Arcade',
+    blockchain: 'Polygon',
+    image: '/lovable-uploads/arc8.png',
+    description: 'Mobile gaming platform with skill-based tournaments and GMEE token rewards',
+    playUrl: 'https://arc8.gamee.com/play',
+    downloadUrl: 'https://arc8.gamee.com/download',
+    isWebBased: false,
+    rewards: ['GMEE', 'NFT Prizes', 'Leaderboard Rewards'],
+    players: '200K+',
+    rating: 4.5
+  },
+  {
+    id: 'phantom-galaxies',
+    name: 'Phantom Galaxies',
+    category: 'Space Combat',
+    blockchain: 'Polygon',
+    image: '/lovable-uploads/phantom-galaxies.png',
+    description: 'Epic space combat MMO with mechs, starfighters, and planetary conquest',
+    playUrl: 'https://phantomgalaxies.com/play',
+    downloadUrl: 'https://phantomgalaxies.com/download',
+    isWebBased: false,
+    rewards: ['ASTRAFER', 'Mech NFTs', 'Planet NFTs'],
+    players: '120K+',
+    rating: 4.8
   }
 ];
 

@@ -52,10 +52,8 @@ export const Web3Gaming = () => {
 
       {/* Gaming Tabs */}
       <Tabs defaultValue="featured" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 arcade-frame">
+        <TabsList className="grid w-full grid-cols-2 arcade-frame">
           <TabsTrigger value="featured" className="cyber-button">🌟 Featured</TabsTrigger>
-          <TabsTrigger value="browse" className="cyber-button">🎯 Browse</TabsTrigger>
-          <TabsTrigger value="categories" className="cyber-button">📂 Categories</TabsTrigger>
           <TabsTrigger value="progress" className="cyber-button">📊 Progress</TabsTrigger>
         </TabsList>
 
@@ -63,13 +61,6 @@ export const Web3Gaming = () => {
           <FeaturedGames />
         </TabsContent>
 
-        <TabsContent value="browse" className="mt-6">
-          <GameGrid category={activeCategory} />
-        </TabsContent>
-
-        <TabsContent value="categories" className="mt-6">
-          <GameCategories onCategorySelect={setActiveCategory} />
-        </TabsContent>
 
         <TabsContent value="progress" className="mt-6">
           {isWalletConnected ? (
