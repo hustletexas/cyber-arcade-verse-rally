@@ -165,7 +165,7 @@ const featuredGames = [
     name: 'Phantom Galaxies',
     category: 'Space Combat',
     blockchain: 'Polygon',
-    image: '/lovable-uploads/phantom-galaxies.png',
+    image: '/lovable-uploads/2a4e495c-34d0-4529-9104-9e9190a0cd53.png',
     description: 'Epic space combat MMO with mechs, starfighters, and planetary conquest',
     playUrl: 'https://phantomgalaxies.com/play',
     downloadUrl: 'https://phantomgalaxies.com/download',
