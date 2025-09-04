@@ -151,7 +151,7 @@ const featuredGames = [
     name: 'Arc8',
     category: 'Mobile Arcade',
     blockchain: 'Polygon',
-    image: '/lovable-uploads/arc8.png',
+    image: '/lovable-uploads/1861aafc-236e-44ca-a286-768e7c5ddba0.png',
     description: 'Mobile gaming platform with skill-based tournaments and GMEE token rewards',
     playUrl: 'https://arc8.gamee.com/play',
     downloadUrl: 'https://arc8.gamee.com/download',
