@@ -123,7 +123,7 @@ const featuredGames = [
     name: 'Off The Grid',
     category: 'Battle Royale',
     blockchain: 'Avalanche',
-    image: '/lovable-uploads/off-the-grid.png',
+    image: '/lovable-uploads/84cd658e-c26a-4a33-bf25-20b989817f49.png',
     description: 'Cyberpunk battle royale with player-driven economy and NFT integration',
     playUrl: 'https://otg.game/play',
     downloadUrl: 'https://otg.game/download',
