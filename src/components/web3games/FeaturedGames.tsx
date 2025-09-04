@@ -137,7 +137,7 @@ const featuredGames = [
     name: 'Pudgy Party',
     category: 'Party Game',
     blockchain: 'Ethereum',
-    image: '/lovable-uploads/pudgy-party.png',
+    image: '/lovable-uploads/8bd58f1c-faa8-4f92-b4e2-20ee5ee8a6fe.png',
     description: 'Fun multiplayer party games featuring the beloved Pudgy Penguins NFT collection',
     playUrl: 'https://pudgyparty.com/play',
     downloadUrl: null,
