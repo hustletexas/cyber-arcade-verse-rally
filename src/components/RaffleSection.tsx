@@ -104,40 +104,24 @@ export const RaffleSection = () => {
 
   const [treasureChests] = useState<TreasureChest[]>([
     {
-      id: 'common',
-      name: 'Common Chest',
-      price: { cctr: 100, sol: 0.1, usdc: 5 },
-      rarity: 'common',
-      image: '/lovable-uploads/378a8773-5320-4d49-8779-341407974bb9.png',
-      description: 'Basic rewards for beginners',
-      rewards: ['10-50 CCTR', 'Common NFT', 'Discord Role']
-    },
-    {
-      id: 'rare',
-      name: 'Rare Chest',
-      price: { cctr: 500, sol: 0.5, usdc: 25 },
-      rarity: 'rare',
-      image: '/lovable-uploads/6347bc0d-7044-4d7c-8264-0d89f8640c08.png',
-      description: 'Better rewards for dedicated players',
-      rewards: ['100-300 CCTR', 'Rare NFT', 'Exclusive Avatar']
-    },
-    {
       id: 'epic',
-      name: 'Epic Chest',
+      name: 'Epic Treasure Vault',
       price: { cctr: 1500, sol: 1.5, usdc: 75 },
       rarity: 'epic',
       image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
-      description: 'Premium rewards for champions',
-      rewards: ['500-1000 CCTR', 'Epic NFT', 'Tournament Entry']
-    },
-    {
-      id: 'legendary',
-      name: 'Legendary Chest',
-      price: { cctr: 5000, sol: 5.0, usdc: 250 },
-      rarity: 'legendary',
-      image: '/lovable-uploads/567dbfe3-1f47-49cd-8fe2-6e429df5d3ff.png',
-      description: 'Ultimate rewards for legends',
-      rewards: ['2000-5000 CCTR', 'Legendary NFT', 'Physical Prize']
+      description: 'Ultimate gaming rewards for champions',
+      rewards: [
+        '500-2000 CCTR Tokens',
+        'Epic Gaming NFT',
+        'Tournament Entry Pass',
+        'Premium Avatar Set',
+        'Discord VIP Role',
+        'Monthly Tournament Subscription',
+        'Exclusive Game Beta Access',
+        'Physical Gaming Merchandise',
+        'Rare Character Skins',
+        'Gaming Hardware Vouchers'
+      ]
     }
   ]);
 
@@ -227,80 +211,82 @@ export const RaffleSection = () => {
           <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {treasureChests.map((chest) => (
-              <Card key={chest.id} className="vending-machine hover:scale-105 transition-transform">
-                <CardContent className="p-0">
-                  <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden">
-                    <img 
-                      src={chest.image} 
-                      alt={chest.name} 
-                      className="w-full h-full object-cover" 
-                    />
-                  </div>
-                  <div className="p-4 space-y-3">
-                    <div className="text-center">
-                      <Badge className={`${getRarityColor(chest.rarity)} text-white text-xs mb-2`}>
-                        {chest.rarity.toUpperCase()}
-                      </Badge>
-                      <h3 className="font-bold text-lg text-neon-cyan">{chest.name}</h3>
-                      <p className="text-sm text-muted-foreground">{chest.description}</p>
+          <div className="flex justify-center">
+            <div className="max-w-md w-full">
+              {treasureChests.map((chest) => (
+                <Card key={chest.id} className="vending-machine hover:scale-105 transition-transform">
+                  <CardContent className="p-0">
+                    <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden">
+                      <img 
+                        src={chest.image} 
+                        alt={chest.name} 
+                        className="w-full h-full object-cover" 
+                      />
                     </div>
+                    <div className="p-4 space-y-3">
+                      <div className="text-center">
+                        <Badge className={`${getRarityColor(chest.rarity)} text-white text-xs mb-2`}>
+                          {chest.rarity.toUpperCase()}
+                        </Badge>
+                        <h3 className="font-bold text-lg text-neon-cyan">{chest.name}</h3>
+                        <p className="text-sm text-muted-foreground">{chest.description}</p>
+                      </div>
 
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-neon-green">Possible Rewards:</h4>
-                      <ul className="text-xs text-muted-foreground space-y-1">
-                        {chest.rewards.map((reward, index) => (
-                          <li key={index}>• {reward}</li>
-                        ))}
-                      </ul>
-                    </div>
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-bold text-neon-green">Possible Rewards:</h4>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          {chest.rewards.map((reward, index) => (
+                            <li key={index}>• {reward}</li>
+                          ))}
+                        </ul>
+                      </div>
 
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-3 gap-1 text-xs">
-                        <Button
-                          variant={selectedPaymentMethod === 'cctr' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setSelectedPaymentMethod('cctr')}
-                          className="text-xs"
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-1 text-xs">
+                          <Button
+                            variant={selectedPaymentMethod === 'cctr' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSelectedPaymentMethod('cctr')}
+                            className="text-xs"
+                          >
+                            {chest.price.cctr} CCTR
+                          </Button>
+                          <Button
+                            variant={selectedPaymentMethod === 'sol' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSelectedPaymentMethod('sol')}
+                            className="text-xs"
+                          >
+                            {chest.price.sol} SOL
+                          </Button>
+                          <Button
+                            variant={selectedPaymentMethod === 'usdc' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSelectedPaymentMethod('usdc')}
+                            className="text-xs"
+                          >
+                            ${chest.price.usdc}
+                          </Button>
+                        </div>
+                        
+                        <Button 
+                          onClick={() => openTreasureChest(chest.id, selectedPaymentMethod)}
+                          disabled={processingPayment === chest.id || !isAuthenticated}
+                          className="cyber-button w-full"
                         >
-                          {chest.price.cctr} CCTR
-                        </Button>
-                        <Button
-                          variant={selectedPaymentMethod === 'sol' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setSelectedPaymentMethod('sol')}
-                          className="text-xs"
-                        >
-                          {chest.price.sol} SOL
-                        </Button>
-                        <Button
-                          variant={selectedPaymentMethod === 'usdc' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setSelectedPaymentMethod('usdc')}
-                          className="text-xs"
-                        >
-                          ${chest.price.usdc}
+                          {processingPayment === chest.id 
+                            ? "⏳ OPENING..." 
+                            : !isAuthenticated 
+                              ? "🔐 CONNECT TO PLAY" 
+                              : "🎁 OPEN CHEST"
+                          }
                         </Button>
                       </div>
-                      
-                      <Button 
-                        onClick={() => openTreasureChest(chest.id, selectedPaymentMethod)}
-                        disabled={processingPayment === chest.id || !isAuthenticated}
-                        className="cyber-button w-full"
-                      >
-                        {processingPayment === chest.id 
-                          ? "⏳ OPENING..." 
-                          : !isAuthenticated 
-                            ? "🔐 CONNECT TO PLAY" 
-                            : "🎁 OPEN CHEST"
-                        }
-                      </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
