@@ -117,7 +117,7 @@ export const PlayerDashboard = () => {
   ];
 
   const claimReward = (rewardId: string) => {
-    console.log(`Claiming reward: ${rewardId}`);
+    // Reward claimed successfully
   };
 
   return (

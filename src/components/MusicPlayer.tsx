@@ -159,9 +159,7 @@ export const MusicPlayer = () => {
     const currentSong = playlist[currentTrack];
     
     if (!isPlaying) {
-      console.log(`🎵 Streaming from Audius: ${currentSong.audiusUrl}`);
-      console.log(`📡 Audius Track ID: ${currentSong.audiusTrackId}`);
-      console.log(`🔗 Solana Address: ${currentSong.solanaAddress}`);
+      // Music streaming started
       
       if (isWalletConnected) {
         toast({

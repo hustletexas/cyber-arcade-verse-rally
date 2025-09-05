@@ -169,10 +169,7 @@ export const CommunityHub = () => {
   };
 
   const handleDiscordConnect = () => {
-    console.log('Discord button clicked!'); // Debug log
-    
     try {
-      console.log('Opening Discord link...'); // Debug log
       
       // Show connecting toast
       toast({
@@ -239,7 +236,7 @@ export const CommunityHub = () => {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.1);
     } catch (error) {
-      console.log('Audio not supported');
+      // Audio not supported, continue silently
     }
   };
 

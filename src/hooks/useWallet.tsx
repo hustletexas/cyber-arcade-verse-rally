@@ -50,7 +50,7 @@ export const useWallet = () => {
             }
           }
         } catch (error) {
-          console.log('Phantom wallet not auto-connected');
+          // Phantom wallet not auto-connected
         }
       }
 
@@ -68,7 +68,7 @@ export const useWallet = () => {
             }));
           }
         } catch (error) {
-          console.log('Coinbase wallet not auto-connected');
+          // Coinbase wallet not auto-connected
         }
       }
     };

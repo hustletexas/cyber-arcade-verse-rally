@@ -49,16 +49,31 @@ const Auth = () => {
 
         if (error) throw error;
 
-        toast({
-          title: "Account created!",
-          description: "Welcome to Cyber City Arcade! Check your email to verify your account.",
-        });
-        navigate('/');
+        if (data.user && !data.session) {
+          toast({
+            title: "Check your email!",
+            description: "We sent you a confirmation link. Please check your email and click the link to verify your account.",
+          });
+        } else {
+          toast({
+            title: "Account created!",
+            description: "Welcome to Cyber City Arcade! You can now start gaming.",
+          });
+          navigate('/');
+        }
       }
     } catch (error: any) {
+      let errorMessage = error.message;
+      
+      if (error.message === "Email not confirmed") {
+        errorMessage = "Please check your email and click the confirmation link before signing in.";
+      } else if (error.message === "Invalid login credentials") {
+        errorMessage = "Invalid email or password. Please check your credentials and try again.";
+      }
+      
       toast({
         title: "Authentication Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

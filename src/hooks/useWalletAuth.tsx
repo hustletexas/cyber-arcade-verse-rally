@@ -52,10 +52,10 @@ export const useWalletAuth = () => {
 
       if (isStillConnected) {
         setIsSmartContractReady(true);
-        console.log(`Smart contract connection ready for ${primaryWallet?.type} wallet`);
+        // Smart contract connection ready
       } else {
         setIsSmartContractReady(false);
-        console.log('Wallet disconnected from browser extension');
+        // Wallet disconnected from browser extension
       }
     } catch (error) {
       console.error('Error checking smart contract connection:', error);
@@ -68,7 +68,7 @@ export const useWalletAuth = () => {
 
     // Guard: avoid re-entrancy and spamming signup
     if (authInProgressRef.current) {
-      console.log('[WalletAuth] Auth already in progress, skipping.');
+      // Auth already in progress, skipping
       return;
     }
 
@@ -82,7 +82,7 @@ export const useWalletAuth = () => {
 
     // If we're in email confirmation state, use longer cooldown
     if (emailConfirmTime && now - Number(emailConfirmTime) < 120_000) { // 2 minutes
-      console.log('[WalletAuth] Email confirmation pending, attempting sign-in.');
+      // Email confirmation pending, attempting sign-in
       const { signInError } = await signInWithWalletCreds(walletAddress);
       if (!signInError) {
         localStorage.removeItem(emailConfirmKey);
@@ -98,7 +98,7 @@ export const useWalletAuth = () => {
 
     // Regular cooldown check - reduced to 30 seconds
     if (last && now - Number(last) < 30_000) {
-      console.log('[WalletAuth] Quick retry - attempting sign-in only.');
+      // Quick retry - attempting sign-in only
       const { signInError } = await signInWithWalletCreds(walletAddress);
       if (!signInError) {
         localStorage.removeItem(emailConfirmKey);
@@ -248,7 +248,7 @@ export const useWalletAuth = () => {
     const addr = primaryWallet?.address;
     
     if (addr && !user && isWalletConnected && lastAttemptedAddressRef.current !== addr && !authInProgressRef.current) {
-      console.log('Auto-authenticating with wallet:', addr);
+      // Auto-authenticating with wallet
       createOrLoginWithWallet(addr);
     } else if (addr && user && isWalletConnected && !isSmartContractReady) {
       // User is already authenticated, just initialize smart contract connection

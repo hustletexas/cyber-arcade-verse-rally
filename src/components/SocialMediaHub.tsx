@@ -95,13 +95,13 @@ export const SocialMediaHub = () => {
   const connectPlatform = (platformId: string) => {
     if (!connectedPlatforms.includes(platformId)) {
       setConnectedPlatforms([...connectedPlatforms, platformId]);
-      console.log(`Connected to ${platformId}`);
+      // Platform connected successfully
     }
   };
 
   const disconnectPlatform = (platformId: string) => {
     setConnectedPlatforms(connectedPlatforms.filter(id => id !== platformId));
-    console.log(`Disconnected from ${platformId}`);
+    // Platform disconnected successfully
   };
 
   return (

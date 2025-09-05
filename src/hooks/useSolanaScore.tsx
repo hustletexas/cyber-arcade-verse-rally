@@ -26,12 +26,7 @@ export const useSolanaScore = () => {
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting score to Solana via Edge Function:', { 
-        playerPubkey, 
-        score, 
-        gameType,
-        walletType: primaryWallet.type
-      });
+      // Submitting score to Solana via Edge Function
 
       const { data, error } = await supabase.functions.invoke('submit-score', {
         body: {
@@ -47,7 +42,7 @@ export const useSolanaScore = () => {
       }
 
       if (data?.success) {
-        console.log('Score submitted successfully:', data);
+        // Score submitted successfully
         
         toast({
           title: "Score Submitted! 🎉",

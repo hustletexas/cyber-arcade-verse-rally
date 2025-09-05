@@ -55,7 +55,7 @@ export const useMultiWallet = () => {
           });
         }
       } catch (error) {
-        console.log('Phantom wallet not auto-connected');
+        // Phantom wallet not auto-connected
       }
     }
 
@@ -71,7 +71,7 @@ export const useMultiWallet = () => {
           });
         }
       } catch (error) {
-        console.log('Solflare wallet not auto-connected');
+        // Solflare wallet not auto-connected
       }
     }
 
@@ -87,7 +87,7 @@ export const useMultiWallet = () => {
           });
         }
       } catch (error) {
-        console.log('Backpack wallet not auto-connected');
+        // Backpack wallet not auto-connected
       }
     }
 
@@ -103,7 +103,7 @@ export const useMultiWallet = () => {
           });
         }
       } catch (error) {
-        console.log('Coinbase wallet not auto-connected');
+        // Coinbase wallet not auto-connected
       }
     }
 
@@ -124,7 +124,7 @@ export const useMultiWallet = () => {
 
       if (error) throw error;
       
-      console.log('Wallet linked to profile:', walletAddress);
+      // Wallet linked to profile successfully
     } catch (error) {
       console.error('Error linking wallet to profile:', error);
     }

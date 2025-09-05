@@ -50,7 +50,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
 
   const loadQuestions = () => {
     try {
-      console.log(`Loading questions for category: ${category}`);
+      // Loading questions for selected category
       
       // Get real gaming questions for the selected category
       const gameQuestions = getRandomMixedQuestions(category, questionsPerGame);
@@ -64,8 +64,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
         onBackToMenu();
         return;
       }
-
-      console.log(`Loaded ${gameQuestions.length} questions for ${category}:`, gameQuestions);
+      // Questions loaded successfully
       
       setQuestions(gameQuestions);
       setGameStatus('playing');
@@ -207,7 +206,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     if (isWalletConnected()) {
       const result = await submitScore(score, category);
       if (result.success) {
-        console.log('Score successfully submitted to Solana blockchain');
+        // Score successfully submitted to Solana blockchain
         toast({
           title: "Score Submitted! 🔗",
           description: "Your score has been recorded on the Solana blockchain",
@@ -227,7 +226,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             description: `${category} trivia: ${correctAnswers}/${questions.length} correct, ${score} CCTR earned`
           });
         
-        console.log('Score saved to database');
+        // Score saved to database
       } catch (error) {
         console.error('Error saving to database:', error);
       }

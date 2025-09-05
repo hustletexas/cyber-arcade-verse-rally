@@ -145,7 +145,7 @@ export const RaffleSection = () => {
     
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log(`Purchased ${tickets} tickets for raffle ${raffleId}`);
+      // Purchase completed successfully
     } catch (error) {
       console.error('Purchase error:', error);
     } finally {
@@ -160,7 +160,7 @@ export const RaffleSection = () => {
     
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log(`Opened treasure chest ${chestId} with ${paymentMethod}`);
+      // Chest opened successfully
     } catch (error) {
       console.error('Chest opening error:', error);
     } finally {

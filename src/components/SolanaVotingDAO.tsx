@@ -70,13 +70,9 @@ export const SolanaVotingDAO = () => {
 
     try {
       // Here you would integrate with the Anchor program
-      console.log('Creating proposal with CCTR fee:', { 
-        proposalTitle, 
-        proposalDescription, 
-        proposalType,
-        wallet: primaryWallet.address,
-        fee: PROPOSAL_FEE
-      });
+      // Creating proposal with CCTR fee
+      
+      // Simulate smart contract interaction
       
       // Simulate smart contract interaction with CCTR fee
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -115,12 +111,9 @@ export const SolanaVotingDAO = () => {
     setIsVoting(proposalId);
 
     try {
-      console.log('Voting on proposal with CCTR fee:', {
-        proposalId, 
-        support: support ? 'FOR' : 'AGAINST',
-        wallet: primaryWallet.address,
-        fee: VOTING_FEE
-      });
+      // Voting on proposal with CCTR fee
+      
+      // Simulate smart contract interaction
       
       // Simulate smart contract interaction with CCTR fee
       await new Promise(resolve => setTimeout(resolve, 1500));

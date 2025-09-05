@@ -63,7 +63,7 @@ export const TournamentGameInterface = ({
         setHighScore(data.placement);
       }
     } catch (error) {
-      console.log('No previous score found');
+      // No previous score found, using default
     }
   };
 

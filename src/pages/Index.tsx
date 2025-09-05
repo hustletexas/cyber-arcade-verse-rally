@@ -180,28 +180,28 @@ const Index = () => {
           {/* Privacy, Support, and Terms Links */}
           <div className="flex justify-center gap-6 mb-6">
             <button 
-              onClick={() => window.open('#', '_blank')} 
+              onClick={() => window.open('https://cybercityarcade.com/privacy', '_blank')} 
               className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
             >
               Privacy Policy
             </button>
             <span className="text-neon-purple">•</span>
             <button 
-              onClick={() => window.open('#', '_blank')} 
+              onClick={() => window.open('https://cybercityarcade.com/support', '_blank')} 
               className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
             >
               Support
             </button>
             <span className="text-neon-purple">•</span>
             <button 
-              onClick={() => window.open('#', '_blank')} 
+              onClick={() => window.open('https://cybercityarcade.com/terms', '_blank')} 
               className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
             >
               Terms
             </button>
             <span className="text-neon-purple">•</span>
             <button 
-              onClick={() => window.open('#', '_blank')} 
+              onClick={() => window.open('https://cybercityarcade.com/about', '_blank')} 
               className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
             >
               About

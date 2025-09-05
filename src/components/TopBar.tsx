@@ -91,7 +91,6 @@ export const TopBar = () => {
   };
 
   const handleManageWallets = () => {
-    console.log('Opening wallet manager dialog');
     setShowWalletManager(true);
   };
 
