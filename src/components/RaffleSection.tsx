@@ -114,12 +114,9 @@ export const RaffleSection = () => {
         '500-2000 CCTR Tokens',
         'Epic Gaming NFT',
         'Tournament Entry Pass',
-        'Premium Avatar Set',
-        'Discord VIP Role',
         'Monthly Tournament Subscription',
         'Exclusive Game Beta Access',
         'Physical Gaming Merchandise',
-        'Rare Character Skins',
         'Gaming Hardware Vouchers'
       ]
     }
