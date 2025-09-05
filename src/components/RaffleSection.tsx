@@ -106,7 +106,7 @@ export const RaffleSection = () => {
     {
       id: 'epic',
       name: 'Epic Treasure Vault',
-      price: { cctr: 1500, sol: 1.5, usdc: 75 },
+      price: { cctr: 1000, sol: 0.5, usdc: 45 },
       rarity: 'epic',
       image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
       description: 'Ultimate gaming rewards for champions',
@@ -211,8 +211,7 @@ export const RaffleSection = () => {
           <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-center">
-            <div className="max-w-md w-full">
+          <div className="w-full">
               {treasureChests.map((chest) => (
                 <Card key={chest.id} className="vending-machine hover:scale-105 transition-transform">
                   <CardContent className="p-0">
@@ -286,7 +285,6 @@ export const RaffleSection = () => {
                   </CardContent>
                 </Card>
               ))}
-            </div>
           </div>
         </CardContent>
       </Card>
