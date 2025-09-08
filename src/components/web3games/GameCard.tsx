@@ -34,8 +34,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
   const handleDownload = () => {
     if (game.downloadUrl) {
-      window.open(game.downloadUrl, '_blank');
-      toast.success(`Downloading ${game.name}...`);
+      // For demo purposes, show a placeholder message since these are placeholder URLs
+      if (game.downloadUrl.includes('otg.game') || game.downloadUrl.includes('placeholder')) {
+        toast.info(`${game.name} download coming soon! Check back later.`);
+      } else {
+        window.open(game.downloadUrl, '_blank');
+        toast.success(`Downloading ${game.name}...`);
+      }
     } else {
       toast.error('Download not available for this game');
     }
