@@ -106,7 +106,7 @@ export const RaffleSection = () => {
     {
       id: 'epic',
       name: 'Epic Treasure Vault',
-      price: { cctr: 1000, sol: 0.5, usdc: 45 },
+      price: { cctr: 1000, sol: 0.25, usdc: 45 },
       rarity: 'epic',
       image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
       description: 'Ultimate gaming rewards for champions',
