@@ -11,19 +11,20 @@ import { ShoppingCart, Minus, Plus, Trash2, CreditCard } from 'lucide-react';
 export const CartDrawer = () => {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalItems, getTotalPrice, isOpen, setIsOpen } = useCart();
   const { toast } = useToast();
-  const [selectedPayment, setSelectedPayment] = useState<'SOL' | 'USDC' | 'PYUSD'>('SOL');
   const [processing, setProcessing] = useState(false);
 
-  // Mock exchange rates - in production, fetch from a price API
-  const exchangeRates = {
-    SOL: 0.02, // 1 USD = 0.02 SOL (assuming SOL is $50)
-    USDC: 1.0, // 1 USD = 1 USDC
-    PYUSD: 1.0 // 1 USD = 1 PYUSD
-  };
+  // SOL is the only payment method for NFTs
+  const selectedPayment = 'SOL';
 
-  const getTotalInCrypto = () => {
-    const totalUSD = getTotalPrice();
-    return (totalUSD * exchangeRates[selectedPayment]).toFixed(selectedPayment === 'SOL' ? 4 : 2);
+  const getTotalInSOL = () => {
+    // Calculate total SOL directly from item prices (already in SOL for NFTs)
+    const totalSOL = items.reduce((sum, item) => {
+      if (item.category === 'nft') {
+        return sum + item.price * item.quantity;
+      }
+      return sum + item.price * item.quantity * 0.0125; // Convert USD to SOL for other items
+    }, 0);
+    return totalSOL.toFixed(4);
   };
 
   const handleCheckout = async () => {
@@ -50,12 +51,12 @@ export const CartDrawer = () => {
         return;
       }
 
-      const totalAmount = parseFloat(getTotalInCrypto());
+      const totalAmount = parseFloat(getTotalInSOL());
       
-      // Simulate payment processing
+      // Simulate instant SOL payment and NFT delivery
       toast({
-        title: "Processing Payment",
-        description: `Processing ${totalAmount} ${selectedPayment} payment...`,
+        title: "Processing SOL Payment",
+        description: `Processing ${totalAmount} SOL payment and minting NFTs...`,
       });
 
       // In a real implementation, you would:
@@ -64,12 +65,21 @@ export const CartDrawer = () => {
       // 3. Send SOL for native payments
       // 4. Confirm transaction on blockchain
 
-      // Mock payment delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Mock instant payment and NFT minting
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Check for NFT items and simulate instant delivery
+      const nftItems = items.filter(item => item.category === 'nft');
+      if (nftItems.length > 0) {
+        toast({
+          title: "NFTs Minted! 🎨",
+          description: `${nftItems.length} NFT(s) instantly delivered to your connected wallet!`,
+        });
+      }
 
       toast({
         title: "Payment Successful! 🎉",
-        description: `Your order has been confirmed. Transaction completed with ${totalAmount} ${selectedPayment}`,
+        description: `Transaction completed with ${totalAmount} SOL. Items delivered instantly!`,
       });
 
       // Clear cart and close drawer
@@ -183,24 +193,17 @@ export const CartDrawer = () => {
 
               <Separator className="bg-neon-cyan/30" />
 
-              {/* Payment Method Selection */}
+              {/* Payment Method */}
               <div className="space-y-3">
-                <h4 className="font-bold text-neon-purple">Select Payment Method</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['SOL', 'USDC', 'PYUSD'] as const).map((method) => (
-                    <Button
-                      key={method}
-                      variant={selectedPayment === method ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedPayment(method)}
-                      className={selectedPayment === method 
-                        ? "bg-neon-cyan text-black border-neon-cyan" 
-                        : "border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                      }
-                    >
-                      {method}
-                    </Button>
-                  ))}
+                <h4 className="font-bold text-neon-purple">Payment Method</h4>
+                <div className="p-3 border border-neon-cyan rounded-lg bg-neon-cyan/10">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-neon-cyan text-black">☀️ SOL</Badge>
+                    <span className="text-neon-cyan">Solana Network Payment</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Instant delivery to your connected wallet
+                  </p>
                 </div>
               </div>
 
@@ -209,24 +212,24 @@ export const CartDrawer = () => {
               {/* Order Summary */}
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal:</span>
-                  <span className="text-neon-green font-bold">${getTotalPrice().toFixed(2)}</span>
+                  <span className="text-muted-foreground">Total SOL:</span>
+                  <span className="text-neon-green font-bold text-xl">{getTotalInSOL()} SOL</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping:</span>
-                  <span className="text-neon-green">
-                    {getTotalPrice() >= 75 ? 'FREE' : '$5.99'}
+                  <span className="text-muted-foreground">USD Reference:</span>
+                  <span className="text-sm text-muted-foreground">
+                    ~${getTotalPrice().toFixed(2)}
                   </span>
                 </div>
                 <Separator className="bg-neon-cyan/30" />
                 <div className="flex justify-between text-lg">
-                  <span className="font-bold text-neon-cyan">Total:</span>
+                  <span className="font-bold text-neon-cyan">Pay:</span>
                   <div className="text-right">
-                    <div className="text-neon-green font-bold">
-                      ${(getTotalPrice() + (getTotalPrice() >= 75 ? 0 : 5.99)).toFixed(2)}
+                    <div className="text-neon-green font-bold text-2xl">
+                      {getTotalInSOL()} SOL
                     </div>
-                    <div className="text-sm text-neon-purple">
-                      {getTotalInCrypto()} {selectedPayment}
+                    <div className="text-xs text-neon-purple">
+                      Instant NFT delivery
                     </div>
                   </div>
                 </div>
@@ -240,7 +243,7 @@ export const CartDrawer = () => {
                   className="w-full cyber-button text-lg py-3"
                 >
                   <CreditCard size={20} className="mr-2" />
-                  {processing ? 'Processing...' : `Pay ${getTotalInCrypto()} ${selectedPayment}`}
+                  {processing ? 'Processing...' : `Pay ${getTotalInSOL()} SOL`}
                 </Button>
                 
                 <div className="flex gap-2">
@@ -265,8 +268,8 @@ export const CartDrawer = () => {
               <Card className="bg-neon-cyan/10 border-neon-cyan/30">
                 <CardContent className="p-3">
                   <p className="text-xs text-neon-cyan">
-                    💡 <strong>Secure Payments:</strong> All transactions are processed on the Solana blockchain. 
-                    Make sure your wallet has sufficient {selectedPayment} tokens.
+                    💡 <strong>Instant Delivery:</strong> NFTs are minted and delivered instantly to your connected Solana wallet. 
+                    Make sure your wallet has sufficient SOL tokens.
                   </p>
                 </CardContent>
               </Card>
