@@ -11,12 +11,12 @@ import { ShoppingCart, Minus, Plus, Trash2, CreditCard } from 'lucide-react';
 export const CartDrawer = () => {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalItems, getTotalPrice, isOpen, setIsOpen } = useCart();
   const { toast } = useToast();
-  const [selectedPayment, setSelectedPayment] = useState<'SOL'>('SOL');
+  const [selectedPayment, setSelectedPayment] = useState<'SOL' | 'USDC' | 'PYUSD'>('SOL');
   const [processing, setProcessing] = useState(false);
 
-  // Updated exchange rates with accurate SOL pricing
+  // Mock exchange rates - in production, fetch from a price API
   const exchangeRates = {
-    SOL: 0.0125, // 1 USD = 0.0125 SOL (assuming SOL is $80)
+    SOL: 0.02, // 1 USD = 0.02 SOL (assuming SOL is $50)
     USDC: 1.0, // 1 USD = 1 USDC
     PYUSD: 1.0 // 1 USD = 1 PYUSD
   };
@@ -183,18 +183,24 @@ export const CartDrawer = () => {
 
               <Separator className="bg-neon-cyan/30" />
 
-              {/* Payment Method - SOL Only */}
+              {/* Payment Method Selection */}
               <div className="space-y-3">
-                <h4 className="font-bold text-neon-purple">Payment Method</h4>
-                <div className="w-full">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    disabled
-                    className="w-full bg-neon-cyan text-black border-neon-cyan"
-                  >
-                    SOL (Solana)
-                  </Button>
+                <h4 className="font-bold text-neon-purple">Select Payment Method</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['SOL', 'USDC', 'PYUSD'] as const).map((method) => (
+                    <Button
+                      key={method}
+                      variant={selectedPayment === method ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedPayment(method)}
+                      className={selectedPayment === method 
+                        ? "bg-neon-cyan text-black border-neon-cyan" 
+                        : "border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                      }
+                    >
+                      {method}
+                    </Button>
+                  ))}
                 </div>
               </div>
 
@@ -217,10 +223,10 @@ export const CartDrawer = () => {
                   <span className="font-bold text-neon-cyan">Total:</span>
                   <div className="text-right">
                     <div className="text-neon-green font-bold">
-                      {getTotalInCrypto()} SOL
+                      ${(getTotalPrice() + (getTotalPrice() >= 75 ? 0 : 5.99)).toFixed(2)}
                     </div>
                     <div className="text-sm text-neon-purple">
-                      (${(getTotalPrice() + (getTotalPrice() >= 75 ? 0 : 5.99)).toFixed(2)} USD)
+                      {getTotalInCrypto()} {selectedPayment}
                     </div>
                   </div>
                 </div>
@@ -234,7 +240,7 @@ export const CartDrawer = () => {
                   className="w-full cyber-button text-lg py-3"
                 >
                   <CreditCard size={20} className="mr-2" />
-                  {processing ? 'Processing...' : `Pay ${getTotalInCrypto()} SOL`}
+                  {processing ? 'Processing...' : `Pay ${getTotalInCrypto()} ${selectedPayment}`}
                 </Button>
                 
                 <div className="flex gap-2">
@@ -260,7 +266,7 @@ export const CartDrawer = () => {
                 <CardContent className="p-3">
                   <p className="text-xs text-neon-cyan">
                     💡 <strong>Secure Payments:</strong> All transactions are processed on the Solana blockchain. 
-                    Make sure your wallet has sufficient SOL tokens.
+                    Make sure your wallet has sufficient {selectedPayment} tokens.
                   </p>
                 </CardContent>
               </Card>
