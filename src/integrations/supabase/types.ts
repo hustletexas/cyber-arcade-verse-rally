@@ -690,6 +690,18 @@ export type Database = {
         Args: { raffle_id_param: string }
         Returns: string
       }
+      get_tournament_leaderboard: {
+        Args: { tournament_id_param?: string }
+        Returns: {
+          joined_at: string
+          placement: number
+          player_identifier: string
+          reward_amount: number
+          score: number
+          tournament_id: string
+          tournament_name: string
+        }[]
+      }
       join_solana_tournament: {
         Args: {
           tournament_id_param: string

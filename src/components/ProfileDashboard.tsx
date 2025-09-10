@@ -43,11 +43,11 @@ export const ProfileDashboard = () => {
     allowDirectMessages: true
   });
 
-  // Fetch tournament data
+  // Fetch user's own tournament data (private, includes wallet info)
   const { data: tournamentEntries = [] } = useQuery({
-    queryKey: ['tournament-entries', primaryWallet?.address],
+    queryKey: ['user-tournament-entries', user?.id],
     queryFn: async () => {
-      if (!primaryWallet?.address) return [];
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from('solana_tournament_entries')
         .select(`
@@ -60,13 +60,13 @@ export const ProfileDashboard = () => {
             end_time
           )
         `)
-        .eq('wallet_address', primaryWallet.address)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data || [];
     },
-    enabled: !!primaryWallet?.address
+    enabled: !!user?.id
   });
 
   // Fetch recent activity from token transactions
