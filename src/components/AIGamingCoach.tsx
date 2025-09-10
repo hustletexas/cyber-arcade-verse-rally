@@ -17,7 +17,7 @@ export const AIGamingCoach = () => {
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const QUESTION_COST = 10; // 10 CCTR per question
+  const QUESTION_COST = 1; // 1 CCTR per question
 
   const handleAskQuestion = async () => {
     if (!isWalletConnected || !primaryWallet) {
@@ -56,6 +56,9 @@ export const AIGamingCoach = () => {
       // Generate AI response (simplified keyword-based for now)
       const aiResponse = generateAIResponse(question);
       setResponse(aiResponse);
+      
+      // Clear the question input to allow for new questions
+      setQuestion('');
 
       toast({
         title: "Question Processed!",
