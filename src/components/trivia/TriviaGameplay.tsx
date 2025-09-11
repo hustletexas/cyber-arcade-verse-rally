@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSolanaScore } from '@/hooks/useSolanaScore';
@@ -19,6 +20,7 @@ interface TriviaGameplayProps {
 
 export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: TriviaGameplayProps) => {
   const { user } = useAuth();
+  const { balance, refetch: refetchBalance } = useUserBalance();
   const { toast } = useToast();
   const { submitScore, isSubmitting } = useSolanaScore();
   const { getConnectedWallet, isWalletConnected } = useWallet();
@@ -106,16 +108,14 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     if (isCorrect) {
       setCorrectAnswers(correctAnswers + 1);
       
-      // Calculate points based on difficulty and speed
-      let points = getPointsForDifficulty(currentQuestion.difficulty);
-      const speedBonus = getSpeedBonus(timeLeft);
-      points = Math.floor(points * speedBonus);
+      // Award 1 CCTR for each correct answer
+      const points = 1;
       
       setScore(score + points);
 
       toast({
         title: "Correct! 🎉",
-        description: `+${points} CCTR (${speedBonus}x speed bonus)`,
+        description: `+1 CCTR earned!`,
       });
     } else {
       toast({
@@ -168,21 +168,6 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     }, 2000);
   };
 
-  const getPointsForDifficulty = (difficulty: string): number => {
-    switch (difficulty) {
-      case 'easy': return 100;
-      case 'medium': return 200;
-      case 'hard': return 300;
-      default: return 100;
-    }
-  };
-
-  const getSpeedBonus = (timeRemaining: number): number => {
-    // Updated for 15-second timer
-    if (timeRemaining >= 12) return 1.5; // 150% for very fast (12-15 seconds)
-    if (timeRemaining >= 8) return 1.2; // 120% for fast (8-11 seconds)
-    return 1.0; // Base points for slow (0-7 seconds)
-  };
 
   const getOptionText = (question: TriviaQuestion, optionLetter: string): string => {
     switch (optionLetter) {
@@ -197,9 +182,38 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
   const endGame = async () => {
     setGameStatus('finished');
     
+    // Award CCTR tokens for correct answers and update balance
+    if (user && score > 0) {
+      try {
+        const { error: updateError } = await supabase
+          .from('user_balances')
+          .update({
+            cctr_balance: balance.cctr_balance + score,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+
+        // Record the transaction
+        await supabase
+          .from('token_transactions')
+          .insert({
+            user_id: user.id,
+            amount: score,
+            transaction_type: 'trivia_reward',
+            description: `${category} trivia: ${correctAnswers}/${questions.length} correct, ${score} CCTR earned`
+          });
+
+        await refetchBalance();
+      } catch (error) {
+        console.error('Error updating balance:', error);
+      }
+    }
+    
     toast({
       title: "Game Complete! 🏆",
-      description: `You scored ${score} CCTR with ${correctAnswers}/${questions.length} correct answers!`,
+      description: `You earned ${score} CCTR with ${correctAnswers}/${questions.length} correct answers!`,
     });
     
     // Submit score to Solana blockchain if wallet is connected
@@ -211,24 +225,6 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
           title: "Score Submitted! 🔗",
           description: "Your score has been recorded on the Solana blockchain",
         });
-      }
-    }
-
-    // Also save to traditional database if user is authenticated
-    if (user) {
-      try {
-        await supabase
-          .from('token_transactions')
-          .insert({
-            user_id: user.id,
-            amount: score,
-            transaction_type: 'trivia_reward',
-            description: `${category} trivia: ${correctAnswers}/${questions.length} correct, ${score} CCTR earned`
-          });
-        
-        // Score saved to database
-      } catch (error) {
-        console.error('Error saving to database:', error);
       }
     }
 
@@ -356,7 +352,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
               currentQuestion.difficulty === 'medium' ? 'bg-yellow-500' :
               'bg-red-500'
             } text-white`}>
-              {currentQuestion.difficulty.toUpperCase()} • +{getPointsForDifficulty(currentQuestion.difficulty)} CCTR
+              {currentQuestion.difficulty.toUpperCase()} • +1 CCTR if correct
             </Badge>
             <Badge variant="outline" className="border-neon-cyan text-neon-cyan">
               🎮 {category.replace('-', ' ').toUpperCase()}

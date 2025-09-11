@@ -7,6 +7,7 @@ import { TriviaLeaderboard } from './trivia/TriviaLeaderboard';
 import { TriviaRewards } from './trivia/TriviaRewards';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
+import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TriviaUserStats } from '@/types/trivia';
@@ -16,6 +17,7 @@ type ViewState = 'menu' | 'game' | 'leaderboard' | 'rewards';
 export const TriviaGame = () => {
   const { user } = useAuth();
   const { walletState, getConnectedWallet, isWalletConnected } = useWallet();
+  const { balance, loading: balanceLoading, refetch: refetchBalance } = useUserBalance();
   const { toast } = useToast();
   const [currentView, setCurrentView] = useState<ViewState>('menu');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -116,7 +118,7 @@ export const TriviaGame = () => {
     }
   };
 
-  const startGame = (category: string) => {
+  const startGame = async (category: string) => {
     if (!user && !isWalletConnected()) {
       toast({
         title: "Authentication Required",
@@ -124,6 +126,56 @@ export const TriviaGame = () => {
         variant: "destructive",
       });
       return;
+    }
+
+    // Check if user has enough tokens (1 CCTR required)
+    if (user && balance.cctr_balance < 1) {
+      toast({
+        title: "Insufficient Tokens",
+        description: "You need 1 CCTR token to start a trivia game. Earn more by completing games!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Deduct 1 CCTR token for game entry
+    if (user) {
+      try {
+        const { error: updateError } = await supabase
+          .from('user_balances')
+          .update({
+            cctr_balance: balance.cctr_balance - 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+
+        // Record the transaction
+        await supabase
+          .from('token_transactions')
+          .insert({
+            user_id: user.id,
+            amount: -1,
+            transaction_type: 'trivia_entry',
+            description: `${category} trivia game entry fee`
+          });
+
+        await refetchBalance();
+
+        toast({
+          title: "Game Started! 🎮",
+          description: "1 CCTR deducted. Earn 1 token per correct answer!",
+        });
+      } catch (error) {
+        console.error('Error deducting entry fee:', error);
+        toast({
+          title: "Error",
+          description: "Failed to start game. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
     
     setSelectedCategory(category);
@@ -133,6 +185,7 @@ export const TriviaGame = () => {
   const handleGameComplete = () => {
     setCurrentView('menu');
     loadUserStats(); // Refresh stats after game
+    refetchBalance(); // Refresh balance after game
   };
 
   if (currentView === 'game' && selectedCategory) {
@@ -179,6 +232,14 @@ export const TriviaGame = () => {
             <div className="text-center mt-2">
               <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
                 🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
+              </Badge>
+            </div>
+          )}
+          
+          {user && !balanceLoading && (
+            <div className="text-center mt-2">
+              <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple">
+                💰 Balance: {balance.cctr_balance} CCTR
               </Badge>
             </div>
           )}
@@ -251,8 +312,17 @@ export const TriviaGame = () => {
                   <div className="text-4xl mb-3">{category.emoji}</div>
                   <h3 className="font-bold text-lg text-neon-cyan mb-2">{category.name}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
-                  <Button className="cyber-button w-full" size="sm">
-                    Start Game
+                  <div className="mb-3">
+                    <Badge className="bg-red-500/20 text-red-400 border-red-500">
+                      💎 Cost: 1 CCTR
+                    </Badge>
+                  </div>
+                  <Button 
+                    className="cyber-button w-full" 
+                    size="sm"
+                    disabled={user && balance.cctr_balance < 1}
+                  >
+                    {user && balance.cctr_balance < 1 ? 'Insufficient Tokens' : 'Start Game'}
                   </Button>
                 </CardContent>
               </Card>
@@ -271,10 +341,10 @@ export const TriviaGame = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Easy questions: 100 CCTR</li>
-              <li>• Medium questions: 200 CCTR</li>
-              <li>• Hard questions: 300 CCTR</li>
-              <li>• Speed bonuses up to 1.5x</li>
+              <li>• Game entry: 1 CCTR cost</li>
+              <li>• Correct answers: 1 CCTR each</li>
+              <li>• Maximum: 10 CCTR per game</li>
+              <li>• Profit potential: +9 CCTR</li>
             </ul>
           </CardContent>
         </Card>
