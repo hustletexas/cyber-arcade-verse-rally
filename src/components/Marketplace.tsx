@@ -106,7 +106,7 @@ export const Marketplace = () => {
   const { createOrLoginWithWallet } = useWalletAuth();
   const { balance } = useUserBalance();
   const { addToCart, getTotalItems, getTotalPrice, setIsOpen } = useCart();
-  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('sol');
+  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('cctr');
   const [filter, setFilter] = useState('all');
 
   const ensureAuthenticated = async (): Promise<boolean> => {
