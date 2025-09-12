@@ -5,12 +5,15 @@ skip-lint = false
 
 [programs.localnet]
 voting_dao = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+node_system = "7WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWN"
 
 [programs.devnet]
 voting_dao = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+node_system = "7WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWN"
 
 [programs.mainnet]
 voting_dao = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+node_system = "7WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWN"
 
 [registry]
 url = "https://api.apr.dev"

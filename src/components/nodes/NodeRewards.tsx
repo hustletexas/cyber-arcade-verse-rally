@@ -6,6 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Coins, TrendingUp, Clock, Gift } from 'lucide-react';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
+import { useSolanaNodes } from '@/hooks/useSolanaNodes';
+
+interface NodeRewardsProps {
+  userNodes?: { basic: number; premium: number; legendary: number };
+}
 
 interface NodeReward {
   id: string;
@@ -16,7 +21,8 @@ interface NodeReward {
   txHash?: string;
 }
 
-export const NodeRewards = () => {
+export const NodeRewards = ({ userNodes = { basic: 0, premium: 0, legendary: 0 } }: NodeRewardsProps) => {
+  const { claimRewards, isProcessing } = useSolanaNodes();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
   const [rewards, setRewards] = useState<NodeReward[]>([]);
@@ -132,9 +138,9 @@ export const NodeRewards = () => {
   };
 
   const nodeStats = {
-    basic: { count: 2, dailyReward: 0.05 },
-    premium: { count: 1, dailyReward: 0.15 },
-    legendary: { count: 1, dailyReward: 0.35 }
+    basic: { count: userNodes.basic, dailyReward: 0.05 },
+    premium: { count: userNodes.premium, dailyReward: 0.3 },
+    legendary: { count: userNodes.legendary, dailyReward: 0.7 }
   };
 
   if (!isWalletConnected) {
@@ -201,14 +207,15 @@ export const NodeRewards = () => {
       </div>
 
       {/* Claim Actions */}
-      {pendingRewards > 0 && (
+      {(userNodes.basic + userNodes.premium + userNodes.legendary) > 0 && (
         <div className="flex justify-center">
           <Button 
-            onClick={claimAllRewards}
+            onClick={claimRewards}
+            disabled={isProcessing}
             className="cyber-button px-8 py-3 text-lg"
           >
             <Coins className="mr-2 h-5 w-5" />
-            Claim All Rewards ({pendingRewards.toFixed(4)} SOL)
+            {isProcessing ? 'Claiming...' : 'Claim Daily Rewards'}
           </Button>
         </div>
       )}

@@ -149,6 +149,81 @@ export type Database = {
         }
         Relationships: []
       }
+      node_purchases: {
+        Row: {
+          created_at: string
+          id: string
+          mint_address: string | null
+          node_type: string
+          price_sol: number
+          quantity: number
+          transaction_hash: string
+          updated_at: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mint_address?: string | null
+          node_type: string
+          price_sol: number
+          quantity?: number
+          transaction_hash: string
+          updated_at?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mint_address?: string | null
+          node_type?: string
+          price_sol?: number
+          quantity?: number
+          transaction_hash?: string
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      node_rewards: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          id: string
+          reward_amount: number
+          reward_date: string
+          transaction_hash: string | null
+          updated_at: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          reward_amount: number
+          reward_date?: string
+          transaction_hash?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          reward_amount?: number
+          reward_date?: string
+          transaction_hash?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       prizes: {
         Row: {
           contract_address: string | null

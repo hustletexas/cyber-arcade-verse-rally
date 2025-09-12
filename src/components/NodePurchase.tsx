@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,11 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useAuth } from '@/hooks/useAuth';
+import { useSolanaNodes } from '@/hooks/useSolanaNodes';
 import { NodeInfo } from '@/components/nodes/NodeInfo';
 import { NodeCards } from '@/components/nodes/NodeCards';
 import { NodeRewards } from '@/components/nodes/NodeRewards';
 import { NodeStatistics } from '@/components/nodes/NodeStatistics';
 import { Coins, Server, Zap, TrendingUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NodeType {
   id: string;
@@ -37,7 +39,7 @@ const nodeTypes: NodeType[] = [
     monthlyReward: 1.5,
     roi: 150,
     maxSupply: 1000,
-    currentSupply: 342,
+    currentSupply: 0,
     icon: '🔷',
     features: ['Daily SOL rewards', 'Basic staking power', 'Community access'],
     description: 'Perfect for beginners entering the node ecosystem'
@@ -50,7 +52,7 @@ const nodeTypes: NodeType[] = [
     monthlyReward: 9,
     roi: 180,
     maxSupply: 500,
-    currentSupply: 167,
+    currentSupply: 0,
     icon: '💎',
     features: ['Higher daily rewards', 'Enhanced staking power', 'Priority support', 'Exclusive events'],
     description: 'Advanced node for serious validators with enhanced rewards'
@@ -63,7 +65,7 @@ const nodeTypes: NodeType[] = [
     monthlyReward: 21,
     roi: 210,
     maxSupply: 100,
-    currentSupply: 23,
+    currentSupply: 0,
     icon: '🏆',
     features: ['Maximum rewards', 'Ultimate staking power', 'VIP support', 'Governance voting', 'NFT airdrops'],
     description: 'Elite node with maximum earning potential and exclusive benefits'
@@ -74,52 +76,46 @@ export const NodePurchase = () => {
   const { toast } = useToast();
   const { isWalletConnected, primaryWallet } = useMultiWallet();
   const { user } = useAuth();
-  const [purchasingNode, setPurchasingNode] = useState<string | null>(null);
+  const { purchaseNode, isProcessing, userNodes, fetchUserNodes } = useSolanaNodes();
+  const [nodeSupplies, setNodeSupplies] = useState({ basic: 0, premium: 0, legendary: 0 });
   const [selectedNode, setSelectedNode] = useState<NodeType>(nodeTypes[0]);
 
-  const handleNodePurchase = async (nodeType: NodeType) => {
-    if (!isWalletConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet to purchase a node",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to purchase a node",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setPurchasingNode(nodeType.id);
-    
+  // Fetch current node supplies from database
+  const fetchNodeSupplies = async () => {
     try {
-      // Simulate node purchase transaction
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const { data, error } = await supabase
+        .from('node_purchases')
+        .select('node_type');
       
-      toast({
-        title: "Node Purchased Successfully!",
-        description: `Your ${nodeType.name} is now active and earning rewards`,
+      if (error) throw error;
+
+      const supplies = { basic: 0, premium: 0, legendary: 0 };
+      data?.forEach(purchase => {
+        supplies[purchase.node_type as keyof typeof supplies] += 1;
       });
+      setNodeSupplies(supplies);
       
-      // Update node supply (simulation)
-      nodeType.currentSupply += 1;
-      
+      // Update nodeTypes with current supplies
+      nodeTypes.forEach(node => {
+        node.currentSupply = supplies[node.id as keyof typeof supplies];
+      });
     } catch (error) {
-      console.error('Node purchase error:', error);
-      toast({
-        title: "Purchase Failed",
-        description: "Failed to purchase node. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setPurchasingNode(null);
+      console.error('Error fetching node supplies:', error);
     }
+  };
+
+  useEffect(() => {
+    fetchNodeSupplies();
+  }, []);
+
+  const handleNodePurchase = async (nodeType: NodeType) => {
+    await purchaseNode({
+      nodeType: nodeType.id as 'basic' | 'premium' | 'legendary',
+      price: nodeType.price,
+      onSuccess: () => {
+        fetchNodeSupplies(); // Refresh supplies after purchase
+      }
+    });
   };
 
   return (
@@ -147,7 +143,7 @@ export const NodePurchase = () => {
             <NodeCards 
               nodeTypes={nodeTypes}
               onPurchase={handleNodePurchase}
-              purchasingNode={purchasingNode}
+              purchasingNode={isProcessing ? 'processing' : null}
               isWalletConnected={isWalletConnected}
             />
           </TabsContent>
@@ -157,7 +153,7 @@ export const NodePurchase = () => {
           </TabsContent>
 
           <TabsContent value="rewards">
-            <NodeRewards />
+            <NodeRewards userNodes={userNodes} />
           </TabsContent>
 
           <TabsContent value="stats">
@@ -170,7 +166,7 @@ export const NodePurchase = () => {
           <div className="holographic p-4 text-center">
             <Coins className="w-6 h-6 text-neon-green mx-auto mb-2" />
             <h4 className="text-neon-green font-bold text-sm">TOTAL NODES</h4>
-            <p className="text-lg font-mono">{nodeTypes.reduce((sum, node) => sum + node.currentSupply, 0)}</p>
+            <p className="text-lg font-mono">{nodeSupplies.basic + nodeSupplies.premium + nodeSupplies.legendary}</p>
           </div>
           <div className="holographic p-4 text-center">
             <Server className="w-6 h-6 text-neon-cyan mx-auto mb-2" />
