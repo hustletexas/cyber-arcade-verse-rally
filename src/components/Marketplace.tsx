@@ -21,7 +21,8 @@ const mockNFTs = [
     image: "/lovable-uploads/1131ab8a-f1c5-43a1-bc8a-bbbe7f2f9fd1.png",
     rarity: "Legendary",
     seller: "CyberMotors",
-    description: "Ultra-rare cyberpunk DeLorean in neon cityscape - the ultimate collector's ride"
+    description: "Ultra-rare cyberpunk DeLorean in neon cityscape - the ultimate collector's ride",
+    supply: { total: 100, remaining: 87 }
   },
   {
     id: 2,
@@ -30,7 +31,8 @@ const mockNFTs = [
     image: "/lovable-uploads/adc51b6f-7d82-44cc-86b5-e984bc74d2d3.png",
     rarity: "Legendary",
     seller: "ArcadeMaster",
-    description: "Ultimate cyberpunk arcade console with holographic city display - grants access to all premium games"
+    description: "Ultimate cyberpunk arcade console with holographic city display - grants access to all premium games",
+    supply: { total: 100, remaining: 94 }
   },
   {
     id: 3,
@@ -39,7 +41,8 @@ const mockNFTs = [
     image: "/lovable-uploads/25b4f405-8edd-4c52-9b77-0d270d1b6c90.png",
     rarity: "Legendary",
     seller: "RetroMaster",
-    description: "Iconic Cyber City arcade building with neon signage - the heart of the digital gaming universe"
+    description: "Iconic Cyber City arcade building with neon signage - the heart of the digital gaming universe",
+    supply: { total: 100, remaining: 76 }
   },
   // Epic NFTs
   {
@@ -49,7 +52,8 @@ const mockNFTs = [
     image: "/lovable-uploads/ad465959-8a2b-40c4-bb3d-512e3b2246dc.png",
     rarity: "Epic",
     seller: "SolanaGaming",
-    description: "Elite cyberpunk gamer with VR headset exploring the neon-lit Solana blockchain arcade district"
+    description: "Elite cyberpunk gamer with VR headset exploring the neon-lit Solana blockchain arcade district",
+    supply: { total: 500, remaining: 432 }
   },
   {
     id: 5,
@@ -58,7 +62,8 @@ const mockNFTs = [
     image: "/lovable-uploads/f7fdd876-ef2a-4140-9a9e-961af057b14c.png",
     rarity: "Epic",
     seller: "PortalMaster",
-    description: "Mystical arcade portal gateway to the digital realm - witness the birth of virtual reality gaming"
+    description: "Mystical arcade portal gateway to the digital realm - witness the birth of virtual reality gaming",
+    supply: { total: 500, remaining: 378 }
   },
   {
     id: 6,
@@ -67,7 +72,8 @@ const mockNFTs = [
     image: "/lovable-uploads/e0346804-3303-4132-accf-7a80c53b7b8c.png",
     rarity: "Epic",
     seller: "GenesisCollection",
-    description: "Genesis edition arcade cabinet from the original Cyber City collection - limited first edition piece"
+    description: "Genesis edition arcade cabinet from the original Cyber City collection - limited first edition piece",
+    supply: { total: 500, remaining: 445 }
   },
   // Rare NFTs
   {
@@ -77,7 +83,8 @@ const mockNFTs = [
     image: "/lovable-uploads/fa16ab59-6385-4247-ac77-1ef0cf685f60.png",
     rarity: "Rare",
     seller: "MobileGamingCorp",
-    description: "Cyberpunk mobile gamer with alien tech device - the future of portable gaming in neon cityscapes"
+    description: "Cyberpunk mobile gamer with alien tech device - the future of portable gaming in neon cityscapes",
+    supply: { total: 1000, remaining: 756 }
   },
   {
     id: 8,
@@ -86,7 +93,8 @@ const mockNFTs = [
     image: "/lovable-uploads/7aefc14a-b1ec-4889-8990-4f12e95eec7d.png",
     rarity: "Rare",
     seller: "VRRacingLeague",
-    description: "Professional VR racing simulator setup with cyberpunk aesthetic - experience the ultimate driving simulation"
+    description: "Professional VR racing simulator setup with cyberpunk aesthetic - experience the ultimate driving simulation",
+    supply: { total: 1000, remaining: 823 }
   },
   {
     id: 9,
@@ -95,7 +103,8 @@ const mockNFTs = [
     image: "/lovable-uploads/499520d8-632b-415d-9e5a-5599ef4eca14.png",
     rarity: "Rare",
     seller: "CyberCityElite",
-    description: "Elite cyberpunk gamer with advanced neural interface - master of the Cyber City Arcade realm"
+    description: "Elite cyberpunk gamer with advanced neural interface - master of the Cyber City Arcade realm",
+    supply: { total: 1000, remaining: 667 }
   }
 ];
 
@@ -346,6 +355,7 @@ export const Marketplace = () => {
                     
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-neon-purple">Seller: {nft.seller}</span>
+                      <span className="text-neon-cyan">Supply: {nft.supply.remaining}/{nft.supply.total}</span>
                     </div>
                     
                     <div className="border-t border-neon-cyan/30 pt-3">
