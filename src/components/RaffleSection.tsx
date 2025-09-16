@@ -31,8 +31,6 @@ interface TreasureChest {
   name: string;
   price: {
     cctr: number;
-    sol?: number;
-    usdc?: number;
   };
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   image: string;
@@ -49,7 +47,7 @@ export const RaffleSection = () => {
   const { balance } = useUserBalance();
   const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
   const [processingPayment, setProcessingPayment] = useState<string | null>(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cctr' | 'sol' | 'usdc'>('cctr');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cctr'>('cctr');
 
   const [raffles] = useState<Raffle[]>([
     {
@@ -106,7 +104,7 @@ export const RaffleSection = () => {
     {
       id: 'epic',
       name: 'Epic Treasure Vault',
-      price: { cctr: 1000, sol: 0.25, usdc: 45 },
+      price: { cctr: 100 },
       rarity: 'epic',
       image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
       description: 'Ultimate gaming rewards for champions',
@@ -153,7 +151,7 @@ export const RaffleSection = () => {
     }
   };
 
-  const openTreasureChest = async (chestId: string, paymentMethod: 'cctr' | 'sol' | 'usdc') => {
+  const openTreasureChest = async (chestId: string, paymentMethod: 'cctr') => {
     if (!user || !isWalletConnected) return;
     
     setProcessingPayment(chestId);
@@ -238,31 +236,11 @@ export const RaffleSection = () => {
                       </div>
 
                       <div className="space-y-3">
-                        <div className="grid grid-cols-3 gap-1 text-xs">
-                          <Button
-                            variant={selectedPaymentMethod === 'cctr' ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setSelectedPaymentMethod('cctr')}
-                            className="text-xs"
-                          >
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-neon-green mb-2">
                             {chest.price.cctr} CCTR
-                          </Button>
-                          <Button
-                            variant={selectedPaymentMethod === 'sol' ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setSelectedPaymentMethod('sol')}
-                            className="text-xs"
-                          >
-                            {chest.price.sol} SOL
-                          </Button>
-                          <Button
-                            variant={selectedPaymentMethod === 'usdc' ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setSelectedPaymentMethod('usdc')}
-                            className="text-xs"
-                          >
-                            ${chest.price.usdc}
-                          </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Only payment method</p>
                         </div>
                         
                         <Button 
