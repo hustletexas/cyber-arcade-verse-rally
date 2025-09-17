@@ -69,7 +69,7 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({
 
             {/* Track Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                 <div>
                   <h4 className={`font-semibold text-sm truncate ${
                     index === currentTrackIndex ? 'text-neon-pink' : 'text-neon-cyan'
@@ -83,12 +83,17 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({
                     <Clock size={12} />
                     {formatDuration(track.duration)}
                   </div>
-                  {track.nft && track.nft.isForSale && (
-                    <div className="flex items-center gap-1 text-xs text-neon-pink">
-                      <Coins size={12} />
-                      {track.nft.price} SOL
-                    </div>
-                  )}
+                  <Button 
+                    size="sm" 
+                    className="h-6 px-2 text-xs bg-neon-cyan text-black hover:bg-neon-cyan/80"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Purchase with 100 CCTR
+                    }}
+                  >
+                    <Coins size={10} className="mr-1" />
+                    100 CCTR
+                  </Button>
                 </div>
               </div>
             </div>
