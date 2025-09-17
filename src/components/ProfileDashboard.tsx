@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
-import { User, Activity, Trophy, History, Settings, Gamepad2, Coins, Shield, Bell, Eye, Wallet, Save, Star, Zap, TrendingUp, Award, ExternalLink, Copy, ChevronRight } from 'lucide-react';
+import { User, Activity, Trophy, History, Settings, Gamepad2, Coins, Shield, Bell, Eye, Wallet, Save } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -92,44 +92,32 @@ export const ProfileDashboard = () => {
     { 
       name: 'First Tournament', 
       description: 'Joined your first tournament', 
-      earned: tournamentEntries.length > 0,
-      icon: '🏆',
-      color: 'bg-gradient-to-r from-yellow-500 to-orange-500'
+      earned: tournamentEntries.length > 0 
     },
     { 
       name: 'Token Collector', 
       description: 'Accumulate 1,000 CCTR', 
-      earned: balance.cctr_balance >= 1000,
-      icon: '💰',
-      color: 'bg-gradient-to-r from-green-500 to-emerald-500'
+      earned: balance.cctr_balance >= 1000 
     },
     { 
       name: 'Tournament Winner', 
       description: 'Win a tournament', 
-      earned: tournamentEntries.some(entry => entry.placement === 1),
-      icon: '👑',
-      color: 'bg-gradient-to-r from-purple-500 to-pink-500'
+      earned: tournamentEntries.some(entry => entry.placement === 1) 
     },
     {
       name: 'Wallet Connected',
       description: 'Connect a Solana wallet',
-      earned: isWalletConnected,
-      icon: '🔗',
-      color: 'bg-gradient-to-r from-blue-500 to-cyan-500'
+      earned: isWalletConnected
     },
     {
       name: 'High Roller',
       description: 'Accumulate 10,000 CCTR',
-      earned: balance.cctr_balance >= 10000,
-      icon: '💎',
-      color: 'bg-gradient-to-r from-indigo-500 to-purple-500'
+      earned: balance.cctr_balance >= 10000
     },
     {
       name: 'Tournament Veteran',
       description: 'Join 10+ tournaments',
-      earned: tournamentEntries.length >= 10,
-      icon: '🎖️',
-      color: 'bg-gradient-to-r from-red-500 to-orange-500'
+      earned: tournamentEntries.length >= 10
     }
   ];
 
@@ -183,34 +171,20 @@ export const ProfileDashboard = () => {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied!",
-      description: "Address copied to clipboard",
-    });
-  };
-
   // Show wallet connection prompt if no wallet is connected
   if (!isWalletConnected || !primaryWallet) {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20 shadow-2xl">
-          <CardContent className="p-12 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
-              <User size={40} className="text-white" />
-            </div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
-              Connect Your Solana Wallet
-            </h2>
-            <p className="text-muted-foreground text-lg mb-6 max-w-md mx-auto">
-              Connect your Solana wallet to unlock your profile, tournament history, and blockchain activity
+        <Card className="arcade-frame">
+          <CardContent className="p-8 text-center">
+            <User size={48} className="mx-auto mb-4 text-neon-cyan" />
+            <h2 className="text-2xl font-display text-neon-cyan mb-2">Connect Your Solana Wallet</h2>
+            <p className="text-muted-foreground mb-4">
+              Connect your Solana wallet to view your profile, tournament history, and blockchain activity
             </p>
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 max-w-sm mx-auto">
-              <p className="text-sm text-muted-foreground">
-                Use the wallet connection button in the top navigation to get started
-              </p>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Use the wallet connection button in the top navigation to get started
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -222,215 +196,119 @@ export const ProfileDashboard = () => {
   const displayEmail = user?.email || `${primaryWallet.type} wallet`;
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8">
-      {/* Enhanced Profile Header with Magic Eden styling */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-cyan-900/20 backdrop-blur-xl border border-primary/20">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5" />
-        <div className="relative p-8">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
-            {/* Avatar Section */}
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary p-1">
-                <Avatar className="w-full h-full border-4 border-background">
-                  <AvatarImage src={user?.user_metadata?.avatar_url} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold text-3xl">
-                    {displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full border-4 border-background flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-              </div>
-            </div>
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Profile Header */}
+      <Card className="arcade-frame">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-6">
+            <Avatar className="w-20 h-20 border-4 border-neon-cyan">
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarFallback className="bg-neon-purple text-black font-bold text-2xl">
+                {displayName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             
-            {/* Profile Info */}
-            <div className="flex-1 space-y-4">
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  {displayName}
-                </h1>
-                <p className="text-muted-foreground text-lg">{displayEmail}</p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 font-semibold">
-                  <Zap size={14} className="mr-1" />
-                  WALLET CONNECTED
-                </Badge>
-                <Badge className="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1 font-semibold">
+            <div className="flex-1">
+              <h2 className="text-2xl font-display text-neon-cyan">
+                {displayName}
+              </h2>
+              <p className="text-muted-foreground">{displayEmail}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge className="bg-neon-green text-black">WALLET CONNECTED</Badge>
+                <Badge className="bg-neon-purple text-black">
                   {primaryWallet.type.toUpperCase()}
                 </Badge>
-                {achievements.filter(a => a.earned).length > 0 && (
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 font-semibold">
-                    <Star size={14} className="mr-1" />
-                    {achievements.filter(a => a.earned).length} ACHIEVEMENTS
-                  </Badge>
-                )}
-              </div>
-
-              {/* Wallet Address with Copy */}
-              <div className="flex items-center gap-2 bg-background/50 rounded-lg p-3 border border-primary/20">
-                <code className="text-sm text-muted-foreground flex-1">
-                  {primaryWallet.address}
-                </code>
-                <Button
-                  onClick={() => copyToClipboard(primaryWallet.address)}
-                  size="sm"
-                  variant="ghost"
-                  className="hover:bg-primary/10"
-                >
-                  <Copy size={14} />
-                </Button>
               </div>
             </div>
 
-            {/* Balance Section */}
-            <div className="lg:text-right space-y-2">
-              <div className="text-5xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+            <div className="text-right">
+              <div className="text-3xl font-black text-neon-green">
                 {balance.cctr_balance.toLocaleString()}
               </div>
-              <p className="text-muted-foreground">$CCTR Balance</p>
+              <p className="text-sm text-muted-foreground">$CCTR Balance</p>
               {balance.claimable_rewards > 0 && (
-                <Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white">
-                  <TrendingUp size={14} className="mr-1" />
+                <Badge className="bg-neon-pink text-black mt-1">
                   {balance.claimable_rewards} Claimable
                 </Badge>
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Enhanced Navigation Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-background/50 backdrop-blur-sm border border-primary/20 rounded-xl p-1">
-          <TabsTrigger 
-            value="overview" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white rounded-lg transition-all duration-300"
-          >
+        <TabsList className="grid w-full grid-cols-5 arcade-frame">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-neon-cyan data-[state=active]:text-black">
             <User size={16} className="mr-2" />
             Overview
           </TabsTrigger>
-          <TabsTrigger 
-            value="settings" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white rounded-lg transition-all duration-300"
-          >
+          <TabsTrigger value="settings" className="data-[state=active]:bg-neon-green data-[state=active]:text-black">
             <Settings size={16} className="mr-2" />
-            Settings
+            Account Settings
           </TabsTrigger>
-          <TabsTrigger 
-            value="tournaments" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-lg transition-all duration-300"
-          >
+          <TabsTrigger value="tournaments" className="data-[state=active]:bg-neon-purple data-[state=active]:text-black">
             <Gamepad2 size={16} className="mr-2" />
             Tournaments
           </TabsTrigger>
-          <TabsTrigger 
-            value="activity" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg transition-all duration-300"
-          >
+          <TabsTrigger value="activity" className="data-[state=active]:bg-neon-pink data-[state=active]:text-black">
             <Activity size={16} className="mr-2" />
             Activity
           </TabsTrigger>
-          <TabsTrigger 
-            value="achievements" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg transition-all duration-300"
-          >
+          <TabsTrigger value="achievements" className="data-[state=active]:bg-neon-yellow data-[state=active]:text-black">
             <Trophy size={16} className="mr-2" />
             Achievements
           </TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6 mt-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
-                  <Gamepad2 size={24} className="text-white" />
-                </div>
-                <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                  {stats.tournamentsJoined}
-                </div>
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="vending-machine">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-black text-neon-green">{stats.tournamentsJoined}</div>
                 <p className="text-sm text-muted-foreground">Tournaments Joined</p>
               </CardContent>
             </Card>
-
-            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <Trophy size={24} className="text-white" />
-                </div>
-                <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  {stats.tournamentsWon}
-                </div>
+            <Card className="vending-machine">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-black text-neon-purple">{stats.tournamentsWon}</div>
                 <p className="text-sm text-muted-foreground">Tournaments Won</p>
               </CardContent>
             </Card>
-
-            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                  <Coins size={24} className="text-white" />
-                </div>
-                <div className="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                  {stats.totalRewards.toFixed(2)}
-                </div>
+            <Card className="vending-machine">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-black text-neon-pink">{stats.totalRewards.toFixed(2)}</div>
                 <p className="text-sm text-muted-foreground">Total SOL Rewards</p>
               </CardContent>
             </Card>
-
-            <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
-                  <Wallet size={24} className="text-white" />
-                </div>
-                <div className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                  {connectedWallets.length}
-                </div>
+            <Card className="vending-machine">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-black text-neon-cyan">{connectedWallets.length}</div>
                 <p className="text-sm text-muted-foreground">Connected Wallets</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Connected Wallets */}
           {connectedWallets.length > 0 && (
-            <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20 hover:border-primary/40 transition-all duration-300">
+            <Card className="holographic">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Wallet size={24} className="text-primary" />
-                  Connected Solana Wallets
-                </CardTitle>
+                <CardTitle>Connected Solana Wallets</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {connectedWallets.map((wallet, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-primary/10 hover:border-primary/20 transition-all duration-300">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-xl">
-                          {wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}
-                        </div>
+                    <div key={index} className="flex items-center justify-between p-3 bg-background/20 rounded">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}</span>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <span className="capitalize font-semibold text-lg">{wallet.type}</span>
-                            {wallet === primaryWallet && (
-                              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs">PRIMARY</Badge>
-                            )}
-                          </div>
-                          <code className="text-sm text-muted-foreground">
-                            {wallet.address.slice(0, 12)}...{wallet.address.slice(-8)}
-                          </code>
+                          <span className="capitalize font-medium">{wallet.type}</span>
+                          {wallet === primaryWallet && (
+                            <Badge className="ml-2 bg-neon-green text-black text-xs">PRIMARY</Badge>
+                          )}
                         </div>
                       </div>
-                      <Button
-                        onClick={() => copyToClipboard(wallet.address)}
-                        variant="ghost"
-                        size="sm"
-                        className="hover:bg-primary/10"
-                      >
-                        <Copy size={16} />
-                      </Button>
+                      <code className="text-xs bg-background/50 px-2 py-1 rounded">
+                        {wallet.address.slice(0, 8)}...{wallet.address.slice(-4)}
+                      </code>
                     </div>
                   ))}
                 </div>
@@ -439,89 +317,82 @@ export const ProfileDashboard = () => {
           )}
         </TabsContent>
 
-        {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6 mt-6">
+        <TabsContent value="settings" className="space-y-6">
           {/* Profile Settings */}
-          <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20">
+          <Card className="holographic">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <User size={24} className="text-primary" />
+              <CardTitle className="flex items-center gap-2">
+                <User size={20} />
                 Profile Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input
                     id="username"
                     value={profileSettings.username}
                     onChange={(e) => setProfileSettings(prev => ({ ...prev, username: e.target.value }))}
-                    className="bg-background/50 border-primary/20 focus:border-primary/40 rounded-lg"
+                    className="bg-background/50 border-neon-cyan/30"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     value={profileSettings.email}
                     disabled
-                    className="bg-background/20 border-primary/20 opacity-50 rounded-lg"
+                    className="bg-background/20 border-neon-cyan/30 opacity-50"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="avatar" className="text-sm font-medium">Avatar URL</Label>
+                  <Label htmlFor="avatar">Avatar URL</Label>
                   <Input
                     id="avatar"
                     value={profileSettings.avatar_url}
                     onChange={(e) => setProfileSettings(prev => ({ ...prev, avatar_url: e.target.value }))}
-                    className="bg-background/50 border-primary/20 focus:border-primary/40 rounded-lg"
+                    className="bg-background/50 border-neon-cyan/30"
                     placeholder="https://example.com/avatar.jpg"
                   />
                 </div>
               </div>
-              <Button 
-                onClick={handleProfileSave} 
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/80 hover:to-secondary/80 text-white rounded-lg px-6 py-3 font-semibold transition-all duration-300"
-              >
+              <Button onClick={handleProfileSave} className="cyber-button">
                 <Save size={16} className="mr-2" />
                 Save Profile
               </Button>
             </CardContent>
           </Card>
 
-          {/* Wallet Management */}
-          <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20">
+          {/* Wallet Settings */}
+          <Card className="holographic">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Wallet size={24} className="text-primary" />
+              <CardTitle className="flex items-center gap-2">
+                <Wallet size={20} />
                 Wallet Management
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {connectedWallets.map((wallet, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-primary/10">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-xl">
-                        {wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}
-                      </div>
+                  <div key={index} className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}</span>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold capitalize text-lg">{wallet.type} Wallet</p>
-                          {wallet === primaryWallet && (
-                            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">Primary</Badge>
-                          )}
-                        </div>
-                        <code className="text-sm text-muted-foreground">
+                        <p className="font-medium capitalize">{wallet.type} Wallet</p>
+                        <code className="text-xs text-muted-foreground">
                           {wallet.address.slice(0, 12)}...{wallet.address.slice(-8)}
                         </code>
                       </div>
+                      {wallet === primaryWallet && (
+                        <Badge className="bg-neon-green text-black">Primary</Badge>
+                      )}
                     </div>
                     <Button
                       onClick={() => handleWalletDisconnect(wallet.type)}
                       variant="outline"
-                      className="border-red-500/50 text-red-500 hover:bg-red-500/10 hover:border-red-500 rounded-lg"
+                      size="sm"
+                      className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
                     >
                       Disconnect
                     </Button>
@@ -532,14 +403,14 @@ export const ProfileDashboard = () => {
           </Card>
 
           {/* Notification Settings */}
-          <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20">
+          <Card className="holographic">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Bell size={24} className="text-primary" />
+              <CardTitle className="flex items-center gap-2">
+                <Bell size={20} />
                 Notification Preferences
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Tournament Updates</p>
@@ -550,7 +421,7 @@ export const ProfileDashboard = () => {
                   onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, tournamentUpdates: checked }))}
                 />
               </div>
-              <Separator className="bg-primary/20" />
+              <Separator />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Prize Alerts</p>
@@ -561,7 +432,7 @@ export const ProfileDashboard = () => {
                   onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, prizeAlerts: checked }))}
                 />
               </div>
-              <Separator className="bg-primary/20" />
+              <Separator />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Balance Changes</p>
@@ -572,11 +443,11 @@ export const ProfileDashboard = () => {
                   onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, balanceChanges: checked }))}
                 />
               </div>
-              <Separator className="bg-primary/20" />
+              <Separator />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Marketing Emails</p>
-                  <p className="text-sm text-muted-foreground">Receive updates about new features and events</p>
+                  <p className="text-sm text-muted-foreground">Receive promotional content and updates</p>
                 </div>
                 <Switch
                   checked={notificationSettings.marketingEmails}
@@ -587,25 +458,25 @@ export const ProfileDashboard = () => {
           </Card>
 
           {/* Privacy Settings */}
-          <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20">
+          <Card className="holographic">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Shield size={24} className="text-primary" />
-                Privacy Settings
+              <CardTitle className="flex items-center gap-2">
+                <Eye size={20} />
+                Privacy & Security
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Show Profile</p>
-                  <p className="text-sm text-muted-foreground">Make your profile visible to other users</p>
+                  <p className="font-medium">Public Profile</p>
+                  <p className="text-sm text-muted-foreground">Allow others to view your profile</p>
                 </div>
                 <Switch
                   checked={privacySettings.showProfile}
                   onCheckedChange={(checked) => setPrivacySettings(prev => ({ ...prev, showProfile: checked }))}
                 />
               </div>
-              <Separator className="bg-primary/20" />
+              <Separator />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Show Balance</p>
@@ -616,22 +487,22 @@ export const ProfileDashboard = () => {
                   onCheckedChange={(checked) => setPrivacySettings(prev => ({ ...prev, showBalance: checked }))}
                 />
               </div>
-              <Separator className="bg-primary/20" />
+              <Separator />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Show Activity</p>
-                  <p className="text-sm text-muted-foreground">Make your gaming activity visible</p>
+                  <p className="text-sm text-muted-foreground">Make your tournament activity visible</p>
                 </div>
                 <Switch
                   checked={privacySettings.showActivity}
                   onCheckedChange={(checked) => setPrivacySettings(prev => ({ ...prev, showActivity: checked }))}
                 />
               </div>
-              <Separator className="bg-primary/20" />
+              <Separator />
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Allow Direct Messages</p>
-                  <p className="text-sm text-muted-foreground">Let other users send you messages</p>
+                  <p className="font-medium">Direct Messages</p>
+                  <p className="text-sm text-muted-foreground">Allow other users to message you</p>
                 </div>
                 <Switch
                   checked={privacySettings.allowDirectMessages}
@@ -640,47 +511,96 @@ export const ProfileDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Security Section */}
+          <Card className="holographic">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield size={20} />
+                Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div>
+                  <p className="font-medium">Two-Factor Authentication</p>
+                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+                </div>
+                <Button variant="outline" className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black">
+                  Enable 2FA
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div>
+                  <p className="font-medium">Change Password</p>
+                  <p className="text-sm text-muted-foreground">Update your account password</p>
+                </div>
+                <Button variant="outline" className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black">
+                  Change Password
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div>
+                  <p className="font-medium">Account Backup</p>
+                  <p className="text-sm text-muted-foreground">Download your account data and transaction history</p>
+                </div>
+                <Button variant="outline" className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black">
+                  Download Backup
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* Tournaments Tab */}
-        <TabsContent value="tournaments" className="space-y-6 mt-6">
-          <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20">
+        <TabsContent value="tournaments" className="space-y-4">
+          <Card className="holographic">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Gamepad2 size={24} className="text-primary" />
+              <CardTitle className="flex items-center gap-2">
+                <Gamepad2 size={20} />
                 Tournament History
               </CardTitle>
             </CardHeader>
             <CardContent>
               {tournamentEntries.length === 0 ? (
-                <div className="text-center py-12">
-                  <Gamepad2 size={48} className="mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-lg text-muted-foreground">No tournament entries yet</p>
-                  <p className="text-sm text-muted-foreground">Join your first tournament to see your history here</p>
+                <div className="text-center py-8">
+                  <Gamepad2 className="mx-auto mb-4 text-muted-foreground" size={48} />
+                  <p className="text-muted-foreground">No tournaments joined yet</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {tournamentEntries.map((entry) => (
-                    <div key={entry.id} className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-primary/10 hover:border-primary/20 transition-all duration-300">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                          <Gamepad2 size={20} className="text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold">{entry.solana_tournaments?.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Status: {entry.solana_tournaments?.status}
-                            {entry.placement && ` • Placed #${entry.placement}`}
-                          </p>
+                <div className="space-y-3">
+                  {tournamentEntries.map((entry, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-background/20 rounded">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-neon-cyan">
+                          {entry.solana_tournaments?.name || 'Tournament'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Joined: {new Date(entry.joined_at).toLocaleDateString()}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge className={`text-xs ${
+                            entry.solana_tournaments?.status === 'completed' ? 'bg-neon-green text-black' :
+                            entry.solana_tournaments?.status === 'active' ? 'bg-neon-yellow text-black' :
+                            'bg-gray-500 text-white'
+                          }`}>
+                            {entry.solana_tournaments?.status?.toUpperCase()}
+                          </Badge>
+                          {entry.placement && (
+                            <Badge className="bg-neon-purple text-black text-xs">
+                              #{entry.placement}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-green-400">
-                          {entry.reward_amount ? `${entry.reward_amount} SOL` : 'No reward'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Prize Pool: {entry.solana_tournaments?.prize_pool} SOL
-                        </p>
+                        <div className="font-bold text-neon-green">
+                          {entry.score} pts
+                        </div>
+                        {entry.reward_amount > 0 && (
+                          <div className="text-sm text-neon-pink">
+                            +{entry.reward_amount} SOL
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -690,44 +610,32 @@ export const ProfileDashboard = () => {
           </Card>
         </TabsContent>
 
-        {/* Activity Tab */}
-        <TabsContent value="activity" className="space-y-6 mt-6">
-          <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20">
+        <TabsContent value="activity" className="space-y-4">
+          <Card className="holographic">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Activity size={24} className="text-primary" />
-                Recent Activity
+              <CardTitle className="flex items-center gap-2">
+                <History size={20} />
+                Blockchain Activity
               </CardTitle>
             </CardHeader>
             <CardContent>
               {recentActivity.length === 0 ? (
-                <div className="text-center py-12">
-                  <Activity size={48} className="mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-lg text-muted-foreground">No recent activity</p>
-                  <p className="text-sm text-muted-foreground">Your token transactions will appear here</p>
+                <div className="text-center py-8">
+                  <Activity className="mx-auto mb-4 text-muted-foreground" size={48} />
+                  <p className="text-muted-foreground">No recent activity</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-primary/10 hover:border-primary/20 transition-all duration-300">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                          <Coins size={20} className="text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold capitalize">{activity.transaction_type}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(activity.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-semibold ${activity.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {activity.amount > 0 ? '+' : ''}{activity.amount} CCTR
-                        </p>
+                <div className="space-y-3">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-background/20 rounded">
+                      <div>
+                        <p className="font-medium">{activity.description || activity.transaction_type}</p>
                         <p className="text-sm text-muted-foreground">
-                          {activity.description}
+                          {new Date(activity.created_at).toLocaleString()}
                         </p>
+                      </div>
+                      <div className={`font-bold ${activity.amount > 0 ? 'text-neon-green' : 'text-neon-pink'}`}>
+                        {activity.amount > 0 ? '+' : ''}{activity.amount} $CCTR
                       </div>
                     </div>
                   ))}
@@ -737,47 +645,25 @@ export const ProfileDashboard = () => {
           </Card>
         </TabsContent>
 
-        {/* Achievements Tab */}
-        <TabsContent value="achievements" className="space-y-6 mt-6">
-          <Card className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-xl border border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Trophy size={24} className="text-primary" />
-                Achievements
-                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                  {achievements.filter(a => a.earned).length}/{achievements.length}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {achievements.map((achievement, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-6 rounded-xl border transition-all duration-300 hover:scale-105 ${
-                      achievement.earned 
-                        ? `${achievement.color} border-white/20 text-white shadow-lg` 
-                        : 'bg-background/50 border-muted text-muted-foreground'
-                    }`}
-                  >
-                    <div className="text-center space-y-3">
-                      <div className="text-4xl mb-2">{achievement.icon}</div>
-                      <h3 className="font-bold text-lg">{achievement.name}</h3>
-                      <p className={`text-sm ${achievement.earned ? 'text-white/80' : 'text-muted-foreground'}`}>
-                        {achievement.description}
-                      </p>
-                      {achievement.earned && (
-                        <div className="flex items-center justify-center gap-1 mt-2">
-                          <Award size={16} />
-                          <span className="text-xs font-semibold">EARNED</span>
-                        </div>
-                      )}
+        <TabsContent value="achievements" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {achievements.map((achievement, index) => (
+              <Card key={index} className={achievement.earned ? "holographic" : "vending-machine opacity-50"}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Trophy size={24} className={achievement.earned ? "text-neon-yellow" : "text-muted-foreground"} />
+                    <div className="flex-1">
+                      <h3 className="font-bold">{achievement.name}</h3>
+                      <p className="text-sm text-muted-foreground">{achievement.description}</p>
                     </div>
+                    {achievement.earned && (
+                      <Badge className="bg-neon-yellow text-black">EARNED</Badge>
+                    )}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
