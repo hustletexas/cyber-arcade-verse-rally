@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
@@ -14,6 +14,7 @@ import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
+import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useNFTMinting } from '@/hooks/useNFTMinting';
@@ -29,6 +30,17 @@ const Index = () => {
   const { mintFreeNFT, isMinting } = useNFTMinting();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Check if user has seen tutorial before
+  useEffect(() => {
+    const tutorialCompleted = localStorage.getItem('cyber_arcade_tutorial_completed');
+    if (!tutorialCompleted && !loading) {
+      // Show tutorial after a brief delay for better UX
+      const timer = setTimeout(() => setShowTutorial(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   const handleMintNFT = async () => {
     if (!isWalletConnected) {
@@ -231,6 +243,12 @@ const Index = () => {
       
       {/* Cart Drawer */}
       <CartDrawer />
+      
+      {/* Welcome Tutorial */}
+      <WelcomeTutorial 
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+      />
     </div>
   );
 };
