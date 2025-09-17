@@ -8,6 +8,7 @@ import { TriviaRewards } from './trivia/TriviaRewards';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
+import { useAchievements } from '@/hooks/useAchievements';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TriviaUserStats } from '@/types/trivia';
@@ -18,6 +19,7 @@ export const TriviaGame = () => {
   const { user } = useAuth();
   const { walletState, getConnectedWallet, isWalletConnected } = useWallet();
   const { balance, loading: balanceLoading, refetch: refetchBalance } = useUserBalance();
+  const { trackAchievement } = useAchievements();
   const { toast } = useToast();
   const [currentView, setCurrentView] = useState<ViewState>('menu');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -182,10 +184,15 @@ export const TriviaGame = () => {
     setCurrentView('game');
   };
 
-  const handleGameComplete = () => {
+  const handleGameComplete = (correctAnswers?: number) => {
     setCurrentView('menu');
     loadUserStats(); // Refresh stats after game
     refetchBalance(); // Refresh balance after game
+    
+    // Track trivia achievements
+    if (correctAnswers && correctAnswers > 0) {
+      trackAchievement('trivia_correct', correctAnswers);
+    }
   };
 
   if (currentView === 'game' && selectedCategory) {

@@ -15,10 +15,12 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
+import { AchievementSystem } from '@/components/AchievementSystem';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useNFTMinting } from '@/hooks/useNFTMinting';
 import { useAuth } from '@/hooks/useAuth';
+import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
@@ -29,6 +31,7 @@ const Index = () => {
   const { isWalletConnected } = useMultiWallet();
   const { mintFreeNFT, isMinting } = useNFTMinting();
   const { user, loading } = useAuth();
+  const { trackAchievement } = useAchievements();
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -45,7 +48,11 @@ const Index = () => {
       return;
     }
 
-    await mintFreeNFT();
+    const result = await mintFreeNFT();
+    if (result) {
+      // Track NFT minting achievement
+      trackAchievement('nft_minted');
+    }
   };
 
   return (
@@ -159,6 +166,11 @@ const Index = () => {
           {/* NFT Marketplace Section - Mobile Optimized */}
           <section className="px-2 sm:px-4">
             <Marketplace />
+          </section>
+
+          {/* Achievement System Section - NEW */}
+          <section className="px-2 sm:px-4">
+            <AchievementSystem />
           </section>
 
           {/* Trivia Section - Touch Enhanced */}

@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
+import { useAchievements } from '@/hooks/useAchievements';
 import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Move, List, X } from 'lucide-react';
 import { Track, Playlist } from '@/types/music';
 import { cyberDreamsPlaylist } from '@/data/musicPlaylist';
@@ -24,6 +25,7 @@ export const CyberMusicPlayer = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { trackAchievement } = useAchievements();
 
   // Auto-pause when tab is not visible
   useEffect(() => {
@@ -75,6 +77,8 @@ export const CyberMusicPlayer = () => {
       audio.pause();
     } else {
       audio.play();
+      // Track music listening achievement when starting to play
+      trackAchievement('tracks_played');
     }
     setIsPlaying(!isPlaying);
   };

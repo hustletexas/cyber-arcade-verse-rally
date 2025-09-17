@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_progress: {
+        Row: {
+          achievement_id: string
+          current_progress: number
+          id: string
+          last_updated: string
+          metadata: Json | null
+          target_progress: number
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          current_progress?: number
+          id?: string
+          last_updated?: string
+          metadata?: Json | null
+          target_progress?: number
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          current_progress?: number
+          id?: string
+          last_updated?: string
+          metadata?: Json | null
+          target_progress?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievement_progress_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      achievements: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          difficulty: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          points: number
+          requirements: Json | null
+          unlock_condition: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          difficulty?: string
+          icon: string
+          id?: string
+          is_active?: boolean
+          name: string
+          points?: number
+          requirements?: Json | null
+          unlock_condition: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          difficulty?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          points?: number
+          requirements?: Json | null
+          unlock_condition?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nft_creation_orders: {
         Row: {
           artwork_url: string | null
@@ -653,6 +736,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          created_at: string
+          earned_at: string
+          id: string
+          progress: number | null
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          progress?: number | null
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          progress?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_balances: {
         Row: {
           cctr_balance: number | null
@@ -783,6 +901,14 @@ export type Database = {
           transaction_hash_param: string
           user_id_param?: string
           wallet_address_param: string
+        }
+        Returns: Json
+      }
+      update_achievement_progress: {
+        Args: {
+          achievement_type: string
+          increment_amount?: number
+          user_id_param: string
         }
         Returns: Json
       }
