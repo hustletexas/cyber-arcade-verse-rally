@@ -3,12 +3,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Music, ExternalLink, Play, Pause } from 'lucide-react';
 import { WalletIntegration } from './music/WalletIntegration';
 import { PlayerControls } from './music/PlayerControls';
 import { TrackInfo } from './music/TrackInfo';
 import { RewardsSystem } from './music/RewardsSystem';
+import { MusicMarketplace } from './MusicMarketplace';
+import { MyMusicLibrary } from './MyMusicLibrary';
 
 interface Track {
   id: string;
@@ -274,6 +277,16 @@ export const MusicPlayer = () => {
   return (
     <Card className="arcade-frame sticky bottom-0 z-40 bg-black/95">
       <CardContent className="p-4">
+        <Tabs defaultValue="player" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsTrigger value="player">Player</TabsTrigger>
+            <TabsTrigger value="store">Music Store</TabsTrigger>
+            <TabsTrigger value="library">My Library</TabsTrigger>
+            <TabsTrigger value="rewards">Rewards</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="player">
+            <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Music className="text-neon-cyan" size={20} />
@@ -336,6 +349,29 @@ export const MusicPlayer = () => {
           totalTracks={playlist.length}
           nextTrackTitle={playlist[(currentTrack + 1) % playlist.length].title}
         />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="store">
+            <MusicMarketplace />
+          </TabsContent>
+
+          <TabsContent value="library">
+            <MyMusicLibrary />
+          </TabsContent>
+
+          <TabsContent value="rewards">
+            <RewardsSystem
+              isWalletConnected={isWalletConnected}
+              walletAddress={walletAddress}
+              currentTrack={currentSong}
+              isPlaying={isPlaying}
+              currentTrackIndex={currentTrack}
+              totalTracks={playlist.length}
+              nextTrackTitle={playlist[(currentTrack + 1) % playlist.length].title}
+            />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
