@@ -575,6 +575,60 @@ export type Database = {
         }
         Relationships: []
       }
+      songs: {
+        Row: {
+          album: string | null
+          artist: string
+          audio_url: string | null
+          cover_art_url: string | null
+          created_at: string
+          duration: number | null
+          genre: string | null
+          id: string
+          is_free: boolean
+          is_purchasable: boolean
+          play_count: number
+          price_cctr: number
+          release_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          album?: string | null
+          artist: string
+          audio_url?: string | null
+          cover_art_url?: string | null
+          created_at?: string
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          is_free?: boolean
+          is_purchasable?: boolean
+          play_count?: number
+          price_cctr?: number
+          release_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          album?: string | null
+          artist?: string
+          audio_url?: string | null
+          cover_art_url?: string | null
+          created_at?: string
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          is_free?: boolean
+          is_purchasable?: boolean
+          play_count?: number
+          price_cctr?: number
+          release_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       token_purchases: {
         Row: {
           amount: number
@@ -848,6 +902,41 @@ export type Database = {
           },
         ]
       }
+      user_song_purchases: {
+        Row: {
+          created_at: string
+          id: string
+          purchase_price: number
+          purchased_at: string
+          song_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          purchase_price: number
+          purchased_at?: string
+          song_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          purchase_price?: number
+          purchased_at?: string
+          song_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_song_purchases_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallets: {
         Row: {
           created_at: string
@@ -902,6 +991,10 @@ export type Database = {
           user_id_param?: string
           wallet_address_param: string
         }
+        Returns: Json
+      }
+      purchase_song: {
+        Args: { song_id_param: string; user_id_param: string }
         Returns: Json
       }
       update_achievement_progress: {
