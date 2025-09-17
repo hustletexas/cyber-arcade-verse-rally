@@ -32,15 +32,8 @@ const Index = () => {
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Check if user has seen tutorial before
-  useEffect(() => {
-    const tutorialCompleted = localStorage.getItem('cyber_arcade_tutorial_completed');
-    if (!tutorialCompleted && !loading) {
-      // Show tutorial after a brief delay for better UX
-      const timer = setTimeout(() => setShowTutorial(true), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [loading]);
+  // Tutorial is now only shown when button is clicked
+  // Removed automatic popup behavior
 
   const handleMintNFT = async () => {
     if (!isWalletConnected) {
