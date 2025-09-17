@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Award } from 'lucide-react';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { LoadingText } from '@/components/ui/loading-states';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TournamentLeaderboardProps {
@@ -61,7 +63,10 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-400">Loading leaderboard...</div>
+          <div className="text-center py-8">
+            <LoadingSpinner size="lg" variant="orbit" className="mx-auto mb-4" />
+            <LoadingText text="Loading leaderboard" className="text-lg" />
+          </div>
         </CardContent>
       </Card>
     );

@@ -11,6 +11,8 @@ import { useSolanaScore } from '@/hooks/useSolanaScore';
 import { useWallet } from '@/hooks/useWallet';
 import { TriviaQuestion } from '@/types/trivia';
 import { getRandomMixedQuestions } from '@/data/gamingTriviaQuestions';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { LoadingText } from '@/components/ui/loading-states';
 
 interface TriviaGameplayProps {
   category: string;
@@ -237,9 +239,21 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     return (
       <Card className="arcade-frame">
         <CardContent className="text-center py-12">
-          <div className="text-4xl mb-4">🎮</div>
-          <h3 className="text-xl font-bold text-neon-cyan mb-2">Loading Gaming Questions...</h3>
-          <p className="text-muted-foreground">Preparing your {category} trivia challenge</p>
+          <LoadingSpinner size="xl" variant="orbit" className="mx-auto mb-6" />
+          <h3 className="text-xl font-bold text-neon-cyan mb-2 glitch-text" data-text="Loading Gaming Questions...">
+            Loading Gaming Questions...
+          </h3>
+          <LoadingText 
+            text={`Preparing your ${category} trivia challenge`}
+            className="text-lg"
+          />
+          
+          {/* Progress simulation */}
+          <div className="w-full max-w-xs mx-auto mt-6">
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-neon-pink to-neon-cyan animate-shimmer rounded-full w-full bg-[length:200%_100%]" />
+            </div>
+          </div>
         </CardContent>
       </Card>
     );

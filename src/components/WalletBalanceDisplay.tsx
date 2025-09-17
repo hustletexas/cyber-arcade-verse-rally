@@ -7,6 +7,8 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
 import { Coins, Image, RefreshCw, ExternalLink, Copy } from 'lucide-react';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { LoadingText } from '@/components/ui/loading-states';
 
 interface SolanaNFT {
   mint: string;
@@ -239,8 +241,8 @@ export const WalletBalanceDisplay = () => {
         <TabsContent value="nfts" className="space-y-4">
           {loadingNFTs ? (
             <div className="text-center py-8">
-              <RefreshCw className="animate-spin mx-auto mb-4 text-neon-cyan" size={32} />
-              <p className="text-muted-foreground">Loading NFTs...</p>
+              <LoadingSpinner size="lg" variant="matrix" className="mx-auto mb-4" />
+              <LoadingText text="Loading NFTs" className="text-lg" />
             </div>
           ) : nfts.length === 0 ? (
             <div className="text-center py-8">
