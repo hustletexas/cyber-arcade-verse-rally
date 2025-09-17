@@ -94,7 +94,7 @@ const Index = () => {
           </p>
 
           {/* Updated Mint Free NFT Button */}
-          <div className="flex justify-center mb-6 md:mb-8 px-4">
+          <div className="flex flex-col items-center gap-4 mb-6 md:mb-8 px-4">
             <Button 
               onClick={handleMintNFT} 
               disabled={isMinting}
@@ -110,6 +110,15 @@ const Index = () => {
                   🔨 MINT FREE NFT
                 </>
               )}
+            </Button>
+            
+            {/* Tutorial Button */}
+            <Button 
+              onClick={() => setShowTutorial(true)}
+              variant="outline"
+              className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-6 py-2"
+            >
+              📚 Take Tutorial
             </Button>
           </div>
         </div>
