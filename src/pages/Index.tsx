@@ -57,194 +57,201 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Enhanced Animated Background */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none">
+      {/* Mobile-Optimized Animated Background */}
+      <div className="fixed inset-0 opacity-20 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 md:w-96 md:h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
         
-        {/* Gaming Icons Background */}
-        <div className="absolute top-10 left-10 text-2xl md:text-4xl opacity-30 animate-float">🕹️</div>
-        <div className="absolute top-20 right-20 text-xl md:text-3xl opacity-20 animate-pulse">🎮</div>
-        <div className="absolute bottom-20 left-20 text-xl md:text-3xl opacity-25 animate-bounce">👾</div>
-        <div className="absolute bottom-10 right-10 text-2xl md:text-4xl opacity-30 animate-float">🎯</div>
-        <div className="absolute top-1/3 left-1/4 text-lg md:text-2xl opacity-20 animate-pulse">🏆</div>
-        <div className="absolute top-2/3 right-1/4 text-xl md:text-3xl opacity-25 animate-bounce">⚡</div>
-        <div className="absolute top-1/2 left-10 text-lg md:text-2xl opacity-20 animate-float">🚀</div>
-        <div className="absolute top-1/4 right-1/3 text-xl md:text-3xl opacity-30 animate-pulse">💎</div>
+        {/* Mobile-Optimized Gaming Icons Background */}
+        <div className="absolute top-5 left-5 md:top-10 md:left-10 text-xl md:text-4xl opacity-30 animate-float">🕹️</div>
+        <div className="absolute top-12 right-5 md:top-20 md:right-20 text-lg md:text-3xl opacity-20 animate-pulse">🎮</div>
+        <div className="absolute bottom-16 left-5 md:bottom-20 md:left-20 text-lg md:text-3xl opacity-25 animate-bounce">👾</div>
+        <div className="absolute bottom-5 right-5 md:bottom-10 md:right-10 text-xl md:text-4xl opacity-30 animate-float">🎯</div>
+        <div className="absolute top-1/3 left-1/4 text-base md:text-2xl opacity-20 animate-pulse">🏆</div>
+        <div className="absolute top-2/3 right-1/4 text-lg md:text-3xl opacity-25 animate-bounce">⚡</div>
+        <div className="absolute top-1/2 left-2 md:left-10 text-base md:text-2xl opacity-20 animate-float">🚀</div>
+        <div className="absolute top-1/4 right-1/3 text-lg md:text-3xl opacity-30 animate-pulse">💎</div>
       </div>
 
       <TopBar />
-      <main className="container mx-auto px-4 py-8 relative z-10">
-        {/* Enhanced Hero Section */}
-        <div className="text-center mb-8 md:mb-12">
-          {/* Main Logo - Centered */}
-          <div className="flex justify-center mb-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
+        {/* Mobile-Enhanced Hero Section */}
+        <div className="text-center mb-6 sm:mb-8 md:mb-12">
+          {/* Mobile-Optimized Main Logo */}
+          <div className="flex justify-center mb-4 sm:mb-6">
             <img 
               src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
               alt="Cyber City Arcade" 
-              className="w-[6in] h-[8in] md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300" 
+              className="w-64 h-80 sm:w-80 sm:h-96 md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" 
               style={{
                 filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
               }} 
             />
           </div>
 
-          <p className="text-base md:text-lg lg:text-xl text-neon-purple mb-6 md:mb-8 animate-neon-flicker px-4">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
             The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
           </p>
 
-          {/* Updated Mint Free NFT Button */}
-          <div className="flex flex-col items-center gap-4 mb-6 md:mb-8 px-4">
+          {/* Mobile-Enhanced Action Buttons */}
+          <div className="flex flex-col items-center gap-3 sm:gap-4 mb-6 md:mb-8 px-2 sm:px-4">
             <Button 
               onClick={handleMintNFT} 
               disabled={isMinting}
-              className="cyber-button flex items-center gap-2 text-lg px-8 py-4 disabled:opacity-50"
+              className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]"
             >
               {isMinting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  MINTING...
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm sm:text-base">MINTING...</span>
                 </>
               ) : (
                 <>
-                  🔨 MINT FREE NFT
+                  <span className="text-xl sm:text-2xl">🔨</span>
+                  <span className="text-sm sm:text-base font-semibold">MINT FREE NFT</span>
                 </>
               )}
             </Button>
             
-            {/* Tutorial Button */}
+            {/* Mobile-Optimized Tutorial Button */}
             <Button 
               onClick={() => setShowTutorial(true)}
               variant="outline"
-              className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-6 py-2"
+              className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base"
             >
-              📚 Take Tutorial
+              <span className="text-base sm:text-lg mr-2">📚</span>
+              Take Tutorial
             </Button>
           </div>
         </div>
 
-        {/* All Sections Stacked Vertically */}
-        <div className="space-y-12 md:space-y-16">
+        {/* Mobile-Optimized Sections Layout */}
+        <div className="space-y-8 sm:space-y-12 md:space-y-16">
           {/* Music Player Section */}
-          <section>
-            <h2 className="text-2xl md:text-3xl font-bold text-neon-cyan mb-6 text-center">
+          <section className="px-2 sm:px-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neon-cyan mb-4 sm:mb-6 text-center">
             </h2>
-            <div className="flex justify-center mx-0 px-0">
-              <CyberMusicPlayer />
+            <div className="flex justify-center">
+              <div className="w-full max-w-4xl">
+                <CyberMusicPlayer />
+              </div>
             </div>
           </section>
 
           {/* Community Hub Section */}
-          <section>
+          <section className="px-2 sm:px-4">
             <CommunityHub />
           </section>
 
-          {/* Web3 Gaming Section - MOVED ABOVE AI Gaming Coach */}
-          <section>
+          {/* Web3 Gaming Section - Mobile Optimized */}
+          <section className="px-2 sm:px-4">
             <Web3Gaming />
           </section>
 
-          {/* AI Gaming Coach Section - NOW BELOW Web3 Gaming */}
-          <section>
+          {/* AI Gaming Coach Section - Mobile Optimized */}
+          <section className="px-2 sm:px-4">
             <AIGamingCoach />
           </section>
 
-          {/* Community Marketplace Section - Added new P2P marketplace */}
-          <section>
+          {/* Community Marketplace Section - Mobile Enhanced */}
+          <section className="px-2 sm:px-4">
             <CommunityMarketplace />
           </section>
 
-          {/* Merchandise Store Section */}
-          <section>
+          {/* Merchandise Store Section - Touch Friendly */}
+          <section className="px-2 sm:px-4">
             <MerchandiseStore />
           </section>
 
-          {/* NFT Marketplace Section */}
-          <section>
+          {/* NFT Marketplace Section - Mobile Optimized */}
+          <section className="px-2 sm:px-4">
             <Marketplace />
           </section>
 
-          {/* Trivia Section */}
-          <section>
+          {/* Trivia Section - Touch Enhanced */}
+          <section className="px-2 sm:px-4">
             <TriviaGame />
           </section>
 
-          {/* Raffles Section */}
-          <section>
+          {/* Raffles Section - Mobile Friendly */}
+          <section className="px-2 sm:px-4">
             <RaffleSection />
           </section>
 
-          {/* Voting Section */}
-          <section>
+          {/* Voting Section - Touch Optimized */}
+          <section className="px-2 sm:px-4">
             <VotingSection />
           </section>
 
-          {/* Buy CCTR Section - Moved under Voting */}
-          <section>
+          {/* Buy CCTR Section - Mobile Enhanced */}
+          <section className="px-2 sm:px-4">
             <TokenPurchase />
           </section>
 
-          {/* CCTR Staking Section - Moved under Buy CCTR */}
-          <section>
+          {/* CCTR Staking Section - Touch Friendly */}
+          <section className="px-2 sm:px-4">
             <CCTRStaking />
           </section>
 
-          {/* Node Purchase Section - NEW LAST SECTION */}
-          <section>
+          {/* Node Purchase Section - Mobile Optimized */}
+          <section className="px-2 sm:px-4">
             <NodePurchase />
           </section>
         </div>
       </main>
-      {/* Footer */}
-      <footer className="border-t border-neon-cyan/30 mt-12 md:mt-20 py-6 md:py-8">
-        <div className="container mx-auto px-4">
-          {/* Privacy, Support, and Terms Links */}
-          <div className="flex justify-center gap-6 mb-6">
+      {/* Mobile-Enhanced Footer */}
+      <footer className="border-t border-neon-cyan/30 mt-8 sm:mt-12 md:mt-20 py-4 sm:py-6 md:py-8">
+        <div className="container mx-auto px-3 sm:px-4">
+          {/* Mobile-Optimized Footer Links */}
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
             <button 
               onClick={() => window.open('https://cybercityarcade.com/privacy', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
+              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
             >
-              Privacy Policy
+              Privacy
             </button>
-            <span className="text-neon-purple">•</span>
+            <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
             <button 
               onClick={() => window.open('https://cybercityarcade.com/support', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
+              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
             >
               Support
             </button>
-            <span className="text-neon-purple">•</span>
+            <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
             <button 
               onClick={() => window.open('https://cybercityarcade.com/terms', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
+              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
             >
               Terms
             </button>
-            <span className="text-neon-purple">•</span>
+            <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
             <button 
               onClick={() => window.open('https://cybercityarcade.com/about', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-sm md:text-base underline"
+              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
             >
               About
             </button>
           </div>
           
           <div className="text-center">
-            <p className="text-neon-purple font-mono text-sm md:text-base mb-4">
-              © 2024 Cyber City Arcade • Powered by Solana Blockchain
+            <p className="text-neon-purple font-mono text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed">
+              © 2024 Cyber City Arcade • Powered by Solana
             </p>
-            <div className="flex flex-wrap justify-center gap-2 md:gap-6 text-xs md:text-sm text-muted-foreground">
-              <span>Solana Network</span>
+            <div className="flex flex-wrap justify-center gap-1 sm:gap-2 md:gap-6 text-xs md:text-sm text-muted-foreground">
+              <span>Solana</span>
               <span>•</span>
-              <button onClick={() => window.open('https://magiceden.io/', '_blank')} className="hover:text-neon-cyan transition-colors cursor-pointer">
+              <button 
+                onClick={() => window.open('https://magiceden.io/', '_blank')} 
+                className="hover:text-neon-cyan transition-colors cursor-pointer touch-manipulation py-1"
+              >
                 Magic Eden
               </button>
               <span>•</span>
-              <span>PayPal Integration</span>
+              <span>PayPal</span>
               <span>•</span>
-              <span>Phantom Wallet</span>
+              <span>Phantom</span>
               <span>•</span>
-              <span>Coinbase Wallet</span>
+              <span>Coinbase</span>
             </div>
           </div>
         </div>
