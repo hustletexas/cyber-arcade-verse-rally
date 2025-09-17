@@ -57,7 +57,7 @@ export const TournamentGameInterface = ({
         .select('placement')
         .eq('tournament_id', tournamentId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (data && data.placement) {
         setHighScore(data.placement);
@@ -91,7 +91,7 @@ export const TournamentGameInterface = ({
         .select('id')
         .eq('tournament_id', tournamentId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (existingParticipant) {
         // Update existing score if it's higher

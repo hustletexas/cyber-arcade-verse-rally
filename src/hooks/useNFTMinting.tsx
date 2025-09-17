@@ -43,9 +43,9 @@ export const useNFTMinting = () => {
         .from('nft_mints')
         .select('*')
         .eq('wallet_address', primaryWallet.address)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error checking mint eligibility:', error);
         return false;
       }

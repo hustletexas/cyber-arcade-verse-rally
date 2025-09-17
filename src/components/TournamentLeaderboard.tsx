@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { LoadingText } from '@/components/ui/loading-states';
+import { DataNotFound } from '@/components/ui/error-handling';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TournamentLeaderboardProps {
@@ -81,7 +82,11 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-400">No completed tournaments found.</div>
+          <DataNotFound
+            title="No Tournament Data"
+            description="No participants have joined this tournament yet. Be the first to compete!"
+            icon={<Trophy className="mx-auto text-muted-foreground" size={48} />}
+          />
         </CardContent>
       </Card>
     );

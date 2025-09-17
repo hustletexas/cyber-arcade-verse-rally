@@ -106,7 +106,7 @@ export const useSolanaNFT = () => {
           .from('user_balances')
           .select('cctr_balance')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (balanceCheck || !balanceData) {
           throw new Error('Could not verify CCTR balance');

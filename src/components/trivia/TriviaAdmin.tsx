@@ -9,6 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { LoadingText } from '@/components/ui/loading-states';
+import { ErrorDisplay } from '@/components/ui/error-handling';
 import { TriviaQuestion } from '@/types/trivia';
 
 interface TriviaAdminProps {

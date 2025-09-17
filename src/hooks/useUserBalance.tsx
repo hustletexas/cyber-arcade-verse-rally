@@ -25,9 +25,9 @@ export const useUserBalance = () => {
         .from('user_balances')
         .select('cctr_balance, claimable_rewards')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching balance:', error);
         return;
       }
@@ -95,7 +95,7 @@ export const useUserBalance = () => {
         .from('user_balances')
         .select('claimable_rewards')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 

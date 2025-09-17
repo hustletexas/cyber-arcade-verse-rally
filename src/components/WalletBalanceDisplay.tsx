@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Coins, Image, RefreshCw, ExternalLink, Copy } from 'lucide-react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { LoadingText } from '@/components/ui/loading-states';
+import { ErrorDisplay, DataNotFound } from '@/components/ui/error-handling';
 
 interface SolanaNFT {
   mint: string;
@@ -245,10 +246,11 @@ export const WalletBalanceDisplay = () => {
               <LoadingText text="Loading NFTs" className="text-lg" />
             </div>
           ) : nfts.length === 0 ? (
-            <div className="text-center py-8">
-              <Image className="mx-auto mb-4 text-muted-foreground" size={48} />
-              <p className="text-muted-foreground">No NFTs found in this wallet</p>
-            </div>
+            <DataNotFound
+              title="No NFTs Found"
+              description="No NFTs found in this wallet"
+              icon={<Image className="mx-auto text-muted-foreground" size={48} />}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {nfts.map((nft, index) => (
