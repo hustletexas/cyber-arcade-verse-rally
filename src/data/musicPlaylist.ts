@@ -132,6 +132,132 @@ export const cyberDreamsPlaylist: Playlist = {
         royalties: 5,
         isForSale: true
       }
+    },
+    {
+      id: '7',
+      title: 'Quantum Waves',
+      artist: 'Cyber Prophet',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
+      duration: 211,
+      genre: 'Synthwave',
+      artwork: '/lovable-uploads/quantum-waves.png',
+      likes: 956,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '3RgTp8YzN2XvKq5mL9BcWf4GhJd6A8PnSuVe7MqRtN1x',
+        price: 2.3,
+        tokenId: 'CD007',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Cyber Prophet',
+        royalties: 6,
+        isForSale: true
+      }
+    },
+    {
+      id: '8',
+      title: 'Neon City',
+      artist: 'Retrowave Studios',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
+      duration: 234,
+      genre: 'Cyberpunk',
+      artwork: '/lovable-uploads/neon-city.png',
+      likes: 1678,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '2KfGh7NxY9Z4kL6mP2QwRt1XvBc5A8WnSuDe0FqMpN7r',
+        price: 3.1,
+        tokenId: 'CD008',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Retrowave Studios',
+        royalties: 7,
+        isForSale: true
+      }
+    },
+    {
+      id: '9',
+      title: 'Synthetic Rain',
+      artist: 'Digital Ghost',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
+      duration: 198,
+      genre: 'Ambient Synthwave',
+      artwork: '/lovable-uploads/synthetic-rain.png',
+      likes: 812,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '8WdPJg9HNcY8d4ZxKwGmNgF1P0XnMqR7TvBc2A6WqLk3',
+        price: 1.7,
+        tokenId: 'CD009',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Digital Ghost',
+        royalties: 5,
+        isForSale: true
+      }
+    },
+    {
+      id: '10',
+      title: 'Virtual Reality',
+      artist: 'Circuit Breaker',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
+      duration: 278,
+      genre: 'Dark Synthwave',
+      artwork: '/lovable-uploads/virtual-reality.png',
+      likes: 1345,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '9XeQkh8IodZ9e5AyLxHnOhG2Q1YoNrS8UwCd3B7XrMl4',
+        price: 2.9,
+        tokenId: 'CD010',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Circuit Breaker',
+        royalties: 7,
+        isForSale: true
+      }
+    },
+    {
+      id: '11',
+      title: 'Data Stream',
+      artist: 'Neon Synthwave',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3',
+      duration: 203,
+      genre: 'Synthwave',
+      artwork: '/lovable-uploads/data-stream.png',
+      likes: 1129,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '7VcMfg7GocY7c3WxJvFlMfE0O9WlLpQ6SvAb1A5VpJk2',
+        price: 2.4,
+        tokenId: 'CD011',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Neon Synthwave',
+        royalties: 5,
+        isForSale: true
+      }
+    },
+    {
+      id: '12',
+      title: 'Holographic Dreams',
+      artist: 'Synthwave Collective',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3',
+      duration: 245,
+      genre: 'Synthwave',
+      artwork: '/lovable-uploads/holographic-dreams.png',
+      likes: 1567,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '5UaLeg6FmbX6b2VwHuDjLeD9N8VjJoP5RtZa0Z4UoHj1',
+        price: 2.8,
+        tokenId: 'CD012',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Synthwave Collective',
+        royalties: 6,
+        isForSale: true
+      }
     }
   ]
 };
