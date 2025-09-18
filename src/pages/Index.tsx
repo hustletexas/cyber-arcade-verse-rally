@@ -15,7 +15,7 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
-import { AchievementSystem } from '@/components/AchievementSystem';
+
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useNFTMinting } from '@/hooks/useNFTMinting';
@@ -168,10 +168,6 @@ const Index = () => {
             <Marketplace />
           </section>
 
-          {/* Achievement System Section - NEW */}
-          <section className="px-2 sm:px-4">
-            <AchievementSystem />
-          </section>
 
           {/* Trivia Section - Touch Enhanced */}
           <section className="px-2 sm:px-4">

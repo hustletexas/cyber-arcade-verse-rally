@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AchievementSystem } from '@/components/AchievementSystem';
 
 export const PlayerDashboard = () => {
   const playerStats = {
@@ -165,12 +166,17 @@ export const PlayerDashboard = () => {
 
       {/* Account Tabs */}
       <Tabs defaultValue="history" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 arcade-frame p-2">
+        <TabsList className="grid w-full grid-cols-5 arcade-frame p-2">
+          <TabsTrigger value="achievements" className="cyber-button">🏅 ACHIEVEMENTS</TabsTrigger>
           <TabsTrigger value="history" className="cyber-button">🏆 HISTORY</TabsTrigger>
           <TabsTrigger value="nfts" className="cyber-button">💎 MY NFTs</TabsTrigger>
           <TabsTrigger value="rewards" className="cyber-button">🎁 REWARDS</TabsTrigger>
           <TabsTrigger value="wallet" className="cyber-button">💰 WALLET</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="achievements" className="space-y-6 mt-6">
+          <AchievementSystem />
+        </TabsContent>
 
         <TabsContent value="history" className="space-y-6 mt-6">
           <Card className="vending-machine">
