@@ -426,10 +426,10 @@
 
   @keyframes scroll-up {
     0% { transform: translateY(0); }
-    100% { transform: translateY(-33.33%); }
+    100% { transform: translateY(-66.66%); }
   }
 
   .animate-scroll-up {
-    animation: scroll-up 45s linear infinite;
+    animation: scroll-up 60s linear infinite;
   }
 }

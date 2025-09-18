@@ -199,7 +199,7 @@ export const CommunityHub = () => {
               <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black/95 to-transparent z-10 pointer-events-none" />
               
               {/* Auto-scrolling teleprompter with extra bottom space */}
-              <div className="animate-scroll-up space-y-2 px-4 pt-4" style={{ paddingBottom: '320px' }}>
+              <div className="animate-scroll-up space-y-2 px-4 pt-4" style={{ paddingBottom: '400px' }}>
                 {/* Triple the content to ensure smooth infinite scroll */}
                 {[...liveUpdates, ...liveUpdates, ...liveUpdates].map((update, index) => (
                   <div 
