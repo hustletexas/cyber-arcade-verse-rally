@@ -279,6 +279,27 @@ export const cyberDreamsPlaylist: Playlist = {
         royalties: 8,
         isForSale: true
       }
+    },
+    {
+      id: '14',
+      title: 'Virtual Player',
+      artist: 'Digital Arcade',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3',
+      duration: 195,
+      genre: 'Retro Synthwave',
+      artwork: '/lovable-uploads/virtual-player.png',
+      likes: 1456,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '6ScLfj8NzY6kM9oQ4RwTs3ZvCe7A0XpUrWdF2HsOqNl6',
+        price: 2.6,
+        tokenId: 'CD014',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Digital Arcade',
+        royalties: 6,
+        isForSale: true
+      }
     }
   ]
 };
