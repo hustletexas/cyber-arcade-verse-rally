@@ -95,7 +95,7 @@ export const CommunityHub = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const isAuthenticatedForChat = false; // Force show button for testing
+  const isAuthenticatedForChat = user || isWalletConnected;
   
   const handleDiscordConnect = () => {
     window.open('https://discord.gg/cybercityarcade', '_blank');
@@ -108,20 +108,26 @@ export const CommunityHub = () => {
         if (provider?.isPhantom) {
           const response = await provider.connect();
           if (response?.publicKey) {
+            // Just connect the wallet, don't try to create user account
             await connectWallet('phantom', response.publicKey.toString());
-            await createOrLoginWithWallet(response.publicKey.toString());
             toast({
               title: "Wallet Connected!",
               description: "You can now participate in the chat",
             });
           }
         } else {
+          window.open('https://phantom.app/', '_blank');
           toast({
-            title: "Phantom Wallet Required",
+            title: "Install Phantom Wallet",
             description: "Please install Phantom wallet to connect",
-            variant: "destructive",
           });
         }
+      } else {
+        window.open('https://phantom.app/', '_blank');
+        toast({
+          title: "Install Phantom Wallet", 
+          description: "Please install Phantom wallet to connect",
+        });
       }
     } catch (error) {
       console.error('Phantom connection error:', error);
