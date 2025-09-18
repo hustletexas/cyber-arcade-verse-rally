@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
+import { ChatRooms } from '@/components/chat/ChatRooms';
 import { Web3Gaming } from '@/components/Web3Gaming';
 import { NodePurchase } from '@/components/NodePurchase';
 import { LiveChat } from '@/components/LiveChat';
@@ -158,6 +159,11 @@ const Index = () => {
                 <CyberMusicPlayer />
               </div>
             </div>
+          </section>
+
+          {/* Live Chat Rooms Section */}
+          <section className="px-2 sm:px-4">
+            <ChatRooms />
           </section>
 
           {/* Community Hub Section */}
