@@ -294,8 +294,25 @@ export const CyberMusicPlayer = () => {
               ? 'linear-gradient(45deg, rgba(255,0,255,0.1), rgba(0,255,255,0.1))'
               : 'rgba(0,0,0,0.5)'
           }}
-        >
+         >
           <div className="flex items-center gap-3">
+            {/* Track Artwork */}
+            <div className="relative">
+              <img 
+                src={track.artwork || '/lovable-uploads/cyber-dreams-1.png'} 
+                alt={`${track.title} artwork`}
+                className="w-16 h-16 rounded-lg object-cover border border-neon-cyan/50"
+                style={{
+                  filter: isPlaying 
+                    ? 'brightness(1.2) saturate(1.3) drop-shadow(0 0 10px #00ffcc)' 
+                    : 'brightness(0.9) saturate(1.1)',
+                  transition: 'all 0.3s ease'
+                }}
+              />
+              {isPlaying && (
+                <div className="absolute inset-0 rounded-lg border-2 border-neon-pink/60 animate-pulse" />
+              )}
+            </div>
             <div className={`transition-transform duration-300 ${isPlaying ? 'scale-110' : 'scale-100'}`}>
               <EqualizerBars />
             </div>
