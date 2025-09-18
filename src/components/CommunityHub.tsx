@@ -195,12 +195,13 @@ export const CommunityHub = () => {
             </CardHeader>
             <CardContent className="p-0 h-64 overflow-hidden relative">
               {/* Gradient overlays */}
-              <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black/90 to-transparent z-10 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/90 to-transparent z-10 pointer-events-none" />
               
               {/* Auto-scrolling teleprompter */}
-              <div className="animate-scroll-up space-y-2 p-4">
-                {[...liveUpdates, ...liveUpdates].map((update, index) => (
+              <div className="animate-scroll-up space-y-2 p-4 pb-96">
+                {/* Triple the content to ensure smooth infinite scroll */}
+                {[...liveUpdates, ...liveUpdates, ...liveUpdates].map((update, index) => (
                   <div 
                     key={`${update.id}-${index}`}
                     className="flex items-center gap-3 p-2 rounded border border-neon-cyan/20 bg-black/30 backdrop-blur-sm"
