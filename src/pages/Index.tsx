@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
 import { NodePurchase } from '@/components/NodePurchase';
+import { LiveChat } from '@/components/LiveChat';
 
 const Index = () => {
   const { toast } = useToast();
@@ -34,6 +35,7 @@ const Index = () => {
   const { trackAchievement } = useAchievements();
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showLiveChat, setShowLiveChat] = useState(false);
 
   // Tutorial is now only shown when button is clicked
   // Removed automatic popup behavior
@@ -122,11 +124,31 @@ const Index = () => {
               <span className="text-base sm:text-lg mr-2">📚</span>
               Take Tutorial
             </Button>
+
+            {/* Live Chat Button */}
+            <Button 
+              onClick={() => setShowLiveChat(!showLiveChat)}
+              variant="outline"
+              className="text-neon-purple border-neon-purple hover:bg-neon-purple/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base"
+            >
+              <span className="text-base sm:text-lg mr-2">💬</span>
+              {showLiveChat ? 'Hide Chat' : 'Live Chat'}
+            </Button>
           </div>
         </div>
 
         {/* Mobile-Optimized Sections Layout */}
         <div className="space-y-8 sm:space-y-12 md:space-y-16">
+          {/* Live Chat Section */}
+          {showLiveChat && (
+            <section className="px-2 sm:px-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neon-cyan mb-4 sm:mb-6 text-center">
+                Live Chat Rooms
+              </h2>
+              <LiveChat />
+            </section>
+          )}
+
           {/* Music Player Section */}
           <section className="px-2 sm:px-4">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neon-cyan mb-4 sm:mb-6 text-center">
