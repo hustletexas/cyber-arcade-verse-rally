@@ -69,29 +69,31 @@ export const CommunityHub = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const [announcements] = useState<Announcement[]>([
-    {
-      id: '1',
-      icon: '🎮',
-      title: 'Tournament Alert',
-      content: 'Grand Championship starts in 2 hours! Prize pool: 50,000 $CCTR',
-      timestamp: new Date()
-    },
-    {
-      id: '2',
-      icon: '🎵',
-      title: 'New Music Drop',
-      content: 'Cyber Symphony Vol. 3 now available in the music marketplace!',
-      timestamp: new Date(Date.now() - 3600000)
-    },
-    {
-      id: '3',
-      icon: '💰',
-      title: 'Staking Rewards',
-      content: 'Weekly staking rewards distributed! Check your wallet.',
-      timestamp: new Date(Date.now() - 7200000)
-    }
+  const [liveUpdates, setLiveUpdates] = useState<Announcement[]>([
+    { id: '1', icon: '🔥', title: 'BREAKING', content: 'CyberPlayer_X just hit a 50-kill streak in Tournament Arena!', timestamp: new Date() },
+    { id: '2', icon: '💰', title: 'MARKET ALERT', content: 'CCTR token surged 23% - Trading volume at all-time high!', timestamp: new Date() },
+    { id: '3', icon: '🎮', title: 'LIVE NOW', content: 'Grand Championship final round starting - 127 players competing!', timestamp: new Date() },
+    { id: '4', icon: '🎵', title: 'NEW DROP', content: 'Cyber Symphony Vol. 3 just dropped - 1,250 downloads in first hour!', timestamp: new Date() },
+    { id: '5', icon: '🏆', title: 'ACHIEVEMENT', content: 'NeonGamer unlocked legendary status - First player to reach Level 100!', timestamp: new Date() },
+    { id: '6', icon: '⚡', title: 'ENERGY SURGE', content: 'Network hash rate increased 45% - Mining rewards boosted!', timestamp: new Date() },
+    { id: '7', icon: '🔮', title: 'PREDICTION', content: 'AI Oracle forecasts: Next tournament prize pool will exceed 100K CCTR!', timestamp: new Date() },
+    { id: '8', icon: '🌟', title: 'COMMUNITY', content: 'Discord members hit 50K milestone - Celebrating with bonus rewards!', timestamp: new Date() }
   ]);
+
+  // Auto-update live feed
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newUpdates = [
+        { id: Date.now().toString(), icon: '🎯', title: 'LIVE', content: `Player ${Math.floor(Math.random() * 9999)} just earned ${Math.floor(Math.random() * 500)} CCTR tokens!`, timestamp: new Date() },
+        { id: (Date.now() + 1).toString(), icon: '🚀', title: 'BOOST', content: `Network activity up ${Math.floor(Math.random() * 50)}% in the last 5 minutes!`, timestamp: new Date() },
+        { id: (Date.now() + 2).toString(), icon: '💎', title: 'RARE', content: `Legendary NFT just minted - Current bid: ${Math.floor(Math.random() * 10)}K CCTR!`, timestamp: new Date() }
+      ];
+      
+      setLiveUpdates(prev => [...newUpdates, ...prev].slice(0, 12));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const isAuthenticatedForChat = user || isWalletConnected;
   
@@ -191,33 +193,48 @@ export const CommunityHub = () => {
                 <Badge className="bg-neon-pink text-black animate-pulse text-xs">LIVE</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-64">
-                <div className="space-y-3">
-                  {announcements.map((announcement) => (
-                    <Card 
-                      key={announcement.id} 
-                      className="p-3 border border-neon-purple/30 bg-black/20 hover:bg-black/40 transition-all duration-200 cursor-pointer"
-                      style={{ boxShadow: '0 0 10px #ff00ff15' }}
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="text-lg">{announcement.icon}</span>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-neon-pink text-xs mb-1">
-                            {announcement.title}
-                          </h3>
-                          <p className="text-gray-300 text-xs leading-relaxed">
-                            {announcement.content}
-                          </p>
-                          <span className="text-neon-purple text-xs mt-1 block">
-                            {announcement.timestamp.toLocaleTimeString()}
-                          </span>
-                        </div>
+            <CardContent className="p-0 h-64 overflow-hidden relative">
+              {/* Gradient overlays */}
+              <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
+              
+              {/* Auto-scrolling teleprompter */}
+              <div className="animate-scroll-up space-y-2 p-4">
+                {[...liveUpdates, ...liveUpdates].map((update, index) => (
+                  <div 
+                    key={`${update.id}-${index}`}
+                    className="flex items-center gap-3 p-2 rounded border border-neon-cyan/20 bg-black/30 backdrop-blur-sm"
+                    style={{ 
+                      boxShadow: '0 0 10px #00ffcc10',
+                      minHeight: '60px'
+                    }}
+                  >
+                    <span className="text-lg flex-shrink-0">{update.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge 
+                          className={`${
+                            update.title === 'BREAKING' ? 'bg-red-500 text-white animate-pulse' :
+                            update.title === 'LIVE' ? 'bg-neon-green text-black animate-pulse' :
+                            'bg-neon-cyan/20 text-neon-cyan'
+                          } text-xs h-5 px-2 font-bold`}
+                        >
+                          {update.title}
+                        </Badge>
+                        <span className="text-neon-purple text-xs">
+                          {update.timestamp.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              </ScrollArea>
+                      <p className="text-gray-200 text-xs leading-relaxed truncate">
+                        {update.content}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
