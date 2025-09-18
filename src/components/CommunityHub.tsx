@@ -176,7 +176,7 @@ export const CommunityHub = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* LEFT PANEL: Announcements */}
           <Card 
-            className="overflow-hidden"
+            className="relative"
             style={{ 
               background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%)',
               border: '2px solid #00ffcc',
@@ -195,11 +195,11 @@ export const CommunityHub = () => {
             </CardHeader>
             <CardContent className="p-0 h-64 overflow-hidden relative">
               {/* Gradient overlays */}
-              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black/90 to-transparent z-10 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/90 to-transparent z-10 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-black/95 to-transparent z-10 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black/95 to-transparent z-10 pointer-events-none" />
               
-              {/* Auto-scrolling teleprompter */}
-              <div className="animate-scroll-up space-y-2 p-4 pb-96">
+              {/* Auto-scrolling teleprompter with extra bottom space */}
+              <div className="animate-scroll-up space-y-2 px-4 pt-4" style={{ paddingBottom: '320px' }}>
                 {/* Triple the content to ensure smooth infinite scroll */}
                 {[...liveUpdates, ...liveUpdates, ...liveUpdates].map((update, index) => (
                   <div 
@@ -207,7 +207,7 @@ export const CommunityHub = () => {
                     className="flex items-center gap-3 p-2 rounded border border-neon-cyan/20 bg-black/30 backdrop-blur-sm"
                     style={{ 
                       boxShadow: '0 0 10px #00ffcc10',
-                      minHeight: '60px'
+                      minHeight: '56px'
                     }}
                   >
                     <span className="text-lg flex-shrink-0">{update.icon}</span>
@@ -229,7 +229,7 @@ export const CommunityHub = () => {
                           })}
                         </span>
                       </div>
-                      <p className="text-gray-200 text-xs leading-relaxed truncate">
+                      <p className="text-gray-200 text-xs leading-relaxed">
                         {update.content}
                       </p>
                     </div>
