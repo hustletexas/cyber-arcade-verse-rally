@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Activity, Trophy, History, Settings, Gamepad2, Coins, Shield, Bell, Eye, Wallet, Save } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { AchievementSystem } from '@/components/AchievementSystem';
 
 export const ProfileDashboard = () => {
   const { user } = useAuth();
@@ -646,24 +647,7 @@ export const ProfileDashboard = () => {
         </TabsContent>
 
         <TabsContent value="achievements" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {achievements.map((achievement, index) => (
-              <Card key={index} className={achievement.earned ? "holographic" : "vending-machine opacity-50"}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Trophy size={24} className={achievement.earned ? "text-neon-yellow" : "text-muted-foreground"} />
-                    <div className="flex-1">
-                      <h3 className="font-bold">{achievement.name}</h3>
-                      <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                    </div>
-                    {achievement.earned && (
-                      <Badge className="bg-neon-yellow text-black">EARNED</Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <AchievementSystem />
         </TabsContent>
       </Tabs>
     </div>
