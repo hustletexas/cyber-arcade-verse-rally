@@ -95,7 +95,7 @@ export const CommunityHub = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const isAuthenticatedForChat = user || isWalletConnected;
+  const isAuthenticatedForChat = isWalletConnected;
   
   const handleDiscordConnect = () => {
     window.open('https://discord.gg/cybercityarcade', '_blank');
@@ -280,9 +280,9 @@ export const CommunityHub = () => {
                     value={room.id}
                     className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan data-[state=active]:shadow-neon-glow font-mono text-sm"
                   >
-                    {room.id === 'crypto' && '₿'} 
-                    {room.id === 'gamers' && '🎮'} 
-                    {room.id === 'social' && '💬'} 
+                        {room.id === '00000000-0000-0000-0000-000000000001' && '₿'} 
+                        {room.id === '00000000-0000-0000-0000-000000000002' && '🎮'} 
+                        {room.id === '00000000-0000-0000-0000-000000000003' && '💬'}
                     {room.name}
                   </TabsTrigger>
                 ))}

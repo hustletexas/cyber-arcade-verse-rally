@@ -60,22 +60,25 @@ export const useChatMessages = (roomId: string | null) => {
   const sendMessage = async (messageText: string) => {
     if (!roomId || !messageText.trim()) return;
     
-    const isAuthenticated = user || isWalletConnected;
+    const isAuthenticated = isWalletConnected;
     if (!isAuthenticated) {
       toast({
-        title: "Authentication Required",
-        description: "Please connect your wallet or login to send messages",
+        title: "Wallet Required",
+        description: "Please connect your wallet to send messages",
         variant: "destructive",
       });
       return;
     }
 
     try {
+      // Create a deterministic user ID from wallet address for wallet-only users
+      const userId = user?.id || `wallet-${primaryWallet?.address?.slice(0, 8)}` || null;
+      
       const { error } = await supabase
         .from('chat_messages')
         .insert({
           room_id: roomId,
-          user_id: user?.id || null,
+          user_id: userId,
           username: getDisplayName(),
           message: messageText.trim(),
           message_type: 'text'
@@ -140,7 +143,7 @@ export const useChatMessages = (roomId: string | null) => {
     messages,
     loading,
     sendMessage,
-    isAuthenticated: user || isWalletConnected,
+    isAuthenticated: isWalletConnected,
     displayName: getDisplayName()
   };
 };
