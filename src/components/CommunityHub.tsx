@@ -11,6 +11,7 @@ import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useToast } from '@/hooks/use-toast';
 import { VoiceChat } from './VoiceChat';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -22,6 +23,14 @@ interface Message {
   type: 'text' | 'voice';
   audioBlob?: Blob;
   duration?: number;
+}
+
+interface ChatRoom {
+  id: string;
+  name: string;
+  description: string;
+  max_participants: number;
+  is_active: boolean;
 }
 
 interface Announcement {
@@ -37,6 +46,9 @@ export const CommunityHub = () => {
   const { primaryWallet, isWalletConnected, connectWallet, getWalletIcon } = useMultiWallet();
   const { createOrLoginWithWallet } = useWalletAuth();
   const { toast } = useToast();
+  
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -352,6 +364,34 @@ export const CommunityHub = () => {
                 <span>{messages.length > 0 ? Math.floor(Math.random() * 50) + 10 : 0}</span>
               </div>
             </CardTitle>
+            
+            {/* Chat Room Selection */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {chatRooms.map((room) => (
+                <Button
+                  key={room.id}
+                  onClick={() => setSelectedRoom(room)}
+                  variant={selectedRoom?.id === room.id ? "default" : "outline"}
+                  size="sm"
+                  className={`text-xs ${
+                    selectedRoom?.id === room.id 
+                      ? 'bg-neon-cyan text-black border-neon-cyan' 
+                      : 'border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black'
+                  }`}
+                >
+                  {room.name === 'Crypto Hub' && '₿'} 
+                  {room.name === 'Gamers Lounge' && '🎮'} 
+                  {room.name === 'Social Circle' && '💬'} 
+                  {room.name}
+                </Button>
+              ))}
+            </div>
+            
+            {selectedRoom && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {selectedRoom.description}
+              </p>
+            )}
           </CardHeader>
           <CardContent className="flex flex-col h-96">
             {/* Chat Messages */}
