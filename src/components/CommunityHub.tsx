@@ -193,48 +193,52 @@ export const CommunityHub = () => {
                 <Badge className="bg-neon-pink text-black animate-pulse text-xs">LIVE</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0 h-64 overflow-hidden relative">
+            <CardContent className="p-0 h-64 relative">
               {/* Gradient overlays */}
-              <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-black/95 to-transparent z-10 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black/95 to-transparent z-10 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/95 to-transparent z-10 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/95 to-transparent z-10 pointer-events-none" />
               
-              {/* Auto-scrolling teleprompter with extra bottom space */}
-              <div className="animate-scroll-up space-y-2 px-4 pt-4" style={{ paddingBottom: '400px' }}>
-                {/* Triple the content to ensure smooth infinite scroll */}
-                {[...liveUpdates, ...liveUpdates, ...liveUpdates].map((update, index) => (
-                  <div 
-                    key={`${update.id}-${index}`}
-                    className="flex items-center gap-3 p-2 rounded border border-neon-cyan/20 bg-black/30 backdrop-blur-sm"
-                    style={{ 
-                      boxShadow: '0 0 10px #00ffcc10',
-                      minHeight: '56px'
-                    }}
-                  >
-                    <span className="text-lg flex-shrink-0">{update.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge 
-                          className={`${
-                            update.title === 'BREAKING' ? 'bg-red-500 text-white animate-pulse' :
-                            update.title === 'LIVE' ? 'bg-neon-green text-black animate-pulse' :
-                            'bg-neon-cyan/20 text-neon-cyan'
-                          } text-xs h-5 px-2 font-bold`}
-                        >
-                          {update.title}
-                        </Badge>
-                        <span className="text-neon-purple text-xs">
-                          {update.timestamp.toLocaleTimeString('en-US', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </span>
+              {/* Auto-scrolling teleprompter - simplified approach */}
+              <div className="overflow-hidden h-full">
+                <div className="animate-marquee-vertical flex flex-col space-y-2 p-4">
+                  {/* Duplicate content multiple times for seamless loop */}
+                  {Array.from({ length: 4 }, (_, groupIndex) => 
+                    liveUpdates.map((update, index) => (
+                      <div 
+                        key={`${update.id}-${groupIndex}-${index}`}
+                        className="flex items-center gap-3 p-2 rounded border border-neon-cyan/20 bg-black/30 backdrop-blur-sm flex-shrink-0"
+                        style={{ 
+                          boxShadow: '0 0 10px #00ffcc10',
+                          minHeight: '56px'
+                        }}
+                      >
+                        <span className="text-lg flex-shrink-0">{update.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge 
+                              className={`${
+                                update.title === 'BREAKING' ? 'bg-red-500 text-white animate-pulse' :
+                                update.title === 'LIVE' ? 'bg-neon-green text-black animate-pulse' :
+                                'bg-neon-cyan/20 text-neon-cyan'
+                              } text-xs h-5 px-2 font-bold`}
+                            >
+                              {update.title}
+                            </Badge>
+                            <span className="text-neon-purple text-xs">
+                              {update.timestamp.toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                          </div>
+                          <p className="text-gray-200 text-xs leading-relaxed">
+                            {update.content}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-gray-200 text-xs leading-relaxed">
-                        {update.content}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                    ))
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

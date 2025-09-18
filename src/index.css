@@ -424,12 +424,12 @@
     border-color: hsl(var(--neon-green));
   }
 
-  @keyframes scroll-up {
+  @keyframes marquee-vertical {
     0% { transform: translateY(0); }
-    100% { transform: translateY(-66.66%); }
+    100% { transform: translateY(-25%); }
   }
 
-  .animate-scroll-up {
-    animation: scroll-up 60s linear infinite;
+  .animate-marquee-vertical {
+    animation: marquee-vertical 40s linear infinite;
   }
 }
