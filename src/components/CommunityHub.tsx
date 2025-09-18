@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Send, Users, Zap, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
@@ -48,9 +49,14 @@ export const CommunityHub = () => {
   const { createOrLoginWithWallet } = useWalletAuth();
   const { toast } = useToast();
   
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
-  const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('crypto');
   const [newMessage, setNewMessage] = useState('');
+  
+  const chatRooms = [
+    { id: 'crypto', name: 'Crypto', description: 'Crypto Hub' },
+    { id: 'gamers', name: 'Gamers', description: 'Gamers Lounge' },
+    { id: 'social', name: 'Social', description: 'Social Circle' }
+  ];
   
   // Use the chat messages hook
   const { 
@@ -59,7 +65,7 @@ export const CommunityHub = () => {
     sendMessage, 
     isAuthenticated,
     displayName 
-  } = useChatMessages(selectedRoom?.id || null);
+  } = useChatMessages(selectedRoomId);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -86,30 +92,6 @@ export const CommunityHub = () => {
       timestamp: new Date(Date.now() - 7200000)
     }
   ]);
-  
-  // Fetch chat rooms on component mount
-  useEffect(() => {
-    const fetchChatRooms = async () => {
-      const { data, error } = await supabase
-        .from('chat_rooms')
-        .select('*')
-        .eq('is_active', true)
-        .order('name', { ascending: true });
-      
-      if (error) {
-        console.error('Error fetching chat rooms:', error);
-        return;
-      }
-      
-      setChatRooms(data || []);
-      // Auto-select first room
-      if (data && data.length > 0) {
-        setSelectedRoom(data[0]);
-      }
-    };
-    
-    fetchChatRooms();
-  }, []);
 
   const isAuthenticatedForChat = user || isWalletConnected;
   
@@ -261,33 +243,22 @@ export const CommunityHub = () => {
                 </div>
               </CardTitle>
               
-              {/* Chat Room Selection */}
-              <div className="flex flex-wrap gap-1 mt-2">
-                {chatRooms.map((room) => (
-                  <Button
-                    key={room.id}
-                    onClick={() => setSelectedRoom(room)}
-                    variant={selectedRoom?.id === room.id ? "default" : "outline"}
-                    size="sm"
-                    className={`text-xs h-7 px-2 ${
-                      selectedRoom?.id === room.id 
-                        ? 'bg-neon-cyan text-black border-neon-cyan' 
-                        : 'border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black'
-                    }`}
-                  >
-                    {room.name === 'Crypto Hub' && '₿'} 
-                    {room.name === 'Gamers Lounge' && '🎮'} 
-                    {room.name === 'Social Circle' && '💬'} 
-                    {room.name}
-                  </Button>
-                ))}
-              </div>
-              
-              {selectedRoom && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {selectedRoom.description}
-                </p>
-              )}
+               <Tabs value={selectedRoomId} onValueChange={setSelectedRoomId} className="w-full mt-2">
+                 <TabsList className="grid w-full grid-cols-3 bg-card/20 backdrop-blur-sm border border-neon-cyan/20">
+                   {chatRooms.map((room) => (
+                     <TabsTrigger 
+                       key={room.id} 
+                       value={room.id}
+                       className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan data-[state=active]:shadow-neon-glow font-mono text-xs"
+                     >
+                       {room.id === 'crypto' && '₿'} 
+                       {room.id === 'gamers' && '🎮'} 
+                       {room.id === 'social' && '💬'} 
+                       {room.name}
+                     </TabsTrigger>
+                   ))}
+                 </TabsList>
+               </Tabs>
             </CardHeader>
             <CardContent className="flex flex-col h-80">
               {/* Chat Messages */}
@@ -382,21 +353,20 @@ export const CommunityHub = () => {
                   
                   {/* Text Input */}
                   <div className="flex gap-2">
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder={selectedRoom ? `Message ${selectedRoom.name}...` : "Select a room to chat"}
-                      className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400 h-8 text-xs"
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      disabled={!selectedRoom}
-                    />
-                    <Button 
-                      onClick={handleSendMessage}
-                      className="cyber-button px-3 h-8"
-                      disabled={!selectedRoom || !newMessage.trim()}
-                    >
-                      <Send size={14} />
-                    </Button>
+                     <Input
+                       value={newMessage}
+                       onChange={(e) => setNewMessage(e.target.value)}
+                       placeholder={`Message ${chatRooms.find(r => r.id === selectedRoomId)?.name}...`}
+                       className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400 h-8 text-xs"
+                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                     />
+                     <Button 
+                       onClick={handleSendMessage}
+                       className="cyber-button px-3 h-8"
+                       disabled={!newMessage.trim()}
+                     >
+                       <Send size={14} />
+                     </Button>
                   </div>
                 </div>
               )}
