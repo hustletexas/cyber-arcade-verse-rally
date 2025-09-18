@@ -325,24 +325,11 @@ export const CommunityHub = () => {
 
             {/* Chat Input or Connection Options */}
             {!isAuthenticatedForChat ? (
-              <div className="space-y-2">
-                {/* Discord Connect Button */}
-                <Button 
-                  onClick={handleDiscordConnect}
-                  className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
-                  style={{
-                    background: 'linear-gradient(45deg, #5865F2, #4752C4)',
-                    color: 'white',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  💬 JOIN DISCORD
-                </Button>
-                
-                {/* Phantom Wallet Connect */}
+              <div className="text-center p-4">
+                {/* Phantom Wallet Connect Only */}
                 <Button 
                   onClick={handlePhantomConnect}
-                  className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
+                  className="w-full h-10 text-sm hover:scale-105 transition-all duration-200"
                   style={{
                     background: 'linear-gradient(45deg, #AB9FF2, #9CA3FF)',
                     color: 'black',
@@ -350,21 +337,11 @@ export const CommunityHub = () => {
                   }}
                   disabled={loading}
                 >
-                  💰 CONNECT WALLET
+                  💰 CONNECT WALLET TO CHAT
                 </Button>
-                
-                <Button 
-                  onClick={() => window.location.href = '/auth'}
-                  className="w-full h-8 text-xs"
-                  variant="outline"
-                  style={{
-                    borderColor: '#00ffcc',
-                    color: '#00ffcc',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  {loading ? 'LOADING...' : 'EMAIL LOGIN'}
-                </Button>
+                <p className="text-xs text-gray-400 mt-2">
+                  Connect your Phantom wallet to join the conversation
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
