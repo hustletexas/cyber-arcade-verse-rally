@@ -258,6 +258,27 @@ export const cyberDreamsPlaylist: Playlist = {
         royalties: 6,
         isForSale: true
       }
+    },
+    {
+      id: '13',
+      title: 'Stellar Hustle',
+      artist: 'Cosmic Drift',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3',
+      duration: 221,
+      genre: 'Space Synthwave',
+      artwork: '/lovable-uploads/stellar-hustle.png',
+      likes: 1892,
+      comments: [],
+      isLiked: false,
+      nft: {
+        mintAddress: '4TbKfh7MxZ5jK8nP3QvRs2YuBd6Z9XoTrVcE1GrNqMk5',
+        price: 3.5,
+        tokenId: 'CD013',
+        collection: 'Cyber Dreams Collection',
+        creator: 'Cosmic Drift',
+        royalties: 8,
+        isForSale: true
+      }
     }
   ]
 };
