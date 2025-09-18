@@ -176,20 +176,20 @@ export const CommunityHub = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/20 to-black p-4">
-      <div className="container mx-auto max-w-7xl">
+    <div className="bg-gradient-to-br from-black via-purple-900/20 to-black p-6">
+      <div className="container mx-auto max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan mb-4 animate-pulse">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan mb-2">
             COMMUNITY HQ
           </h1>
-          <p className="text-neon-green text-lg md:text-xl font-mono">
+          <p className="text-neon-green text-base font-mono">
             Connect • Chat • Compete • Earn
           </p>
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* LEFT PANEL: Announcements */}
           <Card 
             className="overflow-hidden"
@@ -203,31 +203,31 @@ export const CommunityHub = () => {
               `
             }}
           >
-            <CardHeader>
-              <CardTitle className="text-neon-cyan font-display text-xl md:text-2xl flex items-center gap-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-neon-cyan font-display text-lg flex items-center gap-2">
                 📢 HQ UPDATES
-                <Badge className="bg-neon-pink text-black animate-pulse">LIVE</Badge>
+                <Badge className="bg-neon-pink text-black animate-pulse text-xs">LIVE</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-80">
-                <div className="space-y-4">
+              <ScrollArea className="h-64">
+                <div className="space-y-3">
                   {announcements.map((announcement) => (
                     <Card 
                       key={announcement.id} 
-                      className="p-4 border border-neon-purple/30 bg-black/20 hover:bg-black/40 transition-all duration-200 cursor-pointer hover:scale-105"
+                      className="p-3 border border-neon-purple/30 bg-black/20 hover:bg-black/40 transition-all duration-200 cursor-pointer"
                       style={{ boxShadow: '0 0 10px #ff00ff15' }}
                     >
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">{announcement.icon}</span>
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">{announcement.icon}</span>
                         <div className="flex-1">
-                          <h3 className="font-bold text-neon-pink text-sm mb-1">
+                          <h3 className="font-bold text-neon-pink text-xs mb-1">
                             {announcement.title}
                           </h3>
-                          <p className="text-gray-300 text-sm leading-relaxed">
+                          <p className="text-gray-300 text-xs leading-relaxed">
                             {announcement.content}
                           </p>
-                          <span className="text-neon-purple text-xs mt-2 block">
+                          <span className="text-neon-purple text-xs mt-1 block">
                             {announcement.timestamp.toLocaleTimeString()}
                           </span>
                         </div>
@@ -252,24 +252,24 @@ export const CommunityHub = () => {
               `
             }}
           >
-            <CardHeader>
-              <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-neon-pink font-display text-lg flex items-center gap-2">
                 💬 LIVE CHAT
-                <div className="flex items-center gap-1 text-sm text-neon-green">
-                  <Users size={16} />
+                <div className="flex items-center gap-1 text-xs text-neon-green">
+                  <Users size={14} />
                   <span>{chatMessages?.length || 0}</span>
                 </div>
               </CardTitle>
               
               {/* Chat Room Selection */}
-              <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex flex-wrap gap-1 mt-2">
                 {chatRooms.map((room) => (
                   <Button
                     key={room.id}
                     onClick={() => setSelectedRoom(room)}
                     variant={selectedRoom?.id === room.id ? "default" : "outline"}
                     size="sm"
-                    className={`text-xs ${
+                    className={`text-xs h-7 px-2 ${
                       selectedRoom?.id === room.id 
                         ? 'bg-neon-cyan text-black border-neon-cyan' 
                         : 'border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black'
@@ -284,33 +284,33 @@ export const CommunityHub = () => {
               </div>
               
               {selectedRoom && (
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-foreground mt-1">
                   {selectedRoom.description}
                 </p>
               )}
             </CardHeader>
-            <CardContent className="flex flex-col h-96">
+            <CardContent className="flex flex-col h-80">
               {/* Chat Messages */}
-              <ScrollArea className="flex-1 mb-4 pr-2">
+              <ScrollArea className="flex-1 mb-3 pr-2">
                 {messagesLoading ? (
                   <div className="flex items-center justify-center h-full">
-                    <div className="text-neon-cyan">Loading messages...</div>
+                    <div className="text-neon-cyan text-sm">Loading messages...</div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {chatMessages?.map((message) => (
                       <div 
                         key={message.id}
-                        className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
+                        className="p-2 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
                         style={{ boxShadow: '0 0 5px #00ffcc15' }}
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-neon-cyan">
+                        <div className="flex items-start justify-between mb-1">
+                          <div className="flex items-center gap-1">
+                            <span className="font-bold text-xs text-neon-cyan">
                               {message.username}
                             </span>
-                            <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs">
-                              💬 Chat
+                            <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs h-4 px-1">
+                              💬
                             </Badge>
                           </div>
                           <span className="text-neon-purple text-xs">
@@ -319,7 +319,7 @@ export const CommunityHub = () => {
                         </div>
                         
                         {/* Message Content */}
-                        <p className="text-gray-200 text-sm">
+                        <p className="text-gray-200 text-xs">
                           {message.message}
                         </p>
                       </div>
@@ -331,24 +331,24 @@ export const CommunityHub = () => {
 
               {/* Chat Input or Connection Options */}
               {!isAuthenticatedForChat ? (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {/* Discord Connect Button */}
                   <Button 
                     onClick={handleDiscordConnect}
-                    className="w-full hover:scale-105 transition-all duration-200 relative group"
+                    className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(45deg, #5865F2, #4752C4)',
                       color: 'white',
                       fontWeight: 'bold'
                     }}
                   >
-                    💬 JOIN DISCORD COMMUNITY
+                    💬 JOIN DISCORD
                   </Button>
                   
                   {/* Phantom Wallet Connect */}
                   <Button 
                     onClick={handlePhantomConnect}
-                    className="w-full hover:scale-105 transition-all duration-200"
+                    className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(45deg, #AB9FF2, #9CA3FF)',
                       color: 'black',
@@ -356,12 +356,12 @@ export const CommunityHub = () => {
                     }}
                     disabled={loading}
                   >
-                    💰 CONNECT WALLET TO CHAT
+                    💰 CONNECT WALLET
                   </Button>
                   
                   <Button 
                     onClick={() => window.location.href = '/auth'}
-                    className="w-full"
+                    className="w-full h-8 text-xs"
                     variant="outline"
                     style={{
                       borderColor: '#00ffcc',
@@ -369,7 +369,7 @@ export const CommunityHub = () => {
                       fontWeight: 'bold'
                     }}
                   >
-                    {loading ? 'LOADING...' : 'OR LOGIN WITH EMAIL'}
+                    {loading ? 'LOADING...' : 'EMAIL LOGIN'}
                   </Button>
                 </div>
               ) : (
@@ -386,16 +386,16 @@ export const CommunityHub = () => {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder={selectedRoom ? `Message ${selectedRoom.name}...` : "Select a room to chat"}
-                      className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400"
+                      className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400 h-8 text-xs"
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       disabled={!selectedRoom}
                     />
                     <Button 
                       onClick={handleSendMessage}
-                      className="cyber-button px-4"
+                      className="cyber-button px-3 h-8"
                       disabled={!selectedRoom || !newMessage.trim()}
                     >
-                      <Send size={16} />
+                      <Send size={14} />
                     </Button>
                   </div>
                 </div>
@@ -404,30 +404,30 @@ export const CommunityHub = () => {
           </Card>
         </div>
 
-        {/* Bottom Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-          <Card className="holographic p-4 text-center">
-            <div className="text-3xl mb-2">🎮</div>
-            <div className="text-2xl font-black text-neon-cyan">2,847</div>
-            <p className="text-sm text-muted-foreground">Active Players</p>
+        {/* Compact Bottom Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
+          <Card className="holographic p-2 text-center">
+            <div className="text-lg mb-1">🎮</div>
+            <div className="text-lg font-black text-neon-cyan">2,847</div>
+            <p className="text-xs text-muted-foreground">Players</p>
           </Card>
           
-          <Card className="holographic p-4 text-center">
-            <div className="text-3xl mb-2">💰</div>
-            <div className="text-2xl font-black text-neon-green">₿127.5K</div>
-            <p className="text-sm text-muted-foreground">Prize Pool</p>
+          <Card className="holographic p-2 text-center">
+            <div className="text-lg mb-1">💰</div>
+            <div className="text-lg font-black text-neon-green">₿127.5K</div>
+            <p className="text-xs text-muted-foreground">Prize Pool</p>
           </Card>
           
-          <Card className="holographic p-4 text-center">
-            <div className="text-3xl mb-2">🏆</div>
-            <div className="text-2xl font-black text-neon-purple">24</div>
-            <p className="text-sm text-muted-foreground">Live Tournaments</p>
+          <Card className="holographic p-2 text-center">
+            <div className="text-lg mb-1">🏆</div>
+            <div className="text-lg font-black text-neon-purple">24</div>
+            <p className="text-xs text-muted-foreground">Tournaments</p>
           </Card>
           
-          <Card className="holographic p-4 text-center">
-            <div className="text-3xl mb-2">🎵</div>
-            <div className="text-2xl font-black text-neon-pink">1,250</div>
-            <p className="text-sm text-muted-foreground">Music Tracks</p>
+          <Card className="holographic p-2 text-center">
+            <div className="text-lg mb-1">🎵</div>
+            <div className="text-lg font-black text-neon-pink">1,250</div>
+            <p className="text-xs text-muted-foreground">Tracks</p>
           </Card>
         </div>
       </div>
