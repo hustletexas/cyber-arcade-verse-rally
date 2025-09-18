@@ -165,7 +165,7 @@ export const PlayerDashboard = () => {
       </Card>
 
       {/* Account Tabs */}
-      <Tabs defaultValue="history" className="w-full">
+      <Tabs defaultValue="achievements" className="w-full">
         <TabsList className="grid w-full grid-cols-5 arcade-frame p-2">
           <TabsTrigger value="achievements" className="cyber-button">🏅 ACHIEVEMENTS</TabsTrigger>
           <TabsTrigger value="history" className="cyber-button">🏆 HISTORY</TabsTrigger>
