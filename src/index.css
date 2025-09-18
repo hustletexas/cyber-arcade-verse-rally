@@ -424,12 +424,12 @@
     border-color: hsl(var(--neon-green));
   }
 
-  @keyframes marquee-vertical {
+  @keyframes teleprompter {
     0% { transform: translateY(0); }
-    100% { transform: translateY(-25%); }
+    100% { transform: translateY(-16.66%); }
   }
 
-  .animate-marquee-vertical {
-    animation: marquee-vertical 40s linear infinite;
+  .animate-teleprompter {
+    animation: teleprompter 50s linear infinite;
   }
 }

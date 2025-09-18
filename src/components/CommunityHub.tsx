@@ -172,229 +172,229 @@ export const CommunityHub = () => {
           </p>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* LEFT PANEL: Announcements */}
-          <Card 
-            className="relative"
-            style={{ 
-              background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%)',
-              border: '2px solid #00ffcc',
-              boxShadow: `
-                0 0 20px #00ffcc30,
-                0 0 40px #ff00ff20,
-                inset 0 0 20px #00ffcc05
-              `
-            }}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-neon-cyan font-display text-lg flex items-center gap-2">
-                📢 HQ UPDATES
-                <Badge className="bg-neon-pink text-black animate-pulse text-xs">LIVE</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 h-64 relative">
-              {/* Gradient overlays */}
-              <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/95 to-transparent z-10 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/95 to-transparent z-10 pointer-events-none" />
-              
-              {/* Auto-scrolling teleprompter - simplified approach */}
-              <div className="overflow-hidden h-full">
-                <div className="animate-marquee-vertical flex flex-col space-y-2 p-4">
-                  {/* Duplicate content multiple times for seamless loop */}
-                  {Array.from({ length: 4 }, (_, groupIndex) => 
-                    liveUpdates.map((update, index) => (
-                      <div 
-                        key={`${update.id}-${groupIndex}-${index}`}
-                        className="flex items-center gap-3 p-2 rounded border border-neon-cyan/20 bg-black/30 backdrop-blur-sm flex-shrink-0"
-                        style={{ 
-                          boxShadow: '0 0 10px #00ffcc10',
-                          minHeight: '56px'
-                        }}
-                      >
-                        <span className="text-lg flex-shrink-0">{update.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge 
-                              className={`${
-                                update.title === 'BREAKING' ? 'bg-red-500 text-white animate-pulse' :
-                                update.title === 'LIVE' ? 'bg-neon-green text-black animate-pulse' :
-                                'bg-neon-cyan/20 text-neon-cyan'
-                              } text-xs h-5 px-2 font-bold`}
-                            >
-                              {update.title}
-                            </Badge>
-                            <span className="text-neon-purple text-xs">
-                              {update.timestamp.toLocaleTimeString('en-US', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </span>
-                          </div>
-                          <p className="text-gray-200 text-xs leading-relaxed">
-                            {update.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* RIGHT PANEL: Live Chat */}
-          <Card 
-            className="overflow-hidden"
-            style={{ 
-              background: '#0f0f0f',
-              border: '2px solid #ff00ff',
-              boxShadow: `
-                0 0 20px #ff00ff30,
-                0 0 40px #00ffcc20,
-                inset 0 0 20px #ff00ff05
-              `
-            }}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-neon-pink font-display text-lg flex items-center gap-2">
-                💬 LIVE CHAT
-                <div className="flex items-center gap-1 text-xs text-neon-green">
-                  <Users size={14} />
-                  <span>{chatMessages?.length || 0}</span>
-                </div>
-              </CardTitle>
-              
-               <Tabs value={selectedRoomId} onValueChange={setSelectedRoomId} className="w-full mt-2">
-                 <TabsList className="grid w-full grid-cols-3 bg-card/20 backdrop-blur-sm border border-neon-cyan/20">
-                   {chatRooms.map((room) => (
-                     <TabsTrigger 
-                       key={room.id} 
-                       value={room.id}
-                       className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan data-[state=active]:shadow-neon-glow font-mono text-xs"
-                     >
-                       {room.id === 'crypto' && '₿'} 
-                       {room.id === 'gamers' && '🎮'} 
-                       {room.id === 'social' && '💬'} 
-                       {room.name}
-                     </TabsTrigger>
-                   ))}
-                 </TabsList>
-               </Tabs>
-            </CardHeader>
-            <CardContent className="flex flex-col h-80">
-              {/* Chat Messages */}
-              <ScrollArea className="flex-1 mb-3 pr-2">
-                {messagesLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-neon-cyan text-sm">Loading messages...</div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {chatMessages?.map((message) => (
-                      <div 
-                        key={message.id}
-                        className="p-2 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
-                        style={{ boxShadow: '0 0 5px #00ffcc15' }}
-                      >
-                        <div className="flex items-start justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <span className="font-bold text-xs text-neon-cyan">
-                              {message.username}
-                            </span>
-                            <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs h-4 px-1">
-                              💬
-                            </Badge>
-                          </div>
-                          <span className="text-neon-purple text-xs">
-                            {formatTime(message.created_at)}
+        {/* HQ UPDATES SECTION - Full Width */}
+        <Card 
+          className="mb-6 relative"
+          style={{ 
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%)',
+            border: '2px solid #00ffcc',
+            boxShadow: `
+              0 0 20px #00ffcc30,
+              0 0 40px #ff00ff20,
+              inset 0 0 20px #00ffcc05
+            `
+          }}
+        >
+          <CardHeader className="pb-3">
+            <CardTitle className="text-neon-cyan font-display text-xl flex items-center gap-3">
+              📢 HQ COMMAND CENTER
+              <Badge className="bg-neon-pink text-black animate-pulse text-sm">LIVE</Badge>
+              <Badge className="bg-neon-green text-black animate-pulse text-sm">UPDATES</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 h-80 relative">
+            {/* Gradient overlays */}
+            <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black/95 to-transparent z-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-black/95 to-transparent z-10 pointer-events-none" />
+            
+            {/* Live teleprompter feed */}
+            <div className="overflow-hidden h-full">
+              <div className="animate-teleprompter space-y-3 p-6">
+                {/* Multiple copies for seamless loop */}
+                {Array.from({ length: 6 }, (_, groupIndex) => 
+                  liveUpdates.map((update, index) => (
+                    <div 
+                      key={`${update.id}-${groupIndex}-${index}`}
+                      className="flex items-center gap-4 p-3 rounded-lg border border-neon-cyan/30 bg-black/40 backdrop-blur-sm flex-shrink-0"
+                      style={{ 
+                        boxShadow: '0 0 15px #00ffcc20',
+                        minHeight: '70px'
+                      }}
+                    >
+                      <span className="text-2xl flex-shrink-0">{update.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Badge 
+                            className={`${
+                              update.title === 'BREAKING' ? 'bg-red-500 text-white animate-pulse font-bold' :
+                              update.title === 'LIVE' ? 'bg-neon-green text-black animate-pulse font-bold' :
+                              update.title === 'MARKET ALERT' ? 'bg-yellow-500 text-black animate-pulse font-bold' :
+                              'bg-neon-cyan/30 text-neon-cyan font-bold'
+                            } text-sm h-6 px-3`}
+                          >
+                            {update.title}
+                          </Badge>
+                          <span className="text-neon-purple text-sm font-mono">
+                            {update.timestamp.toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit',
+                              second: '2-digit'
+                            })}
                           </span>
                         </div>
-                        
-                        {/* Message Content */}
-                        <p className="text-gray-200 text-xs">
-                          {message.message}
+                        <p className="text-gray-100 text-sm leading-relaxed font-medium">
+                          {update.content}
                         </p>
                       </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
+                    </div>
+                  ))
                 )}
-              </ScrollArea>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              {/* Chat Input or Connection Options */}
-              {!isAuthenticatedForChat ? (
-                <div className="space-y-2">
-                  {/* Discord Connect Button */}
-                  <Button 
-                    onClick={handleDiscordConnect}
-                    className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(45deg, #5865F2, #4752C4)',
-                      color: 'white',
-                      fontWeight: 'bold'
-                    }}
+        {/* LIVE CHAT SECTION - Full Width Below HQ */}
+        <Card 
+          className="relative"
+          style={{ 
+            background: '#0f0f0f',
+            border: '2px solid #ff00ff',
+            boxShadow: `
+              0 0 20px #ff00ff30,
+              0 0 40px #00ffcc20,
+              inset 0 0 20px #ff00ff05
+            `
+          }}
+        >
+          <CardHeader className="pb-3">
+            <CardTitle className="text-neon-pink font-display text-xl flex items-center gap-3">
+              💬 LIVE COMMUNITY CHAT
+              <div className="flex items-center gap-2 text-sm text-neon-green">
+                <Users size={16} />
+                <span>{chatMessages?.length || 0}</span>
+              </div>
+            </CardTitle>
+            
+            <Tabs value={selectedRoomId} onValueChange={setSelectedRoomId} className="w-full mt-3">
+              <TabsList className="grid w-full grid-cols-3 bg-card/20 backdrop-blur-sm border border-neon-cyan/20">
+                {chatRooms.map((room) => (
+                  <TabsTrigger 
+                    key={room.id} 
+                    value={room.id}
+                    className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan data-[state=active]:shadow-neon-glow font-mono text-sm"
                   >
-                    💬 JOIN DISCORD
-                  </Button>
-                  
-                  {/* Phantom Wallet Connect */}
-                  <Button 
-                    onClick={handlePhantomConnect}
-                    className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(45deg, #AB9FF2, #9CA3FF)',
-                      color: 'black',
-                      fontWeight: 'bold'
-                    }}
-                    disabled={loading}
-                  >
-                    💰 CONNECT WALLET
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => window.location.href = '/auth'}
-                    className="w-full h-8 text-xs"
-                    variant="outline"
-                    style={{
-                      borderColor: '#00ffcc',
-                      color: '#00ffcc',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {loading ? 'LOADING...' : 'EMAIL LOGIN'}
-                  </Button>
+                    {room.id === 'crypto' && '₿'} 
+                    {room.id === 'gamers' && '🎮'} 
+                    {room.id === 'social' && '💬'} 
+                    {room.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </CardHeader>
+          <CardContent className="flex flex-col h-80">
+            {/* Chat Messages */}
+            <ScrollArea className="flex-1 mb-3 pr-2">
+              {messagesLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-neon-cyan text-sm">Loading messages...</div>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {/* Voice Chat Component */}
-                  <VoiceChat 
-                    onVoiceMessage={handleVoiceMessage}
-                    isConnected={!!isAuthenticatedForChat}
-                  />
-                  
-                  {/* Text Input */}
-                  <div className="flex gap-2">
-                     <Input
-                       value={newMessage}
-                       onChange={(e) => setNewMessage(e.target.value)}
-                       placeholder={`Message ${chatRooms.find(r => r.id === selectedRoomId)?.name}...`}
-                       className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400 h-8 text-xs"
-                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                     />
-                     <Button 
-                       onClick={handleSendMessage}
-                       className="cyber-button px-3 h-8"
-                       disabled={!newMessage.trim()}
-                     >
-                       <Send size={14} />
-                     </Button>
-                  </div>
+                  {chatMessages?.map((message) => (
+                    <div 
+                      key={message.id}
+                      className="p-2 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
+                      style={{ boxShadow: '0 0 5px #00ffcc15' }}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex items-center gap-1">
+                          <span className="font-bold text-xs text-neon-cyan">
+                            {message.username}
+                          </span>
+                          <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs h-4 px-1">
+                            💬
+                          </Badge>
+                        </div>
+                        <span className="text-neon-purple text-xs">
+                          {formatTime(message.created_at)}
+                        </span>
+                      </div>
+                      
+                      {/* Message Content */}
+                      <p className="text-gray-200 text-xs">
+                        {message.message}
+                      </p>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </ScrollArea>
+
+            {/* Chat Input or Connection Options */}
+            {!isAuthenticatedForChat ? (
+              <div className="space-y-2">
+                {/* Discord Connect Button */}
+                <Button 
+                  onClick={handleDiscordConnect}
+                  className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
+                  style={{
+                    background: 'linear-gradient(45deg, #5865F2, #4752C4)',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  💬 JOIN DISCORD
+                </Button>
+                
+                {/* Phantom Wallet Connect */}
+                <Button 
+                  onClick={handlePhantomConnect}
+                  className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
+                  style={{
+                    background: 'linear-gradient(45deg, #AB9FF2, #9CA3FF)',
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}
+                  disabled={loading}
+                >
+                  💰 CONNECT WALLET
+                </Button>
+                
+                <Button 
+                  onClick={() => window.location.href = '/auth'}
+                  className="w-full h-8 text-xs"
+                  variant="outline"
+                  style={{
+                    borderColor: '#00ffcc',
+                    color: '#00ffcc',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {loading ? 'LOADING...' : 'EMAIL LOGIN'}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {/* Voice Chat Component */}
+                <VoiceChat 
+                  onVoiceMessage={handleVoiceMessage}
+                  isConnected={!!isAuthenticatedForChat}
+                />
+                
+                {/* Text Input */}
+                <div className="flex gap-2">
+                   <Input
+                     value={newMessage}
+                     onChange={(e) => setNewMessage(e.target.value)}
+                     placeholder={`Message ${chatRooms.find(r => r.id === selectedRoomId)?.name}...`}
+                     className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400 h-8 text-xs"
+                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                   />
+                   <Button 
+                     onClick={handleSendMessage}
+                     className="cyber-button px-3 h-8"
+                     disabled={!newMessage.trim()}
+                   >
+                     <Send size={14} />
+                   </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
       </div>
     </div>
