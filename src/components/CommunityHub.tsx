@@ -337,7 +337,7 @@ export const CommunityHub = () => {
                   }}
                   disabled={loading}
                 >
-                  💰 CONNECT WALLET TO CHAT
+                  CONNECT WALLET TO CHAT
                 </Button>
                 <p className="text-xs text-gray-400 mt-2">
                   Connect your Phantom wallet to join the conversation
