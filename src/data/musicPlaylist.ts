@@ -114,7 +114,7 @@ export const cyberDreamsPlaylist: Playlist = {
     },
     {
       id: '6',
-      title: 'Binary Sunset',
+      title: 'Matrix Mix',
       artist: 'Neon Synthwave',
       url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
       duration: 256,
