@@ -95,7 +95,7 @@ export const CommunityHub = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const isAuthenticatedForChat = user || isWalletConnected;
+  const isAuthenticatedForChat = false; // Force show button for testing
   
   const handleDiscordConnect = () => {
     window.open('https://discord.gg/cybercityarcade', '_blank');
