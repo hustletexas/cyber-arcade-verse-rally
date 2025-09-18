@@ -240,7 +240,7 @@ export const cyberDreamsPlaylist: Playlist = {
     },
     {
       id: '12',
-      title: 'Digital Mirage',
+      title: 'Neon Matrix',
       artist: 'Synthwave Collective',
       url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3',
       duration: 245,
