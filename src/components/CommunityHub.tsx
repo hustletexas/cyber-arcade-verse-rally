@@ -374,32 +374,6 @@ export const CommunityHub = () => {
           </Card>
         </div>
 
-        {/* Compact Bottom Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
-          <Card className="holographic p-2 text-center">
-            <div className="text-lg mb-1">🎮</div>
-            <div className="text-lg font-black text-neon-cyan">2,847</div>
-            <p className="text-xs text-muted-foreground">Players</p>
-          </Card>
-          
-          <Card className="holographic p-2 text-center">
-            <div className="text-lg mb-1">💰</div>
-            <div className="text-lg font-black text-neon-green">₿127.5K</div>
-            <p className="text-xs text-muted-foreground">Prize Pool</p>
-          </Card>
-          
-          <Card className="holographic p-2 text-center">
-            <div className="text-lg mb-1">🏆</div>
-            <div className="text-lg font-black text-neon-purple">24</div>
-            <p className="text-xs text-muted-foreground">Tournaments</p>
-          </Card>
-          
-          <Card className="holographic p-2 text-center">
-            <div className="text-lg mb-1">🎵</div>
-            <div className="text-lg font-black text-neon-pink">1,250</div>
-            <p className="text-xs text-muted-foreground">Tracks</p>
-          </Card>
-        </div>
       </div>
     </div>
   );
