@@ -49,13 +49,13 @@ export const CommunityHub = () => {
   const { createOrLoginWithWallet } = useWalletAuth();
   const { toast } = useToast();
   
-  const [selectedRoomId, setSelectedRoomId] = useState<string>('crypto');
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('00000000-0000-0000-0000-000000000001');
   const [newMessage, setNewMessage] = useState('');
   
   const chatRooms = [
-    { id: 'crypto', name: 'Crypto', description: 'Crypto Hub' },
-    { id: 'gamers', name: 'Gamers', description: 'Gamers Lounge' },
-    { id: 'social', name: 'Social', description: 'Social Circle' }
+    { id: '00000000-0000-0000-0000-000000000001', name: 'Crypto', description: 'Crypto Hub' },
+    { id: '00000000-0000-0000-0000-000000000002', name: 'Gamers', description: 'Gamers Lounge' },
+    { id: '00000000-0000-0000-0000-000000000003', name: 'Social', description: 'Social Circle' }
   ];
   
   // Use the chat messages hook
