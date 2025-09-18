@@ -11,6 +11,7 @@ import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useToast } from '@/hooks/use-toast';
 import { VoiceChat } from './VoiceChat';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
+import { useChatMessages } from '@/hooks/useChatMessages';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
@@ -49,482 +50,387 @@ export const CommunityHub = () => {
   
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
+  const [newMessage, setNewMessage] = useState('');
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      username: 'CyberAdmin',
-      message: 'Welcome to Cyber City Community HQ! 🎮',
-      timestamp: new Date(Date.now() - 300000),
-      isGuest: false,
-      type: 'text'
-    },
-    {
-      id: '2',
-      username: 'Player001',
-      message: 'Ready for tonight\'s tournament! 🏆',
-      timestamp: new Date(Date.now() - 120000),
-      isGuest: true,
-      walletAddress: 'ABC123...XYZ789',
-      type: 'text'
-    }
-  ]);
-
+  // Use the chat messages hook
+  const { 
+    messages: chatMessages, 
+    loading: messagesLoading, 
+    sendMessage, 
+    isAuthenticated,
+    displayName 
+  } = useChatMessages(selectedRoom?.id || null);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
   const [announcements] = useState<Announcement[]>([
     {
       id: '1',
-      icon: '📢',
-      title: 'Tournament Rules Updated',
-      content: 'New scoring system implemented for fair gameplay. Check the latest rules in our tournament section.',
-      timestamp: new Date(Date.now() - 86400000)
+      icon: '🎮',
+      title: 'Tournament Alert',
+      content: 'Grand Championship starts in 2 hours! Prize pool: 50,000 $CCTR',
+      timestamp: new Date()
     },
     {
       id: '2',
-      icon: '🏆',
-      title: 'Weekly Championship',
-      content: 'Join our weekly championship every Friday at 8PM EST. Prize pool: 1000 $CCTR tokens!',
-      timestamp: new Date(Date.now() - 172800000)
+      icon: '🎵',
+      title: 'New Music Drop',
+      content: 'Cyber Symphony Vol. 3 now available in the music marketplace!',
+      timestamp: new Date(Date.now() - 3600000)
     },
     {
       id: '3',
-      icon: '🎁',
-      title: 'How to Earn $CCTR',
-      content: 'Participate in tournaments, complete daily challenges, trade NFTs, and engage with the community to earn rewards.',
-      timestamp: new Date(Date.now() - 259200000)
+      icon: '💰',
+      title: 'Staking Rewards',
+      content: 'Weekly staking rewards distributed! Check your wallet.',
+      timestamp: new Date(Date.now() - 7200000)
     }
   ]);
+  
+  // Fetch chat rooms on component mount
+  useEffect(() => {
+    const fetchChatRooms = async () => {
+      const { data, error } = await supabase
+        .from('chat_rooms')
+        .select('*')
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching chat rooms:', error);
+        return;
+      }
+      
+      setChatRooms(data || []);
+      // Auto-select first room
+      if (data && data.length > 0) {
+        setSelectedRoom(data[0]);
+      }
+    };
+    
+    fetchChatRooms();
+  }, []);
 
-  const [currentMessage, setCurrentMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Get username from authenticated user or wallet
-  const getDisplayName = () => {
-    if (user?.user_metadata?.username) return user.user_metadata.username;
-    if (user?.email) return user.email.split('@')[0];
-    if (primaryWallet) return `Wallet_${primaryWallet.address.slice(0, 6)}`;
-    return 'Anonymous';
+  const isAuthenticatedForChat = user || isWalletConnected;
+  
+  const handleDiscordConnect = () => {
+    window.open('https://discord.gg/cybercityarcade', '_blank');
   };
 
-  // Connect Solana wallet function
-  const connectSolanaWallet = async () => {
+  const handlePhantomConnect = async () => {
     try {
-      if (window.solana && window.solana.isPhantom) {
-        const response = await window.solana.connect();
-        if (response?.publicKey) {
-          await connectWallet('phantom', response.publicKey.toString());
-          await createOrLoginWithWallet(response.publicKey.toString());
+      if (typeof window !== 'undefined' && 'solana' in window) {
+        const provider = (window as any).solana;
+        if (provider?.isPhantom) {
+          const response = await provider.connect();
+          if (response?.publicKey) {
+            await connectWallet('phantom', response.publicKey.toString());
+            await createOrLoginWithWallet(response.publicKey.toString());
+            toast({
+              title: "Wallet Connected!",
+              description: "You can now participate in the chat",
+            });
+          }
+        } else {
           toast({
-            title: "Wallet Connected!",
-            description: "You can now participate in the chat",
+            title: "Phantom Wallet Required",
+            description: "Please install Phantom wallet to connect",
+            variant: "destructive",
           });
         }
-      } else {
-        toast({
-          title: "Phantom Wallet Required",
-          description: "Please install Phantom wallet to connect",
-          variant: "destructive",
-        });
-        window.open('https://phantom.app/', '_blank');
       }
     } catch (error) {
-      console.error('Wallet connection error:', error);
+      console.error('Phantom connection error:', error);
       toast({
         title: "Connection Failed",
-        description: "Failed to connect wallet. Please try again.",
+        description: "Failed to connect to Phantom wallet",
         variant: "destructive",
       });
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSendMessage = () => {
-    if (currentMessage.trim() && (user || isWalletConnected)) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        username: getDisplayName(),
-        message: currentMessage.trim(),
-        timestamp: new Date(),
-        isGuest: !user,
-        walletAddress: primaryWallet?.address,
-        type: 'text',
-      };
-      setMessages(prev => [...prev, newMessage]);
-      setCurrentMessage('');
-      playArcadeBeep();
-    }
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
+    
+    await sendMessage(newMessage);
+    setNewMessage('');
   };
 
   const handleVoiceMessage = (audioBlob: Blob, duration: number) => {
-    if (user || isWalletConnected) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        username: getDisplayName(),
-        timestamp: new Date(),
-        isGuest: !user,
-        walletAddress: primaryWallet?.address,
-        type: 'voice',
-        audioBlob,
-        duration
-      };
-      setMessages(prev => [...prev, newMessage]);
-      
-      // Play arcade beep sound
-      playArcadeBeep();
-    }
+    // For now, we'll show a placeholder for voice messages
+    // In a full implementation, you'd upload the audio and store a reference
+    console.log('Voice message received:', { audioBlob, duration });
   };
 
-  const handleDiscordConnect = () => {
-    try {
-      
-      // Show connecting toast
-      toast({
-        title: "Opening Discord...",
-        description: "Taking you to our Discord server!",
-      });
-      
-      // Try to open Discord link - use a more reliable approach
-      const discordUrl = 'https://discord.gg/Y7yUUssH';
-      
-      // Create a temporary link element and click it (more reliable than window.open)
-      const link = document.createElement('a');
-      link.href = discordUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      
-      // Append to body, click, then remove
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Provide success feedback after a short delay
-      setTimeout(() => {
-        toast({
-          title: "Discord Link Opened! 🎮",
-          description: "Welcome to the Cyber City Community!",
-        });
-      }, 500);
-      
-    } catch (error) {
-      console.error('Discord connection error:', error);
-      
-      // Fallback: copy link to clipboard
-      try {
-        navigator.clipboard.writeText('https://discord.gg/Y7yUUssH');
-        toast({
-          title: "Link Copied to Clipboard! 📋",
-          description: "Paste this link in your browser: discord.gg/Y7yUUssH",
-        });
-      } catch (clipboardError) {
-        toast({
-          title: "Manual Link Required",
-          description: "Please visit: discord.gg/Y7yUUssH",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
-  const playArcadeBeep = () => {
-    // Create a simple beep sound using Web Audio API
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    } catch (error) {
-      // Audio not supported, continue silently
-    }
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  };
-
-  const isAuthenticated = !!user || isWalletConnected;
 
   return (
-    <section className="w-full">
-      <div className="text-center mb-8">
-        <h2 
-          className="text-xl font-bold text-neon-pink"
-          style={{
-            fontFamily: 'Orbitron, monospace',
-            textShadow: '0 0 10px #ff00ff, 0 0 20px #ff00ff',
-            filter: 'drop-shadow(0 0 8px #ff00ff)'
-          }}
-        >
-          🕹️ CYBER CITY COMMUNITY HQ
-        </h2>
-        
-        {/* Authentication Status Badge */}
-        {isAuthenticated && (
-          <div className="mt-4 flex justify-center">
-            {user ? (
-              <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan">
-                👤 Logged in as {getDisplayName()}
-              </Badge>
-            ) : primaryWallet ? (
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                {getWalletIcon(primaryWallet.type)} Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
-              </Badge>
-            ) : null}
-          </div>
-        )}
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/20 to-black p-4">
+      <div className="container mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan mb-4 animate-pulse">
+            COMMUNITY HQ
+          </h1>
+          <p className="text-neon-green text-lg md:text-xl font-mono">
+            Connect • Chat • Compete • Earn
+          </p>
+        </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
-        {/* LEFT PANEL: Community Info */}
-        <Card 
-          className="overflow-hidden"
-          style={{ 
-            background: '#0f0f0f',
-            border: '2px solid #00ffcc',
-            borderRadius: '12px',
-            boxShadow: `
-              0 0 20px #00ffcc30,
-              0 0 40px #ff00ff20,
-              inset 0 0 20px #00ffcc05
-            `
-          }}
-        >
-          <CardHeader>
-            <CardTitle className="text-neon-cyan font-display text-xl md:text-2xl flex items-center gap-2">
-              📢 COMMUNITY UPDATES
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-96 pr-4">
-              <div className="space-y-4">
-                {announcements.map((announcement) => (
-                  <div 
-                    key={announcement.id}
-                    className="p-4 rounded-lg border border-neon-purple/30 bg-black/30 hover:bg-black/50 transition-all duration-300"
-                    style={{ boxShadow: '0 0 10px #bf00ff20' }}
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* LEFT PANEL: Announcements */}
+          <Card 
+            className="overflow-hidden"
+            style={{ 
+              background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%)',
+              border: '2px solid #00ffcc',
+              boxShadow: `
+                0 0 20px #00ffcc30,
+                0 0 40px #ff00ff20,
+                inset 0 0 20px #00ffcc05
+              `
+            }}
+          >
+            <CardHeader>
+              <CardTitle className="text-neon-cyan font-display text-xl md:text-2xl flex items-center gap-2">
+                📢 HQ UPDATES
+                <Badge className="bg-neon-pink text-black animate-pulse">LIVE</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-80">
+                <div className="space-y-4">
+                  {announcements.map((announcement) => (
+                    <Card 
+                      key={announcement.id} 
+                      className="p-4 border border-neon-purple/30 bg-black/20 hover:bg-black/40 transition-all duration-200 cursor-pointer hover:scale-105"
+                      style={{ boxShadow: '0 0 10px #ff00ff15' }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">{announcement.icon}</span>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-neon-pink text-sm mb-1">
+                            {announcement.title}
+                          </h3>
+                          <p className="text-gray-300 text-sm leading-relaxed">
+                            {announcement.content}
+                          </p>
+                          <span className="text-neon-purple text-xs mt-2 block">
+                            {announcement.timestamp.toLocaleTimeString()}
+                          </span>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          {/* RIGHT PANEL: Live Chat */}
+          <Card 
+            className="overflow-hidden"
+            style={{ 
+              background: '#0f0f0f',
+              border: '2px solid #ff00ff',
+              boxShadow: `
+                0 0 20px #ff00ff30,
+                0 0 40px #00ffcc20,
+                inset 0 0 20px #ff00ff05
+              `
+            }}
+          >
+            <CardHeader>
+              <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
+                💬 LIVE CHAT
+                <div className="flex items-center gap-1 text-sm text-neon-green">
+                  <Users size={16} />
+                  <span>{chatMessages?.length || 0}</span>
+                </div>
+              </CardTitle>
+              
+              {/* Chat Room Selection */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {chatRooms.map((room) => (
+                  <Button
+                    key={room.id}
+                    onClick={() => setSelectedRoom(room)}
+                    variant={selectedRoom?.id === room.id ? "default" : "outline"}
+                    size="sm"
+                    className={`text-xs ${
+                      selectedRoom?.id === room.id 
+                        ? 'bg-neon-cyan text-black border-neon-cyan' 
+                        : 'border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black'
+                    }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">{announcement.icon}</span>
-                      <div className="flex-1">
-                        <h3 className="text-neon-pink font-bold text-lg mb-2">
-                          {announcement.title}
-                        </h3>
-                        <p className="text-gray-300 text-sm mb-3 leading-relaxed">
-                          {announcement.content}
+                    {room.name === 'Crypto Hub' && '₿'} 
+                    {room.name === 'Gamers Lounge' && '🎮'} 
+                    {room.name === 'Social Circle' && '💬'} 
+                    {room.name}
+                  </Button>
+                ))}
+              </div>
+              
+              {selectedRoom && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {selectedRoom.description}
+                </p>
+              )}
+            </CardHeader>
+            <CardContent className="flex flex-col h-96">
+              {/* Chat Messages */}
+              <ScrollArea className="flex-1 mb-4 pr-2">
+                {messagesLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-neon-cyan">Loading messages...</div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {chatMessages?.map((message) => (
+                      <div 
+                        key={message.id}
+                        className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
+                        style={{ boxShadow: '0 0 5px #00ffcc15' }}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-neon-cyan">
+                              {message.username}
+                            </span>
+                            <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs">
+                              💬 Chat
+                            </Badge>
+                          </div>
+                          <span className="text-neon-purple text-xs">
+                            {formatTime(message.created_at)}
+                          </span>
+                        </div>
+                        
+                        {/* Message Content */}
+                        <p className="text-gray-200 text-sm">
+                          {message.message}
                         </p>
-                        <span className="text-neon-cyan text-xs">
-                          {formatDate(announcement.timestamp)}
-                        </span>
                       </div>
-                    </div>
+                    ))}
+                    <div ref={messagesEndRef} />
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+                )}
+              </ScrollArea>
 
-        {/* RIGHT PANEL: Live Chat */}
-        <Card 
-          className="overflow-hidden"
-          style={{ 
-            background: '#0f0f0f',
-            border: '2px solid #ff00ff',
-            borderRadius: '12px',
-            boxShadow: `
-              0 0 20px #ff00ff30,
-              0 0 40px #00ffcc20,
-              inset 0 0 20px #ff00ff05
-            `
-          }}
-        >
-          <CardHeader>
-            <CardTitle className="text-neon-pink font-display text-xl md:text-2xl flex items-center gap-2">
-              💬 LIVE CHAT
-              <div className="flex items-center gap-1 text-sm text-neon-green">
-                <Users size={16} />
-                <span>{messages.length > 0 ? Math.floor(Math.random() * 50) + 10 : 0}</span>
-              </div>
-            </CardTitle>
-            
-            {/* Chat Room Selection */}
-            <div className="flex flex-wrap gap-2 mt-3">
-              {chatRooms.map((room) => (
-                <Button
-                  key={room.id}
-                  onClick={() => setSelectedRoom(room)}
-                  variant={selectedRoom?.id === room.id ? "default" : "outline"}
-                  size="sm"
-                  className={`text-xs ${
-                    selectedRoom?.id === room.id 
-                      ? 'bg-neon-cyan text-black border-neon-cyan' 
-                      : 'border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black'
-                  }`}
-                >
-                  {room.name === 'Crypto Hub' && '₿'} 
-                  {room.name === 'Gamers Lounge' && '🎮'} 
-                  {room.name === 'Social Circle' && '💬'} 
-                  {room.name}
-                </Button>
-              ))}
-            </div>
-            
-            {selectedRoom && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {selectedRoom.description}
-              </p>
-            )}
-          </CardHeader>
-          <CardContent className="flex flex-col h-96">
-            {/* Chat Messages */}
-            <ScrollArea className="flex-1 mb-4 pr-2">
-              <div className="space-y-3">
-                {messages.map((message) => (
-                  <div 
-                    key={message.id}
-                    className="p-3 rounded-lg border border-neon-cyan/30 bg-black/40 hover:bg-black/60 transition-all duration-200"
-                    style={{ boxShadow: '0 0 5px #00ffcc15' }}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-bold text-sm ${message.isGuest ? 'text-neon-green' : 'text-neon-pink'}`}>
-                          {message.username}
-                          {!message.isGuest && <span className="text-neon-cyan ml-1">👑</span>}
-                        </span>
-                        {message.walletAddress && (
-                          <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple text-xs">
-                            💰 Wallet
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-neon-purple text-xs">
-                        {formatTime(message.timestamp)}
-                      </span>
-                    </div>
-                    
-                    {/* Message Content */}
-                    {message.type === 'text' ? (
-                      <p className="text-gray-200 text-sm">
-                        {message.message}
-                      </p>
-                    ) : (
-                      <VoiceMessagePlayer
-                        audioBlob={message.audioBlob!}
-                        duration={message.duration!}
-                        username={message.username}
-                        isOwnMessage={message.username === getDisplayName()}
-                      />
-                    )}
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Chat Input or Connection Options */}
-            {!isAuthenticated ? (
-              <div className="space-y-3">
-                {/* Discord Connect Button */}
-                <Button 
-                  onClick={handleDiscordConnect}
-                  className="w-full hover:scale-105 transition-all duration-200 relative group"
-                  style={{
-                    background: 'linear-gradient(45deg, #5865F2, #4752C4)',
-                    border: '1px solid #5865F2',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    boxShadow: '0 0 15px rgba(88, 101, 242, 0.3)'
-                  }}
-                >
-                  <MessageCircle size={16} className="mr-2" />
-                  CONNECT TO DISCORD
-                  <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded"></span>
-                </Button>
-
-                {/* Wallet Connect Button */}
-                <Button 
-                  onClick={connectSolanaWallet}
-                  className="w-full hover:scale-105 transition-all duration-200"
-                  style={{
-                    background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
-                    border: '1px solid #00ffcc',
-                    color: 'black',
-                    fontWeight: 'bold'
-                  }}
-                  disabled={loading}
-                >
-                  💰 CONNECT WALLET TO CHAT
-                </Button>
-                
-                <Button 
-                  onClick={() => window.location.href = '/auth'}
-                  className="w-full"
-                  style={{
-                    background: 'linear-gradient(45deg, #ff00ff, #aa0088)',
-                    border: '1px solid #ff00ff',
-                    color: 'white',
-                    fontWeight: 'bold'
-                  }}
-                  disabled={loading}
-                >
-                  <Zap size={16} className="mr-2" />
-                  {loading ? 'LOADING...' : 'OR LOGIN WITH EMAIL'}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {/* Voice Chat Component */}
-                <VoiceChat 
-                  onVoiceMessage={handleVoiceMessage}
-                  isConnected={isAuthenticated}
-                />
-                
-                {/* Text Input */}
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Type your message..."
-                    value={currentMessage}
-                    onChange={(e) => setCurrentMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    className="flex-1 bg-black/50 border-neon-pink text-white placeholder-gray-400"
-                  />
+              {/* Chat Input or Connection Options */}
+              {!isAuthenticatedForChat ? (
+                <div className="space-y-3">
+                  {/* Discord Connect Button */}
                   <Button 
-                    onClick={handleSendMessage}
-                    disabled={!currentMessage.trim()}
+                    onClick={handleDiscordConnect}
+                    className="w-full hover:scale-105 transition-all duration-200 relative group"
                     style={{
-                      background: currentMessage.trim() 
-                        ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
-                        : 'gray',
-                      border: '1px solid #ff00ff',
-                      color: 'white'
+                      background: 'linear-gradient(45deg, #5865F2, #4752C4)',
+                      color: 'white',
+                      fontWeight: 'bold'
                     }}
                   >
-                    <Send size={16} />
+                    💬 JOIN DISCORD COMMUNITY
+                  </Button>
+                  
+                  {/* Phantom Wallet Connect */}
+                  <Button 
+                    onClick={handlePhantomConnect}
+                    className="w-full hover:scale-105 transition-all duration-200"
+                    style={{
+                      background: 'linear-gradient(45deg, #AB9FF2, #9CA3FF)',
+                      color: 'black',
+                      fontWeight: 'bold'
+                    }}
+                    disabled={loading}
+                  >
+                    💰 CONNECT WALLET TO CHAT
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => window.location.href = '/auth'}
+                    className="w-full"
+                    variant="outline"
+                    style={{
+                      borderColor: '#00ffcc',
+                      color: '#00ffcc',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {loading ? 'LOADING...' : 'OR LOGIN WITH EMAIL'}
                   </Button>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              ) : (
+                <div className="space-y-2">
+                  {/* Voice Chat Component */}
+                  <VoiceChat 
+                    onVoiceMessage={handleVoiceMessage}
+                    isConnected={!!isAuthenticatedForChat}
+                  />
+                  
+                  {/* Text Input */}
+                  <div className="flex gap-2">
+                    <Input
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder={selectedRoom ? `Message ${selectedRoom.name}...` : "Select a room to chat"}
+                      className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400"
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      disabled={!selectedRoom}
+                    />
+                    <Button 
+                      onClick={handleSendMessage}
+                      className="cyber-button px-4"
+                      disabled={!selectedRoom || !newMessage.trim()}
+                    >
+                      <Send size={16} />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bottom Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <Card className="holographic p-4 text-center">
+            <div className="text-3xl mb-2">🎮</div>
+            <div className="text-2xl font-black text-neon-cyan">2,847</div>
+            <p className="text-sm text-muted-foreground">Active Players</p>
+          </Card>
+          
+          <Card className="holographic p-4 text-center">
+            <div className="text-3xl mb-2">💰</div>
+            <div className="text-2xl font-black text-neon-green">₿127.5K</div>
+            <p className="text-sm text-muted-foreground">Prize Pool</p>
+          </Card>
+          
+          <Card className="holographic p-4 text-center">
+            <div className="text-3xl mb-2">🏆</div>
+            <div className="text-2xl font-black text-neon-purple">24</div>
+            <p className="text-sm text-muted-foreground">Live Tournaments</p>
+          </Card>
+          
+          <Card className="holographic p-4 text-center">
+            <div className="text-3xl mb-2">🎵</div>
+            <div className="text-2xl font-black text-neon-pink">1,250</div>
+            <p className="text-sm text-muted-foreground">Music Tracks</p>
+          </Card>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
