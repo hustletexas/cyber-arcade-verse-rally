@@ -1071,10 +1071,7 @@ export type Database = {
         }
         Returns: Json
       }
-      draw_raffle_winner: {
-        Args: { raffle_id_param: string }
-        Returns: string
-      }
+      draw_raffle_winner: { Args: { raffle_id_param: string }; Returns: string }
       get_tournament_leaderboard: {
         Args: { tournament_id_param?: string }
         Returns: {
