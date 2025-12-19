@@ -130,15 +130,17 @@ export const UnifiedWalletDropdown = () => {
 
   if (!isWalletConnected) {
     return (
-      <Button 
-        onClick={() => setShowWalletManager(true)}
-        className="relative overflow-hidden group h-10 px-5 rounded-xl bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan text-white font-bold border-0 shadow-lg shadow-neon-pink/30 hover:shadow-neon-cyan/40 transition-all duration-300"
-      >
-        <span className="relative z-10 flex items-center gap-2">
-          <Wallet size={18} />
-          Connect Wallet
-        </span>
-        <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan via-neon-green to-neon-pink opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <>
+        <Button 
+          onClick={() => setShowWalletManager(true)}
+          className="relative overflow-hidden group h-10 px-5 rounded-xl bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan text-white font-bold border-0 shadow-lg shadow-neon-pink/30 hover:shadow-neon-cyan/40 transition-all duration-300"
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            <Wallet size={18} />
+            Connect Wallet
+          </span>
+          <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan via-neon-green to-neon-pink opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </Button>
         
         <Dialog open={showWalletManager} onOpenChange={setShowWalletManager}>
           <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-3xl">
@@ -153,7 +155,7 @@ export const UnifiedWalletDropdown = () => {
             <WalletManager />
           </DialogContent>
         </Dialog>
-      </Button>
+      </>
     );
   }
 
