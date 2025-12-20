@@ -1,7 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,38 +17,21 @@ export const PayPalTournamentEntry: React.FC<PayPalTournamentEntryProps> = ({
   const { toast } = useToast();
   const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonsRenderedRef = useRef(false);
 
-  useEffect(() => {
-    loadPayPalScript();
-  }, []);
+  const renderPayPalButton = useCallback(() => {
+    if (!window.paypal || !containerRef.current || buttonsRenderedRef.current) return;
 
-  const loadPayPalScript = () => {
-    if (window.paypal) {
-      setPaypalLoaded(true);
-      renderPayPalButton();
-      return;
+    // Clear container using React-safe method
+    while (containerRef.current.firstChild) {
+      containerRef.current.removeChild(containerRef.current.firstChild);
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://www.paypal.com/sdk/js?client-id=sb'; // Use sandbox for testing
-    script.onload = () => {
-      setPaypalLoaded(true);
-      renderPayPalButton();
-    };
-    document.body.appendChild(script);
-  };
-
-  const renderPayPalButton = () => {
-    if (!window.paypal || !paypalLoaded) return;
-
-    // Clear any existing buttons
-    const container = document.getElementById(`paypal-button-${tournamentId}`);
-    if (container) {
-      container.innerHTML = '';
-    }
+    buttonsRenderedRef.current = true;
 
     window.paypal.Buttons({
-      createOrder: (data: any, actions: any) => {
+      createOrder: (data: unknown, actions: { order: { create: (config: unknown) => Promise<string> } }) => {
         return actions.order.create({
           purchase_units: [{
             amount: {
@@ -60,10 +41,10 @@ export const PayPalTournamentEntry: React.FC<PayPalTournamentEntryProps> = ({
           }]
         });
       },
-      onApprove: async (data: any, actions: any) => {
+      onApprove: async (data: unknown, actions: { order: { capture: () => Promise<unknown> } }) => {
         setProcessing(true);
         try {
-          const order = await actions.order.capture();
+          await actions.order.capture();
           
           toast({
             title: "Payment Successful!",
@@ -81,7 +62,7 @@ export const PayPalTournamentEntry: React.FC<PayPalTournamentEntryProps> = ({
           setProcessing(false);
         }
       },
-      onError: (err: any) => {
+      onError: (err: unknown) => {
         console.error('PayPal error:', err);
         toast({
           title: "Payment Error",
@@ -89,8 +70,44 @@ export const PayPalTournamentEntry: React.FC<PayPalTournamentEntryProps> = ({
           variant: "destructive"
         });
       }
-    }).render(`#paypal-button-${tournamentId}`);
-  };
+    }).render(`#paypal-container-${tournamentId}`);
+  }, [entryFee, tournamentId, onPaymentSuccess, toast]);
+
+  useEffect(() => {
+    const loadPayPalScript = () => {
+      if (window.paypal) {
+        setPaypalLoaded(true);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://www.paypal.com/sdk/js?client-id=sb';
+      script.onload = () => {
+        setPaypalLoaded(true);
+      };
+      document.body.appendChild(script);
+
+      return () => {
+        // Cleanup on unmount
+        buttonsRenderedRef.current = false;
+      };
+    };
+
+    loadPayPalScript();
+  }, []);
+
+  useEffect(() => {
+    if (paypalLoaded && containerRef.current) {
+      renderPayPalButton();
+    }
+  }, [paypalLoaded, renderPayPalButton]);
+
+  // Cleanup when component unmounts
+  useEffect(() => {
+    return () => {
+      buttonsRenderedRef.current = false;
+    };
+  }, []);
 
   return (
     <Card className="arcade-frame">
@@ -108,7 +125,7 @@ export const PayPalTournamentEntry: React.FC<PayPalTournamentEntryProps> = ({
           
           {paypalLoaded ? (
             <div>
-              <div id={`paypal-button-${tournamentId}`} className="min-h-[45px]"></div>
+              <div ref={containerRef} id={`paypal-container-${tournamentId}`} className="min-h-[45px]" />
               {processing && (
                 <div className="text-center text-neon-cyan mt-2">
                   Processing payment...
@@ -131,3 +148,4 @@ export const PayPalTournamentEntry: React.FC<PayPalTournamentEntryProps> = ({
     </Card>
   );
 };
+
