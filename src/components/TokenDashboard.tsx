@@ -65,8 +65,8 @@ export const TokenDashboard = () => {
       });
     } else {
       toast({
-        title: "Error",
-        description: "Failed to process airdrop. Please try again.",
+        title: "Admin Access Required",
+        description: result?.error || "You need admin privileges to use this feature.",
         variant: "destructive",
       });
     }

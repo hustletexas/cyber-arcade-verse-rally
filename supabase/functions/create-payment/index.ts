@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -6,6 +5,15 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// Valid payment methods
+const VALID_PAYMENT_METHODS = ['paypal', 'usdc', 'card'] as const
+type PaymentMethod = typeof VALID_PAYMENT_METHODS[number]
+
+// Token pricing
+const TOKEN_PRICE_USD = 0.045
+const MIN_AMOUNT = 10
+const MAX_AMOUNT = 1000000
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -19,12 +27,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { amount, payment_method, payment_currency = 'USD' } = await req.json()
-
-    // Get user from auth header
+    // Authenticate user
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error('No authorization header')
+      console.log('No authorization header provided')
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
     }
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(
@@ -32,8 +42,73 @@ serve(async (req) => {
     )
 
     if (authError || !user) {
-      throw new Error('Unauthorized')
+      console.log('Authentication failed:', authError?.message)
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
     }
+
+    // Parse request body
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch (e) {
+      console.log('Invalid JSON body')
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    // Type check and validate
+    if (typeof body !== 'object' || body === null) {
+      return new Response(
+        JSON.stringify({ error: 'Request body must be an object' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    const { amount, payment_method, payment_currency = 'USD' } = body as Record<string, unknown>
+
+    // Validate amount
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || !Number.isInteger(amount)) {
+      console.log('Invalid amount type:', typeof amount, amount)
+      return new Response(
+        JSON.stringify({ error: 'Amount must be a valid integer' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    if (amount < MIN_AMOUNT || amount > MAX_AMOUNT) {
+      console.log(`Amount ${amount} out of bounds (${MIN_AMOUNT}-${MAX_AMOUNT})`)
+      return new Response(
+        JSON.stringify({ error: `Amount must be between ${MIN_AMOUNT} and ${MAX_AMOUNT} tokens` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    // Validate payment method
+    if (typeof payment_method !== 'string' || !VALID_PAYMENT_METHODS.includes(payment_method as PaymentMethod)) {
+      console.log('Invalid payment method:', payment_method)
+      return new Response(
+        JSON.stringify({ error: `Invalid payment method. Must be one of: ${VALID_PAYMENT_METHODS.join(', ')}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    // Validate currency
+    if (typeof payment_currency !== 'string' || payment_currency.length > 10) {
+      console.log('Invalid currency:', payment_currency)
+      return new Response(
+        JSON.stringify({ error: 'Invalid payment currency' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    const paymentAmount = amount * TOKEN_PRICE_USD
+
+    console.log(`Creating payment for user ${user.id}: ${amount} tokens via ${payment_method}`)
 
     // Create token purchase record
     const { data: purchase, error: purchaseError } = await supabase
@@ -42,7 +117,7 @@ serve(async (req) => {
         user_id: user.id,
         amount: amount,
         payment_method: payment_method,
-        payment_amount: payment_method === 'usdc' ? amount * 0.045 : amount * 0.045, // $0.045 per token
+        payment_amount: paymentAmount,
         payment_currency: payment_currency,
         status: 'pending'
       })
@@ -50,21 +125,25 @@ serve(async (req) => {
       .single()
 
     if (purchaseError) {
-      throw purchaseError
+      console.error('Failed to create purchase record:', purchaseError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to create purchase record' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
 
-    // For demo purposes, simulate payment processing
+    // Generate payment URL based on method (demo URLs)
     let paymentUrl = ''
     
     if (payment_method === 'paypal') {
-      // In production, integrate with PayPal API
       paymentUrl = `https://www.paypal.com/checkoutnow?token=demo_${purchase.id}`
     } else if (payment_method === 'usdc') {
-      // In production, integrate with USDC payment processor
       paymentUrl = `https://pay.coinbase.com/checkout/${purchase.id}`
+    } else if (payment_method === 'card') {
+      paymentUrl = `https://checkout.stripe.com/demo/${purchase.id}`
     }
 
-    console.log(`Payment created for user ${user.id}: ${amount} tokens via ${payment_method}`)
+    console.log(`Payment created successfully: ${purchase.id}`)
 
     return new Response(
       JSON.stringify({ 
@@ -83,10 +162,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Payment creation error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'An unexpected error occurred' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       },
     )
   }
