@@ -85,53 +85,34 @@ export const useUserBalance = () => {
   };
 
   const adminAirdrop = async (amount: number, targetUserId?: string) => {
-    if (!user) return;
+    if (!user) return { success: false, error: 'Not authenticated' };
 
     try {
       const userId = targetUserId || user.id;
       
-      // First get current balance
-      const { data: currentBalance, error: fetchError } = await supabase
-        .from('user_balances')
-        .select('claimable_rewards')
-        .eq('user_id', userId)
-        .maybeSingle();
+      // Call the secure server-side admin_airdrop function
+      // This function checks for admin role on the server
+      const { data, error } = await supabase.rpc('admin_airdrop', {
+        target_user_id: userId,
+        amount: amount
+      });
 
-      if (fetchError) throw fetchError;
-
-      // Add to claimable rewards
-      const newClaimableRewards = (currentBalance?.claimable_rewards || 0) + amount;
-      
-      const { error: updateError } = await supabase
-        .from('user_balances')
-        .update({
-          claimable_rewards: newClaimableRewards,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
-
-      if (updateError) throw updateError;
-
-      // Record the transaction
-      const { error: transactionError } = await supabase
-        .from('token_transactions')
-        .insert({
-          user_id: userId,
-          amount,
-          transaction_type: 'airdrop',
-          description: 'Admin airdrop'
-        });
-
-      if (transactionError) throw transactionError;
+      if (error) {
+        // Handle authorization errors gracefully
+        if (error.message?.includes('Unauthorized')) {
+          return { success: false, error: 'Admin privileges required' };
+        }
+        throw error;
+      }
 
       if (userId === user.id) {
         await fetchBalance();
       }
 
-      return { success: true };
+      return { success: true, data };
     } catch (error) {
       console.error('Error processing airdrop:', error);
-      return { success: false, error };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 

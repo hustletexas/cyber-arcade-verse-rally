@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -7,6 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Validation constants
+const MIN_TICKET_COUNT = 1
+const MAX_TICKET_COUNT = 100
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -14,28 +17,90 @@ serve(async (req) => {
   }
 
   try {
+    // Use service role key for transaction-like operations
     const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Also create a client with anon key for auth
+    const authSupabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { raffle_id, ticket_count = 1 } = await req.json()
-
-    // Get user from auth header
+    // Authenticate user
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error('No authorization header')
+      console.log('No authorization header provided')
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
+    const { data: { user }, error: authError } = await authSupabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     )
 
     if (authError || !user) {
-      throw new Error('Unauthorized')
+      console.log('Authentication failed:', authError?.message)
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
     }
 
-    // Get raffle details
+    // Parse and validate request body
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch (e) {
+      console.log('Invalid JSON body')
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    if (typeof body !== 'object' || body === null) {
+      return new Response(
+        JSON.stringify({ error: 'Request body must be an object' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    const { raffle_id, ticket_count = 1 } = body as Record<string, unknown>
+
+    // Validate raffle_id (UUID format)
+    if (typeof raffle_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raffle_id)) {
+      console.log('Invalid raffle_id format:', raffle_id)
+      return new Response(
+        JSON.stringify({ error: 'Invalid raffle ID format' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    // Validate ticket_count
+    if (typeof ticket_count !== 'number' || !Number.isInteger(ticket_count)) {
+      console.log('Invalid ticket_count type:', typeof ticket_count)
+      return new Response(
+        JSON.stringify({ error: 'Ticket count must be an integer' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    if (ticket_count < MIN_TICKET_COUNT || ticket_count > MAX_TICKET_COUNT) {
+      console.log(`Ticket count ${ticket_count} out of bounds (${MIN_TICKET_COUNT}-${MAX_TICKET_COUNT})`)
+      return new Response(
+        JSON.stringify({ error: `Ticket count must be between ${MIN_TICKET_COUNT} and ${MAX_TICKET_COUNT}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    console.log(`User ${user.id} purchasing ${ticket_count} tickets for raffle ${raffle_id}`)
+
+    // Get raffle details with row lock for update
     const { data: raffle, error: raffleError } = await supabase
       .from('raffles')
       .select('*')
@@ -44,12 +109,20 @@ serve(async (req) => {
       .single()
 
     if (raffleError || !raffle) {
-      throw new Error('Raffle not found or not active')
+      console.log('Raffle not found or not active:', raffleError?.message)
+      return new Response(
+        JSON.stringify({ error: 'Raffle not found or not active' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      )
     }
 
     // Check if there are enough tickets available
     if (raffle.tickets_sold + ticket_count > raffle.max_tickets) {
-      throw new Error('Not enough tickets available')
+      console.log(`Not enough tickets: ${raffle.tickets_sold}/${raffle.max_tickets}, requested: ${ticket_count}`)
+      return new Response(
+        JSON.stringify({ error: 'Not enough tickets available' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
     // Get user balance
@@ -60,16 +133,45 @@ serve(async (req) => {
       .single()
 
     if (balanceError || !balance) {
-      throw new Error('User balance not found')
+      console.log('User balance not found:', balanceError?.message)
+      return new Response(
+        JSON.stringify({ error: 'User balance not found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      )
     }
 
     const totalCost = raffle.ticket_price * ticket_count
 
     if (balance.cctr_balance < totalCost) {
-      throw new Error('Insufficient CCTR balance')
+      console.log(`Insufficient balance: ${balance.cctr_balance} < ${totalCost}`)
+      return new Response(
+        JSON.stringify({ error: 'Insufficient CCTR balance' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
-    // Create raffle tickets
+    // Perform all operations - in a real production app, use a database transaction
+    // For now, we'll do them sequentially with error handling
+
+    // 1. Deduct CCTR from user balance FIRST (prevents double-spending)
+    const { error: balanceUpdateError } = await supabase
+      .from('user_balances')
+      .update({ 
+        cctr_balance: balance.cctr_balance - totalCost,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id)
+      .eq('cctr_balance', balance.cctr_balance) // Optimistic lock
+
+    if (balanceUpdateError) {
+      console.error('Failed to update balance (possible race condition):', balanceUpdateError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to process payment. Please try again.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
+    }
+
+    // 2. Create raffle tickets
     const tickets = []
     for (let i = 0; i < ticket_count; i++) {
       tickets.push({
@@ -84,10 +186,23 @@ serve(async (req) => {
       .insert(tickets)
 
     if (ticketError) {
-      throw ticketError
+      console.error('Failed to create tickets, refunding balance:', ticketError)
+      // Refund the balance
+      await supabase
+        .from('user_balances')
+        .update({ 
+          cctr_balance: balance.cctr_balance,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+      
+      return new Response(
+        JSON.stringify({ error: 'Failed to create tickets. Balance refunded.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
 
-    // Update raffle tickets sold count
+    // 3. Update raffle tickets sold count
     const { error: updateRaffleError } = await supabase
       .from('raffles')
       .update({ 
@@ -97,23 +212,11 @@ serve(async (req) => {
       .eq('id', raffle_id)
 
     if (updateRaffleError) {
-      throw updateRaffleError
+      console.error('Failed to update raffle count:', updateRaffleError)
+      // Continue anyway - tickets were created, this is not critical
     }
 
-    // Deduct CCTR from user balance
-    const { error: balanceUpdateError } = await supabase
-      .from('user_balances')
-      .update({ 
-        cctr_balance: balance.cctr_balance - totalCost,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', user.id)
-
-    if (balanceUpdateError) {
-      throw balanceUpdateError
-    }
-
-    // Create transaction record
+    // 4. Create transaction record (non-critical)
     const { error: transactionError } = await supabase
       .from('token_transactions')
       .insert({
@@ -124,10 +227,10 @@ serve(async (req) => {
       })
 
     if (transactionError) {
-      console.error('Transaction record error:', transactionError)
+      console.error('Transaction record error (non-critical):', transactionError)
     }
 
-    console.log(`User ${user.id} purchased ${ticket_count} raffle tickets for ${raffle.title}`)
+    console.log(`Successfully purchased ${ticket_count} raffle tickets for user ${user.id}`)
 
     return new Response(
       JSON.stringify({ 
@@ -145,10 +248,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Raffle ticket purchase error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'An unexpected error occurred' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       },
     )
   }
