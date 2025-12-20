@@ -74,27 +74,43 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  // Build CSS variables safely without dangerouslySetInnerHTML
+  const cssVariables = React.useMemo(() => {
+    const styles: Record<string, React.CSSProperties> = {}
+    
+    Object.entries(THEMES).forEach(([theme, prefix]) => {
+      const selector = prefix ? 'dark' : 'light'
+      const themeVars: Record<string, string> = {}
+      
+      colorConfig.forEach(([key, itemConfig]) => {
+        const color =
+          itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+          itemConfig.color
+        if (color) {
+          themeVars[`--color-${key}`] = color
+        }
+      })
+      
+      styles[selector] = themeVars as React.CSSProperties
+    })
+    
+    return styles
+  }, [colorConfig])
+
+  // Use inline styles on the container instead of injected CSS
   return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
+    <>
+      <div
+        data-theme-light
+        style={cssVariables.light}
+        className="contents [html:not(.dark)_&]:block [html.dark_&]:hidden"
+      />
+      <div
+        data-theme-dark
+        style={cssVariables.dark}
+        className="contents [html.dark_&]:block [html:not(.dark)_&]:hidden"
+      />
+    </>
   )
 }
 
