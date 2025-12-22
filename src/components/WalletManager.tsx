@@ -95,14 +95,30 @@ export const WalletManager = () => {
     }
 
     if (passwordAction === 'create' || passwordAction === 'import') {
-      if (walletPassword.length < 8) {
+      // Strong password validation
+      if (walletPassword.length < 12) {
         toast({
           title: "Weak Password",
-          description: "Password must be at least 8 characters",
+          description: "Password must be at least 12 characters for wallet security",
           variant: "destructive",
         });
         return;
       }
+      
+      const hasUppercase = /[A-Z]/.test(walletPassword);
+      const hasLowercase = /[a-z]/.test(walletPassword);
+      const hasNumber = /[0-9]/.test(walletPassword);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(walletPassword);
+      
+      if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+        toast({
+          title: "Password Requirements",
+          description: "Password must include uppercase, lowercase, number, and special character",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       if (walletPassword !== confirmPassword) {
         toast({
           title: "Password Mismatch",
@@ -340,15 +356,21 @@ export const WalletManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Security Notice */}
-      <Card className="border-yellow-500/50 bg-yellow-500/10">
+      {/* Security Warning */}
+      <Card className="border-destructive/50 bg-destructive/10">
         <CardContent className="p-4 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <p className="font-semibold text-yellow-500">Security Recommendation</p>
-            <p className="text-muted-foreground">
-              For maximum security, we recommend using external wallet providers like Phantom or Solflare 
-              instead of storing keys in the browser. Created wallets are encrypted with your password.
+          <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+          <div className="text-sm space-y-2">
+            <p className="font-semibold text-destructive">⚠️ Important Security Warning</p>
+            <ul className="text-muted-foreground space-y-1 list-disc list-inside">
+              <li><strong>Browser storage is less secure</strong> than hardware wallets (Phantom, Ledger)</li>
+              <li>Private keys stored here could be exposed if your browser is compromised</li>
+              <li>For large amounts, always use a hardware wallet or Phantom/Solflare</li>
+              <li>This wallet is encrypted with your password - use a strong, unique password</li>
+              <li>Export and backup your wallet to a secure offline location</li>
+            </ul>
+            <p className="text-yellow-500 font-medium mt-2">
+              Recommended: Use Phantom or Solflare browser extensions for better security
             </p>
           </div>
         </CardContent>
