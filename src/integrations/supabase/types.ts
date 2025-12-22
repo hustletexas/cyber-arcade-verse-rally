@@ -1090,7 +1090,7 @@ export type Database = {
       }
       complete_solana_tournament: {
         Args: {
-          admin_wallet_param: string
+          admin_wallet_param?: string
           tournament_id_param: string
           winner_wallet_param: string
         }
