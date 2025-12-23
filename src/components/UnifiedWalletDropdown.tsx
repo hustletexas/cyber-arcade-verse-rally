@@ -22,7 +22,8 @@ import {
   Headphones,
   User,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  ArrowLeftRight
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -56,7 +57,8 @@ export const UnifiedWalletDropdown = () => {
   const [showActionsModal, setShowActionsModal] = useState(false);
   const [showRewardsModal, setShowRewardsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [activeAction, setActiveAction] = useState<'buy' | 'send' | 'receive'>('buy');
+  const [activeAction, setActiveAction] = useState<'buy' | 'send' | 'receive' | 'swap'>('buy');
+  const [showSwapModal, setShowSwapModal] = useState(false);
   const [sendAmount, setSendAmount] = useState('');
   const [sendAddress, setSendAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
@@ -273,21 +275,22 @@ export const UnifiedWalletDropdown = () => {
             </div>
           </div>
 
-          {/* Action buttons - Buy, Send, Receive */}
-          <div className="p-4 grid grid-cols-3 gap-3">
+          {/* Action buttons - Buy, Send, Receive, Swap */}
+          <div className="p-4 grid grid-cols-4 gap-2">
             {[
-              { action: 'buy' as const, icon: CreditCard, label: 'Buy', gradient: 'from-neon-green/25 to-neon-cyan/25', hoverGradient: 'hover:from-neon-green/40 hover:to-neon-cyan/40', color: 'text-neon-green', border: 'border-neon-green/40' },
-              { action: 'send' as const, icon: ArrowUpRight, label: 'Send', gradient: 'from-neon-pink/25 to-neon-purple/25', hoverGradient: 'hover:from-neon-pink/40 hover:to-neon-purple/40', color: 'text-neon-pink', border: 'border-neon-pink/40' },
-              { action: 'receive' as const, icon: ArrowDownLeft, label: 'Receive', gradient: 'from-neon-cyan/25 to-neon-purple/25', hoverGradient: 'hover:from-neon-cyan/40 hover:to-neon-purple/40', color: 'text-neon-cyan', border: 'border-neon-cyan/40' },
+              { action: 'buy' as const, icon: CreditCard, label: 'Buy', gradient: 'from-neon-green/25 to-neon-cyan/25', hoverGradient: 'hover:from-neon-green/40 hover:to-neon-cyan/40', color: 'text-neon-green', border: 'border-neon-green/40', isSwap: false },
+              { action: 'send' as const, icon: ArrowUpRight, label: 'Send', gradient: 'from-neon-pink/25 to-neon-purple/25', hoverGradient: 'hover:from-neon-pink/40 hover:to-neon-purple/40', color: 'text-neon-pink', border: 'border-neon-pink/40', isSwap: false },
+              { action: 'receive' as const, icon: ArrowDownLeft, label: 'Receive', gradient: 'from-neon-cyan/25 to-neon-purple/25', hoverGradient: 'hover:from-neon-cyan/40 hover:to-neon-purple/40', color: 'text-neon-cyan', border: 'border-neon-cyan/40', isSwap: false },
+              { action: 'swap' as const, icon: ArrowLeftRight, label: 'Swap', gradient: 'from-neon-purple/25 to-neon-pink/25', hoverGradient: 'hover:from-neon-purple/40 hover:to-neon-pink/40', color: 'text-neon-purple', border: 'border-neon-purple/40', isSwap: true },
             ].map((item) => (
               <Button
                 key={item.action}
-                onClick={() => handleOpenAction(item.action)}
-                className={`flex flex-col items-center gap-2 h-auto py-4 bg-gradient-to-br ${item.gradient} ${item.hoverGradient} border ${item.border} rounded-2xl ${item.color} transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 group`}
+                onClick={() => item.isSwap ? setShowSwapModal(true) : handleOpenAction(item.action as 'buy' | 'send' | 'receive')}
+                className={`flex flex-col items-center gap-2 h-auto py-3 bg-gradient-to-br ${item.gradient} ${item.hoverGradient} border ${item.border} rounded-2xl ${item.color} transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 group`}
                 variant="ghost"
               >
-                <item.icon size={22} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
-                <span className="text-xs font-bold">{item.label}</span>
+                <item.icon size={20} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                <span className="text-[10px] font-bold">{item.label}</span>
               </Button>
             ))}
           </div>
@@ -636,6 +639,40 @@ export const UnifiedWalletDropdown = () => {
               </p>
             </TabsContent>
           </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Swap Modal with Jupiter DEX */}
+      <Dialog open={showSwapModal} onOpenChange={setShowSwapModal}>
+        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-purple/30 max-w-2xl animate-scale-in">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-2xl text-neon-purple font-display flex items-center gap-2">
+                <ArrowLeftRight className="animate-pulse" size={24} />
+                Swap Tokens
+              </DialogTitle>
+              <a href="https://jup.ag" target="_blank" rel="noreferrer">
+                <Button variant="outline" size="sm" className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black">
+                  Jupiter <ExternalLink size={12} className="ml-1" />
+                </Button>
+              </a>
+            </div>
+            <DialogDescription className="text-muted-foreground">
+              Swap Solana tokens using Jupiter Aggregator
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl overflow-hidden border border-neon-purple/30">
+            <iframe
+              title="Jupiter Swap"
+              src={`https://jup.ag/swap/USDC-SOL?theme=dark&padding=12`}
+              className="w-full"
+              style={{ height: 520, border: '0' }}
+              allow="clipboard-read; clipboard-write; accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Powered by Jupiter. Connect your wallet in the widget to swap tokens.
+          </p>
         </DialogContent>
       </Dialog>
     </>
