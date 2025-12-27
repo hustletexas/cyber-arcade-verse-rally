@@ -140,28 +140,25 @@ export const TriviaGame = () => {
       return;
     }
 
-    // Deduct 1 CCTR token for game entry
+    // Deduct 1 CCTR token for game entry using secure server-side function
     if (user) {
       try {
-        const { error: updateError } = await supabase
-          .from('user_balances')
-          .update({
-            cctr_balance: balance.cctr_balance - 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
+        const { data, error } = await supabase.rpc('deduct_trivia_entry_fee', {
+          category_param: category
+        });
 
-        if (updateError) throw updateError;
+        if (error) throw error;
 
-        // Record the transaction
-        await supabase
-          .from('token_transactions')
-          .insert({
-            user_id: user.id,
-            amount: -1,
-            transaction_type: 'trivia_entry',
-            description: `${category} trivia game entry fee`
+        const result = data as { success: boolean; error?: string } | null;
+
+        if (!result?.success) {
+          toast({
+            title: "Error",
+            description: result?.error || "Failed to start game. Please try again.",
+            variant: "destructive",
           });
+          return;
+        }
 
         await refetchBalance();
 

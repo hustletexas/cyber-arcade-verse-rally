@@ -1088,12 +1088,25 @@ export type Database = {
         Args: { amount: number; target_user_id: string }
         Returns: Json
       }
+      award_trivia_rewards: {
+        Args: {
+          category_param: string
+          correct_answers_param: number
+          total_questions_param: number
+        }
+        Returns: Json
+      }
+      claim_user_rewards: { Args: never; Returns: Json }
       complete_solana_tournament: {
         Args: {
           admin_wallet_param?: string
           tournament_id_param: string
           winner_wallet_param: string
         }
+        Returns: Json
+      }
+      deduct_trivia_entry_fee: {
+        Args: { category_param: string }
         Returns: Json
       }
       draw_raffle_winner: { Args: { raffle_id_param: string }; Returns: string }
@@ -1126,8 +1139,24 @@ export type Database = {
         }
         Returns: Json
       }
+      purchase_nft_with_cctr: {
+        Args: {
+          nft_id_param: string
+          nft_name_param: string
+          price_param: number
+        }
+        Returns: Json
+      }
       purchase_song: {
         Args: { song_id_param: string; user_id_param: string }
+        Returns: Json
+      }
+      submit_tournament_score: {
+        Args: {
+          game_type_param: string
+          score_param: number
+          tournament_id_param: string
+        }
         Returns: Json
       }
       update_achievement_progress: {

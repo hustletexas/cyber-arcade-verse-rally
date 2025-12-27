@@ -43,41 +43,27 @@ export const useUserBalance = () => {
   };
 
   const claimRewards = async () => {
-    if (!user || balance.claimable_rewards === 0) return;
+    if (!user || balance.claimable_rewards === 0) return { success: false, error: 'No rewards to claim' };
 
     try {
-      // Move claimable rewards to main balance
-      const newBalance = balance.cctr_balance + balance.claimable_rewards;
-      
-      const { error: updateError } = await supabase
-        .from('user_balances')
-        .update({
-          cctr_balance: newBalance,
-          claimable_rewards: 0,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
+      // Use secure server-side function to claim rewards
+      const { data, error } = await supabase.rpc('claim_user_rewards');
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      // Record the transaction
-      const { error: transactionError } = await supabase
-        .from('token_transactions')
-        .insert({
-          user_id: user.id,
-          amount: balance.claimable_rewards,
-          transaction_type: 'claim',
-          description: 'Claimed accumulated rewards'
-        });
+      const result = data as { success: boolean; error?: string; claimed_amount?: number; new_balance?: number } | null;
 
-      if (transactionError) throw transactionError;
+      if (!result?.success) {
+        return { success: false, error: result?.error || 'Failed to claim rewards' };
+      }
 
+      // Update local state with new balance
       setBalance({
-        cctr_balance: newBalance,
+        cctr_balance: result.new_balance || 0,
         claimable_rewards: 0
       });
 
-      return { success: true };
+      return { success: true, claimed_amount: result.claimed_amount };
     } catch (error) {
       console.error('Error claiming rewards:', error);
       return { success: false, error };
