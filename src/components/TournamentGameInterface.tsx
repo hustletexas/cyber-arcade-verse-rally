@@ -85,48 +85,28 @@ export const TournamentGameInterface = ({
     if (!user) return;
 
     try {
-      // First check if participant exists
-      const { data: existingParticipant } = await supabase
-        .from('tournament_participants')
-        .select('id')
-        .eq('tournament_id', tournamentId)
-        .eq('user_id', user.id)
-        .maybeSingle();
+      // Use secure server-side function for score submission with validation
+      const { data, error } = await supabase.rpc('submit_tournament_score', {
+        tournament_id_param: tournamentId,
+        score_param: score,
+        game_type_param: gameType
+      });
 
-      if (existingParticipant) {
-        // Update existing score if it's higher
-        const { error } = await supabase
-          .from('tournament_participants')
-          .update({ placement: score })
-          .eq('tournament_id', tournamentId)
-          .eq('user_id', user.id);
+      if (error) throw error;
 
-        if (error) throw error;
-      } else {
-        // Insert new participant
-        const { error } = await supabase
-          .from('tournament_participants')
-          .insert({
-            tournament_id: tournamentId,
-            user_id: user.id,
-            placement: score
-          });
+      const result = data as { success: boolean; error?: string; message?: string; tokens_awarded?: number } | null;
 
-        if (error) throw error;
+      if (!result?.success) {
+        console.error('Score submission failed:', result?.error || result?.message);
+        if (result?.error) {
+          toast.error(result.error);
+        }
+        return;
       }
 
-      // Award participation tokens
-      const { error: transactionError } = await supabase
-        .from('token_transactions')
-        .insert({
-          user_id: user.id,
-          amount: Math.floor(score / 10), // 1 token per 10 points
-          transaction_type: 'tournament_win',
-          description: `High score in ${gameType} tournament: ${score}`,
-          tournament_id: tournamentId
-        });
-
-      if (transactionError) throw transactionError;
+      if (result.tokens_awarded && result.tokens_awarded > 0) {
+        toast.success(`Earned ${result.tokens_awarded} CCTR tokens!`);
+      }
 
     } catch (error) {
       console.error('Error submitting score:', error);

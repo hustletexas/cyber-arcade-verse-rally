@@ -184,28 +184,23 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
   const endGame = async () => {
     setGameStatus('finished');
     
-    // Award CCTR tokens for correct answers and update balance
-    if (user && score > 0) {
+    // Award CCTR tokens for correct answers using secure server-side function
+    if (user && correctAnswers > 0) {
       try {
-        const { error: updateError } = await supabase
-          .from('user_balances')
-          .update({
-            cctr_balance: balance.cctr_balance + score,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
+        const { data, error } = await supabase.rpc('award_trivia_rewards', {
+          correct_answers_param: correctAnswers,
+          total_questions_param: questions.length,
+          category_param: category
+        });
 
-        if (updateError) throw updateError;
-
-        // Record the transaction
-        await supabase
-          .from('token_transactions')
-          .insert({
-            user_id: user.id,
-            amount: score,
-            transaction_type: 'trivia_reward',
-            description: `${category} trivia: ${correctAnswers}/${questions.length} correct, ${score} CCTR earned`
-          });
+        if (error) {
+          console.error('Error awarding rewards:', error);
+        } else {
+          const result = data as { success: boolean; error?: string } | null;
+          if (!result?.success) {
+            console.error('Failed to award rewards:', result?.error);
+          }
+        }
 
         await refetchBalance();
       } catch (error) {

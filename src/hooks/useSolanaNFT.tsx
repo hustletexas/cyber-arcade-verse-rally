@@ -101,47 +101,21 @@ export const useSolanaNFT = () => {
         });
 
       } else if (currency === 'cctr') {
-        // Handle CCTR token payment through smart contract and database
-        const { data: balanceData, error: balanceCheck } = await supabase
-          .from('user_balances')
-          .select('cctr_balance')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        // Handle CCTR token payment using secure server-side function
+        const { data, error: rpcError } = await supabase.rpc('purchase_nft_with_cctr', {
+          nft_id_param: nft.id.toString(),
+          nft_name_param: nft.name,
+          price_param: price
+        });
 
-        if (balanceCheck || !balanceData) {
-          throw new Error('Could not verify CCTR balance');
-        }
-
-        if (balanceData.cctr_balance < price) {
-          throw new Error('Insufficient CCTR balance');
-        }
-
-        // Deduct CCTR tokens from user balance (smart contract simulation)
-        const { error: deductError } = await supabase
-          .from('user_balances')
-          .update({ 
-            cctr_balance: balanceData.cctr_balance - price,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-
-        if (deductError) {
+        if (rpcError) {
           throw new Error('Failed to process CCTR payment');
         }
 
-        // Record the transaction
-        const { error: transactionError } = await supabase
-          .from('token_transactions')
-          .insert({
-            user_id: user.id,
-            amount: -price,
-            transaction_type: 'nft_purchase',
-            description: `NFT Purchase: ${nft.name}`,
-            nft_order_id: nft.id
-          });
+        const result = data as { success: boolean; error?: string } | null;
 
-        if (transactionError) {
-          console.error('Transaction record error:', transactionError);
+        if (!result?.success) {
+          throw new Error(result?.error || 'Failed to process CCTR payment');
         }
 
         transactionHash = `cctr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
