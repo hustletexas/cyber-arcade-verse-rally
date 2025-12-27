@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { Copy, Eye, EyeOff, Trash2, Download, Upload, Plus, Lock, Unlock, AlertTriangle } from 'lucide-react';
+import { Copy, Eye, EyeOff, Trash2, Download, Upload, Plus, Lock, Unlock, AlertTriangle, Timer, Shield } from 'lucide-react';
 import { encryptData, decryptData, isEncryptionSupported } from '@/utils/walletEncryption';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +16,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+// Auto-lock timeout in milliseconds (5 minutes)
+const AUTO_LOCK_TIMEOUT = 5 * 60 * 1000;
+// Time to auto-clear private key from memory after display (30 seconds)
+const PRIVATE_KEY_DISPLAY_TIMEOUT = 30 * 1000;
 
 interface StoredWallet {
   publicKey: string;
@@ -23,6 +30,7 @@ interface StoredWallet {
 
 interface DecryptedWallet extends StoredWallet {
   privateKey?: string;
+  decryptedAt?: number; // Timestamp when decrypted for auto-lock
 }
 
 export const WalletManager = () => {
@@ -38,7 +46,98 @@ export const WalletManager = () => {
   const [passwordAction, setPasswordAction] = useState<'create' | 'import' | 'decrypt' | 'export'>('create');
   const [pendingWalletData, setPendingWalletData] = useState<{ publicKey: string; privateKey: string } | null>(null);
   const [decryptingWallet, setDecryptingWallet] = useState<string | null>(null);
+  const [sessionOnlyMode, setSessionOnlyMode] = useState(false);
+  const [showSecurityAcknowledgment, setShowSecurityAcknowledgment] = useState(false);
+  const [securityAcknowledged, setSecurityAcknowledged] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoLockTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const privateKeyTimersRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
+
+  // Clear decrypted private keys from memory (security measure)
+  const clearDecryptedKeys = useCallback(() => {
+    setStoredWallets(prev => prev.map(w => ({
+      ...w,
+      privateKey: undefined,
+      decryptedAt: undefined
+    })));
+    setShowPrivateKeys({});
+    // Clear any pending private key timers
+    Object.values(privateKeyTimersRef.current).forEach(timer => clearTimeout(timer));
+    privateKeyTimersRef.current = {};
+  }, []);
+
+  // Auto-lock on inactivity
+  const resetAutoLockTimer = useCallback(() => {
+    if (autoLockTimerRef.current) {
+      clearTimeout(autoLockTimerRef.current);
+    }
+    
+    // Only set timer if there are decrypted wallets
+    const hasDecryptedKeys = storedWallets.some(w => w.privateKey);
+    if (hasDecryptedKeys) {
+      autoLockTimerRef.current = setTimeout(() => {
+        clearDecryptedKeys();
+        toast({
+          title: "🔒 Auto-locked",
+          description: "Wallets locked due to inactivity for security",
+        });
+      }, AUTO_LOCK_TIMEOUT);
+    }
+  }, [storedWallets, clearDecryptedKeys, toast]);
+
+  // Set up auto-lock timer and activity listeners
+  useEffect(() => {
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    
+    const handleActivity = () => resetAutoLockTimer();
+    
+    activityEvents.forEach(event => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
+    
+    resetAutoLockTimer();
+    
+    return () => {
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, handleActivity);
+      });
+      if (autoLockTimerRef.current) {
+        clearTimeout(autoLockTimerRef.current);
+      }
+    };
+  }, [resetAutoLockTimer]);
+
+  // Clear keys when component unmounts (security)
+  useEffect(() => {
+    return () => {
+      clearDecryptedKeys();
+    };
+  }, [clearDecryptedKeys]);
+
+  // Schedule auto-clear for displayed private key
+  const schedulePrivateKeyClear = useCallback((publicKey: string) => {
+    // Clear any existing timer for this wallet
+    if (privateKeyTimersRef.current[publicKey]) {
+      clearTimeout(privateKeyTimersRef.current[publicKey]);
+    }
+    
+    // Set new timer to clear private key after timeout
+    privateKeyTimersRef.current[publicKey] = setTimeout(() => {
+      setStoredWallets(prev => prev.map(w => 
+        w.publicKey === publicKey 
+          ? { ...w, privateKey: undefined, decryptedAt: undefined }
+          : w
+      ));
+      setShowPrivateKeys(prev => ({ ...prev, [publicKey]: false }));
+      
+      toast({
+        title: "🔒 Key hidden",
+        description: "Private key auto-hidden for security",
+      });
+      
+      delete privateKeyTimersRef.current[publicKey];
+    }, PRIVATE_KEY_DISPLAY_TIMEOUT);
+  }, [toast]);
 
   useEffect(() => {
     loadStoredWallets();
@@ -178,13 +277,19 @@ export const WalletManager = () => {
     
     setStoredWallets(prev => prev.map(w => 
       w.publicKey === publicKey 
-        ? { ...w, privateKey: decryptedKey }
+        ? { ...w, privateKey: decryptedKey, decryptedAt: Date.now() }
         : w
     ));
     
+    // Schedule auto-clear of private key
+    schedulePrivateKeyClear(publicKey);
+    
+    // Reset auto-lock timer
+    resetAutoLockTimer();
+    
     toast({
       title: "Wallet Unlocked! 🔓",
-      description: "Private key decrypted successfully",
+      description: "Private key decrypted. Will auto-hide in 30 seconds for security.",
     });
   };
 
@@ -248,13 +353,37 @@ export const WalletManager = () => {
     }
   };
 
-  const copyToClipboard = async (text: string, label: string) => {
+  const copyToClipboard = async (text: string, label: string, publicKey?: string) => {
     try {
       await navigator.clipboard.writeText(text);
       toast({
         title: "Copied!",
         description: `${label} copied to clipboard`,
       });
+      
+      // If copying a private key, clear it from memory immediately after copy
+      if (label.toLowerCase().includes('private') && publicKey) {
+        // Give user a moment to see the confirmation, then clear
+        setTimeout(() => {
+          setStoredWallets(prev => prev.map(w => 
+            w.publicKey === publicKey 
+              ? { ...w, privateKey: undefined, decryptedAt: undefined }
+              : w
+          ));
+          setShowPrivateKeys(prev => ({ ...prev, [publicKey]: false }));
+          
+          // Clear the timer since we're clearing manually
+          if (privateKeyTimersRef.current[publicKey]) {
+            clearTimeout(privateKeyTimersRef.current[publicKey]);
+            delete privateKeyTimersRef.current[publicKey];
+          }
+          
+          toast({
+            title: "🔒 Key secured",
+            description: "Private key cleared from memory after copy",
+          });
+        }, 1500);
+      }
     } catch (error) {
       console.error('Copy failed:', error);
       toast({
@@ -356,28 +485,34 @@ export const WalletManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Security Warning */}
+      {/* Enhanced Security Warning */}
       <Card className="border-destructive/50 bg-destructive/10">
         <CardContent className="p-4 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+          <Shield className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
           <div className="text-sm space-y-2">
-            <p className="font-semibold text-destructive">⚠️ Important Security Warning</p>
+            <p className="font-semibold text-destructive">⚠️ Security Notice - Read Before Using</p>
             <ul className="text-muted-foreground space-y-1 list-disc list-inside">
-              <li><strong>Browser storage is less secure</strong> than hardware wallets (Phantom, Ledger)</li>
-              <li>Private keys stored here could be exposed if your browser is compromised</li>
-              <li>For large amounts, always use a hardware wallet or Phantom/Solflare</li>
-              <li>This wallet is encrypted with your password - use a strong, unique password</li>
-              <li>Export and backup your wallet to a secure offline location</li>
+              <li><strong>Browser storage has risks:</strong> XSS attacks, malicious extensions, or malware could potentially access keys</li>
+              <li><strong>Encryption helps but isn't perfect:</strong> Keys are decrypted in memory when you view them</li>
+              <li><strong>Best for small amounts only:</strong> Use hardware wallets for significant holdings</li>
+              <li><strong>Auto-lock enabled:</strong> Keys auto-hide after 30 seconds and wallet locks after 5 minutes of inactivity</li>
+              <li><strong>Backup required:</strong> Export and store your wallet file in a secure offline location</li>
             </ul>
-            <p className="text-yellow-500 font-medium mt-2">
-              Recommended: Use Phantom or Solflare browser extensions for better security
+            <div className="flex items-center gap-2 mt-3 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
+              <Timer className="h-4 w-4 text-yellow-500" />
+              <span className="text-yellow-500 text-xs">
+                Private keys auto-clear from memory after 30 seconds for security
+              </span>
+            </div>
+            <p className="text-neon-cyan font-medium mt-2">
+              🔐 Recommended: Use Phantom, Solflare, or Ledger hardware wallet for better security
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <Button onClick={handleCreateWallet} className="cyber-button flex items-center gap-2">
           <Plus size={16} />
           Create New Wallet
@@ -390,6 +525,16 @@ export const WalletManager = () => {
           <Upload size={16} />
           Import Wallet
         </Button>
+        {storedWallets.some(w => w.privateKey) && (
+          <Button 
+            onClick={clearDecryptedKeys}
+            variant="outline"
+            className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black flex items-center gap-2"
+          >
+            <Lock size={16} />
+            Lock All Wallets
+          </Button>
+        )}
       </div>
 
       {/* Import Form */}
@@ -492,7 +637,7 @@ export const WalletManager = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => copyToClipboard(wallet.privateKey!, 'Private key')}
+                          onClick={() => copyToClipboard(wallet.privateKey!, 'Private key', wallet.publicKey)}
                           className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black flex-shrink-0"
                         >
                           <Copy size={14} />
