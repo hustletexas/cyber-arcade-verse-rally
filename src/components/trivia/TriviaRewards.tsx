@@ -55,44 +55,25 @@ export const TriviaRewards = ({ onBackToMenu }: TriviaRewardsProps) => {
     if (!user) return;
 
     try {
-      // Check if user has already claimed weekly bonus
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-      const { data: recentClaim, error: claimError } = await supabase
-        .from('token_transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('transaction_type', 'weekly_trivia_bonus')
-        .gte('created_at', oneWeekAgo.toISOString())
-        .maybeSingle();
-
-      if (claimError && claimError.code !== 'PGRST116') throw claimError;
-
-      if (recentClaim) {
+      // Use secure RPC function to claim weekly bonus atomically
+      const { data, error } = await supabase.rpc('claim_weekly_trivia_bonus');
+      
+      if (error) throw error;
+      
+      const result = data as { success: boolean; error?: string; claimed?: number };
+      
+      if (!result.success) {
         toast({
           title: "Already Claimed",
-          description: "You've already claimed your weekly bonus",
+          description: result.error || "You've already claimed your weekly bonus",
           variant: "destructive",
         });
         return;
       }
 
-      // Award weekly bonus (100 CCTR)
-      const { error: transactionError } = await supabase
-        .from('token_transactions')
-        .insert({
-          user_id: user.id,
-          amount: 100,
-          transaction_type: 'weekly_trivia_bonus',
-          description: 'Weekly trivia participation bonus'
-        });
-
-      if (transactionError) throw transactionError;
-
       toast({
         title: "Bonus Claimed! 🎉",
-        description: "You received 100 CCTR weekly bonus!",
+        description: `You received ${result.claimed} CCTR weekly bonus!`,
       });
 
       fetchRewardHistory();
