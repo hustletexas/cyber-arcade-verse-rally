@@ -533,6 +533,30 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          called_at: string
+          created_at: string
+          function_name: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          called_at?: string
+          created_at?: string
+          function_name: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          called_at?: string
+          created_at?: string
+          function_name?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       room_participants: {
         Row: {
           id: string
@@ -1096,8 +1120,17 @@ export type Database = {
         }
         Returns: Json
       }
+      check_rate_limit: {
+        Args: {
+          function_name_param: string
+          max_calls: number
+          time_window_seconds: number
+        }
+        Returns: boolean
+      }
       claim_user_rewards: { Args: never; Returns: Json }
       claim_weekly_trivia_bonus: { Args: never; Returns: Json }
+      cleanup_old_rate_limits: { Args: never; Returns: undefined }
       complete_solana_tournament: {
         Args: {
           admin_wallet_param?: string
