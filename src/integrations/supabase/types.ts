@@ -1097,6 +1097,7 @@ export type Database = {
         Returns: Json
       }
       claim_user_rewards: { Args: never; Returns: Json }
+      claim_weekly_trivia_bonus: { Args: never; Returns: Json }
       complete_solana_tournament: {
         Args: {
           admin_wallet_param?: string
