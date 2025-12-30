@@ -21,12 +21,16 @@ interface TokenMetadata {
   totalSupply: number;
 }
 
+// Target wallet for token minting
+const RECIPIENT_WALLET = '5ryD8rj7wHoyAcgag4gobUjgprJPqG4kBgDxnqgP5c72';
+
 export const CCTRTokenCreator = () => {
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
   const [mintAddress, setMintAddress] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [txSignature, setTxSignature] = useState<string | null>(null);
+  const [recipientWallet, setRecipientWallet] = useState(RECIPIENT_WALLET);
   
   const [metadata, setMetadata] = useState<TokenMetadata>({
     name: 'Cyber City Token',
@@ -121,22 +125,35 @@ export const CCTRTokenCreator = () => {
         ]),
       };
 
-      // Get associated token account address for the creator
+      // Parse recipient wallet address
+      let recipientPublicKey: PublicKey;
+      try {
+        recipientPublicKey = new PublicKey(recipientWallet);
+      } catch {
+        toast({
+          title: "Invalid Recipient Address",
+          description: "Please enter a valid Solana wallet address",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Get associated token account address for the RECIPIENT (not the signer)
       const [associatedTokenAddress] = PublicKey.findProgramAddressSync(
         [
-          walletPublicKey.toBytes(),
+          recipientPublicKey.toBytes(),
           TOKEN_PROGRAM_ID.toBytes(),
           mintKeypair.publicKey.toBytes(),
         ],
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
 
-      // Create associated token account instruction
+      // Create associated token account instruction for RECIPIENT
       const createAtaIx = {
         keys: [
-          { pubkey: walletPublicKey, isSigner: true, isWritable: true },
+          { pubkey: walletPublicKey, isSigner: true, isWritable: true }, // payer
           { pubkey: associatedTokenAddress, isSigner: false, isWritable: true },
-          { pubkey: walletPublicKey, isSigner: false, isWritable: false },
+          { pubkey: recipientPublicKey, isSigner: false, isWritable: false }, // owner of ATA
           { pubkey: mintKeypair.publicKey, isSigner: false, isWritable: false },
           { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
           { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -239,6 +256,21 @@ export const CCTRTokenCreator = () => {
           </div>
         </div>
 
+        {/* Recipient Wallet */}
+        <div className="space-y-2">
+          <Label htmlFor="recipient">Recipient Wallet Address</Label>
+          <Input
+            id="recipient"
+            value={recipientWallet}
+            onChange={(e) => setRecipientWallet(e.target.value)}
+            className="bg-background/50 font-mono text-sm"
+            placeholder="Solana wallet address to receive tokens"
+          />
+          <p className="text-xs text-muted-foreground">
+            All minted tokens will be sent to this wallet address
+          </p>
+        </div>
+
         {/* Token Configuration */}
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
@@ -295,6 +327,8 @@ export const CCTRTokenCreator = () => {
             <div>{metadata.decimals}</div>
             <div className="text-muted-foreground">Total Supply:</div>
             <div>{metadata.totalSupply.toLocaleString()}</div>
+            <div className="text-muted-foreground">Recipient:</div>
+            <div className="font-mono text-xs truncate">{recipientWallet.slice(0, 8)}...{recipientWallet.slice(-8)}</div>
             <div className="text-muted-foreground">Network:</div>
             <div className="text-green-400">Mainnet</div>
           </div>
