@@ -4,12 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Coins, ExternalLink, Copy, Check, AlertTriangle } from 'lucide-react';
-import { Connection, PublicKey, Keypair, Transaction, SystemProgram, sendAndConfirmTransaction } from '@solana/web3.js';
+import { Loader2, Coins, ExternalLink, Copy, Check, AlertTriangle, Image } from 'lucide-react';
+import { Connection, PublicKey, Keypair, Transaction, SystemProgram } from '@solana/web3.js';
 
 // SPL Token Program constants
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+
+// Metaplex Token Metadata Program
+const TOKEN_METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
 // Mainnet RPC endpoint
 const MAINNET_RPC = 'https://api.mainnet-beta.solana.com';
@@ -19,10 +22,14 @@ interface TokenMetadata {
   symbol: string;
   decimals: number;
   totalSupply: number;
+  uri: string; // Metadata JSON URI for image/description
 }
 
 // Target wallet for token minting
 const RECIPIENT_WALLET = '5ryD8rj7wHoyAcgag4gobUjgprJPqG4kBgDxnqgP5c72';
+
+// Default metadata URI - should point to a JSON file with token info and image
+const DEFAULT_METADATA_URI = '';
 
 export const CCTRTokenCreator = () => {
   const { toast } = useToast();
@@ -37,6 +44,7 @@ export const CCTRTokenCreator = () => {
     symbol: 'CCTR',
     decimals: 9,
     totalSupply: 1000000000, // 1 billion
+    uri: DEFAULT_METADATA_URI,
   });
 
   const copyToClipboard = async (text: string) => {
@@ -47,6 +55,64 @@ export const CCTRTokenCreator = () => {
       title: "Copied!",
       description: "Address copied to clipboard",
     });
+  };
+
+  // Helper function to create Metaplex CreateMetadataAccountV3 instruction
+  const createMetadataInstruction = (
+    metadataAccount: PublicKey,
+    mint: PublicKey,
+    mintAuthority: PublicKey,
+    payer: PublicKey,
+    updateAuthority: PublicKey,
+    name: string,
+    symbol: string,
+    uri: string
+  ) => {
+    // Encode the metadata
+    const nameBytes = Buffer.from(name.slice(0, 32).padEnd(32, '\0'));
+    const symbolBytes = Buffer.from(symbol.slice(0, 10).padEnd(10, '\0'));
+    const uriBytes = Buffer.from(uri.slice(0, 200).padEnd(200, '\0'));
+
+    // Create instruction data for CreateMetadataAccountV3
+    // Discriminator: 33 (CreateMetadataAccountV3)
+    const data = Buffer.concat([
+      Buffer.from([33]), // CreateMetadataAccountV3 discriminator
+      // Name (string with length prefix)
+      Buffer.from(new Uint32Array([name.length]).buffer).slice(0, 4),
+      Buffer.from(name),
+      // Symbol (string with length prefix)
+      Buffer.from(new Uint32Array([symbol.length]).buffer).slice(0, 4),
+      Buffer.from(symbol),
+      // URI (string with length prefix)
+      Buffer.from(new Uint32Array([uri.length]).buffer).slice(0, 4),
+      Buffer.from(uri),
+      // Seller fee basis points (u16) - 0
+      Buffer.from([0, 0]),
+      // Creators (Option<Vec<Creator>>) - None
+      Buffer.from([0]),
+      // Collection (Option<Collection>) - None
+      Buffer.from([0]),
+      // Uses (Option<Uses>) - None  
+      Buffer.from([0]),
+      // Is mutable (bool)
+      Buffer.from([1]),
+      // Collection details (Option<CollectionDetails>) - None
+      Buffer.from([0]),
+    ]);
+
+    return {
+      keys: [
+        { pubkey: metadataAccount, isSigner: false, isWritable: true },
+        { pubkey: mint, isSigner: false, isWritable: false },
+        { pubkey: mintAuthority, isSigner: true, isWritable: false },
+        { pubkey: payer, isSigner: true, isWritable: true },
+        { pubkey: updateAuthority, isSigner: false, isWritable: false },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: new PublicKey('SysvarRent111111111111111111111111111111111'), isSigner: false, isWritable: false },
+      ],
+      programId: TOKEN_METADATA_PROGRAM_ID,
+      data,
+    };
   };
 
   const createToken = async () => {
@@ -177,12 +243,35 @@ export const CCTRTokenCreator = () => {
         ]),
       };
 
+      // Derive the metadata account PDA
+      const [metadataAccount] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('metadata'),
+          TOKEN_METADATA_PROGRAM_ID.toBytes(),
+          mintKeypair.publicKey.toBytes(),
+        ],
+        TOKEN_METADATA_PROGRAM_ID
+      );
+
+      // Create metadata instruction (CreateMetadataAccountV3)
+      const createMetadataIx = createMetadataInstruction(
+        metadataAccount,
+        mintKeypair.publicKey,
+        walletPublicKey,
+        walletPublicKey,
+        walletPublicKey,
+        metadata.name,
+        metadata.symbol,
+        metadata.uri
+      );
+
       // Build the transaction
       const transaction = new Transaction();
       transaction.add(createMintAccountIx);
       transaction.add(initializeMintIx);
       transaction.add(createAtaIx);
       transaction.add(mintToIx);
+      transaction.add(createMetadataIx);
 
       // Get recent blockhash
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
@@ -315,6 +404,32 @@ export const CCTRTokenCreator = () => {
           </div>
         </div>
 
+        {/* Metadata URI for Token Image */}
+        <div className="space-y-2">
+          <Label htmlFor="uri" className="flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            Metadata URI (for logo/image)
+          </Label>
+          <Input
+            id="uri"
+            value={metadata.uri}
+            onChange={(e) => setMetadata({ ...metadata, uri: e.target.value })}
+            className="bg-background/50 font-mono text-sm"
+            placeholder="https://example.com/token-metadata.json"
+          />
+          <p className="text-xs text-muted-foreground">
+            JSON metadata file containing name, symbol, description, and image URL.{' '}
+            <a 
+              href="https://docs.metaplex.com/programs/token-metadata/token-standard#the-non-fungible-standard" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              Metaplex Standard
+            </a>
+          </p>
+        </div>
+
         {/* Token Preview */}
         <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
           <h4 className="font-semibold text-primary mb-2">Token Preview</h4>
@@ -327,6 +442,8 @@ export const CCTRTokenCreator = () => {
             <div>{metadata.decimals}</div>
             <div className="text-muted-foreground">Total Supply:</div>
             <div>{metadata.totalSupply.toLocaleString()}</div>
+            <div className="text-muted-foreground">Metadata URI:</div>
+            <div className="font-mono text-xs truncate">{metadata.uri || 'Not set'}</div>
             <div className="text-muted-foreground">Recipient:</div>
             <div className="font-mono text-xs truncate">{recipientWallet.slice(0, 8)}...{recipientWallet.slice(-8)}</div>
             <div className="text-muted-foreground">Network:</div>
