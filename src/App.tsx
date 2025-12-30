@@ -9,6 +9,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import TokenCreator from "./pages/TokenCreator";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/token-creator" element={<TokenCreator />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
