@@ -22,26 +22,6 @@ declare global {
   }
 }
 
-declare module '@walletconnect/web3-provider' {
-  export default class WalletConnectProvider {
-    constructor(options: {
-      infuraId?: string;
-      rpc?: { [chainId: number]: string };
-      chainId?: number;
-      qrcodeModal?: {
-        open: (uri: string, cb: any) => void;
-        close: () => void;
-      };
-    });
-    
-    accounts: string[];
-    chainId: number;
-    
-    enable(): Promise<string[]>;
-    disconnect(): Promise<void>;
-    on(event: string, callback: (...args: any[]) => void): void;
-    request(args: { method: string; params?: any[] }): Promise<any>;
-  }
-}
+// WalletConnect types removed - using native Phantom/Solflare wallets instead
 
 export {};
