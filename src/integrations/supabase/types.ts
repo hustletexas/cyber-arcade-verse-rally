@@ -1105,7 +1105,346 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      nft_mints_secure: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          metadata: Json | null
+          mint_address: string | null
+          nft_name: string | null
+          status: string | null
+          transaction_hash: string | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          mint_address?: never
+          nft_name?: string | null
+          status?: string | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          mint_address?: never
+          nft_name?: string | null
+          status?: string | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Relationships: []
+      }
+      nft_purchases_secure: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          id: string | null
+          nft_id: string | null
+          nft_name: string | null
+          price: number | null
+          status: string | null
+          transaction_hash: string | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          nft_id?: string | null
+          nft_name?: string | null
+          price?: number | null
+          status?: string | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          nft_id?: string | null
+          nft_name?: string | null
+          price?: number | null
+          status?: string | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Relationships: []
+      }
+      node_purchases_secure: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          mint_address: string | null
+          node_type: string | null
+          price_sol: number | null
+          quantity: number | null
+          transaction_hash: string | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          mint_address?: never
+          node_type?: string | null
+          price_sol?: number | null
+          quantity?: number | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          mint_address?: never
+          node_type?: string | null
+          price_sol?: number | null
+          quantity?: number | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Relationships: []
+      }
+      node_rewards_secure: {
+        Row: {
+          claimed_at: string | null
+          created_at: string | null
+          id: string | null
+          reward_amount: number | null
+          reward_date: string | null
+          transaction_hash: string | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          reward_amount?: number | null
+          reward_date?: string | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          reward_amount?: number | null
+          reward_date?: string | null
+          transaction_hash?: never
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Relationships: []
+      }
+      profiles_secure: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          updated_at: string | null
+          username: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          updated_at?: string | null
+          username?: string | null
+          wallet_address?: never
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          updated_at?: string | null
+          username?: string | null
+          wallet_address?: never
+        }
+        Relationships: []
+      }
+      solana_tournament_entries_secure: {
+        Row: {
+          created_at: string | null
+          entry_transaction_hash: string | null
+          id: string | null
+          joined_at: string | null
+          placement: number | null
+          reward_amount: number | null
+          reward_claimed: boolean | null
+          reward_transaction_hash: string | null
+          score: number | null
+          tournament_id: string | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          entry_transaction_hash?: never
+          id?: string | null
+          joined_at?: string | null
+          placement?: number | null
+          reward_amount?: number | null
+          reward_claimed?: boolean | null
+          reward_transaction_hash?: never
+          score?: number | null
+          tournament_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Update: {
+          created_at?: string | null
+          entry_transaction_hash?: never
+          id?: string | null
+          joined_at?: string | null
+          placement?: number | null
+          reward_amount?: number | null
+          reward_claimed?: boolean | null
+          reward_transaction_hash?: never
+          score?: number | null
+          tournament_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solana_tournament_entries_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "solana_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_purchases_secure: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          crypto_transaction_hash: string | null
+          id: string | null
+          payment_amount: number | null
+          payment_currency: string | null
+          payment_method: string | null
+          status: string | null
+          stripe_session_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          crypto_transaction_hash?: never
+          id?: string | null
+          payment_amount?: number | null
+          payment_currency?: string | null
+          payment_method?: string | null
+          status?: string | null
+          stripe_session_id?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          crypto_transaction_hash?: never
+          id?: string | null
+          payment_amount?: number | null
+          payment_currency?: string | null
+          payment_method?: string | null
+          status?: string | null
+          stripe_session_id?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_prizes_secure: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          prize_id: string | null
+          redeemed_at: string | null
+          redemption_status: string | null
+          redemption_transaction_hash: string | null
+          shipping_address: string | null
+          source_id: string | null
+          source_type: string | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_address: string | null
+          won_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          prize_id?: string | null
+          redeemed_at?: string | null
+          redemption_status?: string | null
+          redemption_transaction_hash?: never
+          shipping_address?: never
+          source_id?: string | null
+          source_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+          won_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          prize_id?: string | null
+          redeemed_at?: string | null
+          redemption_status?: string | null
+          redemption_transaction_hash?: never
+          shipping_address?: never
+          source_id?: string | null
+          source_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: never
+          won_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_prizes_prize_id_fkey"
+            columns: ["prize_id"]
+            isOneToOne: false
+            referencedRelation: "prizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_airdrop: {
@@ -1144,6 +1483,10 @@ export type Database = {
         Returns: Json
       }
       draw_raffle_winner: { Args: { raffle_id_param: string }; Returns: string }
+      get_own_wallet_address: {
+        Args: { record_id: string; table_name: string }
+        Returns: string
+      }
       get_tournament_leaderboard: {
         Args: { tournament_id_param?: string }
         Returns: {
@@ -1173,6 +1516,10 @@ export type Database = {
         }
         Returns: Json
       }
+      mask_shipping_address: { Args: { addr: string }; Returns: string }
+      mask_stripe_session: { Args: { session_id: string }; Returns: string }
+      mask_transaction_hash: { Args: { tx_hash: string }; Returns: string }
+      mask_wallet_address: { Args: { wallet_addr: string }; Returns: string }
       purchase_nft_with_cctr: {
         Args: {
           nft_id_param: string
