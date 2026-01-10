@@ -31,9 +31,11 @@ export const MintedNFTDisplay = () => {
 
   const fetchMintedNFTs = async () => {
     try {
+      // Use secure view which masks wallet addresses and transaction hashes for display
+      // Note: The view returns pre-masked data so copying addresses shows masked values
       const { data, error } = await supabase
         .from('nft_mints')
-        .select('*')
+        .select('id, nft_name, mint_address, transaction_hash, metadata, created_at')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 

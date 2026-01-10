@@ -44,7 +44,8 @@ export const ProfileDashboard = () => {
     allowDirectMessages: true
   });
 
-  // Fetch user's own tournament data (private, includes wallet info)
+  // Fetch user's own tournament data - RLS ensures users only see their own entries
+  // Sensitive wallet/tx data is protected by RLS and displayed with masking in UI
   const { data: tournamentEntries = [] } = useQuery({
     queryKey: ['user-tournament-entries', user?.id],
     queryFn: async () => {
@@ -52,7 +53,8 @@ export const ProfileDashboard = () => {
       const { data, error } = await supabase
         .from('solana_tournament_entries')
         .select(`
-          *,
+          id, tournament_id, user_id, score, placement, reward_amount, 
+          reward_claimed, joined_at, created_at,
           solana_tournaments (
             name,
             status,
