@@ -9,7 +9,7 @@ type DexOption = 'jupiter' | 'stellarx' | 'uniswap';
 
 const dexOptions: { id: DexOption; name: string; url: string; badge: string; color: string }[] = [
   { id: 'jupiter', name: 'Jupiter', url: 'https://jup.ag/swap/USDC-SOL?theme=dark&padding=12', badge: 'Solana', color: 'neon-cyan' },
-  { id: 'stellarx', name: 'StellarTerm', url: 'https://stellarterm.com/', badge: 'Stellar', color: 'neon-purple' },
+  { id: 'stellarx', name: 'Aqua Network', url: 'https://aqua.network/', badge: 'Stellar', color: 'neon-purple' },
   { id: 'uniswap', name: 'Uniswap', url: 'https://app.uniswap.org/', badge: 'Ethereum', color: 'neon-pink' },
 ];
 
