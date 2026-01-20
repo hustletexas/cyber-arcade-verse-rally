@@ -256,22 +256,22 @@ export const Marketplace = () => {
           {/* Platform Connections */}
           <Card className="holographic p-6">
             <h3 className="font-bold text-neon-cyan mb-4">🔗 Platform Connections</h3>
-            <div className="flex flex-wrap justify-evenly gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Button 
                 onClick={() => connectPlatform('Magic Eden', 'https://magiceden.io/')}
-                className="cyber-button flex items-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-pink/30 transition-all duration-300"
+                className="cyber-button flex items-center justify-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-pink/30 transition-all duration-300 w-full py-3"
               >
                 🪄 Magic Eden
               </Button>
               <Button 
                 onClick={() => connectPlatform('OpenSea', 'https://opensea.io/')}
-                className="cyber-button flex items-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-cyan/30 transition-all duration-300"
+                className="cyber-button flex items-center justify-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-cyan/30 transition-all duration-300 w-full py-3"
               >
                 🌊 OpenSea
               </Button>
               <Button 
                 onClick={() => connectPlatform('Litemint', 'https://market.litemint.com/')}
-                className="cyber-button flex items-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-green/30 transition-all duration-300"
+                className="cyber-button flex items-center justify-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-green/30 transition-all duration-300 w-full py-3"
               >
                 🍃 Litemint
               </Button>
