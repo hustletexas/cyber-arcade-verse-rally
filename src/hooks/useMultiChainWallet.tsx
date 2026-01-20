@@ -61,39 +61,25 @@ export const useMultiChainWallet = () => {
       }
     }
 
-    // Check Solflare (Solana)
-    if (window.solflare && window.solflare.isSolflare && window.solflare.isConnected) {
+    // Check Coinbase (Ethereum)
+    const coinbaseProvider = (window as any).coinbaseWalletExtension || 
+      (window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet) ||
+      (window.ethereum?.isCoinbaseWallet ? window.ethereum : null);
+    
+    if (coinbaseProvider) {
       try {
-        const response = await window.solflare.connect();
-        if (response?.publicKey) {
+        const accounts = await coinbaseProvider.request({ method: 'eth_accounts' });
+        if (accounts && accounts.length > 0) {
           wallets.push({
-            type: 'solflare',
-            chain: 'solana',
-            address: response.publicKey.toString(),
+            type: 'coinbase',
+            chain: 'ethereum',
+            address: accounts[0],
             isConnected: true,
-            symbol: 'SOL'
+            symbol: 'ETH'
           });
         }
       } catch (error) {
-        // Solflare wallet not auto-connected
-      }
-    }
-
-    // Check Backpack (Solana)
-    if (window.backpack && window.backpack.isBackpack && window.backpack.isConnected) {
-      try {
-        const response = await window.backpack.connect();
-        if (response?.publicKey) {
-          wallets.push({
-            type: 'backpack',
-            chain: 'solana',
-            address: response.publicKey.toString(),
-            isConnected: true,
-            symbol: 'SOL'
-          });
-        }
-      } catch (error) {
-        // Backpack wallet not auto-connected
+        // Coinbase wallet not auto-connected
       }
     }
 
@@ -115,23 +101,6 @@ export const useMultiChainWallet = () => {
       }
     }
 
-    // Check Coinbase (Ethereum)
-    if (window.ethereum && window.ethereum.isCoinbaseWallet) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          wallets.push({
-            type: 'coinbase',
-            chain: 'ethereum',
-            address: accounts[0],
-            isConnected: true,
-            symbol: 'ETH'
-          });
-        }
-      } catch (error) {
-        // Coinbase wallet not auto-connected
-      }
-    }
 
     // Note: LOBSTR uses WalletConnect, so we don't auto-detect it on page load
     // Users will connect manually through the modal
@@ -198,12 +167,6 @@ export const useMultiChainWallet = () => {
       switch (type) {
         case 'phantom':
           if (window.solana) await window.solana.disconnect();
-          break;
-        case 'solflare':
-          if (window.solflare) await window.solflare.disconnect();
-          break;
-        case 'backpack':
-          if (window.backpack) await window.backpack.disconnect();
           break;
         case 'metamask':
         case 'coinbase':
@@ -278,8 +241,6 @@ export const useMultiChainWallet = () => {
   const getWalletIcon = (type: WalletType) => {
     switch (type) {
       case 'phantom': return '👻';
-      case 'solflare': return '🔥';
-      case 'backpack': return '🎒';
       case 'metamask': return '🦊';
       case 'coinbase': return '🔵';
       case 'lobstr': return '🌟';

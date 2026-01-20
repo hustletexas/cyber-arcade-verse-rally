@@ -67,10 +67,6 @@ export const useSolanaNFT = () => {
         let signedTransaction;
         if (primaryWallet.type === 'phantom' && window.solana) {
           signedTransaction = await window.solana.signTransaction(transaction);
-        } else if (primaryWallet.type === 'solflare' && window.solflare) {
-          signedTransaction = await window.solflare.signTransaction(transaction);
-        } else if (primaryWallet.type === 'backpack' && window.backpack) {
-          signedTransaction = await window.backpack.signTransaction(transaction);
         } else {
           throw new Error('Unsupported wallet for SOL transactions');
         }

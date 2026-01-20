@@ -60,52 +60,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  const connectSolflare = async () => {
-    try {
-      if (window.solflare && window.solflare.isSolflare) {
-        const response = await window.solflare.connect();
-        const address = response.publicKey.toString();
-        onWalletConnected('solflare', address, 'solana');
-        onClose();
-        toast({
-          title: "Solflare Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
-      } else {
-        throw new Error('Solflare not found');
-      }
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Solflare wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const connectBackpack = async () => {
-    try {
-      if (window.backpack && window.backpack.isBackpack) {
-        const response = await window.backpack.connect();
-        const address = response.publicKey.toString();
-        onWalletConnected('backpack', address, 'solana');
-        onClose();
-        toast({
-          title: "Backpack Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
-      } else {
-        throw new Error('Backpack not found');
-      }
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Backpack wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
   // EVM wallet connections
   const connectMetaMask = async () => {
     try {
@@ -136,8 +90,13 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
   const connectCoinbase = async () => {
     try {
-      if (window.ethereum && window.ethereum.isCoinbaseWallet) {
-        const accounts = await window.ethereum.request({ 
+      // Check for Coinbase Wallet - it can inject as coinbaseWalletExtension or in ethereum providers
+      const coinbaseProvider = (window as any).coinbaseWalletExtension || 
+        ((window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet)) ||
+        (window.ethereum?.isCoinbaseWallet ? window.ethereum : null);
+      
+      if (coinbaseProvider) {
+        const accounts = await coinbaseProvider.request({ 
           method: 'eth_requestAccounts' 
         });
         if (accounts && accounts.length > 0) {
@@ -148,14 +107,14 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             title: "Coinbase Connected!",
             description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
           });
+          return;
         }
-      } else {
-        throw new Error('Coinbase Wallet not found');
       }
+      throw new Error('Coinbase Wallet not found');
     } catch (error) {
       toast({
         title: "Connection Failed",
-        description: "Failed to connect to Coinbase wallet",
+        description: "Failed to connect to Coinbase wallet. Please install the extension.",
         variant: "destructive",
       });
     }
@@ -275,6 +234,13 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const getWalletOptions = (): WalletOption[] => {
+    // Check for Coinbase Wallet in various injection points
+    const hasCoinbase = !!(
+      (window as any).coinbaseWalletExtension || 
+      (window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet) ||
+      window.ethereum?.isCoinbaseWallet
+    );
+
     return [
       {
         ...WALLETS.find(w => w.id === 'phantom')!,
@@ -292,19 +258,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         connect: connectLobstr
       },
       {
-        ...WALLETS.find(w => w.id === 'solflare')!,
-        isInstalled: !!(window.solflare && window.solflare.isSolflare),
-        connect: connectSolflare
-      },
-      {
         ...WALLETS.find(w => w.id === 'coinbase')!,
-        isInstalled: !!(window.ethereum && window.ethereum.isCoinbaseWallet),
+        isInstalled: hasCoinbase,
         connect: connectCoinbase
-      },
-      {
-        ...WALLETS.find(w => w.id === 'backpack')!,
-        isInstalled: !!(window.backpack && window.backpack.isBackpack),
-        connect: connectBackpack
       },
       {
         ...WALLETS.find(w => w.id === 'freighter')!,

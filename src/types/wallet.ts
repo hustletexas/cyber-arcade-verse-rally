@@ -4,8 +4,6 @@ export type ChainType = 'solana' | 'ethereum' | 'stellar';
 
 export type WalletType = 
   | 'phantom' 
-  | 'solflare' 
-  | 'backpack' 
   | 'metamask'
   | 'coinbase' 
   | 'lobstr'
@@ -101,15 +99,6 @@ export const WALLETS: WalletInfo[] = [
     isPopular: true
   },
   {
-    id: 'solflare',
-    name: 'Solflare',
-    icon: '🔥',
-    logoUrl: '/images/wallets/solflare.png',
-    chain: 'solana',
-    downloadUrl: 'https://solflare.com/',
-    description: 'The safest way to Solana'
-  },
-  {
     id: 'coinbase',
     name: 'Coinbase Wallet',
     icon: '🔵',
@@ -117,15 +106,6 @@ export const WALLETS: WalletInfo[] = [
     chain: 'ethereum',
     downloadUrl: 'https://www.coinbase.com/wallet',
     description: 'Your key to the world of crypto'
-  },
-  {
-    id: 'backpack',
-    name: 'Backpack',
-    icon: '🎒',
-    logoUrl: '/images/wallets/backpack.png',
-    chain: 'solana',
-    downloadUrl: 'https://backpack.app/',
-    description: 'A home for your xNFTs'
   },
   {
     id: 'freighter',
