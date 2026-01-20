@@ -33,11 +33,17 @@ declare global {
     ethereum?: {
       isMetaMask?: boolean;
       isCoinbaseWallet?: boolean;
+      providers?: Array<{ isCoinbaseWallet?: boolean; isMetaMask?: boolean; request: (args: { method: string; params?: any[] }) => Promise<any> }>;
       request: (args: { method: string; params?: any[] }) => Promise<any>;
       on: (event: string, callback: (...args: any[]) => void) => void;
       removeListener: (event: string, callback: (...args: any[]) => void) => void;
       selectedAddress?: string;
       chainId?: string;
+    };
+    // Coinbase Wallet Extension (standalone injection)
+    coinbaseWalletExtension?: {
+      request: (args: { method: string; params?: any[] }) => Promise<any>;
+      isCoinbaseWallet?: boolean;
     };
     // Stellar Wallet (Freighter) - supports both old and new API
     freighterApi?: {

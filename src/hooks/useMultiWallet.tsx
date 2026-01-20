@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 // Legacy types for backward compatibility
-export type WalletType = 'phantom' | 'solflare' | 'backpack' | 'coinbase' | 'metamask' | 'lobstr' | 'freighter' | 'leap' | 'created';
+export type WalletType = 'phantom' | 'coinbase' | 'metamask' | 'lobstr' | 'freighter' | 'leap' | 'created';
 
 export interface ConnectedWallet {
   type: WalletType;
@@ -88,39 +88,25 @@ export const useMultiWallet = () => {
       }
     }
 
-    // Check Solflare
-    if (window.solflare && window.solflare.isSolflare && window.solflare.isConnected) {
+    // Check Coinbase
+    const coinbaseProvider = (window as any).coinbaseWalletExtension || 
+      ((window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet)) ||
+      (window.ethereum?.isCoinbaseWallet ? window.ethereum : null);
+    
+    if (coinbaseProvider) {
       try {
-        const response = await window.solflare.connect();
-        if (response?.publicKey) {
+        const accounts = await coinbaseProvider.request({ method: 'eth_accounts' });
+        if (accounts && accounts.length > 0) {
           wallets.push({
-            type: 'solflare',
-            address: response.publicKey.toString(),
+            type: 'coinbase',
+            address: accounts[0],
             isConnected: true,
-            chain: 'solana',
-            symbol: 'SOL'
+            chain: 'ethereum',
+            symbol: 'ETH'
           });
         }
       } catch (error) {
-        // Solflare wallet not auto-connected
-      }
-    }
-
-    // Check Backpack
-    if (window.backpack && window.backpack.isBackpack && window.backpack.isConnected) {
-      try {
-        const response = await window.backpack.connect();
-        if (response?.publicKey) {
-          wallets.push({
-            type: 'backpack',
-            address: response.publicKey.toString(),
-            isConnected: true,
-            chain: 'solana',
-            symbol: 'SOL'
-          });
-        }
-      } catch (error) {
-        // Backpack wallet not auto-connected
+        // Coinbase wallet not auto-connected
       }
     }
 
@@ -226,12 +212,6 @@ export const useMultiWallet = () => {
         case 'phantom':
           if (window.solana) await window.solana.disconnect();
           break;
-        case 'solflare':
-          if (window.solflare) await window.solflare.disconnect();
-          break;
-        case 'backpack':
-          if (window.backpack) await window.backpack.disconnect();
-          break;
         case 'metamask':
         case 'coinbase':
           // EVM wallets don't have a disconnect method
@@ -289,8 +269,6 @@ export const useMultiWallet = () => {
   const getWalletIcon = (type: WalletType) => {
     switch (type) {
       case 'phantom': return '👻';
-      case 'solflare': return '🔥';
-      case 'backpack': return '🎒';
       case 'metamask': return '🦊';
       case 'coinbase': return '🔵';
       case 'lobstr': return '🌟';

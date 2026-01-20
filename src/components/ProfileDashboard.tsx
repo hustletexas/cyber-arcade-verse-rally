@@ -301,7 +301,7 @@ export const ProfileDashboard = () => {
                   {connectedWallets.map((wallet, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-background/20 rounded">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}</span>
+                        <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'metamask' ? '🦊' : wallet.type === 'coinbase' ? '🔵' : wallet.type === 'lobstr' ? '🌟' : wallet.type === 'freighter' ? '🚀' : wallet.type === 'leap' ? '🐸' : '💰'}</span>
                         <div>
                           <span className="capitalize font-medium">{wallet.type}</span>
                           {wallet === primaryWallet && (
@@ -380,7 +380,7 @@ export const ProfileDashboard = () => {
                 {connectedWallets.map((wallet, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'solflare' ? '🔥' : wallet.type === 'backpack' ? '🎒' : '💰'}</span>
+                      <span className="text-lg">{wallet.type === 'phantom' ? '👻' : wallet.type === 'metamask' ? '🦊' : wallet.type === 'coinbase' ? '🔵' : wallet.type === 'lobstr' ? '🌟' : wallet.type === 'freighter' ? '🚀' : wallet.type === 'leap' ? '🐸' : '💰'}</span>
                       <div>
                         <p className="font-medium capitalize">{wallet.type} Wallet</p>
                         <code className="text-xs text-muted-foreground">

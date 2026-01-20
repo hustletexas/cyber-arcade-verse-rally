@@ -40,12 +40,6 @@ export const useWalletAuth = () => {
       if (primaryWallet?.type === 'phantom' && window.solana?.isPhantom && window.solana.signMessage) {
         const { signature } = await window.solana.signMessage(messageBytes);
         return btoa(String.fromCharCode(...signature));
-      } else if (primaryWallet?.type === 'solflare' && window.solflare?.isSolflare) {
-        // Solflare uses signTransaction for auth, skip signature
-        return 'solflare_connected';
-      } else if (primaryWallet?.type === 'backpack' && window.backpack?.isBackpack) {
-        // Backpack uses signTransaction for auth, skip signature
-        return 'backpack_connected';
       } else if (primaryWallet?.type === 'coinbase' && window.ethereum?.isCoinbaseWallet) {
         // For Ethereum wallets, use personal_sign
         const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
@@ -70,11 +64,7 @@ export const useWalletAuth = () => {
       let isStillConnected = false;
       
       if (primaryWallet?.type === 'phantom' && window.solana?.isPhantom) {
-        isStillConnected = window.solana.isConnected;
-      } else if (primaryWallet?.type === 'solflare' && window.solflare?.isSolflare) {
-        isStillConnected = window.solflare.isConnected;
-      } else if (primaryWallet?.type === 'backpack' && window.backpack?.isBackpack) {
-        isStillConnected = window.backpack.isConnected;
+        isStillConnected = !!window.solana.isConnected;
       } else if (primaryWallet?.type === 'coinbase' && window.ethereum?.isCoinbaseWallet) {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         isStillConnected = accounts && accounts.length > 0;
