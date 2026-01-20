@@ -729,9 +729,333 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
+  ],
+
+  // ENTERTAINMENT CATEGORIES
+  cartoons: [
+    {
+      id: 'cartoon_1',
+      category: 'cartoons',
+      question: 'What is the name of SpongeBob\'s best friend?',
+      option_a: 'Squidward',
+      option_b: 'Patrick',
+      option_c: 'Mr. Krabs',
+      option_d: 'Plankton',
+      correct_answer: 'B',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_2',
+      category: 'cartoons',
+      question: 'In "The Simpsons", what is Homer\'s favorite beer?',
+      option_a: 'Budweiser',
+      option_b: 'Duff',
+      option_c: 'Buzz Cola',
+      option_d: 'Pawtucket',
+      correct_answer: 'B',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_3',
+      category: 'cartoons',
+      question: 'Which cartoon features the Powerpuff Girls?',
+      option_a: 'Nickelodeon',
+      option_b: 'Disney Channel',
+      option_c: 'Cartoon Network',
+      option_d: 'Fox Kids',
+      correct_answer: 'C',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_4',
+      category: 'cartoons',
+      question: 'What is the name of the dragon in "Dragon Ball Z"?',
+      option_a: 'Shenron',
+      option_b: 'Dragonite',
+      option_c: 'Puff',
+      option_d: 'Charizard',
+      correct_answer: 'A',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_5',
+      category: 'cartoons',
+      question: 'In "Avatar: The Last Airbender", what element can Aang bend first?',
+      option_a: 'Water',
+      option_b: 'Earth',
+      option_c: 'Fire',
+      option_d: 'Air',
+      correct_answer: 'D',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_6',
+      category: 'cartoons',
+      question: 'What year did "Tom and Jerry" first premiere?',
+      option_a: '1940',
+      option_b: '1945',
+      option_c: '1950',
+      option_d: '1935',
+      correct_answer: 'A',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ],
+
+  sports: [
+    {
+      id: 'sports_1',
+      category: 'sports',
+      question: 'How many players are on a standard soccer team on the field?',
+      option_a: '9',
+      option_b: '10',
+      option_c: '11',
+      option_d: '12',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_2',
+      category: 'sports',
+      question: 'In basketball, how many points is a shot from beyond the arc worth?',
+      option_a: '1',
+      option_b: '2',
+      option_c: '3',
+      option_d: '4',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_3',
+      category: 'sports',
+      question: 'Which country has won the most FIFA World Cups?',
+      option_a: 'Germany',
+      option_b: 'Argentina',
+      option_c: 'Italy',
+      option_d: 'Brazil',
+      correct_answer: 'D',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_4',
+      category: 'sports',
+      question: 'Who holds the record for most Olympic gold medals?',
+      option_a: 'Usain Bolt',
+      option_b: 'Michael Phelps',
+      option_c: 'Carl Lewis',
+      option_d: 'Mark Spitz',
+      correct_answer: 'B',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_5',
+      category: 'sports',
+      question: 'In tennis, what is a score of 40-40 called?',
+      option_a: 'Advantage',
+      option_b: 'Love',
+      option_c: 'Deuce',
+      option_d: 'Break',
+      correct_answer: 'C',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_6',
+      category: 'sports',
+      question: 'Which NFL team has won the most Super Bowls?',
+      option_a: 'Dallas Cowboys',
+      option_b: 'New England Patriots',
+      option_c: 'Pittsburgh Steelers',
+      option_d: 'San Francisco 49ers',
+      correct_answer: 'B',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ],
+
+  music: [
+    {
+      id: 'music_1',
+      category: 'music',
+      question: 'Which band performed "Bohemian Rhapsody"?',
+      option_a: 'The Beatles',
+      option_b: 'Led Zeppelin',
+      option_c: 'Queen',
+      option_d: 'Pink Floyd',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_2',
+      category: 'music',
+      question: 'Who is known as the "King of Pop"?',
+      option_a: 'Prince',
+      option_b: 'Michael Jackson',
+      option_c: 'Elvis Presley',
+      option_d: 'Madonna',
+      correct_answer: 'B',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_3',
+      category: 'music',
+      question: 'Which instrument has 88 keys?',
+      option_a: 'Guitar',
+      option_b: 'Organ',
+      option_c: 'Accordion',
+      option_d: 'Piano',
+      correct_answer: 'D',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_4',
+      category: 'music',
+      question: 'What year did The Beatles break up?',
+      option_a: '1968',
+      option_b: '1969',
+      option_c: '1970',
+      option_d: '1971',
+      correct_answer: 'C',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_5',
+      category: 'music',
+      question: 'Which artist has the most Grammy Awards of all time?',
+      option_a: 'Beyoncé',
+      option_b: 'Quincy Jones',
+      option_c: 'Georg Solti',
+      option_d: 'Alison Krauss',
+      correct_answer: 'A',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_6',
+      category: 'music',
+      question: 'What was the first music video played on MTV?',
+      option_a: 'Thriller',
+      option_b: 'Video Killed the Radio Star',
+      option_c: 'Take On Me',
+      option_d: 'Sweet Dreams',
+      correct_answer: 'B',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ],
+
+  movies: [
+    {
+      id: 'movies_1',
+      category: 'movies',
+      question: 'What is the highest-grossing film of all time (unadjusted)?',
+      option_a: 'Titanic',
+      option_b: 'Avengers: Endgame',
+      option_c: 'Avatar',
+      option_d: 'Star Wars: The Force Awakens',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_2',
+      category: 'movies',
+      question: 'Who directed "Jurassic Park"?',
+      option_a: 'James Cameron',
+      option_b: 'Steven Spielberg',
+      option_c: 'George Lucas',
+      option_d: 'Ridley Scott',
+      correct_answer: 'B',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_3',
+      category: 'movies',
+      question: 'In "The Matrix", what color pill does Neo take?',
+      option_a: 'Blue',
+      option_b: 'Green',
+      option_c: 'Red',
+      option_d: 'Yellow',
+      correct_answer: 'C',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_4',
+      category: 'movies',
+      question: 'What year was the first "Star Wars" movie released?',
+      option_a: '1975',
+      option_b: '1977',
+      option_c: '1979',
+      option_d: '1980',
+      correct_answer: 'B',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_5',
+      category: 'movies',
+      question: 'Which film won the Academy Award for Best Picture in 1994?',
+      option_a: 'Pulp Fiction',
+      option_b: 'The Shawshank Redemption',
+      option_c: 'Forrest Gump',
+      option_d: 'The Lion King',
+      correct_answer: 'C',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_6',
+      category: 'movies',
+      question: 'What is the name of the fictional African country in "Black Panther"?',
+      option_a: 'Zamunda',
+      option_b: 'Wakanda',
+      option_c: 'Genovia',
+      option_d: 'Latveria',
+      correct_answer: 'B',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
   ]
 };
-
 // Function to get random questions for a category
 export const getRandomQuestionsForCategory = (category: string, count: number = 10): TriviaQuestion[] => {
   const categoryQuestions = gamingTriviaQuestions[category] || [];
