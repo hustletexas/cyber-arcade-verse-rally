@@ -156,21 +156,24 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   // Stellar wallet connection
   const connectFreighter = async () => {
     try {
-      if (window.freighterApi) {
+      // Check both old and new Freighter API
+      const freighterApi = window.freighterApi || window.freighter;
+      
+      if (freighterApi) {
         // Check if Freighter is connected
-        const isConnected = await window.freighterApi.isConnected();
+        const isConnected = await freighterApi.isConnected();
         if (!isConnected) {
           throw new Error('Freighter is not connected. Please open the extension.');
         }
 
         // Request permission if not already allowed
-        const isAllowed = await window.freighterApi.isAllowed();
+        const isAllowed = await freighterApi.isAllowed();
         if (!isAllowed) {
-          await window.freighterApi.setAllowed();
+          await freighterApi.setAllowed();
         }
 
         // Get the public key
-        const publicKey = await window.freighterApi.getPublicKey();
+        const publicKey = await freighterApi.getPublicKey();
         if (publicKey) {
           onWalletConnected('freighter', publicKey, 'stellar');
           onClose();
@@ -224,7 +227,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     stellar: [
       {
         ...WALLETS.find(w => w.id === 'freighter')!,
-        isInstalled: !!window.freighterApi,
+        isInstalled: !!(window.freighterApi || window.freighter),
         connect: connectFreighter
       }
     ]
