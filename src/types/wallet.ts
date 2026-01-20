@@ -120,7 +120,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'leap',
     name: 'Leap',
     icon: '🐸',
-    logoUrl: '/images/wallets/leap.png',
+    logoUrl: '/images/wallets/leap.png?v=2',
     chain: 'ethereum',
     downloadUrl: 'https://www.leapwallet.io/',
     description: 'Multi-chain Cosmos & EVM wallet'
