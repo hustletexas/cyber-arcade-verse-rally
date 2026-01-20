@@ -1,47 +1,22 @@
-// Re-export from the new multi-chain wallet hook for backward compatibility
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  WalletType, 
+  ChainType, 
+  ConnectedWallet, 
+  CHAINS, 
+  getChainForWallet 
+} from '@/types/wallet';
 
-// Legacy types for backward compatibility
-export type WalletType = 'phantom' | 'solflare' | 'backpack' | 'coinbase' | 'metamask' | 'freighter' | 'created';
-
-export interface ConnectedWallet {
-  type: WalletType;
-  address: string;
-  isConnected: boolean;
-  balance?: number;
-  chain?: 'solana' | 'ethereum' | 'stellar';
-  symbol?: string;
-}
-
-export const useMultiWallet = () => {
+export const useMultiChainWallet = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([]);
   const [primaryWallet, setPrimaryWallet] = useState<ConnectedWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const getChainForWallet = (type: WalletType): 'solana' | 'ethereum' | 'stellar' => {
-    switch (type) {
-      case 'metamask':
-      case 'coinbase':
-        return 'ethereum';
-      case 'freighter':
-        return 'stellar';
-      default:
-        return 'solana';
-    }
-  };
-
-  const getSymbolForChain = (chain: 'solana' | 'ethereum' | 'stellar'): string => {
-    switch (chain) {
-      case 'ethereum': return 'ETH';
-      case 'stellar': return 'XLM';
-      default: return 'SOL';
-    }
-  };
+  const [activeChain, setActiveChain] = useState<ChainType>('solana');
 
   // Check for existing wallet connections on load
   useEffect(() => {
@@ -51,16 +26,16 @@ export const useMultiWallet = () => {
   const checkExistingConnections = async () => {
     const wallets: ConnectedWallet[] = [];
 
-    // Check for created wallet
+    // Check for created wallet (Solana)
     try {
       const storedWallet = localStorage.getItem('cyberCityWallet');
       if (storedWallet) {
         const wallet = JSON.parse(storedWallet);
         wallets.push({
           type: 'created',
+          chain: 'solana',
           address: wallet.publicKey,
           isConnected: true,
-          chain: 'solana',
           symbol: 'SOL'
         });
       }
@@ -68,16 +43,16 @@ export const useMultiWallet = () => {
       console.error('Error loading stored wallet:', error);
     }
 
-    // Check Phantom
+    // Check Phantom (Solana)
     if (window.solana && window.solana.isPhantom && window.solana.isConnected) {
       try {
         const response = await window.solana.connect({ onlyIfTrusted: true });
         if (response?.publicKey) {
           wallets.push({
             type: 'phantom',
+            chain: 'solana',
             address: response.publicKey.toString(),
             isConnected: true,
-            chain: 'solana',
             symbol: 'SOL'
           });
         }
@@ -86,16 +61,16 @@ export const useMultiWallet = () => {
       }
     }
 
-    // Check Solflare
+    // Check Solflare (Solana)
     if (window.solflare && window.solflare.isSolflare && window.solflare.isConnected) {
       try {
         const response = await window.solflare.connect();
         if (response?.publicKey) {
           wallets.push({
             type: 'solflare',
+            chain: 'solana',
             address: response.publicKey.toString(),
             isConnected: true,
-            chain: 'solana',
             symbol: 'SOL'
           });
         }
@@ -104,16 +79,16 @@ export const useMultiWallet = () => {
       }
     }
 
-    // Check Backpack
+    // Check Backpack (Solana)
     if (window.backpack && window.backpack.isBackpack && window.backpack.isConnected) {
       try {
         const response = await window.backpack.connect();
         if (response?.publicKey) {
           wallets.push({
             type: 'backpack',
+            chain: 'solana',
             address: response.publicKey.toString(),
             isConnected: true,
-            chain: 'solana',
             symbol: 'SOL'
           });
         }
@@ -122,16 +97,16 @@ export const useMultiWallet = () => {
       }
     }
 
-    // Check MetaMask
+    // Check MetaMask (Ethereum)
     if (window.ethereum && window.ethereum.isMetaMask) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         if (accounts && accounts.length > 0) {
           wallets.push({
             type: 'metamask',
+            chain: 'ethereum',
             address: accounts[0],
             isConnected: true,
-            chain: 'ethereum',
             symbol: 'ETH'
           });
         }
@@ -140,16 +115,16 @@ export const useMultiWallet = () => {
       }
     }
 
-    // Check Coinbase
+    // Check Coinbase (Ethereum)
     if (window.ethereum && window.ethereum.isCoinbaseWallet) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         if (accounts && accounts.length > 0) {
           wallets.push({
             type: 'coinbase',
+            chain: 'ethereum',
             address: accounts[0],
             isConnected: true,
-            chain: 'ethereum',
             symbol: 'ETH'
           });
         }
@@ -169,9 +144,9 @@ export const useMultiWallet = () => {
             if (publicKey) {
               wallets.push({
                 type: 'freighter',
+                chain: 'stellar',
                 address: publicKey,
                 isConnected: true,
-                chain: 'stellar',
                 symbol: 'XLM'
               });
             }
@@ -185,6 +160,7 @@ export const useMultiWallet = () => {
     setConnectedWallets(wallets);
     if (wallets.length > 0 && !primaryWallet) {
       setPrimaryWallet(wallets[0]);
+      setActiveChain(wallets[0].chain);
     }
   };
 
@@ -198,8 +174,6 @@ export const useMultiWallet = () => {
         .eq('id', user.id);
 
       if (error) throw error;
-      
-      // Wallet linked to profile successfully
     } catch (error) {
       console.error('Error linking wallet to profile:', error);
     }
@@ -207,14 +181,14 @@ export const useMultiWallet = () => {
 
   const connectWallet = useCallback(async (type: WalletType, address: string) => {
     const chain = getChainForWallet(type);
-    const symbol = getSymbolForChain(chain);
+    const chainInfo = CHAINS[chain];
     
     const newWallet: ConnectedWallet = {
       type,
+      chain,
       address,
       isConnected: true,
-      chain,
-      symbol
+      symbol: chainInfo.symbol
     };
 
     setConnectedWallets(prev => {
@@ -225,6 +199,7 @@ export const useMultiWallet = () => {
     // Set as primary if it's the first wallet
     if (!primaryWallet) {
       setPrimaryWallet(newWallet);
+      setActiveChain(chain);
     }
 
     // Link wallet to user profile if logged in
@@ -234,7 +209,7 @@ export const useMultiWallet = () => {
 
     toast({
       title: "Wallet Connected!",
-      description: `${type.charAt(0).toUpperCase() + type.slice(1)} wallet connected successfully`,
+      description: `${type.charAt(0).toUpperCase() + type.slice(1)} wallet on ${chainInfo.name} connected`,
     });
   }, [primaryWallet, toast, user]);
 
@@ -253,7 +228,7 @@ export const useMultiWallet = () => {
           break;
         case 'metamask':
         case 'coinbase':
-          // EVM wallets don't have a disconnect method
+          // EVM wallets don't have a disconnect method, we just remove from state
           break;
         case 'freighter':
           // Freighter doesn't have a disconnect method
@@ -268,7 +243,12 @@ export const useMultiWallet = () => {
       // Update primary wallet if disconnected
       if (primaryWallet?.type === type) {
         const remaining = connectedWallets.filter(w => w.type !== type);
-        setPrimaryWallet(remaining.length > 0 ? remaining[0] : null);
+        if (remaining.length > 0) {
+          setPrimaryWallet(remaining[0]);
+          setActiveChain(remaining[0].chain);
+        } else {
+          setPrimaryWallet(null);
+        }
       }
 
       toast({
@@ -287,6 +267,7 @@ export const useMultiWallet = () => {
 
   const switchPrimaryWallet = useCallback(async (wallet: ConnectedWallet) => {
     setPrimaryWallet(wallet);
+    setActiveChain(wallet.chain);
     
     // Update profile with new primary wallet
     if (user) {
@@ -295,9 +276,19 @@ export const useMultiWallet = () => {
     
     toast({
       title: "Primary Wallet Changed",
-      description: `Switched to ${wallet.type} wallet`,
+      description: `Switched to ${wallet.type} wallet on ${CHAINS[wallet.chain].name}`,
     });
   }, [toast, user]);
+
+  const switchChain = useCallback((chain: ChainType) => {
+    setActiveChain(chain);
+    
+    // Find a wallet on the new chain and set as primary
+    const walletOnChain = connectedWallets.find(w => w.chain === chain);
+    if (walletOnChain) {
+      setPrimaryWallet(walletOnChain);
+    }
+  }, [connectedWallets]);
 
   const getWalletIcon = (type: WalletType) => {
     switch (type) {
@@ -312,12 +303,10 @@ export const useMultiWallet = () => {
     }
   };
 
-  const getChainIcon = (chain?: 'solana' | 'ethereum' | 'stellar') => {
-    switch (chain) {
-      case 'ethereum': return '⟠';
-      case 'stellar': return '✦';
-      default: return '◎';
-    }
+  const getChainIcon = (chain: ChainType) => CHAINS[chain].icon;
+
+  const getWalletsByChain = (chain: ChainType) => {
+    return connectedWallets.filter(w => w.chain === chain);
   };
 
   const isWalletConnected = connectedWallets.length > 0;
@@ -327,6 +316,7 @@ export const useMultiWallet = () => {
   return {
     connectedWallets,
     primaryWallet,
+    activeChain,
     isWalletConnected,
     hasMultipleWallets,
     hasMultipleChains,
@@ -334,8 +324,11 @@ export const useMultiWallet = () => {
     connectWallet,
     disconnectWallet,
     switchPrimaryWallet,
+    switchChain,
     getWalletIcon,
     getChainIcon,
-    checkExistingConnections
+    getWalletsByChain,
+    checkExistingConnections,
+    CHAINS
   };
 };

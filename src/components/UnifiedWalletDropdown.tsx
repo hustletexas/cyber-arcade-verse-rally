@@ -46,9 +46,11 @@ export const UnifiedWalletDropdown = () => {
     primaryWallet, 
     isWalletConnected,
     hasMultipleWallets,
+    hasMultipleChains,
     disconnectWallet,
     switchPrimaryWallet,
-    getWalletIcon 
+    getWalletIcon,
+    getChainIcon
   } = useMultiWallet();
   
   const { logoutWallet } = useWalletAuth();
@@ -168,7 +170,7 @@ export const UnifiedWalletDropdown = () => {
                 Connect Wallet
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Connect your Solana wallet to continue
+                Connect your wallet from Solana, Ethereum, or Stellar
               </DialogDescription>
             </DialogHeader>
             <WalletManager />
@@ -297,16 +299,25 @@ export const UnifiedWalletDropdown = () => {
 
           <Separator className="bg-gradient-to-r from-transparent via-neon-cyan/20 to-transparent" />
 
-          {/* Token balances */}
+          {/* Token balances - Multi-chain */}
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tokens</span>
+              {primaryWallet?.chain && (
+                <Badge variant="outline" className="text-[10px] border-neon-cyan/30 text-neon-cyan">
+                  {getChainIcon(primaryWallet.chain)} {primaryWallet.chain?.toUpperCase()}
+                </Badge>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { symbol: 'SOL', icon: '◎', balance: '~0.5', color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
-                { symbol: 'USDC', icon: '$', balance: '25.00', color: 'text-blue-400', bg: 'bg-blue-400/10' },
-              ].map((token) => (
+                { symbol: 'SOL', icon: '◎', balance: '~0.5', color: 'text-purple-400', bg: 'bg-purple-400/10', chain: 'solana' },
+                { symbol: 'ETH', icon: '⟠', balance: '~0.01', color: 'text-blue-400', bg: 'bg-blue-400/10', chain: 'ethereum' },
+                { symbol: 'XLM', icon: '✦', balance: '~10', color: 'text-cyan-400', bg: 'bg-cyan-400/10', chain: 'stellar' },
+                { symbol: 'USDC', icon: '$', balance: '25.00', color: 'text-green-400', bg: 'bg-green-400/10', chain: 'all' },
+              ].filter(token => token.chain === 'all' || token.chain === primaryWallet?.chain || !primaryWallet?.chain)
+               .slice(0, 4)
+               .map((token) => (
                 <div key={token.symbol} className={`flex items-center justify-between p-3 ${token.bg} rounded-xl border border-white/5 transition-all hover:scale-105 hover:border-white/20 cursor-pointer`}>
                   <span className={`${token.color} font-medium text-sm`}>{token.icon} {token.symbol}</span>
                   <span className={`font-bold ${token.color}`}>{token.balance}</span>
@@ -330,7 +341,10 @@ export const UnifiedWalletDropdown = () => {
                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-cyan/10 cursor-pointer transition-all hover:scale-[1.02] border border-transparent hover:border-neon-cyan/30"
                     >
                       <span className="text-xl">{getWalletIcon(wallet.type)}</span>
-                      <span className="flex-1 text-sm capitalize font-medium">{wallet.type}</span>
+                      <div className="flex-1">
+                        <span className="text-sm capitalize font-medium">{wallet.type}</span>
+                        <span className="text-[10px] text-muted-foreground ml-2">{getChainIcon(wallet.chain)} {wallet.chain}</span>
+                      </div>
                       <span className="text-xs text-muted-foreground">{wallet.address.slice(0, 4)}...</span>
                       {primaryWallet?.address === wallet.address && (
                         <Badge className="bg-neon-green/20 text-neon-green border-0 text-xs animate-pulse">Active</Badge>
@@ -430,7 +444,7 @@ export const UnifiedWalletDropdown = () => {
               ))}
             </div>
             <p className="text-center text-[10px] text-muted-foreground mt-3 opacity-60">
-              Cyber City Arcade • Powered by Solana
+              Cyber City Arcade • Multi-Chain: Solana, Ethereum, Stellar
             </p>
           </div>
         </DropdownMenuContent>
