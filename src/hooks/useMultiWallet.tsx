@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 // Legacy types for backward compatibility
-export type WalletType = 'phantom' | 'solflare' | 'backpack' | 'coinbase' | 'metamask' | 'freighter' | 'created';
+export type WalletType = 'phantom' | 'solflare' | 'backpack' | 'coinbase' | 'metamask' | 'lobstr' | 'created';
 
 export interface ConnectedWallet {
   type: WalletType;
@@ -28,7 +28,7 @@ export const useMultiWallet = () => {
       case 'metamask':
       case 'coinbase':
         return 'ethereum';
-      case 'freighter':
+      case 'lobstr':
         return 'stellar';
       default:
         return 'solana';
@@ -158,29 +158,8 @@ export const useMultiWallet = () => {
       }
     }
 
-    // Check Freighter (Stellar)
-    if (window.freighterApi) {
-      try {
-        const isAllowed = await window.freighterApi.isAllowed();
-        if (isAllowed) {
-          const isConnected = await window.freighterApi.isConnected();
-          if (isConnected) {
-            const publicKey = await window.freighterApi.getPublicKey();
-            if (publicKey) {
-              wallets.push({
-                type: 'freighter',
-                address: publicKey,
-                isConnected: true,
-                chain: 'stellar',
-                symbol: 'XLM'
-              });
-            }
-          }
-        }
-      } catch (error) {
-        // Freighter wallet not auto-connected
-      }
-    }
+    // Note: LOBSTR uses WalletConnect, so we don't auto-detect it on page load
+    // Users will connect manually through the modal
 
     setConnectedWallets(wallets);
     if (wallets.length > 0 && !primaryWallet) {
@@ -255,8 +234,8 @@ export const useMultiWallet = () => {
         case 'coinbase':
           // EVM wallets don't have a disconnect method
           break;
-        case 'freighter':
-          // Freighter doesn't have a disconnect method
+        case 'lobstr':
+          // LOBSTR uses WalletConnect, disconnect handled by the kit
           break;
         case 'created':
           // Created wallets don't have external disconnection
@@ -306,7 +285,7 @@ export const useMultiWallet = () => {
       case 'backpack': return '🎒';
       case 'metamask': return '🦊';
       case 'coinbase': return '🔵';
-      case 'freighter': return '🚀';
+      case 'lobstr': return '🌟';
       case 'created': return '💰';
       default: return '🔗';
     }

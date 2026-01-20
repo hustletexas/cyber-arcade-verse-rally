@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
-import { isConnected as isFreighterConnected, isAllowed, setAllowed, getAddress } from '@stellar/freighter-api';
+import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID } from '@creit.tech/stellar-wallets-kit';
 
 interface WalletOption extends WalletInfo {
   isInstalled: boolean;
@@ -25,25 +25,16 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [connecting, setConnecting] = useState<string | null>(null);
-  const [freighterInstalled, setFreighterInstalled] = useState(false);
+  const [lobstrInstalled] = useState(true); // LOBSTR uses WalletConnect, always available
 
-  // Check Freighter installation on mount
-  useEffect(() => {
-    const checkFreighter = async () => {
-      try {
-        const result = await isFreighterConnected();
-        // The API returns { isConnected: boolean } or a boolean in older versions
-        const connected = typeof result === 'boolean' ? result : result?.isConnected;
-        setFreighterInstalled(!!connected);
-      } catch {
-        // Check fallback window objects
-        setFreighterInstalled(!!(window.freighterApi || window.freighter));
-      }
-    };
-    if (isOpen) {
-      checkFreighter();
-    }
-  }, [isOpen]);
+  // Initialize Stellar Wallets Kit for LOBSTR
+  const getStellarKit = () => {
+    return new StellarWalletsKit({
+      network: WalletNetwork.PUBLIC,
+      selectedWalletId: LOBSTR_ID,
+      modules: allowAllModules()
+    });
+  };
 
   // Solana wallet connections
   const connectPhantom = async () => {
@@ -170,44 +161,33 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Stellar wallet connection using official Freighter API
-  const connectFreighter = async () => {
+  // Stellar wallet connection using LOBSTR via Stellar Wallets Kit
+  const connectLobstr = async () => {
     try {
-      // Use official Freighter API - check connection
-      const connectedResult = await isFreighterConnected();
-      const isConnected = typeof connectedResult === 'boolean' ? connectedResult : connectedResult?.isConnected;
+      const kit = getStellarKit();
       
-      if (!isConnected) {
-        throw new Error('Freighter is not installed or not connected. Please install the extension.');
-      }
+      // Open modal to connect LOBSTR
+      await kit.openModal({
+        onWalletSelected: async (option) => {
+          kit.setWallet(option.id);
+        }
+      });
 
-      // Check if already allowed, if not request permission
-      const allowedResult = await isAllowed();
-      const hasPermission = typeof allowedResult === 'boolean' ? allowedResult : allowedResult?.isAllowed;
+      // Get the address
+      const { address } = await kit.getAddress();
       
-      if (!hasPermission) {
-        await setAllowed();
-      }
-
-      // Get the user's address
-      const addressResult = await getAddress();
-      if (addressResult.error) {
-        throw new Error(String(addressResult.error));
-      }
-      
-      const publicKey = addressResult.address;
-      if (publicKey) {
-        onWalletConnected('freighter', publicKey, 'stellar');
+      if (address) {
+        onWalletConnected('lobstr', address, 'stellar');
         onClose();
         toast({
-          title: "Freighter Connected!",
-          description: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+          title: "LOBSTR Connected!",
+          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
         });
       }
     } catch (error: any) {
       toast({
         title: "Connection Failed",
-        description: error?.message || "Failed to connect to Freighter wallet",
+        description: error?.message || "Failed to connect to LOBSTR wallet",
         variant: "destructive",
       });
     }
@@ -226,9 +206,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         connect: connectMetaMask
       },
       {
-        ...WALLETS.find(w => w.id === 'freighter')!,
-        isInstalled: freighterInstalled,
-        connect: connectFreighter
+        ...WALLETS.find(w => w.id === 'lobstr')!,
+        isInstalled: lobstrInstalled,
+        connect: connectLobstr
       },
       {
         ...WALLETS.find(w => w.id === 'solflare')!,

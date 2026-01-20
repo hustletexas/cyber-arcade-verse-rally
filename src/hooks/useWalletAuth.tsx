@@ -134,10 +134,8 @@ export const useWalletAuth = () => {
 
         // Use signature as part of the password for added security
         // The password is now: wallet_address + signature_hash (not just wallet address)
-        const signatureHash = await crypto.subtle.digest(
-          'SHA-256',
-          new TextEncoder().encode(signature)
-        );
+        const data = new TextEncoder().encode(signature);
+        const signatureHash = await crypto.subtle.digest('SHA-256', data.buffer as ArrayBuffer);
         const hashArray = Array.from(new Uint8Array(signatureHash));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         
