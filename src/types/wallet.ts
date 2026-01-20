@@ -47,7 +47,7 @@ export const CHAINS: Record<ChainType, ChainInfo> = {
     symbol: 'SOL',
     icon: '◎',
     color: 'rgb(156, 106, 222)',
-    logoUrl: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png'
+    logoUrl: '/images/wallets/solana.png'
   },
   ethereum: {
     id: 'ethereum',
@@ -55,7 +55,7 @@ export const CHAINS: Record<ChainType, ChainInfo> = {
     symbol: 'ETH',
     icon: '⟠',
     color: 'rgb(98, 126, 234)',
-    logoUrl: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png'
+    logoUrl: '/images/wallets/ethereum.png'
   },
   stellar: {
     id: 'stellar',
@@ -63,7 +63,7 @@ export const CHAINS: Record<ChainType, ChainInfo> = {
     symbol: 'XLM',
     icon: '✦',
     color: 'rgb(20, 185, 255)',
-    logoUrl: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/stellar/info/logo.png'
+    logoUrl: '/images/wallets/stellar.png'
   }
 };
 
@@ -72,7 +72,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'phantom',
     name: 'Phantom',
     icon: '👻',
-    logoUrl: 'https://phantom.app/img/phantom-logo.svg',
+    logoUrl: '/images/wallets/phantom.png',
     chain: 'solana',
     downloadUrl: 'https://phantom.app/',
     description: 'The friendly crypto wallet',
@@ -82,7 +82,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'metamask',
     name: 'MetaMask',
     icon: '🦊',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg',
+    logoUrl: '/images/wallets/metamask.png',
     chain: 'ethereum',
     downloadUrl: 'https://metamask.io/',
     description: 'The crypto wallet & gateway to Web3',
@@ -92,7 +92,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'freighter',
     name: 'Freighter',
     icon: '🚀',
-    logoUrl: 'https://www.freighter.app/freighter-logo.svg',
+    logoUrl: '/images/wallets/freighter.png',
     chain: 'stellar',
     downloadUrl: 'https://www.freighter.app/',
     description: 'A stellar wallet in your browser',
@@ -102,7 +102,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'solflare',
     name: 'Solflare',
     icon: '🔥',
-    logoUrl: 'https://solflare.com/assets/logo.svg',
+    logoUrl: '/images/wallets/solflare.png',
     chain: 'solana',
     downloadUrl: 'https://solflare.com/',
     description: 'The safest way to Solana'
@@ -111,7 +111,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'coinbase',
     name: 'Coinbase Wallet',
     icon: '🔵',
-    logoUrl: 'https://altcoinsbox.com/wp-content/uploads/2022/12/coinbase-logo.svg',
+    logoUrl: '/images/wallets/coinbase.svg',
     chain: 'ethereum',
     downloadUrl: 'https://www.coinbase.com/wallet',
     description: 'Your key to the world of crypto'
@@ -120,7 +120,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'backpack',
     name: 'Backpack',
     icon: '🎒',
-    logoUrl: 'https://backpack.app/icon.png',
+    logoUrl: '/images/wallets/backpack.png',
     chain: 'solana',
     downloadUrl: 'https://backpack.app/',
     description: 'A home for your xNFTs'
