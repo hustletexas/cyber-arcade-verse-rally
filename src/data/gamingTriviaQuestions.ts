@@ -762,6 +762,19 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
     {
       id: 'cartoon_3',
       category: 'cartoons',
+      question: 'What color is Scooby-Doo\'s collar?',
+      option_a: 'Red',
+      option_b: 'Blue',
+      option_c: 'Green',
+      option_d: 'Yellow',
+      correct_answer: 'B',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_4',
+      category: 'cartoons',
       question: 'Which cartoon features the Powerpuff Girls?',
       option_a: 'Nickelodeon',
       option_b: 'Disney Channel',
@@ -773,7 +786,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'cartoon_4',
+      id: 'cartoon_5',
       category: 'cartoons',
       question: 'What is the name of the dragon in "Dragon Ball Z"?',
       option_a: 'Shenron',
@@ -786,7 +799,33 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'cartoon_5',
+      id: 'cartoon_6',
+      category: 'cartoons',
+      question: 'What is the name of Finn\'s dog in "Adventure Time"?',
+      option_a: 'BMO',
+      option_b: 'Jake',
+      option_c: 'Marceline',
+      option_d: 'Ice King',
+      correct_answer: 'B',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_7',
+      category: 'cartoons',
+      question: 'In "Rick and Morty", what is Morty\'s grandfather\'s first name?',
+      option_a: 'Richard',
+      option_b: 'Robert',
+      option_c: 'Rick',
+      option_d: 'Ronald',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_8',
       category: 'cartoons',
       question: 'In "Avatar: The Last Airbender", what element can Aang bend first?',
       option_a: 'Water',
@@ -799,7 +838,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'cartoon_6',
+      id: 'cartoon_9',
       category: 'cartoons',
       question: 'What year did "Tom and Jerry" first premiere?',
       option_a: '1940',
@@ -808,6 +847,45 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       option_d: '1935',
       correct_answer: 'A',
       difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_10',
+      category: 'cartoons',
+      question: 'What is the name of the cat in "Sailor Moon"?',
+      option_a: 'Luna',
+      option_b: 'Diana',
+      option_c: 'Artemis',
+      option_d: 'Selene',
+      correct_answer: 'A',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_11',
+      category: 'cartoons',
+      question: 'Which show features a boy named Timmy with fairy godparents?',
+      option_a: 'Danny Phantom',
+      option_b: 'The Fairly OddParents',
+      option_c: 'Jimmy Neutron',
+      option_d: 'Dexter\'s Laboratory',
+      correct_answer: 'B',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'cartoon_12',
+      category: 'cartoons',
+      question: 'In "Family Guy", what is the name of the talking dog?',
+      option_a: 'Stewie',
+      option_b: 'Brian',
+      option_c: 'Peter',
+      option_d: 'Chris',
+      correct_answer: 'B',
+      difficulty: 'easy',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
@@ -843,6 +921,19 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
     {
       id: 'sports_3',
       category: 'sports',
+      question: 'How many holes are played in a standard round of golf?',
+      option_a: '9',
+      option_b: '12',
+      option_c: '18',
+      option_d: '21',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_4',
+      category: 'sports',
       question: 'Which country has won the most FIFA World Cups?',
       option_a: 'Germany',
       option_b: 'Argentina',
@@ -854,7 +945,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'sports_4',
+      id: 'sports_5',
       category: 'sports',
       question: 'Who holds the record for most Olympic gold medals?',
       option_a: 'Usain Bolt',
@@ -867,7 +958,20 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'sports_5',
+      id: 'sports_6',
+      category: 'sports',
+      question: 'Which athlete is known as "The Greatest" in boxing?',
+      option_a: 'Mike Tyson',
+      option_b: 'Floyd Mayweather',
+      option_c: 'Muhammad Ali',
+      option_d: 'Joe Frazier',
+      correct_answer: 'C',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_7',
       category: 'sports',
       question: 'In tennis, what is a score of 40-40 called?',
       option_a: 'Advantage',
@@ -880,7 +984,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'sports_6',
+      id: 'sports_8',
       category: 'sports',
       question: 'Which NFL team has won the most Super Bowls?',
       option_a: 'Dallas Cowboys',
@@ -889,6 +993,58 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       option_d: 'San Francisco 49ers',
       correct_answer: 'B',
       difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_9',
+      category: 'sports',
+      question: 'Who has won the most NBA championships as a player?',
+      option_a: 'Michael Jordan',
+      option_b: 'LeBron James',
+      option_c: 'Bill Russell',
+      option_d: 'Kobe Bryant',
+      correct_answer: 'C',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_10',
+      category: 'sports',
+      question: 'What sport is played at Wimbledon?',
+      option_a: 'Golf',
+      option_b: 'Cricket',
+      option_c: 'Tennis',
+      option_d: 'Rugby',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_11',
+      category: 'sports',
+      question: 'In baseball, how many strikes make an out?',
+      option_a: '2',
+      option_b: '3',
+      option_c: '4',
+      option_d: '5',
+      correct_answer: 'B',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'sports_12',
+      category: 'sports',
+      question: 'Which country hosted the 2016 Summer Olympics?',
+      option_a: 'China',
+      option_b: 'UK',
+      option_c: 'Brazil',
+      option_d: 'Japan',
+      correct_answer: 'C',
+      difficulty: 'medium',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
@@ -924,6 +1080,19 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
     {
       id: 'music_3',
       category: 'music',
+      question: 'Who sang "Like a Virgin"?',
+      option_a: 'Whitney Houston',
+      option_b: 'Cyndi Lauper',
+      option_c: 'Madonna',
+      option_d: 'Janet Jackson',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_4',
+      category: 'music',
       question: 'Which instrument has 88 keys?',
       option_a: 'Guitar',
       option_b: 'Organ',
@@ -935,7 +1104,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'music_4',
+      id: 'music_5',
       category: 'music',
       question: 'What year did The Beatles break up?',
       option_a: '1968',
@@ -948,7 +1117,20 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'music_5',
+      id: 'music_6',
+      category: 'music',
+      question: 'Which rapper released the album "The Marshall Mathers LP"?',
+      option_a: 'Jay-Z',
+      option_b: '50 Cent',
+      option_c: 'Eminem',
+      option_d: 'Kanye West',
+      correct_answer: 'C',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_7',
       category: 'music',
       question: 'Which artist has the most Grammy Awards of all time?',
       option_a: 'Beyoncé',
@@ -961,7 +1143,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'music_6',
+      id: 'music_8',
       category: 'music',
       question: 'What was the first music video played on MTV?',
       option_a: 'Thriller',
@@ -970,6 +1152,58 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       option_d: 'Sweet Dreams',
       correct_answer: 'B',
       difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_9',
+      category: 'music',
+      question: 'Which classical composer was deaf?',
+      option_a: 'Mozart',
+      option_b: 'Bach',
+      option_c: 'Beethoven',
+      option_d: 'Chopin',
+      correct_answer: 'C',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_10',
+      category: 'music',
+      question: 'What is Taylor Swift\'s first album called?',
+      option_a: 'Fearless',
+      option_b: 'Taylor Swift',
+      option_c: 'Speak Now',
+      option_d: 'Red',
+      correct_answer: 'B',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_11',
+      category: 'music',
+      question: 'Which band is Mick Jagger the lead singer of?',
+      option_a: 'The Who',
+      option_b: 'Led Zeppelin',
+      option_c: 'The Rolling Stones',
+      option_d: 'The Doors',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'music_12',
+      category: 'music',
+      question: 'Who performed "Purple Rain"?',
+      option_a: 'Prince',
+      option_b: 'Michael Jackson',
+      option_c: 'Stevie Wonder',
+      option_d: 'James Brown',
+      correct_answer: 'A',
+      difficulty: 'easy',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
@@ -1005,6 +1239,19 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
     {
       id: 'movies_3',
       category: 'movies',
+      question: 'What is the name of the lion in "The Lion King"?',
+      option_a: 'Mufasa',
+      option_b: 'Scar',
+      option_c: 'Simba',
+      option_d: 'Nala',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_4',
+      category: 'movies',
       question: 'In "The Matrix", what color pill does Neo take?',
       option_a: 'Blue',
       option_b: 'Green',
@@ -1016,7 +1263,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'movies_4',
+      id: 'movies_5',
       category: 'movies',
       question: 'What year was the first "Star Wars" movie released?',
       option_a: '1975',
@@ -1029,7 +1276,20 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'movies_5',
+      id: 'movies_6',
+      category: 'movies',
+      question: 'Who plays Iron Man in the Marvel Cinematic Universe?',
+      option_a: 'Chris Evans',
+      option_b: 'Chris Hemsworth',
+      option_c: 'Robert Downey Jr.',
+      option_d: 'Mark Ruffalo',
+      correct_answer: 'C',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_7',
       category: 'movies',
       question: 'Which film won the Academy Award for Best Picture in 1994?',
       option_a: 'Pulp Fiction',
@@ -1042,7 +1302,7 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       updated_at: new Date().toISOString()
     },
     {
-      id: 'movies_6',
+      id: 'movies_8',
       category: 'movies',
       question: 'What is the name of the fictional African country in "Black Panther"?',
       option_a: 'Zamunda',
@@ -1051,6 +1311,58 @@ export const gamingTriviaQuestions: Record<string, TriviaQuestion[]> = {
       option_d: 'Latveria',
       correct_answer: 'B',
       difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_9',
+      category: 'movies',
+      question: 'In "The Godfather", what is the family\'s last name?',
+      option_a: 'Soprano',
+      option_b: 'Corleone',
+      option_c: 'Gambino',
+      option_d: 'Luciano',
+      correct_answer: 'B',
+      difficulty: 'hard',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_10',
+      category: 'movies',
+      question: 'Which Disney movie features the song "Let It Go"?',
+      option_a: 'Tangled',
+      option_b: 'Moana',
+      option_c: 'Frozen',
+      option_d: 'Brave',
+      correct_answer: 'C',
+      difficulty: 'easy',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_11',
+      category: 'movies',
+      question: 'Who directed "Inception"?',
+      option_a: 'Denis Villeneuve',
+      option_b: 'Christopher Nolan',
+      option_c: 'David Fincher',
+      option_d: 'Quentin Tarantino',
+      correct_answer: 'B',
+      difficulty: 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'movies_12',
+      category: 'movies',
+      question: 'In "The Wizard of Oz", what color are Dorothy\'s slippers?',
+      option_a: 'Gold',
+      option_b: 'Silver',
+      option_c: 'Ruby Red',
+      option_d: 'Blue',
+      correct_answer: 'C',
+      difficulty: 'easy',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
