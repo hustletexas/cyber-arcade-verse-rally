@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 // Legacy types for backward compatibility
-export type WalletType = 'phantom' | 'solflare' | 'backpack' | 'coinbase' | 'metamask' | 'lobstr' | 'created';
+export type WalletType = 'phantom' | 'solflare' | 'backpack' | 'coinbase' | 'metamask' | 'lobstr' | 'freighter' | 'leap' | 'created';
 
 export interface ConnectedWallet {
   type: WalletType;
@@ -27,8 +27,10 @@ export const useMultiWallet = () => {
     switch (type) {
       case 'metamask':
       case 'coinbase':
+      case 'leap':
         return 'ethereum';
       case 'lobstr':
+      case 'freighter':
         return 'stellar';
       default:
         return 'solana';
@@ -237,6 +239,12 @@ export const useMultiWallet = () => {
         case 'lobstr':
           // LOBSTR uses WalletConnect, disconnect handled by the kit
           break;
+        case 'freighter':
+          // Freighter doesn't have a disconnect method
+          break;
+        case 'leap':
+          // Leap doesn't have a standard disconnect
+          break;
         case 'created':
           // Created wallets don't have external disconnection
           break;
@@ -286,6 +294,8 @@ export const useMultiWallet = () => {
       case 'metamask': return '🦊';
       case 'coinbase': return '🔵';
       case 'lobstr': return '🌟';
+      case 'freighter': return '🚀';
+      case 'leap': return '🐸';
       case 'created': return '💰';
       default: return '🔗';
     }
