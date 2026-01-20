@@ -39,8 +39,17 @@ declare global {
       selectedAddress?: string;
       chainId?: string;
     };
-    // Stellar Wallet (Freighter)
+    // Stellar Wallet (Freighter) - supports both old and new API
     freighterApi?: {
+      isConnected: () => Promise<boolean>;
+      getPublicKey: () => Promise<string>;
+      signTransaction: (xdr: string, opts?: { network?: string; networkPassphrase?: string }) => Promise<string>;
+      isAllowed: () => Promise<boolean>;
+      setAllowed: () => Promise<boolean>;
+      getNetwork: () => Promise<string>;
+      getNetworkDetails: () => Promise<{ network: string; networkUrl: string; networkPassphrase: string }>;
+    };
+    freighter?: {
       isConnected: () => Promise<boolean>;
       getPublicKey: () => Promise<string>;
       signTransaction: (xdr: string, opts?: { network?: string; networkPassphrase?: string }) => Promise<string>;
