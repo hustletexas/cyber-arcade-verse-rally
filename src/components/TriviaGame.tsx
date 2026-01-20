@@ -6,7 +6,7 @@ import { TriviaGameplay } from './trivia/TriviaGameplay';
 import { TriviaLeaderboard } from './trivia/TriviaLeaderboard';
 import { TriviaRewards } from './trivia/TriviaRewards';
 import { useAuth } from '@/hooks/useAuth';
-import { useWallet } from '@/hooks/useWallet';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useAchievements } from '@/hooks/useAchievements';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +17,7 @@ type ViewState = 'menu' | 'game' | 'leaderboard' | 'rewards';
 
 export const TriviaGame = () => {
   const { user } = useAuth();
-  const { walletState, getConnectedWallet, isWalletConnected } = useWallet();
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { balance, loading: balanceLoading, refetch: refetchBalance } = useUserBalance();
   const { trackAchievement } = useAchievements();
   const { toast } = useToast();
@@ -51,15 +51,15 @@ export const TriviaGame = () => {
   ];
 
   useEffect(() => {
-    if (user || isWalletConnected()) {
+    if (user || isWalletConnected) {
       loadUserStats();
     } else {
       setLoading(false);
     }
-  }, [user, walletState]);
+  }, [user, primaryWallet]);
 
   const loadUserStats = async () => {
-    if (!user && !isWalletConnected()) return;
+    if (!user && !isWalletConnected) return;
 
     setLoading(true);
     try {
@@ -127,7 +127,7 @@ export const TriviaGame = () => {
   };
 
   const startGame = async (category: string) => {
-    if (!user && !isWalletConnected()) {
+    if (!user && !isWalletConnected) {
       toast({
         title: "Authentication Required",
         description: "Please connect your wallet or log in to play trivia games",
@@ -224,8 +224,8 @@ export const TriviaGame = () => {
     );
   }
 
-  const isAuthenticated = user || isWalletConnected();
-  const connectedWallet = getConnectedWallet();
+  const isAuthenticated = user || isWalletConnected;
+  const connectedWallet = primaryWallet;
 
   return (
     <div className="space-y-6">
