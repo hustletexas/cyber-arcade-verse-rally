@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet, ExternalLink, AlertCircle } from 'lucide-react';
+import { Wallet, ExternalLink, ChevronRight, Sparkles } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
 
 interface WalletOption extends WalletInfo {
@@ -26,7 +24,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [connecting, setConnecting] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<ChainType>('solana');
 
   // Solana wallet connections
   const connectPhantom = async () => {
@@ -156,23 +153,19 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   // Stellar wallet connection
   const connectFreighter = async () => {
     try {
-      // Check both old and new Freighter API
       const freighterApi = window.freighterApi || window.freighter;
       
       if (freighterApi) {
-        // Check if Freighter is connected
         const isConnected = await freighterApi.isConnected();
         if (!isConnected) {
           throw new Error('Freighter is not connected. Please open the extension.');
         }
 
-        // Request permission if not already allowed
         const isAllowed = await freighterApi.isAllowed();
         if (!isAllowed) {
           await freighterApi.setAllowed();
         }
 
-        // Get the public key
         const publicKey = await freighterApi.getPublicKey();
         if (publicKey) {
           onWalletConnected('freighter', publicKey, 'stellar');
@@ -194,12 +187,22 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  const getWalletOptions = (): Record<ChainType, WalletOption[]> => ({
-    solana: [
+  const getWalletOptions = (): WalletOption[] => {
+    return [
       {
         ...WALLETS.find(w => w.id === 'phantom')!,
         isInstalled: !!(window.solana && window.solana.isPhantom),
         connect: connectPhantom
+      },
+      {
+        ...WALLETS.find(w => w.id === 'metamask')!,
+        isInstalled: !!(window.ethereum && window.ethereum.isMetaMask),
+        connect: connectMetaMask
+      },
+      {
+        ...WALLETS.find(w => w.id === 'freighter')!,
+        isInstalled: !!(window.freighterApi || window.freighter),
+        connect: connectFreighter
       },
       {
         ...WALLETS.find(w => w.id === 'solflare')!,
@@ -207,33 +210,21 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         connect: connectSolflare
       },
       {
+        ...WALLETS.find(w => w.id === 'coinbase')!,
+        isInstalled: !!(window.ethereum && window.ethereum.isCoinbaseWallet),
+        connect: connectCoinbase
+      },
+      {
         ...WALLETS.find(w => w.id === 'backpack')!,
         isInstalled: !!(window.backpack && window.backpack.isBackpack),
         connect: connectBackpack
       }
-    ],
-    ethereum: [
-      {
-        ...WALLETS.find(w => w.id === 'metamask')!,
-        isInstalled: !!(window.ethereum && window.ethereum.isMetaMask),
-        connect: connectMetaMask
-      },
-      {
-        ...WALLETS.find(w => w.id === 'coinbase')!,
-        isInstalled: !!(window.ethereum && window.ethereum.isCoinbaseWallet),
-        connect: connectCoinbase
-      }
-    ],
-    stellar: [
-      {
-        ...WALLETS.find(w => w.id === 'freighter')!,
-        isInstalled: !!(window.freighterApi || window.freighter),
-        connect: connectFreighter
-      }
-    ]
-  });
+    ];
+  };
 
   const walletOptions = getWalletOptions();
+  const popularWallets = walletOptions.filter(w => w.isPopular);
+  const otherWallets = walletOptions.filter(w => !w.isPopular);
 
   const handleWalletConnect = async (wallet: WalletOption) => {
     if (!wallet.isInstalled) {
@@ -251,172 +242,129 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  const renderWalletCard = (wallet: WalletOption) => (
-    <Card 
-      key={wallet.id} 
-      className={`cursor-pointer transition-all duration-200 hover:border-neon-cyan/50 ${
-        wallet.isInstalled 
-          ? 'bg-card hover:bg-card/80' 
-          : 'bg-muted/50 border-muted-foreground/20'
-      }`}
-    >
-      <CardContent className="p-4">
-        <Button
-          variant="ghost"
-          className="w-full h-auto p-0 hover:bg-transparent"
-          onClick={() => handleWalletConnect(wallet)}
-          disabled={connecting === wallet.id}
-        >
-          <div className="flex items-center gap-3 w-full">
-            <div className="text-2xl">{wallet.icon}</div>
-            <div className="flex-1 text-left">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-neon-cyan">
-                  {wallet.name}
-                </span>
-                {wallet.isInstalled ? (
-                  <Badge className="bg-neon-green text-black text-xs">
-                    Installed
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-xs border-neon-pink text-neon-pink">
-                    Install
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {wallet.description}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {connecting === wallet.id && (
-                <div className="w-4 h-4 border-2 border-neon-cyan border-t-transparent rounded-full animate-spin" />
-              )}
-              {!wallet.isInstalled && <ExternalLink size={16} />}
-            </div>
-          </div>
-        </Button>
-      </CardContent>
-    </Card>
-  );
-
-  // Get all wallets flattened with chain info
-  const getAllWallets = () => {
-    const allWallets: (WalletOption & { chain: ChainType })[] = [];
-    
-    (Object.keys(walletOptions) as ChainType[]).forEach(chain => {
-      walletOptions[chain].forEach(wallet => {
-        allWallets.push({ ...wallet, chain });
-      });
-    });
-    
-    return allWallets;
-  };
-
-  const allWallets = getAllWallets();
-
-  const renderAllWalletsCard = (wallet: WalletOption & { chain: ChainType }) => {
+  const WalletButton = ({ wallet }: { wallet: WalletOption }) => {
     const chain = CHAINS[wallet.chain];
+    const isConnecting = connecting === wallet.id;
+    
     return (
-      <Card 
-        key={wallet.id} 
-        className={`cursor-pointer transition-all duration-200 hover:border-neon-cyan/50 ${
-          wallet.isInstalled 
-            ? 'bg-card hover:bg-card/80' 
-            : 'bg-muted/50 border-muted-foreground/20'
-        }`}
+      <button
+        onClick={() => handleWalletConnect(wallet)}
+        disabled={isConnecting}
+        className={`
+          w-full flex items-center gap-4 p-4 rounded-xl
+          transition-all duration-200 group
+          ${wallet.isInstalled 
+            ? 'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20' 
+            : 'bg-white/[0.02] border border-white/5 opacity-60 hover:opacity-80'
+          }
+        `}
       >
-        <CardContent className="p-3">
-          <Button
-            variant="ghost"
-            className="w-full h-auto p-0 hover:bg-transparent"
-            onClick={() => handleWalletConnect(wallet)}
-            disabled={connecting === wallet.id}
-          >
-            <div className="flex items-center gap-3 w-full">
-              <div className="text-2xl">{wallet.icon}</div>
-              <div className="flex-1 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neon-cyan">
-                    {wallet.name}
-                  </span>
-                  <Badge 
-                    variant="outline" 
-                    className="text-[10px] px-1.5 py-0"
-                    style={{ borderColor: chain.color, color: chain.color }}
-                  >
-                    {chain.symbol}
-                  </Badge>
-                  {wallet.isInstalled ? (
-                    <Badge className="bg-neon-green text-black text-[10px] px-1.5 py-0">
-                      Ready
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-neon-pink text-neon-pink">
-                      Install
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {wallet.description}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {connecting === wallet.id && (
-                  <div className="w-4 h-4 border-2 border-neon-cyan border-t-transparent rounded-full animate-spin" />
-                )}
-                {!wallet.isInstalled && <ExternalLink size={16} />}
-              </div>
-            </div>
-          </Button>
-        </CardContent>
-      </Card>
+        {/* Wallet Logo */}
+        <div className="relative w-10 h-10 rounded-xl bg-white/10 p-1.5 flex items-center justify-center overflow-hidden">
+          <img 
+            src={wallet.logoUrl} 
+            alt={wallet.name}
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+          <span className="hidden text-xl">{wallet.icon}</span>
+        </div>
+
+        {/* Wallet Info */}
+        <div className="flex-1 text-left">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-white text-sm">
+              {wallet.name}
+            </span>
+            {wallet.isInstalled && (
+              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0 font-medium">
+                Detected
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {chain.logoUrl ? (
+              <img src={chain.logoUrl} alt={chain.name} className="w-3 h-3 rounded-full" />
+            ) : (
+              <span className="text-[10px]" style={{ color: chain.color }}>{chain.icon}</span>
+            )}
+            <span className="text-xs text-white/50">{chain.name}</span>
+          </div>
+        </div>
+
+        {/* Action */}
+        <div className="flex items-center gap-2">
+          {isConnecting ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : wallet.isInstalled ? (
+            <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+          ) : (
+            <ExternalLink size={16} className="text-white/30" />
+          )}
+        </div>
+      </button>
     );
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md arcade-frame max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-xl text-neon-cyan font-display flex items-center gap-2">
-            <Wallet size={24} />
-            Connect Your Wallet
+      <DialogContent className="max-w-[420px] bg-[#0f0f14] border-white/10 p-0 gap-0 overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="p-6 pb-4 border-b border-white/5">
+          <DialogTitle className="text-xl text-white font-semibold flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <Wallet size={20} className="text-white" />
+            </div>
+            Connect Wallet
           </DialogTitle>
+          <p className="text-sm text-white/50 mt-2">
+            Choose a wallet to connect to Cyber City Arcade
+          </p>
         </DialogHeader>
 
-        <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          <div className="text-sm text-muted-foreground text-center">
-            Select a wallet to connect • Multi-chain supported
+        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+          {/* Popular Wallets */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <Sparkles size={14} className="text-yellow-500" />
+              <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Popular</span>
+            </div>
+            <div className="space-y-2">
+              {popularWallets.map(wallet => (
+                <WalletButton key={wallet.id} wallet={wallet} />
+              ))}
+            </div>
           </div>
 
-          {/* Chain Legend */}
-          <div className="flex justify-center gap-4 text-xs">
-            {Object.entries(CHAINS).map(([key, chain]) => (
-              <div key={key} className="flex items-center gap-1">
-                <span style={{ color: chain.color }}>{chain.icon}</span>
-                <span className="text-muted-foreground">{chain.name}</span>
-              </div>
-            ))}
+          {/* Other Wallets */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <span className="text-xs font-medium text-white/40 uppercase tracking-wider">More Wallets</span>
+            </div>
+            <div className="space-y-2">
+              {otherWallets.map(wallet => (
+                <WalletButton key={wallet.id} wallet={wallet} />
+              ))}
+            </div>
           </div>
+        </div>
 
-          {/* All Wallets List */}
-          <div className="space-y-2 overflow-y-auto flex-1 pr-1">
-            {allWallets.map(renderAllWalletsCard)}
-          </div>
-
-          <Card className="bg-neon-cyan/10 border-neon-cyan/30 flex-shrink-0">
-            <CardContent className="p-3">
-              <div className="flex items-start gap-2">
-                <AlertCircle size={16} className="text-neon-cyan mt-0.5" />
-                <div className="text-xs">
-                  <p className="font-semibold text-neon-cyan mb-1">Multi-Chain Support</p>
-                  <p className="text-muted-foreground">
-                    Connect wallets from Solana, Ethereum, and Stellar networks.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Footer */}
+        <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+          <p className="text-xs text-white/30 text-center">
+            New to crypto?{' '}
+            <a 
+              href="https://phantom.app/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              Learn about wallets
+            </a>
+          </p>
         </div>
       </DialogContent>
     </Dialog>
