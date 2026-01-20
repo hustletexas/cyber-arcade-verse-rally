@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,6 @@ import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 
 const mockNFTs = [
   // Legendary NFTs
@@ -121,14 +120,23 @@ export const Marketplace = () => {
   const [filter, setFilter] = useState('all');
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   
-  const autoplayPlugin = React.useRef(
-    Autoplay({ delay: 3000 })
-  );
-  
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: 'start', slidesToScroll: 1 },
-    [autoplayPlugin.current]
-  );
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start', slidesToScroll: 1 });
+  const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Custom autoplay implementation
+  useEffect(() => {
+    if (!emblaApi || !isAutoPlaying) return;
+    
+    autoplayIntervalRef.current = setInterval(() => {
+      emblaApi.scrollNext();
+    }, 3000);
+    
+    return () => {
+      if (autoplayIntervalRef.current) {
+        clearInterval(autoplayIntervalRef.current);
+      }
+    };
+  }, [emblaApi, isAutoPlaying]);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -139,16 +147,8 @@ export const Marketplace = () => {
   }, [emblaApi]);
 
   const toggleAutoplay = useCallback(() => {
-    const autoplay = autoplayPlugin.current;
-    if (!autoplay) return;
-    
-    if (isAutoPlaying) {
-      autoplay.stop();
-    } else {
-      autoplay.play();
-    }
-    setIsAutoPlaying(!isAutoPlaying);
-  }, [isAutoPlaying]);
+    setIsAutoPlaying(prev => !prev);
+  }, []);
 
   const ensureAuthenticated = async (): Promise<boolean> => {
     if (user?.id) return true;
