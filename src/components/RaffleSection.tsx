@@ -10,7 +10,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
-import { Gift, Trophy, Ticket, Users, Clock, Wallet } from 'lucide-react';
+import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles } from 'lucide-react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface Raffle {
@@ -210,12 +210,24 @@ export const RaffleSection = () => {
               {treasureChests.map((chest) => (
                 <Card key={chest.id} className="vending-machine hover:scale-105 transition-transform">
                   <CardContent className="p-0">
-                    <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden">
+                    <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden relative group">
                       <img 
                         src={chest.image} 
                         alt={chest.name} 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                       />
+                      {/* Animated sparkle overlay */}
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                        <Sparkles className="absolute top-2 left-3 w-4 h-4 text-yellow-300 animate-pulse opacity-80" />
+                        <Sparkles className="absolute top-4 right-4 w-3 h-3 text-white animate-ping opacity-60" style={{ animationDuration: '2s' }} />
+                        <Sparkles className="absolute bottom-6 left-5 w-3 h-3 text-neon-cyan animate-pulse opacity-70" style={{ animationDelay: '0.5s' }} />
+                        <Sparkles className="absolute bottom-3 right-6 w-4 h-4 text-neon-pink animate-ping opacity-50" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+                        <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-yellow-200 animate-pulse opacity-60" style={{ animationDelay: '0.3s' }} />
+                      </div>
+                      {/* Shimmer sweep effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                      {/* Magical glow on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-neon-purple/30 via-transparent to-neon-cyan/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                     <div className="p-4 space-y-3">
                       <div className="text-center">
