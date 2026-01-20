@@ -159,7 +159,7 @@ export const FeaturedGames = () => {
               <img 
                 src="/lovable-uploads/4b312226-9c9f-4a1c-9c6f-16be0f7b09b8.png" 
                 alt="CyberBrawl.io"
-                className="w-full h-80 object-cover rounded-lg shadow-2xl"
+                className="w-full h-80 object-cover object-bottom rounded-lg shadow-2xl"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg" />
             </div>
