@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
 import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID } from '@creit.tech/stellar-wallets-kit';
+import freighterApi from '@stellar/freighter-api';
 
 interface WalletOption extends WalletInfo {
   isInstalled: boolean;
@@ -26,6 +27,22 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const { toast } = useToast();
   const [connecting, setConnecting] = useState<string | null>(null);
   const [lobstrInstalled] = useState(true); // LOBSTR uses WalletConnect, always available
+  const [freighterInstalled, setFreighterInstalled] = useState(false);
+
+  // Check Freighter installation on mount
+  useEffect(() => {
+    const checkFreighter = async () => {
+      try {
+        const result = await freighterApi.isConnected();
+        setFreighterInstalled(result.isConnected || !result.error);
+      } catch {
+        setFreighterInstalled(false);
+      }
+    };
+    if (isOpen) {
+      checkFreighter();
+    }
+  }, [isOpen]);
 
   // Initialize Stellar Wallets Kit for LOBSTR
   const getStellarKit = () => {
@@ -152,32 +169,38 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Freighter wallet connection (Stellar browser extension)
+  // Freighter wallet connection (Stellar browser extension) using official API
   const connectFreighter = async () => {
     try {
-      const freighterApi = window.freighterApi || window.freighter;
+      // Check if Freighter is installed using the official API
+      const connectedResult = await freighterApi.isConnected();
       
-      if (!freighterApi) {
+      if (!connectedResult.isConnected) {
         throw new Error('Freighter not found. Please install the extension.');
       }
 
-      const isConnected = await freighterApi.isConnected();
-      if (!isConnected) {
-        throw new Error('Freighter is not connected. Please open the extension.');
+      // Check if allowed and request access if not
+      const allowedResult = await freighterApi.isAllowed();
+      if (!allowedResult.isAllowed) {
+        const accessResult = await freighterApi.requestAccess();
+        if (accessResult.error) {
+          throw new Error('User denied access to Freighter');
+        }
       }
 
-      const isAllowed = await freighterApi.isAllowed();
-      if (!isAllowed) {
-        await freighterApi.setAllowed();
+      // Get the public address using the official API
+      const addressResult = await freighterApi.getAddress();
+      
+      if (addressResult.error) {
+        throw new Error(addressResult.error.message || 'Failed to get address from Freighter');
       }
 
-      const publicKey = await freighterApi.getPublicKey();
-      if (publicKey) {
-        onWalletConnected('freighter', publicKey, 'stellar');
+      if (addressResult.address) {
+        onWalletConnected('freighter', addressResult.address, 'stellar');
         onClose();
         toast({
           title: "Freighter Connected!",
-          description: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+          description: `Connected to ${addressResult.address.slice(0, 8)}...${addressResult.address.slice(-4)}`,
         });
       }
     } catch (error: any) {
@@ -264,7 +287,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       },
       {
         ...WALLETS.find(w => w.id === 'freighter')!,
-        isInstalled: !!(window.freighterApi || window.freighter),
+        isInstalled: freighterInstalled,
         connect: connectFreighter
       },
       {
