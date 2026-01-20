@@ -32,7 +32,8 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { WalletManager } from './WalletManager';
+import { WalletConnectionModal } from './WalletConnectionModal';
+import { ChainType, WalletType } from '@/types/wallet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,6 +48,7 @@ export const UnifiedWalletDropdown = () => {
     isWalletConnected,
     hasMultipleWallets,
     hasMultipleChains,
+    connectWallet,
     disconnectWallet,
     switchPrimaryWallet,
     getWalletIcon,
@@ -162,20 +164,14 @@ export const UnifiedWalletDropdown = () => {
           <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-shimmer" />
         </Button>
         
-        <Dialog open={showWalletManager} onOpenChange={setShowWalletManager}>
-          <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-3xl animate-scale-in">
-            <DialogHeader>
-              <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
-                <Sparkles className="animate-pulse" size={24} />
-                Connect Wallet
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Connect your wallet from Solana, Ethereum, or Stellar
-              </DialogDescription>
-            </DialogHeader>
-            <WalletManager />
-          </DialogContent>
-        </Dialog>
+        <WalletConnectionModal 
+          isOpen={showWalletManager} 
+          onClose={() => setShowWalletManager(false)}
+          onWalletConnected={(walletType, address) => {
+            connectWallet(walletType as any, address);
+            setShowWalletManager(false);
+          }}
+        />
       </>
     );
   }
@@ -450,20 +446,15 @@ export const UnifiedWalletDropdown = () => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Wallet Manager Dialog */}
-      <Dialog open={showWalletManager} onOpenChange={setShowWalletManager}>
-        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-3xl animate-scale-in">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
-              💰 Wallet Manager
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Create, import, and manage your Solana wallets
-            </DialogDescription>
-          </DialogHeader>
-          <WalletManager />
-        </DialogContent>
-      </Dialog>
+      {/* Wallet Connection Modal */}
+      <WalletConnectionModal 
+        isOpen={showWalletManager} 
+        onClose={() => setShowWalletManager(false)}
+        onWalletConnected={(walletType, address) => {
+          connectWallet(walletType as any, address);
+          setShowWalletManager(false);
+        }}
+      />
 
       {/* Rewards Modal */}
       <Dialog open={showRewardsModal} onOpenChange={setShowRewardsModal}>
