@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,9 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useCart } from '@/contexts/CartContext';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 
 const mockNFTs = [
   // Legendary NFTs
@@ -117,6 +119,36 @@ export const Marketplace = () => {
   const { addToCart, getTotalItems, getTotalPrice, setIsOpen } = useCart();
   const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('cctr');
   const [filter, setFilter] = useState('all');
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  
+  const autoplayPlugin = React.useRef(
+    Autoplay({ delay: 3000 })
+  );
+  
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, align: 'start', slidesToScroll: 1 },
+    [autoplayPlugin.current]
+  );
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const toggleAutoplay = useCallback(() => {
+    const autoplay = autoplayPlugin.current;
+    if (!autoplay) return;
+    
+    if (isAutoPlaying) {
+      autoplay.stop();
+    } else {
+      autoplay.play();
+    }
+    setIsAutoPlaying(!isAutoPlaying);
+  }, [isAutoPlaying]);
 
   const ensureAuthenticated = async (): Promise<boolean> => {
     if (user?.id) return true;
@@ -320,63 +352,101 @@ export const Marketplace = () => {
             </div>
           </div>
 
-          {/* NFT Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(filter === 'all' ? mockNFTs : mockNFTs.filter(nft => nft.rarity.toLowerCase() === filter.toLowerCase()))
-              .map((nft) => (
-              <Card key={nft.id} className="vending-machine overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={nft.image} 
-                      alt={nft.name}
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </div>
-                  <div className="p-4 space-y-3">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-bold text-neon-cyan">{nft.name}</h3>
-                      <Badge className={`${
-                        nft.rarity === 'Legendary' ? 'bg-neon-purple text-white' :
-                        nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
-                        'bg-neon-green text-black'
-                      }`}>
-                        {nft.rarity}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground">{nft.description}</p>
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-neon-purple">Seller: {nft.seller}</span>
-                      <span className="text-neon-cyan">Supply: {nft.supply.remaining}/{nft.supply.total}</span>
-                    </div>
-                    
-                    <div className="border-t border-neon-cyan/30 pt-3">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-neon-pink font-bold">
-                          {nft.price[selectedCurrency]} {selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}
-                        </span>
-                      </div>
-                      
-                      <Button
-                        onClick={() => handleAddToCartOrConnect(nft)}
-                        className="w-full cyber-button"
-                      >
-                        {!isWalletConnected ? (
-                          "🔗 CONNECT WALLET"
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <ShoppingCart size={16} />
-                            ADD TO CART
+          {/* NFT Carousel */}
+          <div className="relative">
+            {/* Carousel Controls */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-neon-cyan">🎰 Featured NFTs</h3>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleAutoplay}
+                  className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/20"
+                >
+                  {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={scrollPrev}
+                  className="border-neon-pink/50 text-neon-pink hover:bg-neon-pink/20"
+                >
+                  <ChevronLeft size={20} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={scrollNext}
+                  className="border-neon-pink/50 text-neon-pink hover:bg-neon-pink/20"
+                >
+                  <ChevronRight size={20} />
+                </Button>
+              </div>
+            </div>
+
+            {/* Embla Carousel */}
+            <div className="overflow-hidden" ref={emblaRef}>
+              <div className="flex gap-4">
+                {(filter === 'all' ? mockNFTs : mockNFTs.filter(nft => nft.rarity.toLowerCase() === filter.toLowerCase()))
+                  .map((nft) => (
+                  <div key={nft.id} className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-0 first:pl-0">
+                    <Card className="vending-machine overflow-hidden mx-2 hover-scale transition-all duration-300 hover:shadow-xl hover:shadow-neon-cyan/20">
+                      <CardContent className="p-0">
+                        <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
+                          <img 
+                            src={nft.image} 
+                            alt={nft.name}
+                            className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-110"
+                          />
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-bold text-neon-cyan">{nft.name}</h3>
+                            <Badge className={`${
+                              nft.rarity === 'Legendary' ? 'bg-neon-purple text-white' :
+                              nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
+                              'bg-neon-green text-black'
+                            }`}>
+                              {nft.rarity}
+                            </Badge>
                           </div>
-                        )}
-                      </Button>
-                    </div>
+                          
+                          <p className="text-sm text-muted-foreground line-clamp-2">{nft.description}</p>
+                          
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-neon-purple">Seller: {nft.seller}</span>
+                            <span className="text-neon-cyan">Supply: {nft.supply.remaining}/{nft.supply.total}</span>
+                          </div>
+                          
+                          <div className="border-t border-neon-cyan/30 pt-3">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-neon-pink font-bold">
+                                {nft.price[selectedCurrency]} {selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}
+                              </span>
+                            </div>
+                            
+                            <Button
+                              onClick={() => handleAddToCartOrConnect(nft)}
+                              className="w-full cyber-button"
+                            >
+                              {!isWalletConnected ? (
+                                "🔗 CONNECT WALLET"
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <ShoppingCart size={16} />
+                                  ADD TO CART
+                                </div>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Quick Cart Access */}
