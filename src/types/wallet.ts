@@ -9,6 +9,8 @@ export type WalletType =
   | 'metamask'
   | 'coinbase' 
   | 'lobstr'
+  | 'freighter'
+  | 'leap'
   | 'created';
 
 export interface ChainInfo {
@@ -124,6 +126,24 @@ export const WALLETS: WalletInfo[] = [
     chain: 'solana',
     downloadUrl: 'https://backpack.app/',
     description: 'A home for your xNFTs'
+  },
+  {
+    id: 'freighter',
+    name: 'Freighter',
+    icon: '🚀',
+    logoUrl: '/images/wallets/freighter.png',
+    chain: 'stellar',
+    downloadUrl: 'https://www.freighter.app/',
+    description: 'Stellar wallet browser extension'
+  },
+  {
+    id: 'leap',
+    name: 'Leap',
+    icon: '🐸',
+    logoUrl: '/images/wallets/leap.png',
+    chain: 'ethereum',
+    downloadUrl: 'https://www.leapwallet.io/',
+    description: 'Multi-chain Cosmos & EVM wallet'
   }
 ];
 

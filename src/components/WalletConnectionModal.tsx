@@ -193,6 +193,87 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
+  // Freighter wallet connection (Stellar browser extension)
+  const connectFreighter = async () => {
+    try {
+      const freighterApi = window.freighterApi || window.freighter;
+      
+      if (!freighterApi) {
+        throw new Error('Freighter not found. Please install the extension.');
+      }
+
+      const isConnected = await freighterApi.isConnected();
+      if (!isConnected) {
+        throw new Error('Freighter is not connected. Please open the extension.');
+      }
+
+      const isAllowed = await freighterApi.isAllowed();
+      if (!isAllowed) {
+        await freighterApi.setAllowed();
+      }
+
+      const publicKey = await freighterApi.getPublicKey();
+      if (publicKey) {
+        onWalletConnected('freighter', publicKey, 'stellar');
+        onClose();
+        toast({
+          title: "Freighter Connected!",
+          description: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error?.message || "Failed to connect to Freighter wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Leap wallet connection (Cosmos/EVM)
+  const connectLeap = async () => {
+    try {
+      if (window.leap) {
+        await window.leap.enable();
+        try {
+          const key = await window.leap.getKey('cosmoshub-4');
+          if (key?.bech32Address) {
+            onWalletConnected('leap', key.bech32Address, 'ethereum');
+            onClose();
+            toast({
+              title: "Leap Connected!",
+              description: `Connected to ${key.bech32Address.slice(0, 12)}...${key.bech32Address.slice(-4)}`,
+            });
+            return;
+          }
+        } catch {
+          // Fall back to ethereum if cosmos fails
+        }
+      }
+      
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+          onWalletConnected('leap', accounts[0], 'ethereum');
+          onClose();
+          toast({
+            title: "Leap Connected!",
+            description: `Connected to ${accounts[0].slice(0, 8)}...${accounts[0].slice(-4)}`,
+          });
+          return;
+        }
+      }
+      
+      throw new Error('Leap wallet not found');
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error?.message || "Failed to connect to Leap wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getWalletOptions = (): WalletOption[] => {
     return [
       {
@@ -224,6 +305,16 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         ...WALLETS.find(w => w.id === 'backpack')!,
         isInstalled: !!(window.backpack && window.backpack.isBackpack),
         connect: connectBackpack
+      },
+      {
+        ...WALLETS.find(w => w.id === 'freighter')!,
+        isInstalled: !!(window.freighterApi || window.freighter),
+        connect: connectFreighter
+      },
+      {
+        ...WALLETS.find(w => w.id === 'leap')!,
+        isInstalled: !!window.leap,
+        connect: connectLeap
       }
     ];
   };

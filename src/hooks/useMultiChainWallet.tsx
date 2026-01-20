@@ -212,6 +212,12 @@ export const useMultiChainWallet = () => {
         case 'lobstr':
           // LOBSTR uses WalletConnect, disconnect handled by the kit
           break;
+        case 'freighter':
+          // Freighter doesn't have a disconnect method
+          break;
+        case 'leap':
+          // Leap doesn't have a standard disconnect
+          break;
         case 'created':
           // Created wallets don't have external disconnection
           break;
@@ -277,6 +283,8 @@ export const useMultiChainWallet = () => {
       case 'metamask': return '🦊';
       case 'coinbase': return '🔵';
       case 'lobstr': return '🌟';
+      case 'freighter': return '🚀';
+      case 'leap': return '🐸';
       case 'created': return '💰';
       default: return '🔗';
     }

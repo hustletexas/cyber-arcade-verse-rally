@@ -58,6 +58,13 @@ declare global {
       getNetwork: () => Promise<string>;
       getNetworkDetails: () => Promise<{ network: string; networkUrl: string; networkPassphrase: string }>;
     };
+    // Leap Wallet (Cosmos/EVM)
+    leap?: {
+      enable: (chainId?: string) => Promise<void>;
+      getKey: (chainId: string) => Promise<{ bech32Address: string; pubKey: Uint8Array }>;
+      signAmino: (chainId: string, signer: string, signDoc: any) => Promise<any>;
+      signDirect: (chainId: string, signer: string, signDoc: any) => Promise<any>;
+    };
     // PayPal
     paypal?: {
       Buttons: (config: {
