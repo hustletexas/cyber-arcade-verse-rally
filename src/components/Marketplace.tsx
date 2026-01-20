@@ -390,59 +390,88 @@ export const Marketplace = () => {
               <div className="flex gap-4">
                 {(filter === 'all' ? mockNFTs : mockNFTs.filter(nft => nft.rarity.toLowerCase() === filter.toLowerCase()))
                   .map((nft) => (
-                  <div key={nft.id} className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-0 first:pl-0">
-                    <Card className="vending-machine overflow-hidden mx-2 hover-scale transition-all duration-300 hover:shadow-xl hover:shadow-neon-cyan/20">
-                      <CardContent className="p-0">
-                        <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
-                          <img 
-                            src={nft.image} 
-                            alt={nft.name}
-                            className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-110"
-                          />
-                        </div>
-                        <div className="p-4 space-y-3">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-bold text-neon-cyan">{nft.name}</h3>
-                            <Badge className={`${
-                              nft.rarity === 'Legendary' ? 'bg-neon-purple text-white' :
-                              nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
-                              'bg-neon-green text-black'
-                            }`}>
-                              {nft.rarity}
-                            </Badge>
+                  <div key={nft.id} className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-0 first:pl-0 [perspective:1000px] h-[480px]">
+                    <div className="relative mx-2 h-full [transform-style:preserve-3d] transition-transform duration-700 hover:[transform:rotateY(180deg)] cursor-pointer">
+                      {/* Front of Card */}
+                      <Card className="vending-machine overflow-hidden [backface-visibility:hidden] absolute inset-0">
+                        <CardContent className="p-0 h-full flex flex-col">
+                          <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
+                            <img 
+                              src={nft.image} 
+                              alt={nft.name}
+                              className="w-full h-full object-cover object-center"
+                            />
                           </div>
-                          
-                          <p className="text-sm text-muted-foreground line-clamp-2">{nft.description}</p>
-                          
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-neon-purple">Seller: {nft.seller}</span>
-                            <span className="text-neon-cyan">Supply: {nft.supply.remaining}/{nft.supply.total}</span>
+                          <div className="p-4 space-y-2 flex-1">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-bold text-neon-cyan text-sm">{nft.name}</h3>
+                              <Badge className={`text-xs ${
+                                nft.rarity === 'Legendary' ? 'bg-neon-purple text-white' :
+                                nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
+                                'bg-neon-green text-black'
+                              }`}>
+                                {nft.rarity}
+                              </Badge>
+                            </div>
+                            <p className="text-neon-pink font-bold">
+                              {nft.price[selectedCurrency]} {selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Hover to see details →</p>
                           </div>
-                          
-                          <div className="border-t border-neon-cyan/30 pt-3">
-                            <div className="flex justify-between items-center mb-3">
-                              <span className="text-neon-pink font-bold">
-                                {nft.price[selectedCurrency]} {selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}
-                              </span>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Back of Card */}
+                      <Card className="vending-machine overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] h-full">
+                        <CardContent className="p-4 h-full flex flex-col justify-between bg-gradient-to-br from-neon-purple/10 via-background to-neon-cyan/10">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-bold text-neon-cyan">{nft.name}</h3>
+                              <Badge className={`${
+                                nft.rarity === 'Legendary' ? 'bg-neon-purple text-white animate-pulse' :
+                                nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
+                                'bg-neon-green text-black'
+                              }`}>
+                                {nft.rarity}
+                              </Badge>
                             </div>
                             
-                            <Button
-                              onClick={() => handleAddToCartOrConnect(nft)}
-                              className="w-full cyber-button"
-                            >
-                              {!isWalletConnected ? (
-                                "🔗 CONNECT WALLET"
-                              ) : (
-                                <div className="flex items-center gap-2">
-                                  <ShoppingCart size={16} />
-                                  ADD TO CART
-                                </div>
-                              )}
-                            </Button>
+                            <p className="text-sm text-muted-foreground">{nft.description}</p>
+                            
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-neon-purple">Seller:</span>
+                                <span className="text-foreground">{nft.seller}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-neon-cyan">Supply:</span>
+                                <span className="text-foreground">{nft.supply.remaining}/{nft.supply.total}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-neon-pink">Price:</span>
+                                <span className="text-neon-green font-bold">
+                                  {nft.price[selectedCurrency]} {selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                          
+                          <Button
+                            onClick={() => handleAddToCartOrConnect(nft)}
+                            className="w-full cyber-button mt-4"
+                          >
+                            {!isWalletConnected ? (
+                              "🔗 CONNECT WALLET"
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <ShoppingCart size={16} />
+                                ADD TO CART
+                              </div>
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 ))}
               </div>
