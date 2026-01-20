@@ -102,7 +102,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'coinbase',
     name: 'Coinbase Wallet',
     icon: '🔵',
-    logoUrl: '/images/wallets/coinbase.svg',
+    logoUrl: '/images/wallets/coinbase.png',
     chain: 'ethereum',
     downloadUrl: 'https://www.coinbase.com/wallet',
     description: 'Your key to the world of crypto'
