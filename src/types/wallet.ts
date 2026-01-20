@@ -92,7 +92,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'lobstr',
     name: 'LOBSTR',
     icon: '🌟',
-    logoUrl: '/images/wallets/lobstr.png',
+    logoUrl: '/images/wallets/lobstr.png?v=2',
     chain: 'stellar',
     downloadUrl: 'https://lobstr.co/',
     description: 'The most popular Stellar wallet',
