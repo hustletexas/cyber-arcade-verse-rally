@@ -21,7 +21,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useNFTMinting } from '@/hooks/useNFTMinting';
 import { useAuth } from '@/hooks/useAuth';
 import { useAchievements } from '@/hooks/useAchievements';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
 import { NodePurchase } from '@/components/NodePurchase';
@@ -205,12 +205,12 @@ const Index = () => {
         <div className="container mx-auto px-3 sm:px-4">
           {/* Mobile-Optimized Footer Links */}
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
-            <button 
-              onClick={() => window.open('https://cybercityarcade.com/privacy', '_blank')} 
+            <Link 
+              to="/privacy"
               className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
             >
               Privacy
-            </button>
+            </Link>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
             <button 
               onClick={() => window.open('https://cybercityarcade.com/support', '_blank')} 
@@ -219,12 +219,12 @@ const Index = () => {
               Support
             </button>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <button 
-              onClick={() => window.open('https://cybercityarcade.com/terms', '_blank')} 
+            <Link 
+              to="/terms"
               className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
             >
               Terms
-            </button>
+            </Link>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
             <button 
               onClick={() => window.open('https://cybercityarcade.com/about', '_blank')} 
