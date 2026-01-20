@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
+import { useWalletBalances, formatBalance } from '@/hooks/useWalletBalances';
 import { 
   Wallet, 
   LogOut, 
@@ -23,7 +24,9 @@ import {
   User,
   Sparkles,
   ExternalLink,
-  ArrowLeftRight
+  ArrowLeftRight,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -55,6 +58,7 @@ export const UnifiedWalletDropdown = () => {
     getChainIcon
   } = useMultiWallet();
   
+  const { balances, isLoading: balancesLoading, refreshBalances } = useWalletBalances(connectedWallets);
   const { logoutWallet } = useWalletAuth();
   
   const [showWalletManager, setShowWalletManager] = useState(false);
@@ -295,30 +299,72 @@ export const UnifiedWalletDropdown = () => {
 
           <Separator className="bg-gradient-to-r from-transparent via-neon-cyan/20 to-transparent" />
 
-          {/* Token balances - Multi-chain */}
+          {/* Token balances - Multi-chain with real-time data */}
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tokens</span>
-              {primaryWallet?.chain && (
-                <Badge variant="outline" className="text-[10px] border-neon-cyan/30 text-neon-cyan">
-                  {getChainIcon(primaryWallet.chain)} {primaryWallet.chain?.toUpperCase()}
-                </Badge>
-              )}
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Wallet Balances</span>
+              <div className="flex items-center gap-2">
+                {primaryWallet?.chain && (
+                  <Badge variant="outline" className="text-[10px] border-neon-cyan/30 text-neon-cyan">
+                    {getChainIcon(primaryWallet.chain)} {primaryWallet.chain?.toUpperCase()}
+                  </Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => refreshBalances()}
+                  disabled={balancesLoading}
+                  className="h-6 w-6 p-0 hover:bg-neon-cyan/20"
+                >
+                  {balancesLoading ? (
+                    <Loader2 size={12} className="animate-spin text-neon-cyan" />
+                  ) : (
+                    <RefreshCw size={12} className="text-neon-cyan hover:rotate-180 transition-transform duration-500" />
+                  )}
+                </Button>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { symbol: 'SOL', icon: '◎', balance: '~0.5', color: 'text-purple-400', bg: 'bg-purple-400/10', chain: 'solana' },
-                { symbol: 'ETH', icon: '⟠', balance: '~0.01', color: 'text-blue-400', bg: 'bg-blue-400/10', chain: 'ethereum' },
-                { symbol: 'XLM', icon: '✦', balance: '~10', color: 'text-cyan-400', bg: 'bg-cyan-400/10', chain: 'stellar' },
-                { symbol: 'USDC', icon: '$', balance: '25.00', color: 'text-green-400', bg: 'bg-green-400/10', chain: 'all' },
-              ].filter(token => token.chain === 'all' || token.chain === primaryWallet?.chain || !primaryWallet?.chain)
-               .slice(0, 4)
-               .map((token) => (
-                <div key={token.symbol} className={`flex items-center justify-between p-3 ${token.bg} rounded-xl border border-white/5 transition-all hover:scale-105 hover:border-white/20 cursor-pointer`}>
-                  <span className={`${token.color} font-medium text-sm`}>{token.icon} {token.symbol}</span>
-                  <span className={`font-bold ${token.color}`}>{token.balance}</span>
+            <div className="space-y-2">
+              {connectedWallets.map((wallet) => {
+                const walletBalance = balances[wallet.address];
+                const chainColors = {
+                  solana: { color: 'text-purple-400', bg: 'bg-purple-400/10', icon: '◎' },
+                  ethereum: { color: 'text-blue-400', bg: 'bg-blue-400/10', icon: '⟠' },
+                  stellar: { color: 'text-cyan-400', bg: 'bg-cyan-400/10', icon: '✦' }
+                };
+                const chain = wallet.chain || 'solana';
+                const style = chainColors[chain];
+                
+                return (
+                  <div 
+                    key={wallet.address} 
+                    className={`flex items-center justify-between p-3 ${style.bg} rounded-xl border border-white/5 transition-all hover:scale-[1.02] hover:border-white/20`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`${style.color} font-medium text-sm`}>
+                        {style.icon} {walletBalance?.symbol || wallet.symbol || chain.toUpperCase().slice(0, 3)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {walletBalance?.isLoading ? (
+                        <Loader2 size={12} className="animate-spin text-muted-foreground" />
+                      ) : (
+                        <span className={`font-bold ${style.color}`}>
+                          {walletBalance ? formatBalance(walletBalance.balance) : '—'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {connectedWallets.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No wallets connected
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
