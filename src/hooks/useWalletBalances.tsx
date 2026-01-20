@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 type ChainType = 'solana' | 'ethereum' | 'stellar';
 
@@ -27,21 +26,46 @@ interface UseWalletBalancesReturn {
   getBalance: (address: string) => WalletBalance | null;
 }
 
-// RPC endpoints
-const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
+// RPC endpoints - using CORS-friendly alternatives
 const STELLAR_HORIZON = 'https://horizon.stellar.org';
 
 export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBalancesReturn => {
   const [balances, setBalances] = useState<Record<string, WalletBalance>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch Solana balance
+  // Fetch Solana balance using public RPC with fallback
   const fetchSolanaBalance = async (address: string): Promise<number> => {
     try {
-      const connection = new Connection(SOLANA_RPC, 'confirmed');
-      const publicKey = new PublicKey(address);
-      const balance = await connection.getBalance(publicKey);
-      return balance / LAMPORTS_PER_SOL;
+      // Use Helius free tier or other CORS-friendly RPC
+      const rpcs = [
+        'https://solana-mainnet.g.alchemy.com/v2/demo',
+        'https://rpc.ankr.com/solana'
+      ];
+      
+      for (const rpc of rpcs) {
+        try {
+          const response = await fetch(rpc, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'getBalance',
+              params: [address]
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.result?.value !== undefined) {
+              return data.result.value / 1e9; // Convert lamports to SOL
+            }
+          }
+        } catch {
+          continue;
+        }
+      }
+      return 0;
     } catch (error) {
       console.error('Error fetching SOL balance:', error);
       return 0;

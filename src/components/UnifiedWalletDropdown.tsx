@@ -9,6 +9,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useWalletBalances, formatBalance } from '@/hooks/useWalletBalances';
+import { useTransactionHistory, formatTxHash, getExplorerUrl, Transaction } from '@/hooks/useTransactionHistory';
 import { 
   Wallet, 
   LogOut, 
@@ -26,7 +27,11 @@ import {
   ExternalLink,
   ArrowLeftRight,
   RefreshCw,
-  Loader2
+  Loader2,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  History
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -59,12 +64,14 @@ export const UnifiedWalletDropdown = () => {
   } = useMultiWallet();
   
   const { balances, isLoading: balancesLoading, refreshBalances } = useWalletBalances(connectedWallets);
+  const { transactions, isLoading: txLoading, refreshHistory } = useTransactionHistory(connectedWallets);
   const { logoutWallet } = useWalletAuth();
   
   const [showWalletManager, setShowWalletManager] = useState(false);
   const [showActionsModal, setShowActionsModal] = useState(false);
   const [showRewardsModal, setShowRewardsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [activeAction, setActiveAction] = useState<'buy' | 'send' | 'receive' | 'swap'>('buy');
   const [showSwapModal, setShowSwapModal] = useState(false);
   const [sendAmount, setSendAmount] = useState('');
@@ -363,6 +370,79 @@ export const UnifiedWalletDropdown = () => {
               {connectedWallets.length === 0 && (
                 <div className="text-center py-4 text-muted-foreground text-sm">
                   No wallets connected
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Transactions Preview */}
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Activity</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowHistoryModal(true)}
+                className="h-6 px-2 text-[10px] text-neon-cyan hover:bg-neon-cyan/20"
+              >
+                View All
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {txLoading ? (
+                <div className="flex items-center justify-center py-3">
+                  <Loader2 size={16} className="animate-spin text-neon-cyan" />
+                </div>
+              ) : transactions.length > 0 ? (
+                transactions.slice(0, 3).map((tx) => (
+                  <a
+                    key={tx.id}
+                    href={getExplorerUrl(tx.hash, tx.chain)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer group"
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      tx.type === 'receive' ? 'bg-neon-green/20' : 
+                      tx.type === 'send' ? 'bg-neon-pink/20' : 'bg-white/10'
+                    }`}>
+                      {tx.type === 'receive' ? (
+                        <ArrowDownLeft size={14} className="text-neon-green" />
+                      ) : tx.type === 'send' ? (
+                        <ArrowUpRight size={14} className="text-neon-pink" />
+                      ) : (
+                        <ArrowLeftRight size={14} className="text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium capitalize">{tx.type}</span>
+                        <span className={`text-xs ${
+                          tx.status === 'success' ? 'text-neon-green' : 
+                          tx.status === 'failed' ? 'text-red-400' : 'text-yellow-400'
+                        }`}>
+                          {tx.status === 'success' ? <CheckCircle2 size={10} /> : 
+                           tx.status === 'failed' ? <XCircle size={10} /> : <Clock size={10} />}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatTxHash(tx.hash)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-xs font-bold ${
+                        tx.type === 'receive' ? 'text-neon-green' : 'text-foreground'
+                      }`}>
+                        {tx.type === 'receive' ? '+' : tx.type === 'send' ? '-' : ''}
+                        {tx.amount > 0 ? tx.amount.toFixed(4) : '—'} {tx.symbol}
+                      </span>
+                    </div>
+                    <ExternalLink size={12} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </a>
+                ))
+              ) : (
+                <div className="text-center py-3 text-muted-foreground text-xs">
+                  No recent transactions
                 </div>
               )}
             </div>
@@ -724,6 +804,108 @@ export const UnifiedWalletDropdown = () => {
           <p className="text-xs text-muted-foreground text-center">
             Powered by Jupiter. Connect your wallet in the widget to swap tokens.
           </p>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transaction History Modal */}
+      <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
+        <DialogContent className="max-w-md bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-3xl overflow-hidden">
+          <DialogHeader className="pb-4 border-b border-neon-cyan/20">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl text-neon-cyan font-display flex items-center gap-2">
+                <History className="animate-pulse" size={20} />
+                Transaction History
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => refreshHistory()}
+                disabled={txLoading}
+                className="h-8 px-2 hover:bg-neon-cyan/20"
+              >
+                {txLoading ? (
+                  <Loader2 size={14} className="animate-spin text-neon-cyan" />
+                ) : (
+                  <RefreshCw size={14} className="text-neon-cyan" />
+                )}
+              </Button>
+            </div>
+            <DialogDescription className="text-muted-foreground text-sm">
+              Recent transactions across all connected wallets
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-y-auto space-y-2 py-2">
+            {txLoading && transactions.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 size={24} className="animate-spin text-neon-cyan" />
+              </div>
+            ) : transactions.length > 0 ? (
+              transactions.map((tx) => (
+                <a
+                  key={tx.id}
+                  href={getExplorerUrl(tx.hash, tx.chain)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group border border-transparent hover:border-white/10"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                    tx.type === 'receive' ? 'bg-neon-green/20' : 
+                    tx.type === 'send' ? 'bg-neon-pink/20' : 'bg-white/10'
+                  }`}>
+                    {tx.type === 'receive' ? (
+                      <ArrowDownLeft size={18} className="text-neon-green" />
+                    ) : tx.type === 'send' ? (
+                      <ArrowUpRight size={18} className="text-neon-pink" />
+                    ) : (
+                      <ArrowLeftRight size={18} className="text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium capitalize">{tx.type}</span>
+                      <Badge 
+                        variant="outline" 
+                        className={`text-[9px] px-1.5 py-0 ${
+                          tx.status === 'success' ? 'border-neon-green/50 text-neon-green' : 
+                          tx.status === 'failed' ? 'border-red-400/50 text-red-400' : 'border-yellow-400/50 text-yellow-400'
+                        }`}
+                      >
+                        {tx.status}
+                      </Badge>
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-white/20">
+                        {tx.chain.toUpperCase()}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {formatTxHash(tx.hash)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {tx.timestamp.toLocaleDateString()} {tx.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className={`text-sm font-bold ${
+                      tx.type === 'receive' ? 'text-neon-green' : 
+                      tx.type === 'send' ? 'text-neon-pink' : 'text-foreground'
+                    }`}>
+                      {tx.type === 'receive' ? '+' : tx.type === 'send' ? '-' : ''}
+                      {tx.amount > 0 ? tx.amount.toFixed(4) : '—'}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">{tx.symbol}</span>
+                  </div>
+                  <ExternalLink size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                </a>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <History size={32} className="mx-auto text-muted-foreground mb-2 opacity-50" />
+                <p className="text-muted-foreground text-sm">No transactions found</p>
+                <p className="text-muted-foreground text-xs mt-1">Connect a wallet to see transaction history</p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </>
