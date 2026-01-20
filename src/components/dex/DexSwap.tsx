@@ -7,10 +7,10 @@ import { ExternalLink } from 'lucide-react';
 
 type DexOption = 'jupiter' | 'stellarx' | 'uniswap';
 
-const dexOptions: { id: DexOption; name: string; url: string; badge: string; color: string }[] = [
-  { id: 'jupiter', name: 'Jupiter', url: 'https://jup.ag/swap/USDC-SOL?theme=dark&padding=12', badge: 'Solana', color: 'neon-cyan' },
-  { id: 'stellarx', name: 'Aqua Network', url: 'https://aqua.network/', badge: 'Stellar', color: 'neon-purple' },
-  { id: 'uniswap', name: 'Uniswap', url: 'https://app.uniswap.org/', badge: 'Ethereum', color: 'neon-pink' },
+const dexOptions: { id: DexOption; name: string; url: string; badge: string; color: string; walletIcon: string; walletName: string }[] = [
+  { id: 'jupiter', name: 'Jupiter', url: 'https://jup.ag/swap/USDC-SOL?theme=dark&padding=12', badge: 'Solana', color: 'neon-cyan', walletIcon: '/images/wallets/phantom.png', walletName: 'Phantom' },
+  { id: 'stellarx', name: 'Aqua Network', url: 'https://aqua.network/', badge: 'Stellar', color: 'neon-purple', walletIcon: '/images/wallets/lobstr.png', walletName: 'LOBSTR' },
+  { id: 'uniswap', name: 'Uniswap', url: 'https://app.uniswap.org/', badge: 'Ethereum', color: 'neon-pink', walletIcon: '/images/wallets/metamask.png', walletName: 'MetaMask' },
 ];
 
 export const DexSwap: React.FC = () => {
@@ -35,14 +35,18 @@ export const DexSwap: React.FC = () => {
               key={dex.id}
               variant={selectedDex === dex.id ? 'default' : 'outline'}
               onClick={() => setSelectedDex(dex.id)}
-              className={`flex items-center justify-center gap-1 transition-all duration-300 ${
+              className={`flex items-center justify-center gap-2 transition-all duration-300 ${
                 selectedDex === dex.id 
                   ? `cyber-button` 
                   : `border-${dex.color}/50 text-${dex.color} hover:bg-${dex.color}/20`
               }`}
             >
+              <img 
+                src={dex.walletIcon} 
+                alt={dex.walletName} 
+                className="w-4 h-4 rounded-sm"
+              />
               {dex.name}
-              <ExternalLink size={12} />
             </Button>
           ))}
         </div>
