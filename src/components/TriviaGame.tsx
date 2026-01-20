@@ -386,20 +386,6 @@ export const TriviaGame = () => {
         </Card>
       </div>
 
-      {!isAuthenticated && (
-        <Card className="arcade-frame border-neon-pink/30">
-          <CardContent className="text-center py-8">
-            <div className="text-4xl mb-4">🔐</div>
-            <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Wallet</h3>
-            <p className="text-muted-foreground mb-4">
-              Connect your Solana wallet to track progress, earn CCTR tokens, and compete on gaming leaderboards
-            </p>
-            <Button onClick={connectWallet} className="cyber-button">
-              🚀 Connect Phantom Wallet
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
