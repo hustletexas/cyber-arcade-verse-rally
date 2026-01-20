@@ -227,19 +227,19 @@ export const Marketplace = () => {
             <div className="flex flex-wrap justify-evenly gap-4">
               <Button 
                 onClick={() => connectPlatform('Magic Eden', 'https://magiceden.io/')}
-                className="cyber-button flex items-center gap-2"
+                className="cyber-button flex items-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-pink/30 transition-all duration-300"
               >
                 🪄 Magic Eden
               </Button>
               <Button 
                 onClick={() => connectPlatform('OpenSea', 'https://opensea.io/')}
-                className="cyber-button flex items-center gap-2"
+                className="cyber-button flex items-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-cyan/30 transition-all duration-300"
               >
                 🌊 OpenSea
               </Button>
               <Button 
                 onClick={() => connectPlatform('Litemint', 'https://market.litemint.com/')}
-                className="cyber-button flex items-center gap-2"
+                className="cyber-button flex items-center gap-2 hover-scale hover:shadow-lg hover:shadow-neon-green/30 transition-all duration-300"
               >
                 🍃 Litemint
               </Button>
