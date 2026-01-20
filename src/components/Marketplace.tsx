@@ -243,12 +243,6 @@ export const Marketplace = () => {
               >
                 🍃 Litemint
               </Button>
-              <Button 
-                onClick={() => connectPlatform('Solanart', 'https://solanart.io/')}
-                className="cyber-button flex items-center gap-2"
-              >
-                🎨 Solanart
-              </Button>
             </div>
           </Card>
 
