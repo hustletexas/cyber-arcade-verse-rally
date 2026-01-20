@@ -12,6 +12,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles } from 'lucide-react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { ChestOpeningAnimation } from './ChestOpeningAnimation';
 
 interface Raffle {
   id: string;
@@ -48,6 +49,8 @@ export const RaffleSection = () => {
   const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
   const [processingPayment, setProcessingPayment] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cctr'>('cctr');
+  const [chestAnimationOpen, setChestAnimationOpen] = useState(false);
+  const [openingChest, setOpeningChest] = useState<{ name: string; rarity: 'common' | 'rare' | 'epic' | 'legendary' } | null>(null);
 
   const [raffles] = useState<Raffle[]>([
     {
@@ -154,16 +157,27 @@ export const RaffleSection = () => {
   const openTreasureChest = async (chestId: string, paymentMethod: 'cctr') => {
     if (!user || !isWalletConnected) return;
     
+    // Find the chest to get its details
+    const chest = treasureChests.find(c => c.id === chestId);
+    if (!chest) return;
+    
     setProcessingPayment(chestId);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // Chest opened successfully
+      await new Promise(resolve => setTimeout(resolve, 500));
+      // Set the chest details and open the animation
+      setOpeningChest({ name: chest.name, rarity: chest.rarity });
+      setChestAnimationOpen(true);
     } catch (error) {
       console.error('Chest opening error:', error);
     } finally {
       setProcessingPayment(null);
     }
+  };
+
+  const handleChestAnimationClose = () => {
+    setChestAnimationOpen(false);
+    setOpeningChest(null);
   };
 
   const getRarityColor = (rarity: string) => {
@@ -180,6 +194,13 @@ export const RaffleSection = () => {
 
   return (
     <div className="space-y-8">
+      {/* Chest Opening Animation Modal */}
+      <ChestOpeningAnimation
+        isOpen={chestAnimationOpen}
+        onClose={handleChestAnimationClose}
+        chestName={openingChest?.name || ''}
+        chestRarity={openingChest?.rarity || 'common'}
+      />
       {/* Header with Authentication Status */}
       <Card className="arcade-frame">
         <CardHeader>
