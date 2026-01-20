@@ -297,9 +297,83 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     </Card>
   );
 
+  // Get all wallets flattened with chain info
+  const getAllWallets = () => {
+    const allWallets: (WalletOption & { chain: ChainType })[] = [];
+    
+    (Object.keys(walletOptions) as ChainType[]).forEach(chain => {
+      walletOptions[chain].forEach(wallet => {
+        allWallets.push({ ...wallet, chain });
+      });
+    });
+    
+    return allWallets;
+  };
+
+  const allWallets = getAllWallets();
+
+  const renderAllWalletsCard = (wallet: WalletOption & { chain: ChainType }) => {
+    const chain = CHAINS[wallet.chain];
+    return (
+      <Card 
+        key={wallet.id} 
+        className={`cursor-pointer transition-all duration-200 hover:border-neon-cyan/50 ${
+          wallet.isInstalled 
+            ? 'bg-card hover:bg-card/80' 
+            : 'bg-muted/50 border-muted-foreground/20'
+        }`}
+      >
+        <CardContent className="p-3">
+          <Button
+            variant="ghost"
+            className="w-full h-auto p-0 hover:bg-transparent"
+            onClick={() => handleWalletConnect(wallet)}
+            disabled={connecting === wallet.id}
+          >
+            <div className="flex items-center gap-3 w-full">
+              <div className="text-2xl">{wallet.icon}</div>
+              <div className="flex-1 text-left">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-neon-cyan">
+                    {wallet.name}
+                  </span>
+                  <Badge 
+                    variant="outline" 
+                    className="text-[10px] px-1.5 py-0"
+                    style={{ borderColor: chain.color, color: chain.color }}
+                  >
+                    {chain.symbol}
+                  </Badge>
+                  {wallet.isInstalled ? (
+                    <Badge className="bg-neon-green text-black text-[10px] px-1.5 py-0">
+                      Ready
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-neon-pink text-neon-pink">
+                      Install
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {wallet.description}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {connecting === wallet.id && (
+                  <div className="w-4 h-4 border-2 border-neon-cyan border-t-transparent rounded-full animate-spin" />
+                )}
+                {!wallet.isInstalled && <ExternalLink size={16} />}
+              </div>
+            </div>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md arcade-frame">
+      <DialogContent className="max-w-md arcade-frame max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl text-neon-cyan font-display flex items-center gap-2">
             <Wallet size={24} />
@@ -307,47 +381,34 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
           <div className="text-sm text-muted-foreground text-center">
-            Choose your blockchain and wallet to connect
+            Select a wallet to connect • Multi-chain supported
           </div>
 
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ChainType)}>
-            <TabsList className="grid w-full grid-cols-3 bg-background/50">
-              {Object.entries(CHAINS).map(([key, chain]) => (
-                <TabsTrigger 
-                  key={key} 
-                  value={key}
-                  className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan"
-                >
-                  <span className="mr-1">{chain.icon}</span>
-                  {chain.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
+          {/* Chain Legend */}
+          <div className="flex justify-center gap-4 text-xs">
             {Object.entries(CHAINS).map(([key, chain]) => (
-              <TabsContent key={key} value={key} className="space-y-3 mt-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <span className="text-lg" style={{ color: chain.color }}>{chain.icon}</span>
-                  <span>{chain.name} Network</span>
-                  <Badge variant="outline" className="ml-auto text-xs">
-                    {chain.symbol}
-                  </Badge>
-                </div>
-                {walletOptions[key as ChainType]?.map(renderWalletCard)}
-              </TabsContent>
+              <div key={key} className="flex items-center gap-1">
+                <span style={{ color: chain.color }}>{chain.icon}</span>
+                <span className="text-muted-foreground">{chain.name}</span>
+              </div>
             ))}
-          </Tabs>
+          </div>
 
-          <Card className="bg-neon-cyan/10 border-neon-cyan/30">
+          {/* All Wallets List */}
+          <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+            {allWallets.map(renderAllWalletsCard)}
+          </div>
+
+          <Card className="bg-neon-cyan/10 border-neon-cyan/30 flex-shrink-0">
             <CardContent className="p-3">
               <div className="flex items-start gap-2">
                 <AlertCircle size={16} className="text-neon-cyan mt-0.5" />
                 <div className="text-xs">
                   <p className="font-semibold text-neon-cyan mb-1">Multi-Chain Support</p>
                   <p className="text-muted-foreground">
-                    Connect wallets from Solana, Ethereum, and Stellar networks. Switch between chains anytime.
+                    Connect wallets from Solana, Ethereum, and Stellar networks.
                   </p>
                 </div>
               </div>
