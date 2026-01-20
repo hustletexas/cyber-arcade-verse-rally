@@ -33,15 +33,21 @@ export const TriviaGame = () => {
   const [loading, setLoading] = useState(true);
 
   const categories = [
-    { id: 'nintendo64', name: 'Nintendo 64', emoji: '🎮', description: 'Mario, Zelda, GoldenEye classics' },
-    { id: 'playstation1', name: 'PlayStation 1', emoji: '🕹️', description: 'Final Fantasy, Crash Bandicoot' },
-    { id: 'playstation2', name: 'PlayStation 2', emoji: '🎯', description: 'GTA, God of War, Shadow of Colossus' },
-    { id: 'xbox', name: 'Original Xbox', emoji: '🎪', description: 'Halo, Fable, Knights of the Old Republic' },
-    { id: 'gamecube', name: 'GameCube', emoji: '🎲', description: 'Metroid Prime, Animal Crossing' },
-    { id: 'retro', name: 'Retro Gaming', emoji: '👾', description: 'NES, SNES, Genesis classics' },
-    { id: 'arcade', name: 'Arcade Classics', emoji: '🕹️', description: 'Street Fighter, Pac-Man, Galaga' },
-    { id: 'pc-gaming', name: 'PC Gaming', emoji: '💻', description: 'Half-Life, Counter-Strike, WoW' },
-    { id: 'nintendo-handheld', name: 'Nintendo Handhelds', emoji: '📱', description: 'Game Boy, DS, Pokemon series' }
+    // Gaming Categories
+    { id: 'nintendo64', name: 'Nintendo 64', emoji: '🎮', description: 'Mario, Zelda, GoldenEye classics', type: 'gaming' },
+    { id: 'playstation1', name: 'PlayStation 1', emoji: '🕹️', description: 'Final Fantasy, Crash Bandicoot', type: 'gaming' },
+    { id: 'playstation2', name: 'PlayStation 2', emoji: '🎯', description: 'GTA, God of War, Shadow of Colossus', type: 'gaming' },
+    { id: 'xbox', name: 'Original Xbox', emoji: '🎪', description: 'Halo, Fable, Knights of the Old Republic', type: 'gaming' },
+    { id: 'gamecube', name: 'GameCube', emoji: '🎲', description: 'Metroid Prime, Animal Crossing', type: 'gaming' },
+    { id: 'retro', name: 'Retro Gaming', emoji: '👾', description: 'NES, SNES, Genesis classics', type: 'gaming' },
+    { id: 'arcade', name: 'Arcade Classics', emoji: '🕹️', description: 'Street Fighter, Pac-Man, Galaga', type: 'gaming' },
+    { id: 'pc-gaming', name: 'PC Gaming', emoji: '💻', description: 'Half-Life, Counter-Strike, WoW', type: 'gaming' },
+    { id: 'nintendo-handheld', name: 'Nintendo Handhelds', emoji: '📱', description: 'Game Boy, DS, Pokemon series', type: 'gaming' },
+    // Entertainment Categories
+    { id: 'cartoons', name: 'Cartoons', emoji: '📺', description: 'Classic and modern animated shows', type: 'entertainment' },
+    { id: 'sports', name: 'Sports', emoji: '⚽', description: 'Football, basketball, Olympics & more', type: 'entertainment' },
+    { id: 'music', name: 'Music', emoji: '🎵', description: 'Artists, albums, music history', type: 'entertainment' },
+    { id: 'movies', name: 'Movies', emoji: '🎬', description: 'Hollywood classics and blockbusters', type: 'entertainment' },
   ];
 
   useEffect(() => {
@@ -305,32 +311,50 @@ export const TriviaGame = () => {
       <Card className="arcade-frame">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-purple">
-            🎯 SELECT GAMING CATEGORY
+            🎯 SELECT TRIVIA CATEGORY
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((category) => (
-              <Card key={category.id} className="holographic hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => startGame(category.id)}>
-                <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-3">{category.emoji}</div>
-                  <h3 className="font-bold text-lg text-neon-cyan mb-2">{category.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
-                  <div className="mb-3">
-                    <Badge className="bg-red-500/20 text-red-400 border-red-500">
-                      💎 Cost: 1 CCTR
+        <CardContent className="space-y-8">
+          {/* Gaming Categories */}
+          <div>
+            <h3 className="text-lg font-bold text-neon-cyan mb-4 flex items-center gap-2">
+              <span className="text-2xl">🎮</span> Gaming
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categories.filter(c => c.type === 'gaming').map((category) => (
+                <Card key={category.id} className="holographic hover:scale-105 transition-all duration-300 cursor-pointer group" onClick={() => startGame(category.id)}>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2 group-hover:animate-bounce">{category.emoji}</div>
+                    <h3 className="font-bold text-neon-cyan mb-1">{category.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-3">{category.description}</p>
+                    <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan/50 text-xs">
+                      💎 1 CCTR
                     </Badge>
-                  </div>
-                  <Button 
-                    className="cyber-button w-full" 
-                    size="sm"
-                    disabled={user && balance.cctr_balance < 1}
-                  >
-                    {user && balance.cctr_balance < 1 ? 'Insufficient Tokens' : 'Start Game'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Entertainment Categories */}
+          <div>
+            <h3 className="text-lg font-bold text-neon-pink mb-4 flex items-center gap-2">
+              <span className="text-2xl">🎭</span> Entertainment
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {categories.filter(c => c.type === 'entertainment').map((category) => (
+                <Card key={category.id} className="holographic hover:scale-105 transition-all duration-300 cursor-pointer group" onClick={() => startGame(category.id)}>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2 group-hover:animate-bounce">{category.emoji}</div>
+                    <h3 className="font-bold text-neon-pink mb-1 text-sm">{category.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-1">{category.description}</p>
+                    <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink/50 text-xs">
+                      💎 1 CCTR
+                    </Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
