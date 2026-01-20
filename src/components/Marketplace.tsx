@@ -238,10 +238,10 @@ export const Marketplace = () => {
                 🌊 OpenSea
               </Button>
               <Button 
-                onClick={() => connectPlatform('Tensor', 'https://tensor.trade/')}
+                onClick={() => connectPlatform('Litemint', 'https://market.litemint.com/')}
                 className="cyber-button flex items-center gap-2"
               >
-                ⚡ Tensor
+                🍃 Litemint
               </Button>
               <Button 
                 onClick={() => connectPlatform('Solanart', 'https://solanart.io/')}
