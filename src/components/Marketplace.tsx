@@ -224,7 +224,7 @@ export const Marketplace = () => {
           {/* Platform Connections */}
           <Card className="holographic p-6">
             <h3 className="font-bold text-neon-cyan mb-4">🔗 Platform Connections</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex flex-wrap justify-evenly gap-4">
               <Button 
                 onClick={() => connectPlatform('Magic Eden', 'https://magiceden.io/')}
                 className="cyber-button flex items-center gap-2"
