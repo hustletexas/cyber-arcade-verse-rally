@@ -8,7 +8,7 @@ export type WalletType =
   | 'backpack' 
   | 'metamask'
   | 'coinbase' 
-  | 'freighter'
+  | 'lobstr'
   | 'created';
 
 export interface ChainInfo {
@@ -89,13 +89,13 @@ export const WALLETS: WalletInfo[] = [
     isPopular: true
   },
   {
-    id: 'freighter',
-    name: 'Freighter',
-    icon: '🚀',
-    logoUrl: '/images/wallets/freighter.png',
+    id: 'lobstr',
+    name: 'LOBSTR',
+    icon: '🌟',
+    logoUrl: '/images/wallets/lobstr.png',
     chain: 'stellar',
-    downloadUrl: 'https://www.freighter.app/',
-    description: 'A stellar wallet in your browser',
+    downloadUrl: 'https://lobstr.co/',
+    description: 'The most popular Stellar wallet',
     isPopular: true
   },
   {
