@@ -111,7 +111,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'freighter',
     name: 'Freighter',
     icon: '🚀',
-    logoUrl: '/images/wallets/freighter.png',
+    logoUrl: '/images/wallets/freighter.png?v=2',
     chain: 'stellar',
     downloadUrl: 'https://www.freighter.app/',
     description: 'Stellar wallet browser extension'
