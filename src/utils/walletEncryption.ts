@@ -9,9 +9,10 @@ const KEY_ITERATIONS = 100000;
  */
 async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
   const encoder = new TextEncoder();
+  const encodedPassword = encoder.encode(password);
   const passwordKey = await crypto.subtle.importKey(
     'raw',
-    encoder.encode(password),
+    encodedPassword.buffer as ArrayBuffer,
     'PBKDF2',
     false,
     ['deriveBits', 'deriveKey']
@@ -20,7 +21,7 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: salt as unknown as ArrayBuffer,
+      salt: salt.buffer as ArrayBuffer,
       iterations: KEY_ITERATIONS,
       hash: 'SHA-256',
     },
@@ -41,10 +42,11 @@ export async function encryptData(data: string, password: string): Promise<strin
   
   const key = await deriveKey(password, salt);
   
+  const dataToEncrypt = encoder.encode(data);
   const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: iv as unknown as ArrayBuffer },
+    { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
     key,
-    encoder.encode(data)
+    dataToEncrypt.buffer as ArrayBuffer
   );
 
   // Combine salt + iv + encrypted data
@@ -75,9 +77,9 @@ export async function decryptData(encryptedData: string, password: string): Prom
     const key = await deriveKey(password, salt);
 
     const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv as unknown as ArrayBuffer },
+      { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
       key,
-      encrypted
+      encrypted.buffer as ArrayBuffer
     );
 
     const decoder = new TextDecoder();
