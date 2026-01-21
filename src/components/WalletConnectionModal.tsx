@@ -33,10 +33,20 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   useEffect(() => {
     const checkFreighter = async () => {
       try {
+        // First check if the Freighter extension is available in the window
+        if (typeof window !== 'undefined' && (window as any).freighter) {
+          setFreighterInstalled(true);
+          return;
+        }
+        
+        // Fallback: use the API to check
         const result = await freighterApi.isConnected();
-        setFreighterInstalled(result.isConnected || !result.error);
-      } catch {
-        setFreighterInstalled(false);
+        // Extension is installed if isConnected is true OR if there's no error
+        // (error only occurs when extension is not installed at all)
+        setFreighterInstalled(result.isConnected === true || result.error === undefined);
+      } catch (e) {
+        // If the API call fails completely, check for window.freighter
+        setFreighterInstalled(!!(window as any).freighter);
       }
     };
     if (isOpen) {
@@ -172,24 +182,32 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   // Freighter wallet connection (Stellar browser extension) using official API
   const connectFreighter = async () => {
     try {
-      // Check if Freighter is installed using the official API
-      const connectedResult = await freighterApi.isConnected();
+      // Check if Freighter is available via window object first
+      const freighterWindow = (window as any).freighter;
       
-      if (!connectedResult.isConnected) {
-        throw new Error('Freighter not found. Please install the extension.');
-      }
-
-      // Check if allowed and request access if not
-      const allowedResult = await freighterApi.isAllowed();
-      if (!allowedResult.isAllowed) {
-        const accessResult = await freighterApi.requestAccess();
-        if (accessResult.error) {
-          throw new Error('User denied access to Freighter');
+      if (!freighterWindow) {
+        // Double-check with the API
+        const connectedResult = await freighterApi.isConnected();
+        if (!connectedResult.isConnected && connectedResult.error) {
+          throw new Error('Freighter not found. Please install the Freighter browser extension.');
         }
       }
 
+      // Request access - this will prompt the user if not already allowed
+      console.log('Requesting Freighter access...');
+      const accessResult = await freighterApi.requestAccess();
+      
+      if (accessResult.error) {
+        console.error('Freighter access error:', accessResult.error);
+        throw new Error(accessResult.error.message || 'User denied access to Freighter');
+      }
+
+      console.log('Freighter access granted, getting address...');
+      
       // Get the public address using the official API
       const addressResult = await freighterApi.getAddress();
+      
+      console.log('Freighter address result:', addressResult);
       
       if (addressResult.error) {
         throw new Error(addressResult.error.message || 'Failed to get address from Freighter');
@@ -202,11 +220,14 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           title: "Freighter Connected!",
           description: `Connected to ${addressResult.address.slice(0, 8)}...${addressResult.address.slice(-4)}`,
         });
+      } else {
+        throw new Error('No address returned from Freighter. Please ensure you have an account set up.');
       }
     } catch (error: any) {
+      console.error('Freighter connection error:', error);
       toast({
         title: "Connection Failed",
-        description: error?.message || "Failed to connect to Freighter wallet",
+        description: error?.message || "Failed to connect to Freighter wallet. Please ensure the extension is unlocked.",
         variant: "destructive",
       });
     }
