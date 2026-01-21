@@ -33,15 +33,17 @@ export const useMultiWallet = () => {
       case 'freighter':
         return 'stellar';
       default:
-        return 'solana';
+        // Default to Stellar for USDC payments and CCC rewards
+        return 'stellar';
     }
   };
 
   const getSymbolForChain = (chain: 'solana' | 'ethereum' | 'stellar'): string => {
     switch (chain) {
       case 'ethereum': return 'ETH';
-      case 'stellar': return 'XLM';
-      default: return 'SOL';
+      case 'solana': return 'SOL';
+      // Default to Stellar - primary chain for payments
+      default: return 'XLM';
     }
   };
 
@@ -151,7 +153,9 @@ export const useMultiWallet = () => {
 
     setConnectedWallets(wallets);
     if (wallets.length > 0 && !primaryWallet) {
-      setPrimaryWallet(wallets[0]);
+      // Prefer Stellar wallets as primary (for USDC payments and CCC rewards)
+      const stellarWallet = wallets.find(w => w.chain === 'stellar');
+      setPrimaryWallet(stellarWallet || wallets[0]);
     }
   };
 
