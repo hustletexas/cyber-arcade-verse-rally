@@ -130,7 +130,29 @@ export const WALLETS: WalletInfo[] = [
 
 export const getChainForWallet = (walletType: WalletType): ChainType => {
   const wallet = WALLETS.find(w => w.id === walletType);
-  return wallet?.chain || 'solana';
+  // Default to Stellar (primary chain for USDC payments, CCC rewards, pass gating)
+  return wallet?.chain || 'stellar';
+};
+
+// Default chain for new users - Stellar for USDC on-ramp compatibility
+export const DEFAULT_CHAIN: ChainType = 'stellar';
+
+// Payment configuration - Stellar-first architecture
+export const PAYMENT_CONFIG = {
+  // Tournament entry fees paid in USDC on Stellar
+  entryFeeChain: 'stellar' as ChainType,
+  entryFeeCurrency: 'USDC',
+  
+  // Payouts distributed in USDC on Stellar
+  payoutChain: 'stellar' as ChainType,
+  payoutCurrency: 'USDC',
+  
+  // CCC rewards token on Soroban (Stellar smart contracts)
+  rewardsChain: 'stellar' as ChainType,
+  rewardsToken: 'CCC',
+  
+  // Pass gating using Soroban smart contracts
+  passGatingChain: 'stellar' as ChainType,
 };
 
 export const getWalletsByChain = (chain: ChainType): WalletInfo[] => {

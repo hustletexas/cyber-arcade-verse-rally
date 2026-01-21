@@ -16,7 +16,8 @@ export const useMultiChainWallet = () => {
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([]);
   const [primaryWallet, setPrimaryWallet] = useState<ConnectedWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeChain, setActiveChain] = useState<ChainType>('solana');
+  // Default to Stellar chain - primary chain for USDC payments, CCC rewards, and pass gating
+  const [activeChain, setActiveChain] = useState<ChainType>('stellar');
 
   // Check for existing wallet connections on load
   useEffect(() => {
@@ -107,8 +108,11 @@ export const useMultiChainWallet = () => {
 
     setConnectedWallets(wallets);
     if (wallets.length > 0 && !primaryWallet) {
-      setPrimaryWallet(wallets[0]);
-      setActiveChain(wallets[0].chain);
+      // Prefer Stellar wallets as primary (for USDC payments/payouts and CCC rewards)
+      const stellarWallet = wallets.find(w => w.chain === 'stellar');
+      const selectedWallet = stellarWallet || wallets[0];
+      setPrimaryWallet(selectedWallet);
+      setActiveChain(selectedWallet.chain);
     }
   };
 
