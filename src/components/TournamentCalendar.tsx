@@ -4,8 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { MapPin, Clock, Users, Trophy, Ticket } from 'lucide-react';
+import { StellarTournamentEntry } from './StellarTournamentEntry';
+import { WalletConnectionModal } from './WalletConnectionModal';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { CHAINS, PAYMENT_CONFIG } from '@/types/wallet';
 
 interface TournamentEvent {
   id: string;
@@ -15,7 +20,9 @@ interface TournamentEvent {
   venue: string;
   game: string;
   prizePool: string;
+  prizePoolUSDC: number; // Numeric value for Stellar payments
   entryFee: string;
+  entryFeeUSDC: number; // Numeric value for Stellar payments
   maxParticipants: number;
   currentParticipants: number;
   status: 'open' | 'full' | 'upcoming' | 'live';
@@ -30,8 +37,10 @@ const tournamentEvents: TournamentEvent[] = [
     location: 'Los Angeles, CA',
     venue: 'GameStop Arena',
     game: 'Pac-Man Championship',
-    prizePool: '$5,000',
-    entryFee: '50 CCTR',
+    prizePool: '500 USDC',
+    prizePoolUSDC: 500,
+    entryFee: '10 USDC',
+    entryFeeUSDC: 10,
     maxParticipants: 64,
     currentParticipants: 45,
     status: 'open',
@@ -44,8 +53,10 @@ const tournamentEvents: TournamentEvent[] = [
     location: 'New York, NY',
     venue: 'Madison Square Garden',
     game: 'Tetris Battle Royale',
-    prizePool: '$10,000',
-    entryFee: '75 CCTR',
+    prizePool: '1,000 USDC',
+    prizePoolUSDC: 1000,
+    entryFee: '15 USDC',
+    entryFeeUSDC: 15,
     maxParticipants: 128,
     currentParticipants: 89,
     status: 'open',
@@ -58,8 +69,10 @@ const tournamentEvents: TournamentEvent[] = [
     location: 'Chicago, IL',
     venue: 'United Center',
     game: 'Space Invaders',
-    prizePool: '$3,500',
-    entryFee: '40 CCTR',
+    prizePool: '350 USDC',
+    prizePoolUSDC: 350,
+    entryFee: '8 USDC',
+    entryFeeUSDC: 8,
     maxParticipants: 32,
     currentParticipants: 32,
     status: 'full',
@@ -72,8 +85,10 @@ const tournamentEvents: TournamentEvent[] = [
     location: 'Austin, TX',
     venue: 'Austin Convention Center',
     game: 'Galaga',
-    prizePool: '$7,500',
-    entryFee: '60 CCTR',
+    prizePool: '750 USDC',
+    prizePoolUSDC: 750,
+    entryFee: '12 USDC',
+    entryFeeUSDC: 12,
     maxParticipants: 96,
     currentParticipants: 12,
     status: 'upcoming',
@@ -86,8 +101,10 @@ const tournamentEvents: TournamentEvent[] = [
     location: 'San Francisco, CA',
     venue: 'Moscone Center',
     game: 'Multi-Game Tournament',
-    prizePool: '$15,000',
-    entryFee: '100 CCTR',
+    prizePool: '1,500 USDC',
+    prizePoolUSDC: 1500,
+    entryFee: '20 USDC',
+    entryFeeUSDC: 20,
     maxParticipants: 256,
     currentParticipants: 178,
     status: 'open',
@@ -97,8 +114,12 @@ const tournamentEvents: TournamentEvent[] = [
 
 export const TournamentCalendar = () => {
   const { toast } = useToast();
+  const { connectWallet } = useMultiWallet();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedEvent, setSelectedEvent] = useState<TournamentEvent | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [paymentEvent, setPaymentEvent] = useState<TournamentEvent | null>(null);
 
   const getEventsForDate = (date: Date) => {
     return tournamentEvents.filter(event => 
@@ -118,18 +139,23 @@ export const TournamentCalendar = () => {
 
   const handleJoinTournament = (event: TournamentEvent) => {
     if (event.status === 'open') {
-      toast({
-        title: "Tournament Registration",
-        description: `Registering for ${event.title}. Entry fee: ${event.entryFee}`,
-      });
-      
-      setTimeout(() => {
-        toast({
-          title: "Registration Successful!",
-          description: `You've been registered for ${event.title}. Check your email for details.`,
-        });
-      }, 2000);
+      setPaymentEvent(event);
+      setShowPaymentModal(true);
     }
+  };
+
+  const handlePaymentSuccess = (transactionHash: string) => {
+    setShowPaymentModal(false);
+    toast({
+      title: "Registration Successful!",
+      description: `You've been registered for ${paymentEvent?.title}. TX: ${transactionHash.slice(0, 12)}...`,
+    });
+    setPaymentEvent(null);
+  };
+
+  const handleWalletConnected = (walletType: any, address: string, chain: any) => {
+    connectWallet(walletType, address);
+    setShowWalletModal(false);
   };
 
   // Get dates that have events
@@ -274,11 +300,48 @@ export const TournamentCalendar = () => {
             <div className="text-sm text-muted-foreground">Total Participants</div>
           </Card>
           <Card className="holographic p-4 text-center">
-            <div className="text-2xl font-bold text-neon-pink">$41K</div>
+            <div className="text-2xl font-bold text-neon-pink">
+              {tournamentEvents.reduce((acc, e) => acc + e.prizePoolUSDC, 0).toLocaleString()} USDC
+            </div>
             <div className="text-sm text-muted-foreground">Total Prize Pool</div>
           </Card>
         </div>
+
+        {/* Stellar payment info */}
+        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-400">
+          <img src="/images/wallets/stellar.png" alt="Stellar" className="w-4 h-4" />
+          <span>All payments powered by Stellar • USDC entry fees • Near-zero transaction costs</span>
+        </div>
       </CardContent>
+
+      {/* Stellar Payment Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="max-w-md bg-[#0f0f14] border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">Tournament Entry</DialogTitle>
+          </DialogHeader>
+          {paymentEvent && (
+            <StellarTournamentEntry
+              tournamentId={paymentEvent.id}
+              tournamentName={paymentEvent.title}
+              entryFeeUSDC={paymentEvent.entryFeeUSDC}
+              prizePool={paymentEvent.prizePoolUSDC}
+              onEntrySuccess={handlePaymentSuccess}
+              onOpenWalletModal={() => {
+                setShowPaymentModal(false);
+                setShowWalletModal(true);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Wallet Connection Modal */}
+      <WalletConnectionModal
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onWalletConnected={handleWalletConnected}
+      />
     </Card>
   );
 };
