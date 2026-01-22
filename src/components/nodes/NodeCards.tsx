@@ -18,6 +18,7 @@ interface NodeType {
   icon: string;
   features: string[];
   description: string;
+  currency?: string;
 }
 
 interface NodeCardsProps {
@@ -26,6 +27,12 @@ interface NodeCardsProps {
   purchasingNode: string | null;
   isWalletConnected: boolean;
 }
+
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+  return num.toFixed(0);
+};
 
 export const NodeCards: React.FC<NodeCardsProps> = ({
   nodeTypes,
@@ -39,6 +46,7 @@ export const NodeCards: React.FC<NodeCardsProps> = ({
         const availabilityPercent = (node.currentSupply / node.maxSupply) * 100;
         const isPopular = node.id === 'premium';
         const isPurchasing = purchasingNode === node.id;
+        const currency = node.currency || 'CCTR';
 
         return (
           <Card 
@@ -70,10 +78,10 @@ export const NodeCards: React.FC<NodeCardsProps> = ({
               {/* Price */}
               <div className="text-center">
                 <div className="text-3xl font-bold text-neon-green">
-                  {node.price} SOL
+                  {formatNumber(node.price)} {currency}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  ≈ ${(node.price * 20).toFixed(0)} USD
+                  ≈ ${(node.price * 0.052).toLocaleString()} USD
                 </div>
               </div>
 
@@ -81,11 +89,11 @@ export const NodeCards: React.FC<NodeCardsProps> = ({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Daily Reward:</span>
-                  <span className="text-neon-green font-mono">{node.dailyReward} SOL</span>
+                  <span className="text-neon-green font-mono">{formatNumber(node.dailyReward)} {currency}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Monthly Reward:</span>
-                  <span className="text-neon-green font-mono">{node.monthlyReward} SOL</span>
+                  <span className="text-neon-green font-mono">{formatNumber(node.monthlyReward)} {currency}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Annual ROI:</span>
@@ -98,7 +106,7 @@ export const NodeCards: React.FC<NodeCardsProps> = ({
                 <div className="flex justify-between text-sm">
                   <span>Available:</span>
                   <span className="font-mono">
-                    {node.maxSupply - node.currentSupply} / {node.maxSupply}
+                    {node.maxSupply - node.currentSupply} / {formatNumber(node.maxSupply)}
                   </span>
                 </div>
                 <Progress 

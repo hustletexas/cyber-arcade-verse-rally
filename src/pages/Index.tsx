@@ -15,6 +15,7 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
+import { LiquidityPools } from '@/components/LiquidityPools';
 
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
@@ -194,7 +195,12 @@ const Index = () => {
             <CCTRStaking />
           </section>
 
-          {/* Node Purchase Section - Mobile Optimized */}
+          {/* Liquidity Pools Section - Stellar DeFi */}
+          <section className="px-2 sm:px-4">
+            <LiquidityPools />
+          </section>
+
+          {/* CCTR Node Purchase Section - Mobile Optimized */}
           <section className="px-2 sm:px-4">
             <NodePurchase />
           </section>
