@@ -61,9 +61,9 @@ const nodeTypes: NodeType[] = [
   {
     id: 'legendary',
     name: 'Legendary Node',
-    price: 1000000,
-    dailyReward: 7000,
-    monthlyReward: 210000,
+    price: 100000,
+    dailyReward: 700,
+    monthlyReward: 21000,
     roi: 210,
     maxSupply: 100,
     currentSupply: 0,

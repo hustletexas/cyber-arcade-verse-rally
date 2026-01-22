@@ -47,32 +47,94 @@ export const useMultiWallet = () => {
     }
   };
 
+  // Wallet storage key for cross-tab sync
+  const WALLET_STORAGE_KEY = 'cyberCity_connectedWallets';
+  const PRIMARY_WALLET_KEY = 'cyberCity_primaryWallet';
+
+  // Load wallets from localStorage for cross-tab persistence
+  const loadStoredWallets = (): ConnectedWallet[] => {
+    try {
+      const stored = localStorage.getItem(WALLET_STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading stored wallets:', error);
+    }
+    return [];
+  };
+
+  const loadPrimaryWallet = (): ConnectedWallet | null => {
+    try {
+      const stored = localStorage.getItem(PRIMARY_WALLET_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading primary wallet:', error);
+    }
+    return null;
+  };
+
+  // Save wallets to localStorage for cross-tab persistence
+  const saveWalletsToStorage = (wallets: ConnectedWallet[], primary: ConnectedWallet | null) => {
+    try {
+      localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(wallets));
+      if (primary) {
+        localStorage.setItem(PRIMARY_WALLET_KEY, JSON.stringify(primary));
+      } else {
+        localStorage.removeItem(PRIMARY_WALLET_KEY);
+      }
+    } catch (error) {
+      console.error('Error saving wallets:', error);
+    }
+  };
+
+  // Listen for storage changes from other tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === WALLET_STORAGE_KEY && e.newValue) {
+        try {
+          const wallets = JSON.parse(e.newValue);
+          setConnectedWallets(wallets);
+        } catch (error) {
+          console.error('Error syncing wallets:', error);
+        }
+      }
+      if (e.key === PRIMARY_WALLET_KEY && e.newValue) {
+        try {
+          const primary = JSON.parse(e.newValue);
+          setPrimaryWallet(primary);
+        } catch (error) {
+          console.error('Error syncing primary wallet:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Check for existing wallet connections on load
   useEffect(() => {
     checkExistingConnections();
   }, []);
 
   const checkExistingConnections = async () => {
-    const wallets: ConnectedWallet[] = [];
-
-    // Check for created wallet
-    try {
-      const storedWallet = localStorage.getItem('cyberCityWallet');
-      if (storedWallet) {
-        const wallet = JSON.parse(storedWallet);
-        wallets.push({
-          type: 'created',
-          address: wallet.publicKey,
-          isConnected: true,
-          chain: 'solana',
-          symbol: 'SOL'
-        });
-      }
-    } catch (error) {
-      console.error('Error loading stored wallet:', error);
+    // First, load from localStorage for consistent cross-tab experience
+    const storedWallets = loadStoredWallets();
+    const storedPrimary = loadPrimaryWallet();
+    
+    if (storedWallets.length > 0) {
+      setConnectedWallets(storedWallets);
+      setPrimaryWallet(storedPrimary || storedWallets[0]);
+      return; // Use stored wallets, don't re-detect
     }
 
-    // Check Phantom
+    // No stored wallets, detect connected ones
+    const wallets: ConnectedWallet[] = [];
+
+    // Check Phantom (auto-connect only if trusted)
     if (window.solana && window.solana.isPhantom && window.solana.isConnected) {
       try {
         const response = await window.solana.connect({ onlyIfTrusted: true });
@@ -87,6 +149,24 @@ export const useMultiWallet = () => {
         }
       } catch (error) {
         // Phantom wallet not auto-connected
+      }
+    }
+
+    // Check MetaMask
+    if (window.ethereum && window.ethereum.isMetaMask) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts && accounts.length > 0) {
+          wallets.push({
+            type: 'metamask',
+            address: accounts[0],
+            isConnected: true,
+            chain: 'ethereum',
+            symbol: 'ETH'
+          });
+        }
+      } catch (error) {
+        // MetaMask wallet not auto-connected
       }
     }
 
@@ -112,50 +192,13 @@ export const useMultiWallet = () => {
       }
     }
 
-    // Check MetaMask
-    if (window.ethereum && window.ethereum.isMetaMask) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          wallets.push({
-            type: 'metamask',
-            address: accounts[0],
-            isConnected: true,
-            chain: 'ethereum',
-            symbol: 'ETH'
-          });
-        }
-      } catch (error) {
-        // MetaMask wallet not auto-connected
-      }
-    }
-
-    // Check Coinbase
-    if (window.ethereum && window.ethereum.isCoinbaseWallet) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          wallets.push({
-            type: 'coinbase',
-            address: accounts[0],
-            isConnected: true,
-            chain: 'ethereum',
-            symbol: 'ETH'
-          });
-        }
-      } catch (error) {
-        // Coinbase wallet not auto-connected
-      }
-    }
-
-    // Note: LOBSTR uses WalletConnect, so we don't auto-detect it on page load
-    // Users will connect manually through the modal
-
     setConnectedWallets(wallets);
-    if (wallets.length > 0 && !primaryWallet) {
+    if (wallets.length > 0) {
       // Prefer Stellar wallets as primary (for USDC payments and CCC rewards)
       const stellarWallet = wallets.find(w => w.chain === 'stellar');
-      setPrimaryWallet(stellarWallet || wallets[0]);
+      const primary = stellarWallet || wallets[0];
+      setPrimaryWallet(primary);
+      saveWalletsToStorage(wallets, primary);
     }
   };
 
@@ -190,11 +233,17 @@ export const useMultiWallet = () => {
 
     setConnectedWallets(prev => {
       const filtered = prev.filter(w => w.type !== type);
-      return [...filtered, newWallet];
+      const updated = [...filtered, newWallet];
+      
+      // Save to localStorage for cross-tab sync
+      const primary = primaryWallet || newWallet;
+      saveWalletsToStorage(updated, primary);
+      
+      return updated;
     });
 
-    // Set as primary if it's the first wallet
-    if (!primaryWallet) {
+    // Set as primary if it's the first wallet or a Stellar wallet (preferred)
+    if (!primaryWallet || chain === 'stellar') {
       setPrimaryWallet(newWallet);
     }
 
@@ -234,13 +283,20 @@ export const useMultiWallet = () => {
           break;
       }
 
-      setConnectedWallets(prev => prev.filter(w => w.type !== type));
+      const updatedWallets = connectedWallets.filter(w => w.type !== type);
+      setConnectedWallets(updatedWallets);
       
       // Update primary wallet if disconnected
+      let newPrimary: ConnectedWallet | null = null;
       if (primaryWallet?.type === type) {
-        const remaining = connectedWallets.filter(w => w.type !== type);
-        setPrimaryWallet(remaining.length > 0 ? remaining[0] : null);
+        newPrimary = updatedWallets.length > 0 ? updatedWallets[0] : null;
+        setPrimaryWallet(newPrimary);
+      } else {
+        newPrimary = primaryWallet;
       }
+
+      // Save to localStorage for cross-tab sync
+      saveWalletsToStorage(updatedWallets, newPrimary);
 
       toast({
         title: "Wallet Disconnected",
@@ -259,6 +315,9 @@ export const useMultiWallet = () => {
   const switchPrimaryWallet = useCallback(async (wallet: ConnectedWallet) => {
     setPrimaryWallet(wallet);
     
+    // Save to localStorage for cross-tab sync
+    saveWalletsToStorage(connectedWallets, wallet);
+    
     // Update profile with new primary wallet
     if (user) {
       await linkWalletToProfile(wallet.address);
@@ -268,7 +327,7 @@ export const useMultiWallet = () => {
       title: "Primary Wallet Changed",
       description: `Switched to ${wallet.type} wallet`,
     });
-  }, [toast, user]);
+  }, [connectedWallets, toast, user]);
 
   const getWalletIcon = (type: WalletType) => {
     switch (type) {

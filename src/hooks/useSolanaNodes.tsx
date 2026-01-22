@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface NodePurchase {
   nodeType: 'basic' | 'premium' | 'legendary';
@@ -11,18 +10,19 @@ interface NodePurchase {
   onSuccess?: () => void;
 }
 
+// Node prices in CCTR
+const NODE_PRICES = {
+  basic: 1000,
+  premium: 10000,
+  legendary: 100000
+};
+
 export const useSolanaNodes = () => {
   const { user } = useAuth();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [userNodes, setUserNodes] = useState({ basic: 0, premium: 0, legendary: 0 });
-
-  // Solana connection
-  const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-  
-  // Node system program ID (replace with actual deployed program)
-  const NODE_PROGRAM_ID = new PublicKey('7WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWN');
 
   const fetchUserNodes = async () => {
     if (!user || !primaryWallet) return;
@@ -68,32 +68,41 @@ export const useSolanaNodes = () => {
     setIsProcessing(true);
 
     try {
-      // Get wallet provider
-      const provider = (window as any).solana;
-      if (!provider) throw new Error('Solana wallet not found');
+      // Check user's CCTR balance
+      const { data: balanceData, error: balanceError } = await supabase
+        .from('user_balances')
+        .select('cctr_balance')
+        .eq('user_id', user.id)
+        .single();
 
-      const publicKey = new PublicKey(primaryWallet.address);
+      if (balanceError && balanceError.code !== 'PGRST116') throw balanceError;
       
-      // Create payment transaction
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: NODE_PROGRAM_ID, // In real implementation, this would be the program's treasury
-          lamports: price * LAMPORTS_PER_SOL,
-        })
-      );
+      const cctrBalance = balanceData?.cctr_balance || 0;
+      const nodePrice = NODE_PRICES[nodeType];
 
-      // Get recent blockhash
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
+      if (cctrBalance < nodePrice) {
+        toast({
+          title: "Insufficient CCTR Balance",
+          description: `You need ${nodePrice.toLocaleString()} CCTR to purchase this node. Current balance: ${cctrBalance.toLocaleString()} CCTR`,
+          variant: "destructive",
+        });
+        return;
+      }
 
-      // Sign and send transaction
-      const signedTx = await provider.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(signedTx.serialize());
-      
-      // Confirm transaction
-      await connection.confirmTransaction(signature, 'confirmed');
+      // Deduct CCTR from balance
+      const newBalance = cctrBalance - nodePrice;
+      const { error: updateError } = await supabase
+        .from('user_balances')
+        .upsert({
+          user_id: user.id,
+          cctr_balance: newBalance,
+          updated_at: new Date().toISOString()
+        });
+
+      if (updateError) throw updateError;
+
+      // Generate a transaction hash for record-keeping
+      const transactionHash = `cctr_node_${nodeType}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
       // Record purchase in database
       const { error } = await supabase
@@ -103,15 +112,25 @@ export const useSolanaNodes = () => {
           wallet_address: primaryWallet.address,
           node_type: nodeType,
           quantity: 1,
-          price_sol: price,
-          transaction_hash: signature,
+          price_sol: nodePrice, // Using price_sol column but storing CCTR value
+          transaction_hash: transactionHash,
         });
 
       if (error) throw error;
 
+      // Record the token transaction
+      await supabase
+        .from('token_transactions')
+        .insert({
+          user_id: user.id,
+          amount: -nodePrice,
+          transaction_type: 'node_purchase',
+          description: `Purchased ${nodeType} CCTR node`
+        });
+
       toast({
         title: "Node Purchased Successfully!",
-        description: `Your ${nodeType} node is now active and earning rewards`,
+        description: `Your ${nodeType} node is now active and earning CCTR rewards`,
       });
 
       // Refresh user nodes
@@ -143,11 +162,11 @@ export const useSolanaNodes = () => {
     setIsProcessing(true);
 
     try {
-      // Calculate claimable rewards
+      // Calculate claimable rewards in CCTR
       const dailyRewards = {
-        basic: userNodes.basic * 0.05,
-        premium: userNodes.premium * 0.3,
-        legendary: userNodes.legendary * 0.7,
+        basic: userNodes.basic * 5,      // 5 CCTR per basic node
+        premium: userNodes.premium * 60,  // 60 CCTR per premium node
+        legendary: userNodes.legendary * 700, // 700 CCTR per legendary node
       };
       
       const totalDaily = dailyRewards.basic + dailyRewards.premium + dailyRewards.legendary;
@@ -182,6 +201,24 @@ export const useSolanaNodes = () => {
         return;
       }
 
+      // Add rewards to user balance
+      const { data: balanceData } = await supabase
+        .from('user_balances')
+        .select('cctr_balance')
+        .eq('user_id', user.id)
+        .single();
+
+      const currentBalance = balanceData?.cctr_balance || 0;
+      const newBalance = currentBalance + totalDaily;
+
+      await supabase
+        .from('user_balances')
+        .upsert({
+          user_id: user.id,
+          cctr_balance: newBalance,
+          updated_at: new Date().toISOString()
+        });
+
       // Record reward claim
       const { error } = await supabase
         .from('node_rewards')
@@ -195,9 +232,19 @@ export const useSolanaNodes = () => {
 
       if (error) throw error;
 
+      // Record the token transaction
+      await supabase
+        .from('token_transactions')
+        .insert({
+          user_id: user.id,
+          amount: totalDaily,
+          transaction_type: 'node_reward',
+          description: `Claimed daily CCTR node rewards`
+        });
+
       toast({
         title: "Rewards Claimed!",
-        description: `You claimed ${totalDaily} SOL in daily rewards`,
+        description: `You claimed ${totalDaily.toLocaleString()} CCTR in daily rewards`,
       });
 
     } catch (error: any) {
