@@ -285,7 +285,18 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       window.ethereum?.isCoinbaseWallet
     );
 
+    // Freighter is the default/first wallet option
     return [
+      {
+        ...WALLETS.find(w => w.id === 'freighter')!,
+        isInstalled: freighterInstalled,
+        connect: connectFreighter
+      },
+      {
+        ...WALLETS.find(w => w.id === 'lobstr')!,
+        isInstalled: lobstrInstalled,
+        connect: connectLobstr
+      },
       {
         ...WALLETS.find(w => w.id === 'phantom')!,
         isInstalled: !!(window.solana && window.solana.isPhantom),
@@ -297,19 +308,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         connect: connectMetaMask
       },
       {
-        ...WALLETS.find(w => w.id === 'lobstr')!,
-        isInstalled: lobstrInstalled,
-        connect: connectLobstr
-      },
-      {
         ...WALLETS.find(w => w.id === 'coinbase')!,
         isInstalled: hasCoinbase,
         connect: connectCoinbase
-      },
-      {
-        ...WALLETS.find(w => w.id === 'freighter')!,
-        isInstalled: freighterInstalled,
-        connect: connectFreighter
       },
       {
         ...WALLETS.find(w => w.id === 'leap')!,
