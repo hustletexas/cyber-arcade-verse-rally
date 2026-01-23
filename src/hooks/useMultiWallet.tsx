@@ -120,85 +120,160 @@ export const useMultiWallet = () => {
     checkExistingConnections();
   }, []);
 
+  const autoConnectFreighter = async (): Promise<ConnectedWallet | null> => {
+    try {
+      // Check if Freighter extension is available
+      const freighterApi = (window as any).freighter;
+      if (!freighterApi) {
+        console.log('Freighter extension not detected');
+        return null;
+      }
+
+      // Check if Freighter is connected (user previously approved)
+      const isConnected = await freighterApi.isConnected();
+      if (!isConnected) {
+        console.log('Freighter not previously approved');
+        return null;
+      }
+
+      // Get the public key without prompting (only works if previously approved)
+      const publicKey = await freighterApi.getPublicKey();
+      if (publicKey) {
+        console.log('Freighter auto-connected:', publicKey.substring(0, 8) + '...');
+        return {
+          type: 'freighter' as WalletType,
+          address: publicKey,
+          isConnected: true,
+          chain: 'stellar',
+          symbol: 'XLM'
+        };
+      }
+    } catch (error) {
+      console.log('Freighter auto-connect failed:', error);
+    }
+    return null;
+  };
+
   const checkExistingConnections = async () => {
-    // First, load from localStorage for consistent cross-tab experience
-    const storedWallets = loadStoredWallets();
-    const storedPrimary = loadPrimaryWallet();
+    setIsLoading(true);
     
-    if (storedWallets.length > 0) {
-      setConnectedWallets(storedWallets);
-      setPrimaryWallet(storedPrimary || storedWallets[0]);
-      return; // Use stored wallets, don't re-detect
-    }
-
-    // No stored wallets, detect connected ones
-    const wallets: ConnectedWallet[] = [];
-
-    // Check Phantom (auto-connect only if trusted)
-    if (window.solana && window.solana.isPhantom && window.solana.isConnected) {
-      try {
-        const response = await window.solana.connect({ onlyIfTrusted: true });
-        if (response?.publicKey) {
-          wallets.push({
-            type: 'phantom',
-            address: response.publicKey.toString(),
-            isConnected: true,
-            chain: 'solana',
-            symbol: 'SOL'
-          });
+    try {
+      // First, load from localStorage for consistent cross-tab experience
+      const storedWallets = loadStoredWallets();
+      const storedPrimary = loadPrimaryWallet();
+      
+      if (storedWallets.length > 0) {
+        // Verify Freighter is still connected if it's in stored wallets
+        const hasStoredFreighter = storedWallets.some(w => w.type === 'freighter');
+        if (hasStoredFreighter) {
+          const freighterWallet = await autoConnectFreighter();
+          if (freighterWallet) {
+            // Update with fresh Freighter data
+            const updatedWallets = storedWallets.map(w => 
+              w.type === 'freighter' ? freighterWallet : w
+            );
+            setConnectedWallets(updatedWallets);
+            
+            // Prefer Freighter as primary
+            const primary = storedPrimary?.type === 'freighter' ? freighterWallet : storedPrimary;
+            setPrimaryWallet(primary || freighterWallet);
+            saveWalletsToStorage(updatedWallets, primary || freighterWallet);
+          } else {
+            // Freighter no longer connected, remove it
+            const updatedWallets = storedWallets.filter(w => w.type !== 'freighter');
+            setConnectedWallets(updatedWallets);
+            const newPrimary = storedPrimary?.type === 'freighter' 
+              ? (updatedWallets[0] || null) 
+              : storedPrimary;
+            setPrimaryWallet(newPrimary);
+            saveWalletsToStorage(updatedWallets, newPrimary);
+          }
+        } else {
+          setConnectedWallets(storedWallets);
+          setPrimaryWallet(storedPrimary || storedWallets[0]);
         }
-      } catch (error) {
-        // Phantom wallet not auto-connected
+        setIsLoading(false);
+        return;
       }
-    }
 
-    // Check MetaMask
-    if (window.ethereum && window.ethereum.isMetaMask) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          wallets.push({
-            type: 'metamask',
-            address: accounts[0],
-            isConnected: true,
-            chain: 'ethereum',
-            symbol: 'ETH'
-          });
+      // No stored wallets - try auto-connecting Freighter first (default wallet)
+      const wallets: ConnectedWallet[] = [];
+      
+      // Auto-connect Freighter (priority - default wallet)
+      const freighterWallet = await autoConnectFreighter();
+      if (freighterWallet) {
+        wallets.push(freighterWallet);
+      }
+
+      // Check Phantom (auto-connect only if trusted)
+      if (window.solana && window.solana.isPhantom && window.solana.isConnected) {
+        try {
+          const response = await window.solana.connect({ onlyIfTrusted: true });
+          if (response?.publicKey) {
+            wallets.push({
+              type: 'phantom',
+              address: response.publicKey.toString(),
+              isConnected: true,
+              chain: 'solana',
+              symbol: 'SOL'
+            });
+          }
+        } catch (error) {
+          // Phantom wallet not auto-connected
         }
-      } catch (error) {
-        // MetaMask wallet not auto-connected
       }
-    }
 
-    // Check Coinbase
-    const coinbaseProvider = (window as any).coinbaseWalletExtension || 
-      ((window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet)) ||
-      (window.ethereum?.isCoinbaseWallet ? window.ethereum : null);
-    
-    if (coinbaseProvider) {
-      try {
-        const accounts = await coinbaseProvider.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          wallets.push({
-            type: 'coinbase',
-            address: accounts[0],
-            isConnected: true,
-            chain: 'ethereum',
-            symbol: 'ETH'
-          });
+      // Check MetaMask
+      if (window.ethereum && window.ethereum.isMetaMask) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
+            wallets.push({
+              type: 'metamask',
+              address: accounts[0],
+              isConnected: true,
+              chain: 'ethereum',
+              symbol: 'ETH'
+            });
+          }
+        } catch (error) {
+          // MetaMask wallet not auto-connected
         }
-      } catch (error) {
-        // Coinbase wallet not auto-connected
       }
-    }
 
-    setConnectedWallets(wallets);
-    if (wallets.length > 0) {
-      // Prefer Stellar wallets as primary (for USDC payments and CCC rewards)
-      const stellarWallet = wallets.find(w => w.chain === 'stellar');
-      const primary = stellarWallet || wallets[0];
-      setPrimaryWallet(primary);
-      saveWalletsToStorage(wallets, primary);
+      // Check Coinbase
+      const coinbaseProvider = (window as any).coinbaseWalletExtension || 
+        ((window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet)) ||
+        (window.ethereum?.isCoinbaseWallet ? window.ethereum : null);
+      
+      if (coinbaseProvider) {
+        try {
+          const accounts = await coinbaseProvider.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
+            wallets.push({
+              type: 'coinbase',
+              address: accounts[0],
+              isConnected: true,
+              chain: 'ethereum',
+              symbol: 'ETH'
+            });
+          }
+        } catch (error) {
+          // Coinbase wallet not auto-connected
+        }
+      }
+
+      setConnectedWallets(wallets);
+      if (wallets.length > 0) {
+        // Prefer Freighter/Stellar wallets as primary (for USDC payments and CCC rewards)
+        const freighter = wallets.find(w => w.type === 'freighter');
+        const stellarWallet = freighter || wallets.find(w => w.chain === 'stellar');
+        const primary = stellarWallet || wallets[0];
+        setPrimaryWallet(primary);
+        saveWalletsToStorage(wallets, primary);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
