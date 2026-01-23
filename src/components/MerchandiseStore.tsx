@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { ShoppingCart, Shirt, Eye } from 'lucide-react';
 
 interface MerchandiseItem {
@@ -129,6 +130,9 @@ export const MerchandiseStore = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Wallet Connection Status */}
+        <WalletStatusBar />
+
         {/* Category Filter */}
         <div className="flex flex-wrap gap-3 justify-center">
           {categories.map((category) => (

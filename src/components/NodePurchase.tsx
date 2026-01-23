@@ -11,6 +11,7 @@ import { NodeInfo } from '@/components/nodes/NodeInfo';
 import { NodeCards } from '@/components/nodes/NodeCards';
 import { NodeRewards } from '@/components/nodes/NodeRewards';
 import { NodeStatistics } from '@/components/nodes/NodeStatistics';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Coins, Server, Zap, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -139,6 +140,9 @@ export const NodePurchase = () => {
         </p>
       </CardHeader>
       <CardContent className="space-y-8">
+        {/* Wallet Connection Status */}
+        <WalletStatusBar />
+
         <Tabs defaultValue="purchase" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="purchase">Purchase Nodes</TabsTrigger>

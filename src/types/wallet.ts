@@ -67,20 +67,10 @@ export const CHAINS: Record<ChainType, ChainInfo> = {
   }
 };
 
-// Default wallet for new users - Freighter is the primary wallet
-export const DEFAULT_WALLET: WalletType = 'freighter';
+// Default wallet for new users - LOBSTR is the primary wallet
+export const DEFAULT_WALLET: WalletType = 'lobstr';
 
 export const WALLETS: WalletInfo[] = [
-  {
-    id: 'freighter',
-    name: 'Freighter',
-    icon: '🚀',
-    logoUrl: '/images/wallets/freighter.png?v=3',
-    chain: 'stellar',
-    downloadUrl: 'https://www.freighter.app/',
-    description: 'Stellar wallet browser extension (Recommended)',
-    isPopular: true
-  },
   {
     id: 'lobstr',
     name: 'LOBSTR',
@@ -88,7 +78,17 @@ export const WALLETS: WalletInfo[] = [
     logoUrl: '/images/wallets/lobstr.png?v=2',
     chain: 'stellar',
     downloadUrl: 'https://lobstr.co/',
-    description: 'The most popular Stellar wallet',
+    description: 'The most popular Stellar wallet (Recommended)',
+    isPopular: true
+  },
+  {
+    id: 'freighter',
+    name: 'Freighter',
+    icon: '🚀',
+    logoUrl: '/images/wallets/freighter.png?v=3',
+    chain: 'stellar',
+    downloadUrl: 'https://www.freighter.app/',
+    description: 'Stellar wallet browser extension',
     isPopular: true
   },
   {

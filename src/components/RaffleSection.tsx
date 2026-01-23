@@ -10,6 +10,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { supabase } from '@/integrations/supabase/client';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles } from 'lucide-react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { ChestOpeningAnimation } from './ChestOpeningAnimation';
@@ -210,14 +211,10 @@ export const RaffleSection = () => {
           <p className="text-center text-muted-foreground">
             Open treasure chests for instant rewards • Enter raffles for big prizes • Earn CCTR tokens
           </p>
-          {primaryWallet && (
-            <div className="text-center mt-2">
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
-              </Badge>
-            </div>
-          )}
         </CardHeader>
+        <CardContent>
+          <WalletStatusBar />
+        </CardContent>
       </Card>
 
       {/* Mystery Treasure Chests */}

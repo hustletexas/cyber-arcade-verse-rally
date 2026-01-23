@@ -10,6 +10,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useCart } from '@/contexts/CartContext';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { ShoppingCart, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 
@@ -253,6 +254,9 @@ export const Marketplace = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
+          {/* Wallet Connection Status */}
+          <WalletStatusBar />
+
           {/* Platform Connections */}
           <Card className="holographic p-6">
             <h3 className="font-bold text-neon-cyan mb-4">🔗 Platform Connections</h3>
@@ -277,25 +281,6 @@ export const Marketplace = () => {
               </Button>
             </div>
           </Card>
-
-          {/* Wallet Status */}
-          {isWalletConnected && primaryWallet && (
-            <Card className="vending-machine p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-neon-green text-black">
-                    CONNECTED
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {primaryWallet.address.slice(0, 6)}...{primaryWallet.address.slice(-4)}
-                  </span>
-                </div>
-                <div className="text-sm text-neon-cyan">
-                  {selectedCurrency === 'cctr' && `${balance.cctr_balance} $CCTR`}
-                </div>
-              </div>
-            </Card>
-          )}
 
           {/* Filters and Currency Selection */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
