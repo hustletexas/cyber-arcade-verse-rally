@@ -9,6 +9,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
 import { CreditCard, DollarSign, Coins } from 'lucide-react';
 import { WalletConnectionModal } from '@/components/WalletConnectionModal';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 
 export const TokenPurchase = () => {
   const { toast } = useToast();
@@ -138,6 +139,10 @@ export const TokenPurchase = () => {
   };
 
   const paymentMethods = [{
+    value: 'cctr',
+    label: '🎮 CCTR',
+    icon: '🎮'
+  }, {
     value: 'usdc',
     label: '🪙 USDC',
     icon: '🪙'
@@ -145,10 +150,6 @@ export const TokenPurchase = () => {
     value: 'pyusd',
     label: '💰 PYUSD',
     icon: '💰'
-  }, {
-    value: 'solana',
-    label: '⚡ Solana',
-    icon: '⚡'
   }];
   const presetAmounts = [500, 1000, 2500, 5000, 10000];
 
@@ -159,14 +160,14 @@ export const TokenPurchase = () => {
           <CardTitle className="font-display text-2xl text-neon-green flex items-center gap-3">
             💰 BUY $CCTR TOKENS
             <Badge className="bg-neon-cyan text-black">LIVE</Badge>
-            {isWalletConnected && (
-              <Badge className="bg-neon-green text-black text-sm">
-                ✅ AUTHENTICATED
-              </Badge>
-            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Wallet Connection Status */}
+          <div className="mb-6">
+            <WalletStatusBar />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="space-y-6">
               <Card className="holographic p-6">

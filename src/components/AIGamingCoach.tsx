@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useSolanaScore } from '@/hooks/useSolanaScore';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Brain, Zap, MessageCircle, CheckCircle } from 'lucide-react';
 
 export const AIGamingCoach = () => {
@@ -108,30 +109,8 @@ export const AIGamingCoach = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Connection Status */}
-        <div className="flex items-center justify-between p-3 rounded-lg border border-neon-cyan/20 bg-card/50">
-          <div className="flex items-center gap-2">
-            {isWalletConnected && primaryWallet ? (
-              <>
-                <CheckCircle className="w-5 h-5 text-neon-green" />
-                <span className="text-neon-green font-medium">Wallet Connected & Ready</span>
-                <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30">
-                  {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 8)}...
-                </Badge>
-              </>
-            ) : (
-              <>
-                <div className="w-5 h-5 rounded-full border-2 border-neon-pink"></div>
-                <span className="text-neon-pink font-medium">Connect Wallet to Start</span>
-              </>
-            )}
-          </div>
-          {isWalletConnected && (
-            <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30">
-              Ready for AI Coaching
-            </Badge>
-          )}
-        </div>
+        {/* Wallet Connection Status */}
+        <WalletStatusBar />
 
         {/* Question Input */}
         <div className="space-y-4">

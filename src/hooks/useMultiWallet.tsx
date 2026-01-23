@@ -22,6 +22,7 @@ export const useMultiWallet = () => {
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([]);
   const [primaryWallet, setPrimaryWallet] = useState<ConnectedWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeChain, setActiveChain] = useState<'solana' | 'ethereum' | 'stellar'>('stellar');
 
   const getChainForWallet = (type: WalletType): 'solana' | 'ethereum' | 'stellar' => {
     switch (type) {
@@ -265,11 +266,12 @@ export const useMultiWallet = () => {
 
       setConnectedWallets(wallets);
       if (wallets.length > 0) {
-        // Prefer Freighter/Stellar wallets as primary (for USDC payments and CCC rewards)
-        const freighter = wallets.find(w => w.type === 'freighter');
-        const stellarWallet = freighter || wallets.find(w => w.chain === 'stellar');
+        // Prefer LOBSTR/Stellar wallets as primary (for USDC payments and CCC rewards)
+        const lobstr = wallets.find(w => w.type === 'lobstr');
+        const stellarWallet = lobstr || wallets.find(w => w.chain === 'stellar');
         const primary = stellarWallet || wallets[0];
         setPrimaryWallet(primary);
+        setActiveChain(primary.chain || 'stellar');
         saveWalletsToStorage(wallets, primary);
       }
     } finally {
@@ -436,6 +438,8 @@ export const useMultiWallet = () => {
     hasMultipleWallets,
     hasMultipleChains,
     isLoading,
+    activeChain,
+    setActiveChain,
     connectWallet,
     disconnectWallet,
     switchPrimaryWallet,

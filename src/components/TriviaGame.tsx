@@ -12,6 +12,7 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TriviaUserStats } from '@/types/trivia';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 
 type ViewState = 'menu' | 'game' | 'leaderboard' | 'rewards';
 
@@ -238,16 +239,12 @@ export const TriviaGame = () => {
           <p className="text-center text-muted-foreground">
             Test your gaming knowledge and earn CCTR tokens • Console classics • Gaming legends
           </p>
-          {connectedWallet && (
-            <div className="text-center mt-2">
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Wallet: {connectedWallet.address.slice(0, 8)}...{connectedWallet.address.slice(-4)}
-              </Badge>
-            </div>
-          )}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <WalletStatusBar />
           
           {user && !balanceLoading && (
-            <div className="text-center mt-2">
+            <div className="text-center">
               <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple">
                 💰 Balance: {balance.cctr_balance} CCTR
               </Badge>
@@ -255,7 +252,7 @@ export const TriviaGame = () => {
           )}
           
           {/* Navigation Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mt-6">
+          <div className="flex flex-wrap justify-center gap-4">
             <Button
               onClick={() => setCurrentView('menu')}
               variant={currentView === 'menu' ? 'default' : 'outline'}
@@ -278,7 +275,7 @@ export const TriviaGame = () => {
               💰 Rewards
             </Button>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
       {/* User Stats */}

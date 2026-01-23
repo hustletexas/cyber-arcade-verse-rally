@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { 
   Droplets, 
   TrendingUp, 
@@ -466,23 +467,6 @@ export const LiquidityPools = () => {
             LIQUIDITY POOLS
             <Badge className="bg-neon-green text-black">STELLAR DEFI</Badge>
           </CardTitle>
-          
-          {!isWalletConnected ? (
-            <Button onClick={handleConnectWallet} className="cyber-button">
-              <Wallet className="h-4 w-4 mr-2" />
-              CONNECT WALLET
-            </Button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Badge className="bg-neon-green text-black flex items-center gap-1">
-                <CheckCircle className="h-3 w-3" />
-                CONNECTED
-              </Badge>
-              <span className="text-xs text-neon-cyan">
-                {primaryWallet?.address?.slice(0, 6)}...{primaryWallet?.address?.slice(-4)}
-              </span>
-            </div>
-          )}
         </div>
         <p className="text-muted-foreground">
           Provide liquidity and stake LP tokens to earn rewards on Stellar
@@ -490,6 +474,9 @@ export const LiquidityPools = () => {
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Wallet Connection Status */}
+        <WalletStatusBar />
+
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="holographic p-4 text-center">

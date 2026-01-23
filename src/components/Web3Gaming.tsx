@@ -8,6 +8,7 @@ import { GameGrid } from './web3games/GameGrid';
 import { FeaturedGames } from './web3games/FeaturedGames';
 import { GameCategories } from './web3games/GameCategories';
 import { PlayerProgress } from './web3games/PlayerProgress';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { toast } from 'sonner';
 
@@ -40,14 +41,10 @@ export const Web3Gaming = () => {
           <p className="text-center text-muted-foreground">
             Play, earn, and own your gaming experience • NFT rewards • Decentralized gaming
           </p>
-          {primaryWallet && (
-            <div className="text-center mt-2">
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                🔗 Connected: {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
-              </Badge>
-            </div>
-          )}
         </CardHeader>
+        <CardContent>
+          <WalletStatusBar />
+        </CardContent>
       </Card>
 
       {/* Gaming Tabs */}
