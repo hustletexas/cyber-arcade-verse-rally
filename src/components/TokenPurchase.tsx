@@ -296,13 +296,13 @@ export const TokenPurchase = () => {
               <div className="space-y-4">
                 <h3 className="font-bold text-neon-pink">Payment Method</h3>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-card border-neon-cyan/30">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-neon-cyan/30 z-50">
+                    <SelectItem value="cctr">🎮 CCTR</SelectItem>
                     <SelectItem value="usdc">🪙 USDC</SelectItem>
                     <SelectItem value="pyusd">💰 PYUSD</SelectItem>
-                    <SelectItem value="solana">⚡ Solana</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
