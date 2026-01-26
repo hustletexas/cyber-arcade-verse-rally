@@ -285,13 +285,8 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       window.ethereum?.isCoinbaseWallet
     );
 
-    // Freighter is the default/first wallet option
+    // LOBSTR at top, then other popular wallets, then Leap, then Freighter
     return [
-      {
-        ...WALLETS.find(w => w.id === 'freighter')!,
-        isInstalled: freighterInstalled,
-        connect: connectFreighter
-      },
       {
         ...WALLETS.find(w => w.id === 'lobstr')!,
         isInstalled: lobstrInstalled,
@@ -316,6 +311,11 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         ...WALLETS.find(w => w.id === 'leap')!,
         isInstalled: !!window.leap,
         connect: connectLeap
+      },
+      {
+        ...WALLETS.find(w => w.id === 'freighter')!,
+        isInstalled: freighterInstalled,
+        connect: connectFreighter
       }
     ];
   };
@@ -423,14 +423,14 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           </p>
         </DialogHeader>
 
-        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
           {/* Popular Wallets */}
           <div>
-            <div className="flex items-center gap-2 mb-3 px-1">
+            <div className="flex items-center gap-2 mb-4 px-1">
               <Sparkles size={14} className="text-yellow-500" />
               <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Popular</span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {popularWallets.map(wallet => (
                 <WalletButton key={wallet.id} wallet={wallet} />
               ))}
@@ -438,16 +438,18 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           </div>
 
           {/* Other Wallets */}
-          <div>
-            <div className="flex items-center gap-2 mb-3 px-1">
-              <span className="text-xs font-medium text-white/40 uppercase tracking-wider">More Wallets</span>
+          {otherWallets.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <span className="text-xs font-medium text-white/40 uppercase tracking-wider">More Wallets</span>
+              </div>
+              <div className="space-y-3">
+                {otherWallets.map(wallet => (
+                  <WalletButton key={wallet.id} wallet={wallet} />
+                ))}
+              </div>
             </div>
-            <div className="space-y-2">
-              {otherWallets.map(wallet => (
-                <WalletButton key={wallet.id} wallet={wallet} />
-              ))}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}

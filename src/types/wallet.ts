@@ -82,16 +82,6 @@ export const WALLETS: WalletInfo[] = [
     isPopular: true
   },
   {
-    id: 'freighter',
-    name: 'Freighter',
-    icon: '🚀',
-    logoUrl: '/images/wallets/freighter.png?v=3',
-    chain: 'stellar',
-    downloadUrl: 'https://www.freighter.app/',
-    description: 'Stellar wallet browser extension',
-    isPopular: true
-  },
-  {
     id: 'phantom',
     name: 'Phantom',
     icon: '👻',
@@ -128,6 +118,15 @@ export const WALLETS: WalletInfo[] = [
     chain: 'ethereum',
     downloadUrl: 'https://www.leapwallet.io/',
     description: 'Multi-chain Cosmos & EVM wallet'
+  },
+  {
+    id: 'freighter',
+    name: 'Freighter',
+    icon: '🚀',
+    logoUrl: '/images/wallets/freighter.png?v=3',
+    chain: 'stellar',
+    downloadUrl: 'https://www.freighter.app/',
+    description: 'Stellar wallet browser extension'
   }
 ];
 
