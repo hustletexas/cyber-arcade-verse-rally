@@ -5,7 +5,15 @@ import {
   xdr,
   nativeToScVal,
   scValToNative,
+  TransactionBuilder,
+  Account,
+  Operation,
+  Asset,
+  Memo,
+  BASE_FEE,
 } from '@stellar/stellar-sdk';
+import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID } from '@creit.tech/stellar-wallets-kit';
+import freighterApi from '@stellar/freighter-api';
 import { useMultiWallet } from './useMultiWallet';
 import { toast } from 'sonner';
 import type {
@@ -95,7 +103,104 @@ export const useSorobanContracts = () => {
     }
   }, [getStellarAddress]);
 
-  // Helper to sign and submit transaction
+  // Get connected wallet type (freighter or lobstr)
+  const getConnectedWalletType = useCallback((): 'freighter' | 'lobstr' | null => {
+    const stellarWallet = connectedWallets.find(
+      w => w.chain === 'stellar' && w.isConnected
+    );
+    if (!stellarWallet) return null;
+    return stellarWallet.type === 'freighter' ? 'freighter' : 'lobstr';
+  }, [connectedWallets]);
+
+  // Build transaction for contract invocation
+  const buildContractTransaction = useCallback(async (
+    sourceAddress: string,
+    contractId: string,
+    method: string,
+    args: xdr.ScVal[] = []
+  ): Promise<string> => {
+    // Fetch account sequence number from Horizon
+    const horizonUrl = NETWORK_PASSPHRASE === Networks.TESTNET 
+      ? 'https://horizon-testnet.stellar.org' 
+      : 'https://horizon.stellar.org';
+    
+    const accountResponse = await fetch(`${horizonUrl}/accounts/${sourceAddress}`);
+    if (!accountResponse.ok) {
+      throw new Error('Failed to fetch account details');
+    }
+    const accountData = await accountResponse.json();
+    const account = new Account(sourceAddress, accountData.sequence);
+
+    // Build the contract invocation
+    const contract = new Contract(contractId);
+    const invokeOp = contract.call(method, ...args);
+
+    // Build the transaction
+    const transaction = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: NETWORK_PASSPHRASE,
+    })
+      .addOperation(invokeOp)
+      .setTimeout(300)
+      .build();
+
+    return transaction.toXDR();
+  }, []);
+
+  // Sign transaction with Freighter
+  const signWithFreighter = useCallback(async (txXdr: string): Promise<string> => {
+    const networkDetails = await freighterApi.getNetworkDetails();
+    const network = networkDetails.networkPassphrase === Networks.TESTNET ? 'TESTNET' : 'PUBLIC';
+    
+    const signResult = await freighterApi.signTransaction(txXdr, {
+      networkPassphrase: networkDetails.networkPassphrase,
+    });
+
+    if (signResult.error) {
+      throw new Error(signResult.error.message || 'Failed to sign transaction with Freighter');
+    }
+
+    return signResult.signedTxXdr;
+  }, []);
+
+  // Sign transaction with LOBSTR via Stellar Wallets Kit
+  const signWithLobstr = useCallback(async (txXdr: string): Promise<string> => {
+    const kit = new StellarWalletsKit({
+      network: NETWORK_PASSPHRASE === Networks.TESTNET ? WalletNetwork.TESTNET : WalletNetwork.PUBLIC,
+      selectedWalletId: LOBSTR_ID,
+      modules: allowAllModules()
+    });
+
+    const { signedTxXdr } = await kit.signTransaction(txXdr);
+    return signedTxXdr;
+  }, []);
+
+  // Submit signed transaction to network
+  const submitTransaction = useCallback(async (signedTxXdr: string): Promise<string> => {
+    const response = await fetch(`${SOROBAN_RPC_URL}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'sendTransaction',
+        params: {
+          transaction: signedTxXdr,
+        },
+      }),
+    });
+
+    const result = await response.json();
+    
+    if (result.error) {
+      throw new Error(result.error.message || 'Failed to submit transaction');
+    }
+
+    // Return the transaction hash
+    return result.result?.hash || result.result?.id || signedTxXdr.slice(0, 16);
+  }, []);
+
+  // Helper to sign and submit transaction with real wallet integration
   const signAndSubmitTransaction = useCallback(async (
     contractId: string,
     method: string,
@@ -106,16 +211,41 @@ export const useSorobanContracts = () => {
       throw new Error('No Stellar wallet connected');
     }
 
-    // This would integrate with Freighter or LOBSTR for signing
-    // For now, we'll simulate the transaction signing flow
-    const txHash = `simulated_tx_${Date.now()}`;
-    
+    const walletType = getConnectedWalletType();
+    if (!walletType) {
+      throw new Error('No supported Stellar wallet connected');
+    }
+
     toast.info('Transaction signing requested', {
       description: 'Please approve the transaction in your wallet',
     });
 
-    return txHash;
-  }, [getStellarAddress]);
+    try {
+      // Build the transaction XDR
+      const txXdr = await buildContractTransaction(stellarAddress, contractId, method, args);
+
+      // Sign with appropriate wallet
+      let signedTxXdr: string;
+      if (walletType === 'freighter') {
+        signedTxXdr = await signWithFreighter(txXdr);
+      } else {
+        signedTxXdr = await signWithLobstr(txXdr);
+      }
+
+      // Submit the signed transaction
+      const txHash = await submitTransaction(signedTxXdr);
+
+      toast.success('Transaction submitted!', {
+        description: `Hash: ${txHash.slice(0, 8)}...${txHash.slice(-4)}`,
+      });
+
+      return txHash;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Transaction failed';
+      toast.error('Transaction failed', { description: message });
+      throw err;
+    }
+  }, [getStellarAddress, getConnectedWalletType, buildContractTransaction, signWithFreighter, signWithLobstr, submitTransaction]);
 
   // ============================================
   // CCTR TOKEN METHODS
