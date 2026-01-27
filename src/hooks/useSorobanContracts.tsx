@@ -49,9 +49,10 @@ const CONTRACT_ADDRESSES = {
   hostRewards: import.meta.env.VITE_HOST_REWARDS_CONTRACT || '',
 };
 
-// Soroban RPC endpoint
-const SOROBAN_RPC_URL = import.meta.env.VITE_SOROBAN_RPC_URL || 'https://soroban-testnet.stellar.org';
-const NETWORK_PASSPHRASE = Networks.TESTNET;
+// Soroban RPC endpoint - using centralized config
+import { STELLAR_NETWORK } from '@/config/stellar';
+const SOROBAN_RPC_URL = import.meta.env.VITE_SOROBAN_RPC_URL || STELLAR_NETWORK.sorobanRpcUrl;
+const NETWORK_PASSPHRASE = STELLAR_NETWORK.networkPassphrase;
 
 export const useSorobanContracts = () => {
   const { connectedWallets } = useMultiWallet();
@@ -136,9 +137,8 @@ export const useSorobanContracts = () => {
     args: xdr.ScVal[] = []
   ): Promise<string> => {
     // Fetch account sequence number from Horizon
-    const horizonUrl = NETWORK_PASSPHRASE === Networks.TESTNET 
-      ? 'https://horizon-testnet.stellar.org' 
-      : 'https://horizon.stellar.org';
+    // Use centralized Horizon URL from config
+    const horizonUrl = STELLAR_NETWORK.horizonUrl;
     
     const accountResponse = await fetch(`${horizonUrl}/accounts/${sourceAddress}`);
     if (!accountResponse.ok) {
