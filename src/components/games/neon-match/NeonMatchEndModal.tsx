@@ -1,8 +1,9 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Trophy, Clock, Move, X, RotateCcw, Award } from 'lucide-react';
+import { Trophy, Clock, Move, X, RotateCcw, Award, Gamepad2, Crown, ArrowLeft } from 'lucide-react';
 import { GameState } from '@/types/neon-match';
+import type { GameMode } from '@/hooks/useNeonMatch';
 
 interface NeonMatchEndModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface NeonMatchEndModalProps {
   onPlayAgain: () => void;
   onViewLeaderboard: () => void;
   canPlayAgain: boolean;
+  gameMode: GameMode | null;
 }
 
 export const NeonMatchEndModal: React.FC<NeonMatchEndModalProps> = ({
@@ -22,6 +24,7 @@ export const NeonMatchEndModal: React.FC<NeonMatchEndModalProps> = ({
   onPlayAgain,
   onViewLeaderboard,
   canPlayAgain,
+  gameMode,
 }) => {
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -33,6 +36,8 @@ export const NeonMatchEndModal: React.FC<NeonMatchEndModalProps> = ({
   const isSpeedBonus = gameState.timeSeconds < 90;
   const isEfficiencyBonus = gameState.moves < 60;
 
+  const isFreeMode = gameMode === 'free';
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-gradient-to-br from-[#0a0a0f] via-[#1a1a2e] to-[#16213e] border-2 border-cyan-500/50 shadow-[0_0_50px_rgba(6,182,212,0.3)] max-w-md">
@@ -40,6 +45,17 @@ export const NeonMatchEndModal: React.FC<NeonMatchEndModalProps> = ({
           <DialogTitle className="text-2xl sm:text-3xl font-bold text-center bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
             🎉 Game Complete!
           </DialogTitle>
+          <DialogDescription className="text-center">
+            {isFreeMode ? (
+              <span className="inline-flex items-center gap-1 text-green-400">
+                <Gamepad2 className="w-4 h-4" /> Free Play Mode
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-yellow-400">
+                <Crown className="w-4 h-4" /> Ranked Mode - Score Saved!
+              </span>
+            )}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -117,21 +133,30 @@ export const NeonMatchEndModal: React.FC<NeonMatchEndModalProps> = ({
               className="flex-1 bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600 text-white font-bold"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              Play Again
+              {isFreeMode ? 'Play Again' : (canPlayAgain ? 'Play Again' : 'Back')}
             </Button>
             <Button
               onClick={onViewLeaderboard}
               variant="outline"
               className="flex-1 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
             >
-              <Trophy className="w-4 h-4 mr-2" />
-              Leaderboard
+              {isFreeMode ? (
+                <>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Menu
+                </>
+              ) : (
+                <>
+                  <Trophy className="w-4 h-4 mr-2" />
+                  Leaderboard
+                </>
+              )}
             </Button>
           </div>
 
-          {!canPlayAgain && (
+          {!canPlayAgain && !isFreeMode && (
             <p className="text-center text-sm text-yellow-400/80">
-              Daily limit reached. Come back tomorrow!
+              Daily limit reached or insufficient CCTR. Come back tomorrow!
             </p>
           )}
         </div>

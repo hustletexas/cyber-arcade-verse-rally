@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useUserBalance } from '@/hooks/useUserBalance';
 import { Card, GameState, PAIR_IDS, DailyLimit, LeaderboardEntry, GAME_ENTRY_FEE } from '@/types/neon-match';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 
 const MAX_DAILY_PLAYS = 3;
+
+export type GameMode = 'free' | 'ranked';
 
 // Fisher-Yates shuffle
 function shuffle<T>(array: T[]): T[] {
@@ -53,7 +55,7 @@ const initialGameState: GameState = {
 
 export function useNeonMatch() {
   const { isWalletConnected, primaryWallet } = useMultiWallet();
-  const { user } = useAuth();
+  const { balance, deductBalance, refetch: refetchBalance } = useUserBalance();
   const walletAddress = primaryWallet?.address;
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [dailyLimit, setDailyLimit] = useState<DailyLimit | null>(null);
@@ -62,93 +64,16 @@ export function useNeonMatch() {
   const [finalScore, setFinalScore] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showEndModal, setShowEndModal] = useState(false);
-  const [cctrBalance, setCctrBalance] = useState<number>(0);
+  const [gameMode, setGameMode] = useState<GameMode | null>(null);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const matchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Check if user can play
-  const canPlay = dailyLimit ? dailyLimit.plays_today < MAX_DAILY_PLAYS : true;
+  // Check if user can play ranked
+  const canPlayRanked = dailyLimit ? dailyLimit.plays_today < MAX_DAILY_PLAYS : true;
   const playsRemaining = dailyLimit ? MAX_DAILY_PLAYS - dailyLimit.plays_today : MAX_DAILY_PLAYS;
-  const hasEnoughCCTR = cctrBalance >= GAME_ENTRY_FEE;
-
-  // Fetch CCTR balance
-  const fetchCCTRBalance = useCallback(async () => {
-    if (!user) {
-      setCctrBalance(0);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('user_balances')
-        .select('cctr_balance')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching CCTR balance:', error);
-        return;
-      }
-
-      setCctrBalance(data?.cctr_balance || 0);
-    } catch (err) {
-      console.error('Error in fetchCCTRBalance:', err);
-    }
-  }, [user]);
-
-  // Deduct CCTR entry fee
-  const deductEntryFee = useCallback(async (): Promise<boolean> => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to play",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    try {
-      // Use RPC to atomically deduct the entry fee
-      const { data, error } = await supabase.rpc('deduct_trivia_entry_fee', {
-        category_param: 'neon_match_game'
-      });
-
-      if (error) {
-        console.error('Error deducting entry fee:', error);
-        toast({
-          title: "Payment Failed",
-          description: "Failed to deduct entry fee. Please try again.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const result = data as { success: boolean; error?: string; remaining_balance?: number } | null;
-
-      if (!result?.success) {
-        toast({
-          title: "Insufficient Balance",
-          description: result?.error || `You need ${GAME_ENTRY_FEE} CCTR to play`,
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Update local balance
-      setCctrBalance(result.remaining_balance || 0);
-      
-      toast({
-        title: "Entry Fee Paid",
-        description: `${GAME_ENTRY_FEE} CCTR deducted. Good luck!`,
-      });
-
-      return true;
-    } catch (err) {
-      console.error('Error in deductEntryFee:', err);
-      return false;
-    }
-  }, [user]);
+  const hasEnoughCCTR = balance.cctr_balance >= GAME_ENTRY_FEE;
+  const cctrBalance = balance.cctr_balance;
 
   // Fetch daily limit - using wallet address as user_id
   const fetchDailyLimit = useCallback(async () => {
@@ -160,7 +85,6 @@ export function useNeonMatch() {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Query the daily_limits table using wallet address
       const { data, error } = await supabase
         .from('daily_limits')
         .select('user_id, plays_today, last_play_date')
@@ -176,31 +100,18 @@ export function useNeonMatch() {
       const typedData = data as unknown as DailyLimit | null;
 
       if (!typedData) {
-        // Create new record
         const newLimit: DailyLimit = {
           user_id: walletAddress,
           plays_today: 0,
           last_play_date: today,
         };
         
-        await supabase
-          .from('daily_limits')
-          .insert(newLimit);
-        
+        await supabase.from('daily_limits').insert(newLimit);
         setDailyLimit(newLimit);
       } else {
-        // Reset if new day
         if (typedData.last_play_date !== today) {
-          const updatedLimit = {
-            plays_today: 0,
-            last_play_date: today,
-          };
-          
-          await supabase
-            .from('daily_limits')
-            .update(updatedLimit)
-            .eq('user_id', walletAddress);
-          
+          const updatedLimit = { plays_today: 0, last_play_date: today };
+          await supabase.from('daily_limits').update(updatedLimit).eq('user_id', walletAddress);
           setDailyLimit({ ...typedData, ...updatedLimit });
         } else {
           setDailyLimit(typedData);
@@ -213,14 +124,13 @@ export function useNeonMatch() {
     }
   }, [walletAddress]);
 
-  // Fetch leaderboards - no auth required for viewing
+  // Fetch leaderboards
   const fetchLeaderboards = useCallback(async () => {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayStr = today.toISOString();
 
-      // Today's leaderboard
       const { data: todayData } = await supabase
         .from('match_scores')
         .select('user_id, score, time_seconds, moves, created_at')
@@ -229,7 +139,6 @@ export function useNeonMatch() {
         .order('time_seconds', { ascending: true })
         .limit(20);
 
-      // All time leaderboard
       const { data: allTimeData } = await supabase
         .from('match_scores')
         .select('user_id, score, time_seconds, moves, created_at')
@@ -258,8 +167,7 @@ export function useNeonMatch() {
   useEffect(() => {
     fetchDailyLimit();
     fetchLeaderboards();
-    fetchCCTRBalance();
-  }, [fetchDailyLimit, fetchLeaderboards, fetchCCTRBalance]);
+  }, [fetchDailyLimit, fetchLeaderboards]);
 
   // Cleanup
   useEffect(() => {
@@ -269,49 +177,62 @@ export function useNeonMatch() {
     };
   }, []);
 
-  // Start game
-  const startGame = useCallback(async () => {
-    if (!walletAddress) {
+  // Start game with mode
+  const startGame = useCallback(async (mode: GameMode) => {
+    // Free mode doesn't require wallet
+    if (mode === 'ranked' && !walletAddress) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet to play",
+        description: "Please connect your wallet to play ranked",
         variant: "destructive",
       });
       return;
     }
 
-    if (!canPlay) {
+    if (mode === 'ranked') {
+      if (!canPlayRanked) {
+        toast({
+          title: "Daily Limit Reached",
+          description: "Come back tomorrow for more ranked plays!",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Deduct CCTR entry fee for ranked
+      const result = await deductBalance(GAME_ENTRY_FEE);
+      if (!result.success) {
+        toast({
+          title: "Insufficient Balance",
+          description: result.error || `You need ${GAME_ENTRY_FEE} CCTR to play ranked`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
-        title: "Daily Limit Reached",
-        description: "Come back tomorrow for more plays!",
-        variant: "destructive",
+        title: "Entry Fee Paid",
+        description: `${GAME_ENTRY_FEE} CCTR deducted. Good luck!`,
       });
-      return;
-    }
 
-    // Deduct CCTR entry fee first
-    const feeDeducted = await deductEntryFee();
-    if (!feeDeducted) {
-      return; // Don't start game if fee wasn't deducted
-    }
+      // Increment plays_today for ranked mode
+      const today = new Date().toISOString().split('T')[0];
+      const newPlays = (dailyLimit?.plays_today || 0) + 1;
 
-    // Increment plays_today
-    const today = new Date().toISOString().split('T')[0];
-    const newPlays = (dailyLimit?.plays_today || 0) + 1;
-
-    await supabase
-      .from('daily_limits')
-      .upsert({
+      await supabase.from('daily_limits').upsert({
         user_id: walletAddress,
         plays_today: newPlays,
         last_play_date: today,
       });
 
-    setDailyLimit(prev => prev ? { ...prev, plays_today: newPlays } : {
-      user_id: walletAddress,
-      plays_today: newPlays,
-      last_play_date: today,
-    });
+      setDailyLimit(prev => prev ? { ...prev, plays_today: newPlays } : {
+        user_id: walletAddress!,
+        plays_today: newPlays,
+        last_play_date: today,
+      });
+    }
+
+    setGameMode(mode);
 
     // Reset game state
     const newCards = createDeck();
@@ -339,7 +260,7 @@ export function useNeonMatch() {
         return { ...prev, timeSeconds: prev.timeSeconds + 1 };
       });
     }, 1000);
-  }, [walletAddress, canPlay, dailyLimit, deductEntryFee]);
+  }, [walletAddress, canPlayRanked, dailyLimit, deductBalance]);
 
   // End game
   const endGame = useCallback(async (state: GameState) => {
@@ -348,18 +269,16 @@ export function useNeonMatch() {
     const score = calculateScore(state.timeSeconds, state.moves, state.mismatches);
     setFinalScore(score);
 
-    // Save score to database using wallet address
-    if (walletAddress) {
+    // Only save score for ranked mode
+    if (gameMode === 'ranked' && walletAddress) {
       try {
-        await supabase
-          .from('match_scores')
-          .insert({
-            user_id: walletAddress,
-            score,
-            time_seconds: state.timeSeconds,
-            moves: state.moves,
-            mismatches: state.mismatches,
-          });
+        await supabase.from('match_scores').insert({
+          user_id: walletAddress,
+          score,
+          time_seconds: state.timeSeconds,
+          moves: state.moves,
+          mismatches: state.mismatches,
+        });
         
         fetchLeaderboards();
       } catch (err) {
@@ -368,27 +287,22 @@ export function useNeonMatch() {
     }
 
     setShowEndModal(true);
-  }, [walletAddress, fetchLeaderboards]);
+  }, [walletAddress, gameMode, fetchLeaderboards]);
 
   // Handle card click
   const onCardClick = useCallback((cardId: string) => {
     setGameState(prev => {
-      // Ignore if locked, not playing, or game finished
       if (prev.isLocked || !prev.isPlaying || prev.isFinished) return prev;
 
       const card = prev.cards.find(c => c.id === cardId);
       if (!card || card.isFlipped || card.isMatched) return prev;
-
-      // Already have 2 flipped
       if (prev.flippedCards.length >= 2) return prev;
 
-      // Flip the card
       const newCards = prev.cards.map(c =>
         c.id === cardId ? { ...c, isFlipped: true } : c
       );
       const newFlipped = [...prev.flippedCards, cardId];
 
-      // If this is the second card
       if (newFlipped.length === 2) {
         const [firstId, secondId] = newFlipped;
         const firstCard = newCards.find(c => c.id === firstId)!;
@@ -399,13 +313,10 @@ export function useNeonMatch() {
         const newMismatches = isMatch ? prev.mismatches : prev.mismatches + 1;
 
         if (isMatch) {
-          // Match found - mark as matched after short delay
           matchTimeoutRef.current = setTimeout(() => {
             setGameState(innerPrev => {
               const matchedCards = innerPrev.cards.map(c =>
-                c.id === firstId || c.id === secondId
-                  ? { ...c, isMatched: true }
-                  : c
+                c.id === firstId || c.id === secondId ? { ...c, isMatched: true } : c
               );
               const newMatchedPairs = innerPrev.matchedPairs + 1;
               const isFinished = newMatchedPairs === 18;
@@ -427,60 +338,52 @@ export function useNeonMatch() {
             });
           }, 200);
 
-          return {
-            ...prev,
-            cards: newCards,
-            flippedCards: newFlipped,
-            moves: newMoves,
-            isLocked: true,
-          };
+          return { ...prev, cards: newCards, flippedCards: newFlipped, moves: newMoves, isLocked: true };
         } else {
-          // No match - flip back after delay
           matchTimeoutRef.current = setTimeout(() => {
             setGameState(innerPrev => ({
               ...innerPrev,
               cards: innerPrev.cards.map(c =>
-                c.id === firstId || c.id === secondId
-                  ? { ...c, isFlipped: false }
-                  : c
+                c.id === firstId || c.id === secondId ? { ...c, isFlipped: false } : c
               ),
               flippedCards: [],
               isLocked: false,
             }));
           }, 600);
 
-          return {
-            ...prev,
-            cards: newCards,
-            flippedCards: newFlipped,
-            moves: newMoves,
-            mismatches: newMismatches,
-            isLocked: true,
-          };
+          return { ...prev, cards: newCards, flippedCards: newFlipped, moves: newMoves, mismatches: newMismatches, isLocked: true };
         }
       }
 
-      return {
-        ...prev,
-        cards: newCards,
-        flippedCards: newFlipped,
-      };
+      return { ...prev, cards: newCards, flippedCards: newFlipped };
     });
   }, [endGame]);
 
-  // Restart game
+  // Restart game (same mode)
   const restartGame = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (matchTimeoutRef.current) clearTimeout(matchTimeoutRef.current);
     setGameState(initialGameState);
     setShowEndModal(false);
-    startGame();
-  }, [startGame]);
+    if (gameMode) {
+      startGame(gameMode);
+    }
+  }, [startGame, gameMode]);
+
+  // Back to mode selection
+  const backToModeSelect = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (matchTimeoutRef.current) clearTimeout(matchTimeoutRef.current);
+    setGameState(initialGameState);
+    setShowEndModal(false);
+    setGameMode(null);
+    refetchBalance();
+  }, [refetchBalance]);
 
   return {
     gameState,
     dailyLimit,
-    canPlay,
+    canPlay: canPlayRanked,
     playsRemaining,
     isLoading,
     finalScore,
@@ -491,9 +394,11 @@ export function useNeonMatch() {
     startGame,
     onCardClick,
     restartGame,
+    backToModeSelect,
     isAuthenticated: isWalletConnected,
     cctrBalance,
     hasEnoughCCTR,
     entryFee: GAME_ENTRY_FEE,
+    gameMode,
   };
 }

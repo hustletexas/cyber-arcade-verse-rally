@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { useNeonMatch } from '@/hooks/useNeonMatch';
+import { useNeonMatch, GameMode } from '@/hooks/useNeonMatch';
 import { NeonMatchGrid } from '@/components/games/neon-match/NeonMatchGrid';
 import { NeonMatchHUD } from '@/components/games/neon-match/NeonMatchHUD';
 import { NeonMatchLeaderboard } from '@/components/games/neon-match/NeonMatchLeaderboard';
 import { NeonMatchEndModal } from '@/components/games/neon-match/NeonMatchEndModal';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Play, RotateCcw, Lock, Wallet, Coins } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowLeft, Play, RotateCcw, Trophy, Gamepad2, Coins, Wallet, Sparkles, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Badge } from '@/components/ui/badge';
@@ -24,10 +25,12 @@ const NeonMatch: React.FC = () => {
     startGame,
     onCardClick,
     restartGame,
+    backToModeSelect,
     isAuthenticated,
     cctrBalance,
     hasEnoughCCTR,
     entryFee,
+    gameMode,
   } = useNeonMatch();
 
   const leaderboardRef = useRef<HTMLDivElement>(null);
@@ -78,96 +81,149 @@ const NeonMatch: React.FC = () => {
                   <Coins className="w-3 h-3" />
                   {cctrBalance} CCTR
                 </span>
-                <span className="bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/30 text-cyan-400 text-sm">
-                  {playsRemaining} plays left
-                </span>
+                {gameMode === 'ranked' && (
+                  <span className="bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/30 text-cyan-400 text-sm">
+                    {playsRemaining} ranked left
+                  </span>
+                )}
               </>
+            )}
+            {gameMode && (
+              <Badge 
+                variant="outline" 
+                className={gameMode === 'ranked' 
+                  ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' 
+                  : 'bg-green-500/20 text-green-400 border-green-500/50'
+                }
+              >
+                {gameMode === 'ranked' ? <Crown className="w-3 h-3 mr-1" /> : <Gamepad2 className="w-3 h-3 mr-1" />}
+                {gameMode === 'ranked' ? 'Ranked' : 'Free Play'}
+              </Badge>
             )}
           </div>
         </div>
 
         {/* Game Area */}
         <div className="max-w-3xl mx-auto">
-          {/* Not Authenticated - Connect Wallet */}
-          {!isAuthenticated && (
-            <div className="text-center py-12 px-4">
-              <Wallet className="w-16 h-16 mx-auto mb-4 text-cyan-400/50" />
-              <h2 className="text-2xl font-bold text-foreground mb-2">Connect Wallet to Play</h2>
-              <p className="text-cyan-400/70 mb-6">
-                Connect your Stellar wallet to play and save your scores to the leaderboard.
-              </p>
-              <div className="mb-4">
-                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-lg px-4 py-2">
-                  <Coins className="w-4 h-4 mr-2" />
-                  Entry Fee: {entryFee} CCTR per game
-                </Badge>
-              </div>
-              <WalletStatusBar />
-            </div>
-          )}
-
           {/* Loading */}
-          {isAuthenticated && isLoading && (
+          {isLoading && (
             <div className="text-center py-12">
               <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto mb-4" />
               <p className="text-cyan-400/70">Loading...</p>
             </div>
           )}
 
-          {/* Insufficient CCTR Balance */}
-          {isAuthenticated && !isLoading && !hasEnoughCCTR && !gameState.isPlaying && (
-            <div className="text-center py-12 px-4">
-              <Coins className="w-16 h-16 mx-auto mb-4 text-yellow-400/50" />
-              <h2 className="text-2xl font-bold text-foreground mb-2">Insufficient CCTR Balance</h2>
-              <p className="text-yellow-400/70 mb-4">
-                You need at least {entryFee} CCTR to play. Current balance: {cctrBalance} CCTR
-              </p>
-              <Link to="/">
-                <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
-                  Get More CCTR
-                </Button>
-              </Link>
-            </div>
-          )}
-
-          {/* Daily Limit Reached */}
-          {isAuthenticated && !isLoading && hasEnoughCCTR && !canPlay && !gameState.isPlaying && (
-            <div className="text-center py-12 px-4">
-              <Lock className="w-16 h-16 mx-auto mb-4 text-yellow-400/50" />
-              <h2 className="text-2xl font-bold text-foreground mb-2">Daily Limit Reached</h2>
-              <p className="text-yellow-400/70 mb-6">
-                You've used all 3 daily plays. Come back tomorrow for more!
-              </p>
-            </div>
-          )}
-
-          {/* Ready to Play */}
-          {isAuthenticated && !isLoading && hasEnoughCCTR && canPlay && !gameState.isPlaying && (
-            <div className="text-center py-8 sm:py-12 px-4">
-              <div className="text-6xl sm:text-8xl mb-4 animate-bounce">🎮</div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Ready to Play?</h2>
-              <p className="text-cyan-400/70 mb-4 max-w-md mx-auto">
-                Match all 18 pairs of neon NFT icons. Get bonuses for speed, efficiency, and perfect runs!
-              </p>
-              <div className="mb-6">
-                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-lg px-4 py-2">
-                  <Coins className="w-4 h-4 mr-2" />
-                  Entry Fee: {entryFee} CCTR
-                </Badge>
+          {/* Mode Selection (when not playing) */}
+          {!isLoading && !gameState.isPlaying && !gameMode && (
+            <div className="py-8 px-4">
+              <div className="text-center mb-8">
+                <div className="text-6xl sm:text-8xl mb-4">🎮</div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Choose Your Mode</h2>
+                <p className="text-cyan-400/70 max-w-md mx-auto">
+                  Match all 18 pairs of neon NFT icons. Get bonuses for speed, efficiency, and perfect runs!
+                </p>
               </div>
-              <Button
-                onClick={startGame}
-                size="lg"
-                className="bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600 text-white font-bold text-lg px-8 py-6 shadow-[0_0_30px_rgba(6,182,212,0.4)]"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Start Game ({entryFee} CCTR)
-              </Button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                {/* Free Play Card */}
+                <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/30 hover:border-green-400/50 transition-all hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] cursor-pointer group"
+                  onClick={() => startGame('free')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Gamepad2 className="w-8 h-8 text-green-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-green-400 mb-2">Free Play</h3>
+                    <p className="text-green-400/70 text-sm mb-4">
+                      Practice and have fun! No cost, unlimited plays.
+                    </p>
+                    <div className="space-y-2 text-left text-sm">
+                      <div className="flex items-center gap-2 text-green-400/80">
+                        <Sparkles className="w-4 h-4" />
+                        <span>No entry fee</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-green-400/80">
+                        <Play className="w-4 h-4" />
+                        <span>Unlimited plays</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Trophy className="w-4 h-4" />
+                        <span>Score not saved to leaderboard</span>
+                      </div>
+                    </div>
+                    <Button 
+                      className="w-full mt-4 bg-green-600 hover:bg-green-500 text-white"
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Play Free
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Ranked Play Card */}
+                <Card className="bg-gradient-to-br from-yellow-900/30 to-orange-900/20 border-yellow-500/30 hover:border-yellow-400/50 transition-all hover:shadow-[0_0_30px_rgba(234,179,8,0.2)] cursor-pointer group"
+                  onClick={() => isAuthenticated && hasEnoughCCTR && canPlay && startGame('ranked')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-yellow-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Crown className="w-8 h-8 text-yellow-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-yellow-400 mb-2">Play to Win</h3>
+                    <p className="text-yellow-400/70 text-sm mb-4">
+                      Compete for the leaderboard! Entry fee required.
+                    </p>
+                    <div className="space-y-2 text-left text-sm">
+                      <div className="flex items-center gap-2 text-yellow-400/80">
+                        <Coins className="w-4 h-4" />
+                        <span>{entryFee} CCTR entry fee</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-yellow-400/80">
+                        <Trophy className="w-4 h-4" />
+                        <span>Score saved to leaderboard</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-yellow-400/80">
+                        <Sparkles className="w-4 h-4" />
+                        <span>{playsRemaining} ranked plays remaining today</span>
+                      </div>
+                    </div>
+
+                    {!isAuthenticated ? (
+                      <div className="mt-4">
+                        <p className="text-yellow-400/60 text-xs mb-2">Connect wallet to play ranked</p>
+                        <WalletStatusBar />
+                      </div>
+                    ) : !hasEnoughCCTR ? (
+                      <div className="mt-4">
+                        <p className="text-yellow-400/60 text-xs mb-2">
+                          Need {entryFee} CCTR (You have {cctrBalance})
+                        </p>
+                        <Link to="/">
+                          <Button variant="outline" className="w-full border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10">
+                            Get More CCTR
+                          </Button>
+                        </Link>
+                      </div>
+                    ) : !canPlay ? (
+                      <Button 
+                        disabled
+                        className="w-full mt-4 bg-gray-600 text-gray-400"
+                      >
+                        Daily Limit Reached
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="w-full mt-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold"
+                      >
+                        <Crown className="w-4 h-4 mr-2" />
+                        Play Ranked ({entryFee} CCTR)
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           )}
 
           {/* Game In Progress */}
-          {isAuthenticated && gameState.isPlaying && (
+          {gameState.isPlaying && (
             <>
               <NeonMatchHUD
                 timeSeconds={gameState.timeSeconds}
@@ -182,22 +238,31 @@ const NeonMatch: React.FC = () => {
                 isLocked={gameState.isLocked}
               />
 
-              <div className="flex justify-center mt-4 sm:mt-6">
+              <div className="flex justify-center gap-3 mt-4 sm:mt-6">
                 <Button
-                  onClick={restartGame}
+                  onClick={backToModeSelect}
                   variant="outline"
-                  className="border-pink-500/50 text-pink-400 hover:bg-pink-500/10"
-                  disabled={!canPlay}
+                  className="border-gray-500/50 text-gray-400 hover:bg-gray-500/10"
                 >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Restart
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Exit
                 </Button>
+                {gameMode === 'free' && (
+                  <Button
+                    onClick={restartGame}
+                    variant="outline"
+                    className="border-pink-500/50 text-pink-400 hover:bg-pink-500/10"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Restart
+                  </Button>
+                )}
               </div>
             </>
           )}
 
-          {/* Leaderboard */}
-          {isAuthenticated && (
+          {/* Leaderboard (always visible when not in mode select) */}
+          {gameMode && (
             <div ref={leaderboardRef}>
               <NeonMatchLeaderboard
                 todayLeaderboard={todayLeaderboard}
@@ -214,9 +279,10 @@ const NeonMatch: React.FC = () => {
         onClose={() => setShowEndModal(false)}
         gameState={gameState}
         finalScore={finalScore}
-        onPlayAgain={restartGame}
-        onViewLeaderboard={scrollToLeaderboard}
-        canPlayAgain={canPlay}
+        onPlayAgain={gameMode === 'free' ? restartGame : (canPlay && hasEnoughCCTR ? restartGame : backToModeSelect)}
+        onViewLeaderboard={gameMode === 'ranked' ? scrollToLeaderboard : backToModeSelect}
+        canPlayAgain={gameMode === 'free' || (canPlay && hasEnoughCCTR)}
+        gameMode={gameMode}
       />
 
       {/* Custom CSS for animations */}
@@ -227,18 +293,6 @@ const NeonMatch: React.FC = () => {
         }
         .animate-pulse-subtle {
           animation: pulse-subtle 2s ease-in-out infinite;
-        }
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-        .transform-style-preserve-3d {
-          transform-style: preserve-3d;
-        }
-        .backface-hidden {
-          backface-visibility: hidden;
-        }
-        .rotate-y-180 {
-          transform: rotateY(180deg);
         }
       `}</style>
     </div>
