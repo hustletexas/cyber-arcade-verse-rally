@@ -117,9 +117,9 @@ const PrivacyPolicy = () => {
                 Our Platform integrates with third-party services including:
               </p>
               <ul className="text-muted-foreground space-y-2 list-disc list-inside mt-2">
-                <li>Blockchain networks (Solana, Ethereum, Stellar)</li>
-                <li>Decentralized exchanges (Jupiter, Uniswap, Aqua Network)</li>
-                <li>Wallet providers (Phantom, MetaMask, Coinbase Wallet)</li>
+                <li>Blockchain networks (Stellar, Ethereum)</li>
+                <li>Decentralized exchanges (Aqua Network, StellarX)</li>
+                <li>Wallet providers (LOBSTR, Freighter, MetaMask)</li>
                 <li>Analytics services</li>
               </ul>
               <p className="text-muted-foreground leading-relaxed mt-3">

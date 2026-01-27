@@ -11,7 +11,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { LoadingText } from '@/components/ui/loading-states';
 import { ErrorDisplay, DataNotFound } from '@/components/ui/error-handling';
 
-interface SolanaNFT {
+interface StellarNFT {
   mint: string;
   name: string;
   image: string;
@@ -24,12 +24,12 @@ export const WalletBalanceDisplay = () => {
   const { balance, loading, claimRewards } = useUserBalance();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
-  const [nfts, setNfts] = useState<SolanaNFT[]>([]);
+  const [nfts, setNfts] = useState<StellarNFT[]>([]);
   const [loadingNFTs, setLoadingNFTs] = useState(false);
-  const [solBalance, setSolBalance] = useState(0);
+  const [xlmBalance, setXlmBalance] = useState(0);
 
   // Mock NFT data for demonstration
-  const mockNFTs: SolanaNFT[] = [
+  const mockNFTs: StellarNFT[] = [
     {
       mint: "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
       name: "Cyber City Arcade Genesis #001",
@@ -78,11 +78,11 @@ export const WalletBalanceDisplay = () => {
     
     setLoadingNFTs(true);
     try {
-      // Simulate fetching SOL balance
-      setSolBalance(0.5234);
+      // Simulate fetching XLM balance
+      setXlmBalance(150.5234);
       
       // For now, use mock NFT data
-      // In production, you would fetch real NFTs from Solana
+      // In production, you would fetch real NFTs from Stellar
       setTimeout(() => {
         setNfts(mockNFTs);
         setLoadingNFTs(false);
@@ -224,15 +224,15 @@ export const WalletBalanceDisplay = () => {
               </CardContent>
             </Card>
 
-            {/* SOL Balance */}
+            {/* XLM Balance */}
             <Card className="vending-machine">
               <CardContent className="p-6 text-center">
                 <div className="text-3xl font-black text-neon-yellow mb-2">
-                  {solBalance.toFixed(4)}
+                  {xlmBalance.toFixed(4)}
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">SOL</p>
+                <p className="text-sm text-muted-foreground mb-2">XLM</p>
                 <div className="text-lg text-neon-cyan">
-                  ≈ ${(solBalance * 23.45).toFixed(2)} USD
+                  ≈ ${(xlmBalance * 0.12).toFixed(2)} USD
                 </div>
               </CardContent>
             </Card>

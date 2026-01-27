@@ -17,15 +17,18 @@ export const Web3Gaming = () => {
   const [activeCategory, setActiveCategory] = useState('all');
 
   const connectWallet = async () => {
-    if (window.solana && window.solana.isPhantom) {
+    // Use Freighter for Stellar wallet connection
+    if (window.freighter) {
       try {
-        await window.solana.connect();
-        toast.success('Wallet connected! Ready to play Web3 games');
+        const publicKey = await window.freighter.getPublicKey();
+        if (publicKey) {
+          toast.success('Stellar wallet connected! Ready to play Web3 games');
+        }
       } catch (error) {
-        toast.error('Failed to connect wallet');
+        toast.error('Failed to connect Stellar wallet');
       }
     } else {
-      window.open('https://phantom.app/', '_blank');
+      window.open('https://freighter.app/', '_blank');
     }
   };
 

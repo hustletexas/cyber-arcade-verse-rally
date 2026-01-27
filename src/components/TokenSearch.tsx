@@ -23,7 +23,7 @@ interface TokenSearchProps {
 
 export const TokenSearch: React.FC<TokenSearchProps> = ({
   onTokenSelect,
-  placeholder = "Search any Solana token...",
+  placeholder = "Search any Stellar token...",
   className = ""
 }) => {
   const [searchQuery, setSearchQuery] = useState('');

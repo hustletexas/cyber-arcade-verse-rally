@@ -39,11 +39,11 @@ export const CartDrawer = () => {
     setProcessing(true);
 
     try {
-      // Check if wallet is connected
-      if (!window.solana || !window.solana.isConnected) {
+      // Check if wallet is connected (use Freighter for Stellar)
+      if (!window.freighter) {
         toast({
           title: "Wallet Not Connected",
-          description: "Please connect your Solana wallet to proceed",
+          description: "Please connect your Stellar wallet to proceed",
           variant: "destructive",
         });
         setProcessing(false);
@@ -59,9 +59,9 @@ export const CartDrawer = () => {
       });
 
       // In a real implementation, you would:
-      // 1. Create a transaction with the Solana Web3.js library
+      // 1. Create a transaction with the Stellar SDK
       // 2. Handle token transfers for USDC/PYUSD
-      // 3. Send SOL for native payments
+      // 3. Send XLM for native payments
       // 4. Confirm transaction on blockchain
 
       // Mock payment delay
@@ -265,7 +265,7 @@ export const CartDrawer = () => {
               <Card className="bg-neon-cyan/10 border-neon-cyan/30">
                 <CardContent className="p-3">
                   <p className="text-xs text-neon-cyan">
-                    💡 <strong>Secure Payments:</strong> All transactions are processed on the Solana blockchain. 
+                    💡 <strong>Secure Payments:</strong> All transactions are processed on the Stellar blockchain. 
                     Make sure your wallet has sufficient {selectedPayment} tokens.
                   </p>
                 </CardContent>

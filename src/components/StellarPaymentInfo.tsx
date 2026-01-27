@@ -98,7 +98,7 @@ export const StellarPaymentInfo: React.FC = () => {
             🌉 Coming from another chain?
           </h4>
           <p className="text-sm text-gray-300 mb-3">
-            Whether you're a Solana, Ethereum, or any other chain user, you can easily participate:
+            Whether you're an Ethereum or any other chain user, you can easily participate via Stellar:
           </p>
           <ol className="space-y-2 text-sm text-gray-300">
             <li className="flex items-start gap-2">

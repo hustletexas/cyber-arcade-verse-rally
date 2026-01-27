@@ -17,7 +17,7 @@ export const BlockchainIntegration = () => {
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-purple flex items-center gap-3">
           ⛓️ BLOCKCHAIN INTEGRATION
-          <Badge className="bg-neon-green text-black">SOLANA POWERED</Badge>
+          <Badge className="bg-neon-green text-black">STELLAR POWERED</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -38,11 +38,11 @@ export const BlockchainIntegration = () => {
           </div>
         </Card>
 
-        {/* Solana Network Info */}
+        {/* Stellar Network Info */}
         <div className="grid grid-cols-3 gap-4 text-center">
           <div className="holographic p-4">
             <h4 className="text-neon-green font-bold">NETWORK</h4>
-            <p className="text-sm">Solana Mainnet</p>
+            <p className="text-sm">Stellar Mainnet</p>
           </div>
           <div className="holographic p-4">
             <h4 className="text-neon-cyan font-bold">TOKEN</h4>
