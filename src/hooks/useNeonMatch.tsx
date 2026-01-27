@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { Card, GameState, PAIR_IDS, DailyLimit, LeaderboardEntry } from '@/types/neon-match';
+import { Card, GameState, PAIR_IDS, DailyLimit, LeaderboardEntry, GAME_ENTRY_FEE } from '@/types/neon-match';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const MAX_DAILY_PLAYS = 3;
 
@@ -52,6 +53,7 @@ const initialGameState: GameState = {
 
 export function useNeonMatch() {
   const { isWalletConnected, primaryWallet } = useMultiWallet();
+  const { user } = useAuth();
   const walletAddress = primaryWallet?.address;
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [dailyLimit, setDailyLimit] = useState<DailyLimit | null>(null);
@@ -60,6 +62,7 @@ export function useNeonMatch() {
   const [finalScore, setFinalScore] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [cctrBalance, setCctrBalance] = useState<number>(0);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const matchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -67,6 +70,85 @@ export function useNeonMatch() {
   // Check if user can play
   const canPlay = dailyLimit ? dailyLimit.plays_today < MAX_DAILY_PLAYS : true;
   const playsRemaining = dailyLimit ? MAX_DAILY_PLAYS - dailyLimit.plays_today : MAX_DAILY_PLAYS;
+  const hasEnoughCCTR = cctrBalance >= GAME_ENTRY_FEE;
+
+  // Fetch CCTR balance
+  const fetchCCTRBalance = useCallback(async () => {
+    if (!user) {
+      setCctrBalance(0);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('user_balances')
+        .select('cctr_balance')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching CCTR balance:', error);
+        return;
+      }
+
+      setCctrBalance(data?.cctr_balance || 0);
+    } catch (err) {
+      console.error('Error in fetchCCTRBalance:', err);
+    }
+  }, [user]);
+
+  // Deduct CCTR entry fee
+  const deductEntryFee = useCallback(async (): Promise<boolean> => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to play",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      // Use RPC to atomically deduct the entry fee
+      const { data, error } = await supabase.rpc('deduct_trivia_entry_fee', {
+        category_param: 'neon_match_game'
+      });
+
+      if (error) {
+        console.error('Error deducting entry fee:', error);
+        toast({
+          title: "Payment Failed",
+          description: "Failed to deduct entry fee. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const result = data as { success: boolean; error?: string; remaining_balance?: number } | null;
+
+      if (!result?.success) {
+        toast({
+          title: "Insufficient Balance",
+          description: result?.error || `You need ${GAME_ENTRY_FEE} CCTR to play`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Update local balance
+      setCctrBalance(result.remaining_balance || 0);
+      
+      toast({
+        title: "Entry Fee Paid",
+        description: `${GAME_ENTRY_FEE} CCTR deducted. Good luck!`,
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error in deductEntryFee:', err);
+      return false;
+    }
+  }, [user]);
 
   // Fetch daily limit - using wallet address as user_id
   const fetchDailyLimit = useCallback(async () => {
@@ -176,7 +258,8 @@ export function useNeonMatch() {
   useEffect(() => {
     fetchDailyLimit();
     fetchLeaderboards();
-  }, [fetchDailyLimit, fetchLeaderboards]);
+    fetchCCTRBalance();
+  }, [fetchDailyLimit, fetchLeaderboards, fetchCCTRBalance]);
 
   // Cleanup
   useEffect(() => {
@@ -204,6 +287,12 @@ export function useNeonMatch() {
         variant: "destructive",
       });
       return;
+    }
+
+    // Deduct CCTR entry fee first
+    const feeDeducted = await deductEntryFee();
+    if (!feeDeducted) {
+      return; // Don't start game if fee wasn't deducted
     }
 
     // Increment plays_today
@@ -250,7 +339,7 @@ export function useNeonMatch() {
         return { ...prev, timeSeconds: prev.timeSeconds + 1 };
       });
     }, 1000);
-  }, [walletAddress, canPlay, dailyLimit]);
+  }, [walletAddress, canPlay, dailyLimit, deductEntryFee]);
 
   // End game
   const endGame = useCallback(async (state: GameState) => {
@@ -403,5 +492,8 @@ export function useNeonMatch() {
     onCardClick,
     restartGame,
     isAuthenticated: isWalletConnected,
+    cctrBalance,
+    hasEnoughCCTR,
+    entryFee: GAME_ENTRY_FEE,
   };
 }
