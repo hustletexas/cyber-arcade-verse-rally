@@ -184,7 +184,7 @@ const Index = () => {
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 bg-clip-text text-transparent mb-4">
                   🎴 NEON MATCH 36
                 </h2>
-                <p className="text-cyan-400/80 mb-6 max-w-lg mx-auto">
+                <p className="text-foreground mb-6 max-w-lg mx-auto">
                   Test your memory in this cyberpunk card matching challenge! Match 18 pairs of neon icons, earn bonuses for speed & efficiency.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3 mb-6">
