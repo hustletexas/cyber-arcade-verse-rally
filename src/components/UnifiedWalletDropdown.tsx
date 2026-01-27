@@ -768,7 +768,7 @@ export const UnifiedWalletDropdown = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Swap Modal with Jupiter DEX */}
+      {/* Swap Modal with StellarX DEX */}
       <Dialog open={showSwapModal} onOpenChange={setShowSwapModal}>
         <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-purple/30 max-w-2xl animate-scale-in">
           <DialogHeader>
@@ -777,27 +777,27 @@ export const UnifiedWalletDropdown = () => {
                 <ArrowLeftRight className="animate-pulse" size={24} />
                 Swap Tokens
               </DialogTitle>
-              <a href="https://jup.ag" target="_blank" rel="noreferrer">
+              <a href="https://www.stellarx.com" target="_blank" rel="noreferrer">
                 <Button variant="outline" size="sm" className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black">
-                  Jupiter <ExternalLink size={12} className="ml-1" />
+                  StellarX <ExternalLink size={12} className="ml-1" />
                 </Button>
               </a>
             </div>
             <DialogDescription className="text-muted-foreground">
-              Swap Solana tokens using Jupiter Aggregator
+              Swap Stellar tokens using StellarX
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-xl overflow-hidden border border-neon-purple/30">
             <iframe
-              title="Jupiter Swap"
-              src={`https://jup.ag/swap/USDC-SOL?theme=dark&padding=12`}
+              title="StellarX Swap"
+              src="https://www.stellarx.com/"
               className="w-full"
               style={{ height: 520, border: '0' }}
               allow="clipboard-read; clipboard-write; accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
             />
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            Powered by Jupiter. Connect your wallet in the widget to swap tokens.
+            Powered by StellarX. Connect your Stellar wallet (LOBSTR or Freighter) to swap tokens.
           </p>
         </DialogContent>
       </Dialog>
