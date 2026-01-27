@@ -15,6 +15,7 @@ import { TriviaUserStats } from '@/types/trivia';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
 
 type ViewState = 'menu' | 'game' | 'leaderboard' | 'rewards';
+type PlayMode = 'free' | 'paid';
 
 export const TriviaGame = () => {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ export const TriviaGame = () => {
   const { toast } = useToast();
   const [currentView, setCurrentView] = useState<ViewState>('menu');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [playMode, setPlayMode] = useState<PlayMode>('free');
   const [userStats, setUserStats] = useState<TriviaUserStats>({
     totalGames: 0,
     totalScore: 0,
@@ -127,63 +129,81 @@ export const TriviaGame = () => {
     }
   };
 
-  const startGame = async (category: string) => {
-    if (!user && !isWalletConnected) {
-      toast({
-        title: "Authentication Required",
-        description: "Please connect your wallet or log in to play trivia games",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if user has enough tokens (1 CCTR required)
-    if (user && balance.cctr_balance < 1) {
-      toast({
-        title: "Insufficient Tokens",
-        description: "You need 1 CCTR token to start a trivia game. Earn more by completing games!",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Deduct 1 CCTR token for game entry using secure server-side function
-    if (user) {
-      try {
-        const { data, error } = await supabase.rpc('deduct_trivia_entry_fee', {
-          category_param: category
-        });
-
-        if (error) throw error;
-
-        const result = data as { success: boolean; error?: string } | null;
-
-        if (!result?.success) {
-          toast({
-            title: "Error",
-            description: result?.error || "Failed to start game. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        await refetchBalance();
-
+  const startGame = async (category: string, mode: PlayMode) => {
+    // Free mode: Anyone can play (no wallet required)
+    // Paid mode: Wallet required + CCTR tokens
+    
+    if (mode === 'paid') {
+      if (!isWalletConnected) {
         toast({
-          title: "Game Started! 🎮",
-          description: "1 CCTR deducted. Earn 1 token per correct answer!",
-        });
-      } catch (error) {
-        console.error('Error deducting entry fee:', error);
-        toast({
-          title: "Error",
-          description: "Failed to start game. Please try again.",
+          title: "Wallet Required",
+          description: "Please connect your Stellar wallet to play for CCTR rewards",
           variant: "destructive",
         });
         return;
       }
+
+      // Check if user has enough tokens (1 CCTR required for paid mode)
+      if (user && balance.cctr_balance < 1) {
+        toast({
+          title: "Insufficient Tokens",
+          description: "You need 1 CCTR token to play for rewards. Try FREE mode instead!",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Deduct 1 CCTR token for game entry using secure server-side function
+      if (user) {
+        try {
+          const { data, error } = await supabase.rpc('deduct_trivia_entry_fee', {
+            category_param: category
+          });
+
+          if (error) throw error;
+
+          const result = data as { success: boolean; error?: string } | null;
+
+          if (!result?.success) {
+            toast({
+              title: "Error",
+              description: result?.error || "Failed to start game. Please try again.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          await refetchBalance();
+
+          toast({
+            title: "Game Started! 🎮",
+            description: "1 CCTR deducted. Earn 1 token per correct answer!",
+          });
+        } catch (error) {
+          console.error('Error deducting entry fee:', error);
+          toast({
+            title: "Error",
+            description: "Failed to start game. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        // Wallet connected but no Supabase user - just start paid game
+        toast({
+          title: "Game Started! 🎮",
+          description: "Playing for CCTR rewards!",
+        });
+      }
+    } else {
+      // Free mode
+      toast({
+        title: "Free Play Started! 🎮",
+        description: "Play for fun! Connect wallet to earn CCTR rewards.",
+      });
     }
     
+    setPlayMode(mode);
     setSelectedCategory(category);
     setCurrentView('game');
   };
@@ -203,6 +223,7 @@ export const TriviaGame = () => {
     return (
       <TriviaGameplay
         category={selectedCategory}
+        playMode={playMode}
         onGameComplete={handleGameComplete}
         onBackToMenu={() => setCurrentView('menu')}
       />
@@ -237,19 +258,30 @@ export const TriviaGame = () => {
             🎮 GAMING TRIVIA CHALLENGE
           </CardTitle>
           <p className="text-center text-muted-foreground">
-            Test your gaming knowledge and earn CCTR tokens • Console classics • Gaming legends
+            Test your gaming knowledge • Play FREE or earn CCTR tokens!
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <WalletStatusBar />
           
-          {user && !balanceLoading && (
-            <div className="text-center">
+          {/* Wallet & Balance Status */}
+          <div className="flex flex-wrap justify-center gap-3">
+            {isWalletConnected && primaryWallet && (
+              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+                ✓ Wallet: {primaryWallet.address.slice(0, 6)}...{primaryWallet.address.slice(-4)}
+              </Badge>
+            )}
+            {user && !balanceLoading && (
               <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple">
                 💰 Balance: {balance.cctr_balance} CCTR
               </Badge>
-            </div>
-          )}
+            )}
+            {!isWalletConnected && (
+              <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink">
+                💡 Connect wallet for rewards
+              </Badge>
+            )}
+          </div>
           
           {/* Navigation Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
@@ -319,14 +351,28 @@ export const TriviaGame = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categories.filter(c => c.type === 'gaming').map((category) => (
-                <Card key={category.id} className="holographic hover:scale-105 transition-all duration-300 cursor-pointer group" onClick={() => startGame(category.id)}>
+                <Card key={category.id} className="holographic hover:scale-105 transition-all duration-300 group">
                   <CardContent className="p-4 text-center">
                     <div className="text-3xl mb-2 group-hover:animate-bounce">{category.emoji}</div>
                     <h3 className="font-bold text-neon-cyan mb-1">{category.name}</h3>
                     <p className="text-xs text-muted-foreground mb-3">{category.description}</p>
-                    <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan/50 text-xs">
-                      💎 1 CCTR
-                    </Badge>
+                    <div className="flex gap-2 justify-center">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="text-xs border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
+                        onClick={() => startGame(category.id, 'free')}
+                      >
+                        🎮 FREE
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="text-xs bg-neon-cyan/20 text-neon-cyan border border-neon-cyan hover:bg-neon-cyan hover:text-black"
+                        onClick={() => startGame(category.id, 'paid')}
+                      >
+                        💎 WIN CCTR
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -340,14 +386,28 @@ export const TriviaGame = () => {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {categories.filter(c => c.type === 'entertainment').map((category) => (
-                <Card key={category.id} className="holographic hover:scale-105 transition-all duration-300 cursor-pointer group" onClick={() => startGame(category.id)}>
+                <Card key={category.id} className="holographic hover:scale-105 transition-all duration-300 group">
                   <CardContent className="p-4 text-center">
                     <div className="text-3xl mb-2 group-hover:animate-bounce">{category.emoji}</div>
                     <h3 className="font-bold text-neon-pink mb-1 text-sm">{category.name}</h3>
                     <p className="text-xs text-muted-foreground mb-3 line-clamp-1">{category.description}</p>
-                    <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink/50 text-xs">
-                      💎 1 CCTR
-                    </Badge>
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="text-xs border-neon-green text-neon-green hover:bg-neon-green hover:text-black"
+                        onClick={() => startGame(category.id, 'free')}
+                      >
+                        🎮 FREE
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="text-xs bg-neon-pink/20 text-neon-pink border border-neon-pink hover:bg-neon-pink hover:text-black"
+                        onClick={() => startGame(category.id, 'paid')}
+                      >
+                        💎 WIN
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -360,32 +420,32 @@ export const TriviaGame = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="arcade-frame">
           <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-cyan">
-              💰 Earn CCTR Tokens
+            <CardTitle className="font-display text-lg text-neon-green">
+              🎮 FREE Mode
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Game entry: 1 CCTR cost</li>
-              <li>• Correct answers: 1 CCTR each</li>
-              <li>• Maximum: 10 CCTR per game</li>
-              <li>• Profit potential: +9 CCTR</li>
+              <li>• No wallet required</li>
+              <li>• Play unlimited games</li>
+              <li>• Practice and learn</li>
+              <li>• No cost, no rewards</li>
             </ul>
           </CardContent>
         </Card>
 
         <Card className="arcade-frame">
           <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-purple">
-              🏆 Gaming Legends
+            <CardTitle className="font-display text-lg text-neon-cyan">
+              💎 WIN CCTR Mode
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Console mastery badges</li>
-              <li>• Weekly tournaments</li>
-              <li>• Retro gaming achievements</li>
-              <li>• Exclusive gaming NFTs</li>
+              <li>• Wallet required</li>
+              <li>• Entry: 1 CCTR token</li>
+              <li>• Earn 1 CCTR per correct answer</li>
+              <li>• Max profit: +9 CCTR per game</li>
             </ul>
           </CardContent>
         </Card>
@@ -393,15 +453,15 @@ export const TriviaGame = () => {
         <Card className="arcade-frame">
           <CardHeader>
             <CardTitle className="font-display text-lg text-neon-pink">
-              🎮 Game Features
+              🏆 Game Features
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>• Console-specific challenges</li>
               <li>• Multiple difficulty levels</li>
-              <li>• Gaming era specialization</li>
-              <li>• Progress tracking</li>
+              <li>• 15 seconds per question</li>
+              <li>• Leaderboard rankings</li>
             </ul>
           </CardContent>
         </Card>
