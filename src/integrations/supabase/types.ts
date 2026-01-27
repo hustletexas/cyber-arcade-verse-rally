@@ -1347,18 +1347,21 @@ export type Database = {
           claimable_rewards: number | null
           updated_at: string
           user_id: string
+          wallet_address: string | null
         }
         Insert: {
           cctr_balance?: number | null
           claimable_rewards?: number | null
           updated_at?: string
           user_id: string
+          wallet_address?: string | null
         }
         Update: {
           cctr_balance?: number | null
           claimable_rewards?: number | null
           updated_at?: string
           user_id?: string
+          wallet_address?: string | null
         }
         Relationships: []
       }
