@@ -5,10 +5,9 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useSolanaScore } from '@/hooks/useSolanaScore';
-import { useWallet } from '@/hooks/useWallet';
 import { TriviaQuestion } from '@/types/trivia';
 import { getRandomMixedQuestions } from '@/data/gamingTriviaQuestions';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -25,8 +24,7 @@ export const TriviaGameplay = ({ category, playMode, onGameComplete, onBackToMen
   const { user } = useAuth();
   const { balance, refetch: refetchBalance } = useUserBalance();
   const { toast } = useToast();
-  const { submitScore, isSubmitting } = useSolanaScore();
-  const { getConnectedWallet, isWalletConnected } = useWallet();
+  const { isWalletConnected, primaryWallet } = useMultiWallet();
   
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -217,17 +215,6 @@ export const TriviaGameplay = ({ category, playMode, onGameComplete, onBackToMen
       title: "Game Complete! 🏆",
       description: message,
     });
-    
-    // Submit score to Solana blockchain if wallet is connected and paid mode
-    if (playMode === 'paid' && isWalletConnected()) {
-      const result = await submitScore(score, category);
-      if (result.success) {
-        toast({
-          title: "Score Submitted! 🔗",
-          description: "Your score has been recorded on the blockchain",
-        });
-      }
-    }
 
     setTimeout(() => {
       onGameComplete(correctAnswers);
@@ -260,7 +247,7 @@ export const TriviaGameplay = ({ category, playMode, onGameComplete, onBackToMen
 
   if (gameStatus === 'finished') {
     const accuracy = Math.round((correctAnswers / questions.length) * 100);
-    const connectedWallet = getConnectedWallet();
+    const connectedWallet = primaryWallet;
     
     return (
       <Card className="arcade-frame">
@@ -299,13 +286,8 @@ export const TriviaGameplay = ({ category, playMode, onGameComplete, onBackToMen
           {playMode === 'paid' && connectedWallet && (
             <div className="mb-6">
               <Badge className="bg-neon-green text-black text-lg px-4 py-2">
-                🔗 Blockchain Verified! +{score} CCTR
+                🔗 Score Saved! +{score} CCTR
               </Badge>
-              {isSubmitting && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Submitting to blockchain...
-                </p>
-              )}
             </div>
           )}
           
