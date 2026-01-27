@@ -70,7 +70,7 @@ const NeonMatch: React.FC = () => {
       <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Wallet Status Bar */}
         <div className="mb-4">
-          <WalletStatusBar compact />
+          <WalletStatusBar />
         </div>
 
         {/* Header */}
