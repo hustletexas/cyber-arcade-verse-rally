@@ -1,17 +1,16 @@
-
 import React, { useState, useCallback } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { useToast } from '@/hooks/use-toast';
 
 interface TokenSearchResult {
   symbol: string;
   name: string;
-  mintAddress: string;
+  assetCode: string;
+  issuer: string;
+  domain?: string;
   logoURI?: string;
-  price?: number;
-  change24h?: number;
   verified?: boolean;
 }
 
@@ -20,6 +19,16 @@ interface TokenSearchProps {
   placeholder?: string;
   className?: string;
 }
+
+// Popular Stellar assets for quick access
+const POPULAR_STELLAR_ASSETS: TokenSearchResult[] = [
+  { symbol: 'XLM', name: 'Stellar Lumens', assetCode: 'XLM', issuer: 'native', verified: true },
+  { symbol: 'USDC', name: 'USD Coin', assetCode: 'USDC', issuer: 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN', domain: 'centre.io', verified: true },
+  { symbol: 'yXLM', name: 'Ultra Stellar', assetCode: 'yXLM', issuer: 'GARDNV3Q7YGT4AKSDF25LT32YSCCW4EV22Y2TV3I2PU2MMXJTEDL5T55', domain: 'ultrastellar.com', verified: true },
+  { symbol: 'AQUA', name: 'Aquarius', assetCode: 'AQUA', issuer: 'GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA', domain: 'aqua.network', verified: true },
+  { symbol: 'SHX', name: 'Stronghold', assetCode: 'SHX', issuer: 'GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEZ6JQFMXQVCYCQER52FZ42T7V', domain: 'stronghold.co', verified: true },
+  { symbol: 'PYUSD', name: 'PayPal USD', assetCode: 'PYUSD', issuer: 'GCNY5OXYSY4FKHOPT2SPOQZAOEIGXB5LBYW3HVU3OWSTQITS65M5RCNY', domain: 'paxos.com', verified: true },
+];
 
 export const TokenSearch: React.FC<TokenSearchProps> = ({
   onTokenSelect,
@@ -33,70 +42,75 @@ export const TokenSearch: React.FC<TokenSearchProps> = ({
   const { toast } = useToast();
 
   const searchTokens = useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
-      setSearchResults([]);
-      setShowResults(false);
+    if (!query || query.length < 1) {
+      setSearchResults(POPULAR_STELLAR_ASSETS);
+      setShowResults(true);
       return;
     }
 
     setIsSearching(true);
     try {
-      // Try Jupiter Token List API first
-      const jupiterResponse = await fetch(
-        `https://token.jup.ag/strict`,
+      // Search StellarExpert API for assets
+      const response = await fetch(
+        `https://api.stellar.expert/explorer/public/asset?search=${encodeURIComponent(query)}&limit=15`,
         { 
           method: 'GET',
           headers: { 'Accept': 'application/json' }
         }
       );
 
-      if (jupiterResponse.ok) {
-        const allTokens = await jupiterResponse.json();
+      if (response.ok) {
+        const data = await response.json();
         
-        // Filter tokens based on search query
-        const filteredTokens = allTokens
-          .filter((token: any) => 
-            token.symbol?.toLowerCase().includes(query.toLowerCase()) ||
-            token.name?.toLowerCase().includes(query.toLowerCase()) ||
-            token.address?.toLowerCase().includes(query.toLowerCase())
-          )
-          .slice(0, 10) // Limit to 10 results
-          .map((token: any) => ({
-            symbol: token.symbol || 'Unknown',
-            name: token.name || 'Unknown Token',
-            mintAddress: token.address,
-            logoURI: token.logoURI,
-            verified: true
-          }));
+        const filteredTokens: TokenSearchResult[] = data._embedded?.records?.map((asset: any) => ({
+          symbol: asset.asset_code || 'XLM',
+          name: asset.domain || asset.asset_code || 'Unknown Token',
+          assetCode: asset.asset_code || 'XLM',
+          issuer: asset.asset_issuer || 'native',
+          domain: asset.domain,
+          logoURI: asset.toml_info?.image,
+          verified: asset.rating?.average > 3 || asset.payments > 1000
+        })) || [];
 
-        setSearchResults(filteredTokens);
+        // Also filter popular assets by query
+        const matchingPopular = POPULAR_STELLAR_ASSETS.filter(
+          asset => 
+            asset.symbol.toLowerCase().includes(query.toLowerCase()) ||
+            asset.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        // Combine and deduplicate
+        const combined = [...matchingPopular, ...filteredTokens];
+        const unique = combined.filter((asset, index, self) =>
+          index === self.findIndex(a => a.assetCode === asset.assetCode && a.issuer === asset.issuer)
+        );
+
+        setSearchResults(unique.slice(0, 12));
         setShowResults(true);
       } else {
-        // Fallback to mock search results
-        const mockResults: TokenSearchResult[] = [
-          {
-            symbol: query.toUpperCase(),
-            name: `${query} Token`,
-            mintAddress: `${query}xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`,
-            verified: false
-          }
-        ];
-        setSearchResults(mockResults);
+        // Fallback to filtering popular assets
+        const filtered = POPULAR_STELLAR_ASSETS.filter(
+          asset => 
+            asset.symbol.toLowerCase().includes(query.toLowerCase()) ||
+            asset.name.toLowerCase().includes(query.toLowerCase())
+        );
+        setSearchResults(filtered);
         setShowResults(true);
       }
     } catch (error) {
-      console.error('Token search error:', error);
-      toast({
-        title: "Search Error",
-        description: "Unable to search tokens. Please try again.",
-        variant: "destructive"
-      });
-      setSearchResults([]);
-      setShowResults(false);
+      console.error('Stellar token search error:', error);
+      // Fallback to popular assets on error
+      const filtered = POPULAR_STELLAR_ASSETS.filter(
+        asset => 
+          asset.symbol.toLowerCase().includes(query.toLowerCase()) ||
+          asset.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setSearchResults(filtered.length > 0 ? filtered : POPULAR_STELLAR_ASSETS);
+      setShowResults(true);
     } finally {
       setIsSearching(false);
     }
-  }, [toast]);
+  }, []);
 
   const handleInputChange = (value: string) => {
     setSearchQuery(value);
@@ -121,6 +135,15 @@ export const TokenSearch: React.FC<TokenSearchProps> = ({
     });
   };
 
+  const handleFocus = () => {
+    if (searchQuery) {
+      setShowResults(true);
+    } else {
+      setSearchResults(POPULAR_STELLAR_ASSETS);
+      setShowResults(true);
+    }
+  };
+
   return (
     <div className={`relative ${className}`}>
       <div className="relative">
@@ -130,7 +153,7 @@ export const TokenSearch: React.FC<TokenSearchProps> = ({
           placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => handleInputChange(e.target.value)}
-          onFocus={() => searchQuery && setShowResults(true)}
+          onFocus={handleFocus}
           className="pl-10 bg-black border-neon-cyan/50 text-neon-cyan placeholder:text-neon-cyan/50 focus:border-neon-cyan"
         />
         {isSearching && (
@@ -142,10 +165,10 @@ export const TokenSearch: React.FC<TokenSearchProps> = ({
         <div className="absolute top-full left-0 right-0 z-50 mt-1">
           <Command className="rounded-lg border border-neon-cyan/30 bg-black shadow-lg">
             <CommandList className="max-h-60">
-              <CommandGroup>
+              <CommandGroup heading={searchQuery ? "Search Results" : "Popular Stellar Assets"}>
                 {searchResults.map((token, index) => (
                   <CommandItem
-                    key={`${token.mintAddress}-${index}`}
+                    key={`${token.assetCode}-${token.issuer}-${index}`}
                     value={token.symbol}
                     onSelect={() => handleTokenSelect(token)}
                     className="flex items-center gap-3 p-3 cursor-pointer hover:bg-neon-cyan/10 text-neon-cyan"
@@ -168,15 +191,17 @@ export const TokenSearch: React.FC<TokenSearchProps> = ({
                       <div className="flex items-center gap-2">
                         <span className="font-bold">{token.symbol}</span>
                         {token.verified && (
-                          <span className="text-xs bg-neon-green/20 text-neon-green px-1 rounded">✓</span>
+                          <Star className="w-3 h-3 text-neon-green fill-neon-green" />
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
                         {token.name}
                       </div>
-                      <div className="text-xs text-neon-purple/60 font-mono truncate">
-                        {token.mintAddress.slice(0, 8)}...{token.mintAddress.slice(-4)}
-                      </div>
+                      {token.domain && (
+                        <div className="text-xs text-neon-purple/60 truncate">
+                          {token.domain}
+                        </div>
+                      )}
                     </div>
                   </CommandItem>
                 ))}
@@ -190,7 +215,7 @@ export const TokenSearch: React.FC<TokenSearchProps> = ({
         <div className="absolute top-full left-0 right-0 z-50 mt-1">
           <Command className="rounded-lg border border-neon-cyan/30 bg-black shadow-lg">
             <CommandEmpty className="py-6 text-center text-sm text-neon-cyan/60">
-              No tokens found for "{searchQuery}"
+              No Stellar tokens found for "{searchQuery}"
             </CommandEmpty>
           </Command>
         </div>
