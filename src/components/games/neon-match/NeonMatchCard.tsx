@@ -12,10 +12,11 @@ export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, dis
   const iconData = CARD_ICONS[card.pairId];
   
   // Calculate background position for sprite sheet (5 cols x 6 rows)
-  // For 5 columns: 0%, 25%, 50%, 75%, 100%
-  // For 6 rows: 0%, 20%, 40%, 60%, 80%, 100%
-  const bgPositionX = iconData.col * 25; // 100 / 4 = 25
-  const bgPositionY = iconData.row * 20; // 100 / 5 = 20
+  // Each cell is 1/5 of width (20%) and 1/6 of height (16.67%)
+  // Background-size is 500% x 600% to show just one cell
+  // Position calculation: col * (100 / (cols-1)) for percentage positioning
+  const bgPositionX = (iconData.col / (SPRITE_CONFIG.columns - 1)) * 100;
+  const bgPositionY = (iconData.row / (SPRITE_CONFIG.rows - 1)) * 100;
   
   return (
     <div
@@ -72,12 +73,12 @@ export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, dis
             transform: 'rotateY(180deg)',
           }}
         >
-          {/* NFT Image from Sprite Sheet */}
+          {/* NFT Image from Sprite Sheet - properly sized and positioned */}
           <div 
-            className="absolute inset-0 rounded-md"
+            className="absolute inset-0"
             style={{
               backgroundImage: `url(${SPRITE_CONFIG.imagePath})`,
-              backgroundSize: '500% 600%',
+              backgroundSize: `${SPRITE_CONFIG.columns * 100}% ${SPRITE_CONFIG.rows * 100}%`,
               backgroundPosition: `${bgPositionX}% ${bgPositionY}%`,
               backgroundRepeat: 'no-repeat',
             }}

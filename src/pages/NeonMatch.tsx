@@ -5,9 +5,10 @@ import { NeonMatchHUD } from '@/components/games/neon-match/NeonMatchHUD';
 import { NeonMatchLeaderboard } from '@/components/games/neon-match/NeonMatchLeaderboard';
 import { NeonMatchEndModal } from '@/components/games/neon-match/NeonMatchEndModal';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Play, RotateCcw, Lock, Wallet } from 'lucide-react';
+import { ArrowLeft, Play, RotateCcw, Lock, Wallet, Coins } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
+import { Badge } from '@/components/ui/badge';
 
 const NeonMatch: React.FC = () => {
   const {
@@ -24,6 +25,9 @@ const NeonMatch: React.FC = () => {
     onCardClick,
     restartGame,
     isAuthenticated,
+    cctrBalance,
+    hasEnoughCCTR,
+    entryFee,
   } = useNeonMatch();
 
   const leaderboardRef = useRef<HTMLDivElement>(null);
@@ -67,11 +71,17 @@ const NeonMatch: React.FC = () => {
             NEON MATCH 36
           </h1>
 
-          <div className="text-cyan-400/70 text-sm">
+          <div className="flex items-center gap-2">
             {isAuthenticated && (
-              <span className="bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/30">
-                {playsRemaining} plays left
-              </span>
+              <>
+                <span className="bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/30 text-yellow-400 text-sm flex items-center gap-1">
+                  <Coins className="w-3 h-3" />
+                  {cctrBalance} CCTR
+                </span>
+                <span className="bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/30 text-cyan-400 text-sm">
+                  {playsRemaining} plays left
+                </span>
+              </>
             )}
           </div>
         </div>
@@ -82,10 +92,16 @@ const NeonMatch: React.FC = () => {
           {!isAuthenticated && (
             <div className="text-center py-12 px-4">
               <Wallet className="w-16 h-16 mx-auto mb-4 text-cyan-400/50" />
-              <h2 className="text-2xl font-bold text-white mb-2">Connect Wallet to Play</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Connect Wallet to Play</h2>
               <p className="text-cyan-400/70 mb-6">
                 Connect your Stellar wallet to play and save your scores to the leaderboard.
               </p>
+              <div className="mb-4">
+                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-lg px-4 py-2">
+                  <Coins className="w-4 h-4 mr-2" />
+                  Entry Fee: {entryFee} CCTR per game
+                </Badge>
+              </div>
               <WalletStatusBar />
             </div>
           )}
@@ -98,11 +114,27 @@ const NeonMatch: React.FC = () => {
             </div>
           )}
 
+          {/* Insufficient CCTR Balance */}
+          {isAuthenticated && !isLoading && !hasEnoughCCTR && !gameState.isPlaying && (
+            <div className="text-center py-12 px-4">
+              <Coins className="w-16 h-16 mx-auto mb-4 text-yellow-400/50" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Insufficient CCTR Balance</h2>
+              <p className="text-yellow-400/70 mb-4">
+                You need at least {entryFee} CCTR to play. Current balance: {cctrBalance} CCTR
+              </p>
+              <Link to="/">
+                <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                  Get More CCTR
+                </Button>
+              </Link>
+            </div>
+          )}
+
           {/* Daily Limit Reached */}
-          {isAuthenticated && !isLoading && !canPlay && !gameState.isPlaying && (
+          {isAuthenticated && !isLoading && hasEnoughCCTR && !canPlay && !gameState.isPlaying && (
             <div className="text-center py-12 px-4">
               <Lock className="w-16 h-16 mx-auto mb-4 text-yellow-400/50" />
-              <h2 className="text-2xl font-bold text-white mb-2">Daily Limit Reached</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Daily Limit Reached</h2>
               <p className="text-yellow-400/70 mb-6">
                 You've used all 3 daily plays. Come back tomorrow for more!
               </p>
@@ -110,20 +142,26 @@ const NeonMatch: React.FC = () => {
           )}
 
           {/* Ready to Play */}
-          {isAuthenticated && !isLoading && canPlay && !gameState.isPlaying && (
+          {isAuthenticated && !isLoading && hasEnoughCCTR && canPlay && !gameState.isPlaying && (
             <div className="text-center py-8 sm:py-12 px-4">
               <div className="text-6xl sm:text-8xl mb-4 animate-bounce">🎮</div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Ready to Play?</h2>
-              <p className="text-cyan-400/70 mb-6 max-w-md mx-auto">
-                Match all 18 pairs of neon icons. Get bonuses for speed, efficiency, and perfect runs!
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Ready to Play?</h2>
+              <p className="text-cyan-400/70 mb-4 max-w-md mx-auto">
+                Match all 18 pairs of neon NFT icons. Get bonuses for speed, efficiency, and perfect runs!
               </p>
+              <div className="mb-6">
+                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-lg px-4 py-2">
+                  <Coins className="w-4 h-4 mr-2" />
+                  Entry Fee: {entryFee} CCTR
+                </Badge>
+              </div>
               <Button
                 onClick={startGame}
                 size="lg"
                 className="bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600 text-white font-bold text-lg px-8 py-6 shadow-[0_0_30px_rgba(6,182,212,0.4)]"
               >
                 <Play className="w-5 h-5 mr-2" />
-                Start Game
+                Start Game ({entryFee} CCTR)
               </Button>
             </div>
           )}
