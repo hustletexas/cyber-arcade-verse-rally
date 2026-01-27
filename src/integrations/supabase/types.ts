@@ -97,6 +97,81 @@ export type Database = {
         }
         Relationships: []
       }
+      arcade_tournaments: {
+        Row: {
+          admin_id: string
+          bracket_data: Json | null
+          created_at: string | null
+          custom_payout_percentages: Json | null
+          description: string | null
+          entry_fee_usd: number | null
+          entry_fee_usdc: number | null
+          format: Database["public"]["Enums"]["tournament_format"]
+          game: string
+          id: string
+          max_players: number
+          min_players: number
+          payout_schema: Database["public"]["Enums"]["payout_schema"]
+          prize_pool_usd: number | null
+          registration_deadline: string | null
+          required_pass_tier: string | null
+          requires_pass: boolean | null
+          rules: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["tournament_status"]
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: string
+          bracket_data?: Json | null
+          created_at?: string | null
+          custom_payout_percentages?: Json | null
+          description?: string | null
+          entry_fee_usd?: number | null
+          entry_fee_usdc?: number | null
+          format?: Database["public"]["Enums"]["tournament_format"]
+          game: string
+          id?: string
+          max_players?: number
+          min_players?: number
+          payout_schema?: Database["public"]["Enums"]["payout_schema"]
+          prize_pool_usd?: number | null
+          registration_deadline?: string | null
+          required_pass_tier?: string | null
+          requires_pass?: boolean | null
+          rules?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["tournament_status"]
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: string
+          bracket_data?: Json | null
+          created_at?: string | null
+          custom_payout_percentages?: Json | null
+          description?: string | null
+          entry_fee_usd?: number | null
+          entry_fee_usdc?: number | null
+          format?: Database["public"]["Enums"]["tournament_format"]
+          game?: string
+          id?: string
+          max_players?: number
+          min_players?: number
+          payout_schema?: Database["public"]["Enums"]["payout_schema"]
+          prize_pool_usd?: number | null
+          registration_deadline?: string | null
+          required_pass_tier?: string | null
+          requires_pass?: boolean | null
+          rules?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["tournament_status"]
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           created_at: string
@@ -846,6 +921,98 @@ export type Database = {
           },
         ]
       }
+      tournament_matches: {
+        Row: {
+          bracket_position: string | null
+          completed_at: string | null
+          created_at: string | null
+          dispute_reason: string | null
+          disputed: boolean | null
+          id: string
+          match_code: string | null
+          match_metadata: Json | null
+          match_number: number
+          player_a_id: string | null
+          player_a_score: number | null
+          player_a_wallet: string | null
+          player_b_id: string | null
+          player_b_score: number | null
+          player_b_wallet: string | null
+          reported_at: string | null
+          reported_by: string | null
+          round_number: number
+          scheduled_time: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["match_status"] | null
+          tournament_id: string
+          updated_at: string | null
+          winner_id: string | null
+          winner_wallet: string | null
+        }
+        Insert: {
+          bracket_position?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          dispute_reason?: string | null
+          disputed?: boolean | null
+          id?: string
+          match_code?: string | null
+          match_metadata?: Json | null
+          match_number: number
+          player_a_id?: string | null
+          player_a_score?: number | null
+          player_a_wallet?: string | null
+          player_b_id?: string | null
+          player_b_score?: number | null
+          player_b_wallet?: string | null
+          reported_at?: string | null
+          reported_by?: string | null
+          round_number: number
+          scheduled_time?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["match_status"] | null
+          tournament_id: string
+          updated_at?: string | null
+          winner_id?: string | null
+          winner_wallet?: string | null
+        }
+        Update: {
+          bracket_position?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          dispute_reason?: string | null
+          disputed?: boolean | null
+          id?: string
+          match_code?: string | null
+          match_metadata?: Json | null
+          match_number?: number
+          player_a_id?: string | null
+          player_a_score?: number | null
+          player_a_wallet?: string | null
+          player_b_id?: string | null
+          player_b_score?: number | null
+          player_b_wallet?: string | null
+          reported_at?: string | null
+          reported_by?: string | null
+          round_number?: number
+          scheduled_time?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["match_status"] | null
+          tournament_id?: string
+          updated_at?: string | null
+          winner_id?: string | null
+          winner_wallet?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_participants: {
         Row: {
           created_at: string
@@ -877,6 +1044,180 @@ export type Database = {
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_payouts: {
+        Row: {
+          amount_usd: number | null
+          amount_usdc: number | null
+          attestation_hash: string | null
+          created_at: string | null
+          deadline: string | null
+          id: string
+          nonce: string | null
+          paid_at: string | null
+          payout_method: string | null
+          placement: number
+          status: string | null
+          tournament_id: string
+          transaction_hash: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          amount_usd?: number | null
+          amount_usdc?: number | null
+          attestation_hash?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          id?: string
+          nonce?: string | null
+          paid_at?: string | null
+          payout_method?: string | null
+          placement: number
+          status?: string | null
+          tournament_id: string
+          transaction_hash?: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          amount_usd?: number | null
+          amount_usdc?: number | null
+          attestation_hash?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          id?: string
+          nonce?: string | null
+          paid_at?: string | null
+          payout_method?: string | null
+          placement?: number
+          status?: string | null
+          tournament_id?: string
+          transaction_hash?: string | null
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_payouts_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_registrations: {
+        Row: {
+          checked_in: boolean | null
+          checked_in_at: string | null
+          id: string
+          pass_tier: string | null
+          pass_verified: boolean | null
+          payment_method: string | null
+          payment_status: string | null
+          payment_transaction_id: string | null
+          registered_at: string | null
+          seed_number: number | null
+          tournament_id: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
+          id?: string
+          pass_tier?: string | null
+          pass_verified?: boolean | null
+          payment_method?: string | null
+          payment_status?: string | null
+          payment_transaction_id?: string | null
+          registered_at?: string | null
+          seed_number?: number | null
+          tournament_id: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
+          id?: string
+          pass_tier?: string | null
+          pass_verified?: boolean | null
+          payment_method?: string | null
+          payment_status?: string | null
+          payment_transaction_id?: string | null
+          registered_at?: string | null
+          seed_number?: number | null
+          tournament_id?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_standings: {
+        Row: {
+          created_at: string | null
+          finalized: boolean | null
+          finalized_at: string | null
+          id: string
+          losses: number | null
+          placement: number
+          points: number | null
+          prize_amount_usd: number | null
+          prize_amount_usdc: number | null
+          tournament_id: string
+          user_id: string
+          wallet_address: string
+          wins: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          finalized?: boolean | null
+          finalized_at?: string | null
+          id?: string
+          losses?: number | null
+          placement: number
+          points?: number | null
+          prize_amount_usd?: number | null
+          prize_amount_usdc?: number | null
+          tournament_id: string
+          user_id: string
+          wallet_address: string
+          wins?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          finalized?: boolean | null
+          finalized_at?: string | null
+          id?: string
+          losses?: number | null
+          placement?: number
+          points?: number | null
+          prize_amount_usd?: number | null
+          prize_amount_usdc?: number | null
+          tournament_id?: string
+          user_id?: string
+          wallet_address?: string
+          wins?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
             referencedColumns: ["id"]
           },
         ]
@@ -1551,6 +1892,31 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      match_status:
+        | "pending"
+        | "in_progress"
+        | "completed"
+        | "disputed"
+        | "cancelled"
+      payout_schema:
+        | "winner_takes_all"
+        | "top_3"
+        | "top_5"
+        | "top_10"
+        | "custom"
+      tournament_format:
+        | "single_elimination"
+        | "double_elimination"
+        | "round_robin"
+        | "swiss"
+      tournament_status:
+        | "draft"
+        | "published"
+        | "registration_open"
+        | "registration_closed"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1679,6 +2045,29 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      match_status: [
+        "pending",
+        "in_progress",
+        "completed",
+        "disputed",
+        "cancelled",
+      ],
+      payout_schema: ["winner_takes_all", "top_3", "top_5", "top_10", "custom"],
+      tournament_format: [
+        "single_elimination",
+        "double_elimination",
+        "round_robin",
+        "swiss",
+      ],
+      tournament_status: [
+        "draft",
+        "published",
+        "registration_open",
+        "registration_closed",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
     },
   },
 } as const
