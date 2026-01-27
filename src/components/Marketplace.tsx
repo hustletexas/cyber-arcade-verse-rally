@@ -19,7 +19,7 @@ const mockNFTs = [
   {
     id: 1,
     name: "Retro Future Ride",
-    price: { cctr: 1000, sol: 1.75, usdc: 157, pyusd: 157 },
+    price: { cctr: 1000, xlm: 1250, usdc: 157, pyusd: 157 },
     image: "/lovable-uploads/1131ab8a-f1c5-43a1-bc8a-bbbe7f2f9fd1.png",
     rarity: "Legendary",
     seller: "CyberMotors",
@@ -29,7 +29,7 @@ const mockNFTs = [
   {
     id: 2,
     name: "Cyber City Console",
-    price: { cctr: 1000, sol: 2.1, usdc: 189, pyusd: 189 },
+    price: { cctr: 1000, xlm: 1500, usdc: 189, pyusd: 189 },
     image: "/lovable-uploads/adc51b6f-7d82-44cc-86b5-e984bc74d2d3.png",
     rarity: "Legendary",
     seller: "ArcadeMaster",
@@ -39,7 +39,7 @@ const mockNFTs = [
   {
     id: 3,
     name: "Cyber City Arcade",
-    price: { cctr: 1000, sol: 2.5, usdc: 225, pyusd: 225 },
+    price: { cctr: 1000, xlm: 1800, usdc: 225, pyusd: 225 },
     image: "/lovable-uploads/25b4f405-8edd-4c52-9b77-0d270d1b6c90.png",
     rarity: "Legendary",
     seller: "RetroMaster",
@@ -60,7 +60,7 @@ const mockNFTs = [
   {
     id: 5,
     name: "Neon Arcade Portal",
-    price: { cctr: 500, sol: 1.6, usdc: 144, pyusd: 144 },
+    price: { cctr: 500, xlm: 1150, usdc: 144, pyusd: 144 },
     image: "/lovable-uploads/f7fdd876-ef2a-4140-9a9e-961af057b14c.png",
     rarity: "Epic",
     seller: "PortalMaster",
@@ -70,7 +70,7 @@ const mockNFTs = [
   {
     id: 6,
     name: "Cyber City Genesis #001",
-    price: { cctr: 500, sol: 2.0, usdc: 180, pyusd: 180 },
+    price: { cctr: 500, xlm: 1440, usdc: 180, pyusd: 180 },
     image: "/lovable-uploads/e0346804-3303-4132-accf-7a80c53b7b8c.png",
     rarity: "Epic",
     seller: "GenesisCollection",
@@ -81,7 +81,7 @@ const mockNFTs = [
   {
     id: 7,
     name: "Cyber City Mobile Gamer",
-    price: { cctr: 100, sol: 0.9, usdc: 81, pyusd: 81 },
+    price: { cctr: 100, xlm: 650, usdc: 81, pyusd: 81 },
     image: "/lovable-uploads/fa16ab59-6385-4247-ac77-1ef0cf685f60.png",
     rarity: "Rare",
     seller: "MobileGamingCorp",
@@ -91,7 +91,7 @@ const mockNFTs = [
   {
     id: 8,
     name: "VR Racing Champion",
-    price: { cctr: 100, sol: 1.1, usdc: 99, pyusd: 99 },
+    price: { cctr: 100, xlm: 790, usdc: 99, pyusd: 99 },
     image: "/lovable-uploads/7aefc14a-b1ec-4889-8990-4f12e95eec7d.png",
     rarity: "Rare",
     seller: "VRRacingLeague",
@@ -101,7 +101,7 @@ const mockNFTs = [
   {
     id: 9,
     name: "Cyber City Arcade Gamer",
-    price: { cctr: 100, sol: 1.0, usdc: 90, pyusd: 90 },
+    price: { cctr: 100, xlm: 720, usdc: 90, pyusd: 90 },
     image: "/lovable-uploads/499520d8-632b-415d-9e5a-5599ef4eca14.png",
     rarity: "Rare",
     seller: "CyberCityElite",
@@ -117,7 +117,7 @@ export const Marketplace = () => {
   const { createOrLoginWithWallet } = useWalletAuth();
   const { balance } = useUserBalance();
   const { addToCart, getTotalItems, getTotalPrice, setIsOpen } = useCart();
-  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'sol' | 'usdc' | 'pyusd'>('cctr');
+  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'xlm' | 'usdc' | 'pyusd'>('cctr');
   const [filter, setFilter] = useState('all');
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   
@@ -228,7 +228,7 @@ export const Marketplace = () => {
   const getCurrencySymbol = () => {
     switch (selectedCurrency) {
       case 'cctr': return '$CCTR';
-      case 'sol': return 'SOL';
+      case 'xlm': return 'XLM';
       case 'usdc': return 'USDC';
       case 'pyusd': return 'PYUSD';
       default: return '$CCTR';
@@ -323,12 +323,12 @@ export const Marketplace = () => {
 
             <div className="flex items-center gap-2">
               <span className="text-neon-cyan font-bold">Pay with:</span>
-              <Select value={selectedCurrency} onValueChange={(value: 'cctr' | 'sol' | 'usdc' | 'pyusd') => setSelectedCurrency(value)}>
+              <Select value={selectedCurrency} onValueChange={(value: 'cctr' | 'xlm' | 'usdc' | 'pyusd') => setSelectedCurrency(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sol">☀️ SOL</SelectItem>
+                  <SelectItem value="xlm">⭐ XLM</SelectItem>
                   <SelectItem value="usdc">💵 USDC</SelectItem>
                   <SelectItem value="pyusd">💰 PYUSD</SelectItem>
                   <SelectItem value="cctr">💎 $CCTR</SelectItem>
