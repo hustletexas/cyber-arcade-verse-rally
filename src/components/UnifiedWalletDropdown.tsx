@@ -674,28 +674,28 @@ export const UnifiedWalletDropdown = () => {
       {/* Actions Modal */}
       <Dialog open={showActionsModal} onOpenChange={setShowActionsModal}>
         <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-md animate-scale-in">
-          <DialogHeader>
-            <DialogTitle className="text-xl text-neon-cyan font-display">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-xl text-neon-cyan font-display text-center">
               {activeAction === 'buy' && '💳 Buy Crypto'}
               {activeAction === 'send' && '📤 Send Tokens'}
               {activeAction === 'receive' && '📥 Receive Tokens'}
             </DialogTitle>
           </DialogHeader>
           
-          <Tabs value={activeAction} onValueChange={(v) => setActiveAction(v as any)}>
-            <TabsList className="grid w-full grid-cols-3 bg-card/50 rounded-xl p-1">
-              <TabsTrigger value="buy" className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green rounded-lg transition-all">
+          <Tabs value={activeAction} onValueChange={(v) => setActiveAction(v as any)} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-card/50 rounded-xl p-1 mb-4">
+              <TabsTrigger value="buy" className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green rounded-lg transition-all text-sm">
                 Buy
               </TabsTrigger>
-              <TabsTrigger value="send" className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink rounded-lg transition-all">
+              <TabsTrigger value="send" className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink rounded-lg transition-all text-sm">
                 Send
               </TabsTrigger>
-              <TabsTrigger value="receive" className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan rounded-lg transition-all">
+              <TabsTrigger value="receive" className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan rounded-lg transition-all text-sm">
                 Receive
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="buy" className="space-y-4 mt-4 animate-fade-in">
+            <TabsContent value="buy" className="space-y-4 mt-0 animate-fade-in">
               <div className="space-y-2">
                 <Label className="text-neon-green">Amount (USD)</Label>
                 <Input
@@ -709,7 +709,7 @@ export const UnifiedWalletDropdown = () => {
               <div className="p-4 bg-neon-green/10 rounded-xl border border-neon-green/30">
                 <p className="text-xs text-muted-foreground">You'll receive approximately</p>
                 <p className="text-2xl font-bold text-neon-green">
-                  {buyAmount ? (parseFloat(buyAmount) / 50).toFixed(4) : '0'} SOL
+                  {buyAmount ? (parseFloat(buyAmount) * 10).toFixed(2) : '0'} XLM
                 </p>
               </div>
               <Button onClick={handleBuy} className="w-full cyber-button hover:scale-105 active:scale-95 transition-all">
@@ -718,7 +718,7 @@ export const UnifiedWalletDropdown = () => {
               </Button>
             </TabsContent>
 
-            <TabsContent value="send" className="space-y-4 mt-4 animate-fade-in">
+            <TabsContent value="send" className="space-y-4 mt-0 animate-fade-in">
               <div className="space-y-2">
                 <Label className="text-neon-pink">Amount</Label>
                 <Input
@@ -732,7 +732,7 @@ export const UnifiedWalletDropdown = () => {
               <div className="space-y-2">
                 <Label className="text-neon-pink">Recipient Address</Label>
                 <Input
-                  placeholder="Solana wallet address"
+                  placeholder="Stellar wallet address (G...)"
                   value={sendAddress}
                   onChange={(e) => setSendAddress(e.target.value)}
                   className="bg-card/50 border-neon-pink/30 focus:border-neon-pink transition-all"
@@ -744,25 +744,25 @@ export const UnifiedWalletDropdown = () => {
               </Button>
             </TabsContent>
 
-            <TabsContent value="receive" className="space-y-4 mt-4 animate-fade-in">
+            <TabsContent value="receive" className="space-y-4 mt-0 animate-fade-in">
               <div className="flex flex-col items-center p-6 bg-card/50 rounded-xl border border-neon-cyan/30">
-                <div className="w-36 h-36 bg-white rounded-2xl p-3 mb-4 shadow-xl shadow-neon-cyan/20">
+                <div className="w-32 h-32 bg-white rounded-2xl p-3 mb-4 shadow-xl shadow-neon-cyan/20">
                   <div className="w-full h-full flex items-center justify-center">
-                    <QrCode size={100} className="text-black" />
+                    <QrCode size={80} className="text-black" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">Your Wallet Address</p>
-                <div className="flex items-center gap-2 p-3 bg-card rounded-xl border border-neon-cyan/30 w-full">
-                  <code className="flex-1 text-xs text-neon-cyan truncate">
+                <p className="text-xs text-muted-foreground mb-2 text-center">Your Wallet Address</p>
+                <div className="flex items-center gap-2 p-3 bg-card rounded-xl border border-neon-cyan/30 w-full max-w-full overflow-hidden">
+                  <code className="flex-1 text-xs text-neon-cyan truncate min-w-0">
                     {primaryWallet?.address}
                   </code>
-                  <Button size="sm" variant="ghost" onClick={copyAddress} className="h-7 px-2 hover:bg-neon-cyan/10 transition-all hover:scale-110">
+                  <Button size="sm" variant="ghost" onClick={copyAddress} className="h-7 px-2 hover:bg-neon-cyan/10 transition-all hover:scale-110 flex-shrink-0">
                     <Copy size={14} />
                   </Button>
                 </div>
               </div>
-              <p className="text-xs text-center text-muted-foreground">
-                Only send Solana (SOL) and SPL tokens to this address
+              <p className="text-xs text-center text-muted-foreground px-4">
+                Only send Stellar (XLM) and Stellar assets to this address
               </p>
             </TabsContent>
           </Tabs>
