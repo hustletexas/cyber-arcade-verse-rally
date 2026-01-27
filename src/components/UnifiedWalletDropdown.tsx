@@ -673,8 +673,8 @@ export const UnifiedWalletDropdown = () => {
 
       {/* Actions Modal - Buy/Send/Receive */}
       <Dialog open={showActionsModal} onOpenChange={setShowActionsModal}>
-        <DialogContent className="bg-background border border-border rounded-2xl p-0 w-[360px] max-w-[95vw]">
-          <div className="p-6 space-y-5">
+        <DialogContent className="bg-transparent border-none shadow-none p-0 w-[360px] max-w-[95vw]">
+          <div className="p-6 space-y-5 bg-black/80 backdrop-blur-xl rounded-2xl border border-neon-cyan/30">
             {/* Header */}
             <div className="text-center">
               <h2 className="text-lg font-semibold text-foreground">
@@ -685,7 +685,7 @@ export const UnifiedWalletDropdown = () => {
             </div>
 
             {/* Tab Buttons */}
-            <div className="flex gap-2 p-1 bg-muted rounded-lg">
+            <div className="flex gap-2 p-1 bg-black/50 rounded-lg border border-border/30">
               <button
                 onClick={() => setActiveAction('buy')}
                 className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
@@ -728,7 +728,7 @@ export const UnifiedWalletDropdown = () => {
                     placeholder="Enter amount"
                     value={buyAmount}
                     onChange={(e) => setBuyAmount(e.target.value)}
-                    className="bg-muted border-border"
+                    className="bg-black/50 border-neon-green/30"
                   />
                 </div>
                 <div className="p-4 bg-neon-green/10 rounded-lg border border-neon-green/30">
@@ -753,7 +753,7 @@ export const UnifiedWalletDropdown = () => {
                     placeholder="0.00"
                     value={sendAmount}
                     onChange={(e) => setSendAmount(e.target.value)}
-                    className="bg-muted border-border"
+                    className="bg-black/50 border-neon-pink/30"
                   />
                 </div>
                 <div className="space-y-2">
@@ -762,7 +762,7 @@ export const UnifiedWalletDropdown = () => {
                     placeholder="Stellar wallet address (G...)"
                     value={sendAddress}
                     onChange={(e) => setSendAddress(e.target.value)}
-                    className="bg-muted border-border"
+                    className="bg-black/50 border-neon-pink/30"
                   />
                 </div>
                 <Button onClick={handleSend} className="w-full bg-neon-pink hover:bg-neon-pink/90 text-black">
@@ -781,7 +781,7 @@ export const UnifiedWalletDropdown = () => {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">Your Wallet Address</p>
-                  <div className="flex items-center gap-2 p-3 bg-background rounded-lg border border-border w-full">
+                  <div className="flex items-center gap-2 p-3 bg-black/50 rounded-lg border border-neon-cyan/30 w-full">
                     <code className="flex-1 text-xs text-neon-cyan overflow-hidden text-ellipsis whitespace-nowrap">
                       {primaryWallet?.address || 'Connect wallet to view'}
                     </code>
