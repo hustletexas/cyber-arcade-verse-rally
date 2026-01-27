@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CARD_ICONS } from '@/types/neon-match';
+import { Card, CARD_ICONS, SPRITE_CONFIG } from '@/types/neon-match';
 import { cn } from '@/lib/utils';
 
 interface NeonMatchCardProps {
@@ -9,7 +9,11 @@ interface NeonMatchCardProps {
 }
 
 export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, disabled }) => {
-  const icon = CARD_ICONS[card.pairId];
+  const iconData = CARD_ICONS[card.pairId];
+  
+  // Calculate background position for sprite sheet
+  const bgPositionX = iconData.col * (100 / (SPRITE_CONFIG.columns - 1));
+  const bgPositionY = iconData.row * (100 / (SPRITE_CONFIG.rows - 1));
   
   return (
     <div
@@ -33,21 +37,30 @@ export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, dis
         <div
           className={cn(
             "absolute inset-0 w-full h-full rounded-lg flex items-center justify-center backface-hidden",
-            "bg-[#0a0a0f] border-2 transition-all duration-300",
+            "bg-gradient-to-br from-[#0a0a0f] to-[#1a0a20] border-2 transition-all duration-300",
             !card.isMatched && "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3),inset_0_0_10px_rgba(6,182,212,0.1)]",
             !card.isMatched && "hover:border-pink-500/70 hover:shadow-[0_0_20px_rgba(236,72,153,0.4),inset_0_0_15px_rgba(236,72,153,0.15)]",
             "animate-pulse-subtle"
           )}
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className="text-2xl sm:text-3xl md:text-4xl opacity-30">?</div>
+          {/* NFT Card Back Design */}
+          <div className="absolute inset-2 rounded-md border border-purple-500/30 flex items-center justify-center">
+            <div className="text-3xl sm:text-4xl md:text-5xl opacity-50 font-bold bg-gradient-to-br from-cyan-400 to-pink-500 bg-clip-text text-transparent">
+              ?
+            </div>
+          </div>
+          {/* Corner accents */}
+          <div className="absolute top-1 left-1 w-2 h-2 border-t-2 border-l-2 border-cyan-400/50 rounded-tl" />
+          <div className="absolute top-1 right-1 w-2 h-2 border-t-2 border-r-2 border-cyan-400/50 rounded-tr" />
+          <div className="absolute bottom-1 left-1 w-2 h-2 border-b-2 border-l-2 border-pink-400/50 rounded-bl" />
+          <div className="absolute bottom-1 right-1 w-2 h-2 border-b-2 border-r-2 border-pink-400/50 rounded-br" />
         </div>
 
-        {/* Card Front (face up) */}
+        {/* Card Front (face up) - NFT Image */}
         <div
           className={cn(
-            "absolute inset-0 w-full h-full rounded-lg flex items-center justify-center backface-hidden",
-            "bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-2 transition-all duration-300",
+            "absolute inset-0 w-full h-full rounded-lg overflow-hidden border-2 transition-all duration-300",
             card.isMatched 
               ? "border-green-400 shadow-[0_0_25px_rgba(74,222,128,0.5),inset_0_0_15px_rgba(74,222,128,0.2)]" 
               : "border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4),inset_0_0_10px_rgba(6,182,212,0.15)]"
@@ -57,7 +70,23 @@ export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, dis
             transform: 'rotateY(180deg)',
           }}
         >
-          <span className="text-3xl sm:text-4xl md:text-5xl select-none">{icon}</span>
+          {/* NFT Image from Sprite Sheet */}
+          <div 
+            className="absolute inset-1 rounded-md bg-cover bg-no-repeat"
+            style={{
+              backgroundImage: `url(${SPRITE_CONFIG.imagePath})`,
+              backgroundSize: `${SPRITE_CONFIG.columns * 100}% ${SPRITE_CONFIG.rows * 100}%`,
+              backgroundPosition: `${bgPositionX}% ${bgPositionY}%`,
+            }}
+          />
+          
+          {/* Glow overlay */}
+          <div className={cn(
+            "absolute inset-0 pointer-events-none",
+            card.isMatched 
+              ? "bg-gradient-to-t from-green-500/20 to-transparent"
+              : "bg-gradient-to-t from-cyan-500/10 to-transparent"
+          )} />
           
           {/* Spark effect on match */}
           {card.isMatched && (
