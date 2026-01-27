@@ -86,7 +86,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'xbull',
     name: 'xBull',
     icon: '🐂',
-    logoUrl: '/images/wallets/xbull.png?v=1',
+    logoUrl: '/images/wallets/xbull.png?v=2',
     chain: 'stellar',
     downloadUrl: 'https://xbull.app/',
     description: 'Feature-rich Stellar wallet extension'
