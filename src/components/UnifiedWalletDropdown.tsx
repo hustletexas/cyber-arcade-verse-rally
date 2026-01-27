@@ -155,7 +155,7 @@ export const UnifiedWalletDropdown = () => {
   };
 
   const socialLinks = [
-    { name: 'X', icon: '𝕏', url: 'https://x.com/cybercityarcade', color: 'hover:bg-white/20 hover:shadow-white/20' },
+    { name: 'X', icon: '𝕏', url: 'https://x.com/stellarhustle_', color: 'hover:bg-white/20 hover:shadow-white/20' },
     { name: 'Discord', icon: '💬', url: 'https://discord.gg/cybercityarcade', color: 'hover:bg-indigo-500/30 hover:shadow-indigo-500/20' },
     { name: 'Telegram', icon: '✈️', url: 'https://t.me/cybercityarcade', color: 'hover:bg-blue-400/30 hover:shadow-blue-400/20' },
     { name: 'Instagram', icon: '📷', url: 'https://instagram.com/cybercityarcade', color: 'hover:bg-pink-500/30 hover:shadow-pink-500/20' },
