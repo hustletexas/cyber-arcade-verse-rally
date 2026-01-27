@@ -181,7 +181,7 @@ const Index = () => {
           <section className="px-2 sm:px-4">
             <div className="cyber-panel p-6 sm:p-8 rounded-2xl border-2 border-cyan-500/30 bg-gradient-to-br from-black/80 via-purple-950/40 to-blue-950/40">
               <div className="text-center">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 bg-clip-text text-transparent mb-4">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neon-cyan mb-4">
                   🎴 NEON MATCH 36
                 </h2>
                 <p className="text-foreground mb-6 max-w-lg mx-auto">
