@@ -46,9 +46,10 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         setFreighterInstalled(!!(window as any).freighter);
       }
 
-      // Check xBull
-      if (typeof window !== 'undefined' && (window as any).xBullSDK) {
-        setXbullInstalled(true);
+      // Check xBull - it can expose itself as xBullSDK or xBull
+      if (typeof window !== 'undefined') {
+        const hasXbull = (window as any).xBullSDK || (window as any).xBull || (window as any).xbull;
+        setXbullInstalled(!!hasXbull);
       }
     };
     if (isOpen) {
@@ -193,12 +194,23 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   // xBull wallet connection
   const connectXbull = async () => {
     try {
-      const xBullSDK = (window as any).xBullSDK;
+      // xBull can expose itself under different names
+      const xBullSDK = (window as any).xBullSDK || (window as any).xBull || (window as any).xbull;
       if (!xBullSDK) {
         throw new Error('xBull wallet not found. Please install the xBull extension.');
       }
 
-      const publicKey = await xBullSDK.connect();
+      // Try different connection methods based on xBull version
+      let publicKey;
+      if (typeof xBullSDK.connect === 'function') {
+        publicKey = await xBullSDK.connect();
+      } else if (typeof xBullSDK.getPublicKey === 'function') {
+        publicKey = await xBullSDK.getPublicKey();
+      } else if (typeof xBullSDK.requestAccess === 'function') {
+        const result = await xBullSDK.requestAccess();
+        publicKey = result?.publicKey || result;
+      }
+
       if (publicKey) {
         onWalletConnected('xbull', publicKey, 'stellar');
         onClose();
@@ -206,6 +218,8 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           title: "xBull Connected!",
           description: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
         });
+      } else {
+        throw new Error('No public key returned from xBull');
       }
     } catch (error: any) {
       toast({
