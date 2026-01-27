@@ -16,6 +16,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { LiquidityPools } from '@/components/LiquidityPools';
+import { TournamentHub } from '@/components/tournament/TournamentHub';
 
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
@@ -142,6 +143,11 @@ const Index = () => {
           {/* Community Hub Section */}
           <section className="px-2 sm:px-4">
             <CommunityHub />
+          </section>
+
+          {/* Tournament Hub Section */}
+          <section className="px-2 sm:px-4">
+            <TournamentHub />
           </section>
 
           {/* Web3 Gaming Section - Mobile Optimized */}
