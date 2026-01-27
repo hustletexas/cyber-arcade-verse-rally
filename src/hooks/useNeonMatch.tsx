@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { Card, GameState, PAIR_IDS, MatchScore, DailyLimit, LeaderboardEntry } from '@/types/neon-match';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { Card, GameState, PAIR_IDS, DailyLimit, LeaderboardEntry } from '@/types/neon-match';
 import { toast } from '@/hooks/use-toast';
 
 const MAX_DAILY_PLAYS = 3;
@@ -51,7 +51,8 @@ const initialGameState: GameState = {
 };
 
 export function useNeonMatch() {
-  const { user } = useAuth();
+  const { isWalletConnected, primaryWallet } = useMultiWallet();
+  const walletAddress = primaryWallet?.address;
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [dailyLimit, setDailyLimit] = useState<DailyLimit | null>(null);
   const [todayLeaderboard, setTodayLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -67,9 +68,9 @@ export function useNeonMatch() {
   const canPlay = dailyLimit ? dailyLimit.plays_today < MAX_DAILY_PLAYS : true;
   const playsRemaining = dailyLimit ? MAX_DAILY_PLAYS - dailyLimit.plays_today : MAX_DAILY_PLAYS;
 
-  // Fetch daily limit - using raw query since table is new
+  // Fetch daily limit - using wallet address as user_id
   const fetchDailyLimit = useCallback(async () => {
-    if (!user) {
+    if (!walletAddress) {
       setIsLoading(false);
       return;
     }
@@ -77,16 +78,12 @@ export function useNeonMatch() {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Query the daily_limits table directly
+      // Query the daily_limits table using wallet address
       const { data, error } = await supabase
-        .rpc('check_rate_limit', { function_name_param: 'neon_match_daily', max_calls: 999, time_window_seconds: 1 })
-        .then(() => 
-          supabase
-            .from('daily_limits')
-            .select('user_id, plays_today, last_play_date')
-            .eq('user_id', user.id)
-            .maybeSingle()
-        );
+        .from('daily_limits')
+        .select('user_id, plays_today, last_play_date')
+        .eq('user_id', walletAddress)
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching daily limit:', error);
@@ -99,7 +96,7 @@ export function useNeonMatch() {
       if (!typedData) {
         // Create new record
         const newLimit: DailyLimit = {
-          user_id: user.id,
+          user_id: walletAddress,
           plays_today: 0,
           last_play_date: today,
         };
@@ -120,7 +117,7 @@ export function useNeonMatch() {
           await supabase
             .from('daily_limits')
             .update(updatedLimit)
-            .eq('user_id', user.id);
+            .eq('user_id', walletAddress);
           
           setDailyLimit({ ...typedData, ...updatedLimit });
         } else {
@@ -132,12 +129,10 @@ export function useNeonMatch() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [walletAddress]);
 
-  // Fetch leaderboards
+  // Fetch leaderboards - no auth required for viewing
   const fetchLeaderboards = useCallback(async () => {
-    if (!user) return;
-
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -163,7 +158,7 @@ export function useNeonMatch() {
       const formatLeaderboard = (data: unknown[]): LeaderboardEntry[] => {
         return (data || []).map((entry: any, index) => ({
           rank: index + 1,
-          displayName: `Player #${entry.user_id?.slice(0, 4) || 'Anon'}`,
+          displayName: `Player #${entry.user_id?.slice(0, 8) || 'Anon'}`,
           score: entry.score,
           time_seconds: entry.time_seconds,
           moves: entry.moves,
@@ -175,7 +170,7 @@ export function useNeonMatch() {
     } catch (err) {
       console.error('Error fetching leaderboards:', err);
     }
-  }, [user]);
+  }, []);
 
   // Initialize
   useEffect(() => {
@@ -193,10 +188,10 @@ export function useNeonMatch() {
 
   // Start game
   const startGame = useCallback(async () => {
-    if (!user) {
+    if (!walletAddress) {
       toast({
-        title: "Authentication Required",
-        description: "Please log in to play",
+        title: "Wallet Required",
+        description: "Please connect your wallet to play",
         variant: "destructive",
       });
       return;
@@ -218,13 +213,13 @@ export function useNeonMatch() {
     await supabase
       .from('daily_limits')
       .upsert({
-        user_id: user.id,
+        user_id: walletAddress,
         plays_today: newPlays,
         last_play_date: today,
       });
 
     setDailyLimit(prev => prev ? { ...prev, plays_today: newPlays } : {
-      user_id: user.id,
+      user_id: walletAddress,
       plays_today: newPlays,
       last_play_date: today,
     });
@@ -255,7 +250,7 @@ export function useNeonMatch() {
         return { ...prev, timeSeconds: prev.timeSeconds + 1 };
       });
     }, 1000);
-  }, [user, canPlay, dailyLimit]);
+  }, [walletAddress, canPlay, dailyLimit]);
 
   // End game
   const endGame = useCallback(async (state: GameState) => {
@@ -264,13 +259,13 @@ export function useNeonMatch() {
     const score = calculateScore(state.timeSeconds, state.moves, state.mismatches);
     setFinalScore(score);
 
-    // Save score to database
-    if (user) {
+    // Save score to database using wallet address
+    if (walletAddress) {
       try {
         await supabase
           .from('match_scores')
           .insert({
-            user_id: user.id,
+            user_id: walletAddress,
             score,
             time_seconds: state.timeSeconds,
             moves: state.moves,
@@ -284,7 +279,7 @@ export function useNeonMatch() {
     }
 
     setShowEndModal(true);
-  }, [user, fetchLeaderboards]);
+  }, [walletAddress, fetchLeaderboards]);
 
   // Handle card click
   const onCardClick = useCallback((cardId: string) => {
@@ -407,6 +402,6 @@ export function useNeonMatch() {
     startGame,
     onCardClick,
     restartGame,
-    isAuthenticated: !!user,
+    isAuthenticated: isWalletConnected,
   };
 }

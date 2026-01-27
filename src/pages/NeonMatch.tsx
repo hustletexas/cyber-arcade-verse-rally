@@ -5,8 +5,9 @@ import { NeonMatchHUD } from '@/components/games/neon-match/NeonMatchHUD';
 import { NeonMatchLeaderboard } from '@/components/games/neon-match/NeonMatchLeaderboard';
 import { NeonMatchEndModal } from '@/components/games/neon-match/NeonMatchEndModal';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Play, RotateCcw, Lock, LogIn } from 'lucide-react';
+import { ArrowLeft, Play, RotateCcw, Lock, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 
 const NeonMatch: React.FC = () => {
   const {
@@ -77,20 +78,15 @@ const NeonMatch: React.FC = () => {
 
         {/* Game Area */}
         <div className="max-w-3xl mx-auto">
-          {/* Not Authenticated */}
+          {/* Not Authenticated - Connect Wallet */}
           {!isAuthenticated && (
             <div className="text-center py-12 px-4">
-              <LogIn className="w-16 h-16 mx-auto mb-4 text-cyan-400/50" />
-              <h2 className="text-2xl font-bold text-white mb-2">Login Required</h2>
+              <Wallet className="w-16 h-16 mx-auto mb-4 text-cyan-400/50" />
+              <h2 className="text-2xl font-bold text-white mb-2">Connect Wallet to Play</h2>
               <p className="text-cyan-400/70 mb-6">
-                Please log in to play and save your scores to the leaderboard.
+                Connect your Stellar wallet to play and save your scores to the leaderboard.
               </p>
-              <Link to="/">
-                <Button className="bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Go to Login
-                </Button>
-              </Link>
+              <WalletStatusBar />
             </div>
           )}
 
