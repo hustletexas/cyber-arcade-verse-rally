@@ -671,104 +671,136 @@ export const UnifiedWalletDropdown = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Actions Modal */}
+      {/* Actions Modal - Buy/Send/Receive */}
       <Dialog open={showActionsModal} onOpenChange={setShowActionsModal}>
-        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 w-[90vw] max-w-[400px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="text-center pb-2">
-            <DialogTitle className="text-xl text-neon-cyan font-display text-center">
-              {activeAction === 'buy' && '💳 Buy Crypto'}
-              {activeAction === 'send' && '📤 Send Tokens'}
-              {activeAction === 'receive' && '📥 Receive Tokens'}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Manage your Stellar wallet transactions
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Tabs value={activeAction} onValueChange={(v) => setActiveAction(v as any)} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-card/50 rounded-xl p-1 mb-4">
-              <TabsTrigger value="buy" className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green rounded-lg transition-all text-xs px-1">
+        <DialogContent className="bg-background border border-border rounded-2xl p-0 w-[360px] max-w-[95vw]">
+          <div className="p-6 space-y-5">
+            {/* Header */}
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-foreground">
+                {activeAction === 'buy' && '💳 Buy Crypto'}
+                {activeAction === 'send' && '📤 Send Tokens'}
+                {activeAction === 'receive' && '📥 Receive Tokens'}
+              </h2>
+            </div>
+
+            {/* Tab Buttons */}
+            <div className="flex gap-2 p-1 bg-muted rounded-lg">
+              <button
+                onClick={() => setActiveAction('buy')}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  activeAction === 'buy' 
+                    ? 'bg-neon-green/20 text-neon-green' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
                 Buy
-              </TabsTrigger>
-              <TabsTrigger value="send" className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink rounded-lg transition-all text-xs px-1">
+              </button>
+              <button
+                onClick={() => setActiveAction('send')}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  activeAction === 'send' 
+                    ? 'bg-neon-pink/20 text-neon-pink' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
                 Send
-              </TabsTrigger>
-              <TabsTrigger value="receive" className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan rounded-lg transition-all text-xs px-1">
+              </button>
+              <button
+                onClick={() => setActiveAction('receive')}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  activeAction === 'receive' 
+                    ? 'bg-neon-cyan/20 text-neon-cyan' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
                 Receive
-              </TabsTrigger>
-            </TabsList>
+              </button>
+            </div>
 
-            <TabsContent value="buy" className="space-y-4 mt-0">
-              <div className="space-y-2">
-                <Label className="text-neon-green">Amount (USD)</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter amount"
-                  value={buyAmount}
-                  onChange={(e) => setBuyAmount(e.target.value)}
-                  className="bg-card/50 border-neon-green/30 focus:border-neon-green"
-                />
+            {/* Content */}
+            {activeAction === 'buy' && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Amount (USD)</label>
+                  <Input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={buyAmount}
+                    onChange={(e) => setBuyAmount(e.target.value)}
+                    className="bg-muted border-border"
+                  />
+                </div>
+                <div className="p-4 bg-neon-green/10 rounded-lg border border-neon-green/30">
+                  <p className="text-xs text-muted-foreground">You'll receive approximately</p>
+                  <p className="text-xl font-bold text-neon-green">
+                    {buyAmount ? (parseFloat(buyAmount) * 10).toFixed(2) : '0'} XLM
+                  </p>
+                </div>
+                <Button onClick={handleBuy} className="w-full bg-neon-green hover:bg-neon-green/90 text-black">
+                  <CreditCard size={16} className="mr-2" />
+                  Continue to Payment
+                </Button>
               </div>
-              <div className="p-4 bg-neon-green/10 rounded-xl border border-neon-green/30">
-                <p className="text-xs text-muted-foreground">You'll receive approximately</p>
-                <p className="text-2xl font-bold text-neon-green">
-                  {buyAmount ? (parseFloat(buyAmount) * 10).toFixed(2) : '0'} XLM
-                </p>
-              </div>
-              <Button onClick={handleBuy} className="w-full cyber-button">
-                <CreditCard size={16} className="mr-2" />
-                Continue to Payment
-              </Button>
-            </TabsContent>
+            )}
 
-            <TabsContent value="send" className="space-y-4 mt-0">
-              <div className="space-y-2">
-                <Label className="text-neon-pink">Amount</Label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={sendAmount}
-                  onChange={(e) => setSendAmount(e.target.value)}
-                  className="bg-card/50 border-neon-pink/30 focus:border-neon-pink"
-                />
+            {activeAction === 'send' && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Amount</label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={sendAmount}
+                    onChange={(e) => setSendAmount(e.target.value)}
+                    className="bg-muted border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Recipient Address</label>
+                  <Input
+                    placeholder="Stellar wallet address (G...)"
+                    value={sendAddress}
+                    onChange={(e) => setSendAddress(e.target.value)}
+                    className="bg-muted border-border"
+                  />
+                </div>
+                <Button onClick={handleSend} className="w-full bg-neon-pink hover:bg-neon-pink/90 text-black">
+                  <ArrowUpRight size={16} className="mr-2" />
+                  Send Transaction
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label className="text-neon-pink">Recipient Address</Label>
-                <Input
-                  placeholder="Stellar wallet address (G...)"
-                  value={sendAddress}
-                  onChange={(e) => setSendAddress(e.target.value)}
-                  className="bg-card/50 border-neon-pink/30 focus:border-neon-pink"
-                />
-              </div>
-              <Button onClick={handleSend} className="w-full bg-gradient-to-r from-neon-pink to-neon-purple hover:from-neon-purple hover:to-neon-pink">
-                <ArrowUpRight size={16} className="mr-2" />
-                Send Transaction
-              </Button>
-            </TabsContent>
+            )}
 
-            <TabsContent value="receive" className="mt-0">
-              <div className="flex flex-col items-center p-4 bg-card/50 rounded-xl border border-neon-cyan/30">
-                <div className="w-24 h-24 bg-white rounded-xl p-2 mb-3 shadow-lg shadow-neon-cyan/20">
-                  <div className="w-full h-full flex items-center justify-center">
-                    <QrCode size={64} className="text-black" />
+            {activeAction === 'receive' && (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center p-5 bg-muted rounded-lg">
+                  <div className="w-28 h-28 bg-white rounded-lg p-2 mb-4">
+                    <div className="w-full h-full flex items-center justify-center">
+                      <QrCode size={80} className="text-black" />
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">Your Wallet Address</p>
+                  <div className="flex items-center gap-2 p-3 bg-background rounded-lg border border-border w-full">
+                    <code className="flex-1 text-xs text-neon-cyan overflow-hidden text-ellipsis whitespace-nowrap">
+                      {primaryWallet?.address || 'Connect wallet to view'}
+                    </code>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={copyAddress}
+                      className="h-8 w-8 p-0 shrink-0"
+                    >
+                      <Copy size={14} />
+                    </Button>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">Your Wallet Address</p>
-                <div className="flex items-center gap-1 p-2 bg-card rounded-lg border border-neon-cyan/30 w-full">
-                  <code className="flex-1 text-[10px] text-neon-cyan truncate">
-                    {primaryWallet?.address || 'Connect wallet'}
-                  </code>
-                  <Button size="icon" variant="ghost" onClick={copyAddress} className="h-6 w-6 hover:bg-neon-cyan/10 flex-shrink-0">
-                    <Copy size={12} />
-                  </Button>
-                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  Only send Stellar (XLM) and Stellar assets to this address
+                </p>
               </div>
-              <p className="text-[10px] text-center text-muted-foreground mt-3">
-                Only send Stellar (XLM) and Stellar assets to this address
-              </p>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
