@@ -11,9 +11,11 @@ interface NeonMatchCardProps {
 export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, disabled }) => {
   const iconData = CARD_ICONS[card.pairId];
   
-  // Calculate background position for sprite sheet
-  const bgPositionX = iconData.col * (100 / (SPRITE_CONFIG.columns - 1));
-  const bgPositionY = iconData.row * (100 / (SPRITE_CONFIG.rows - 1));
+  // Calculate background position for sprite sheet (5 cols x 6 rows)
+  // For 5 columns: 0%, 25%, 50%, 75%, 100%
+  // For 6 rows: 0%, 20%, 40%, 60%, 80%, 100%
+  const bgPositionX = iconData.col * 25; // 100 / 4 = 25
+  const bgPositionY = iconData.row * 20; // 100 / 5 = 20
   
   return (
     <div
@@ -72,11 +74,12 @@ export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, dis
         >
           {/* NFT Image from Sprite Sheet */}
           <div 
-            className="absolute inset-1 rounded-md bg-cover bg-no-repeat"
+            className="absolute inset-0 rounded-md"
             style={{
               backgroundImage: `url(${SPRITE_CONFIG.imagePath})`,
-              backgroundSize: `${SPRITE_CONFIG.columns * 100}% ${SPRITE_CONFIG.rows * 100}%`,
+              backgroundSize: '500% 600%',
               backgroundPosition: `${bgPositionX}% ${bgPositionY}%`,
+              backgroundRepeat: 'no-repeat',
             }}
           />
           
