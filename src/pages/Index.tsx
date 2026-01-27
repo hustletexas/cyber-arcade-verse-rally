@@ -9,13 +9,11 @@ import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { RaffleSection } from '@/components/RaffleSection';
 import { TokenPurchase } from '@/components/TokenPurchase';
-import { CCTRStaking } from '@/components/CCTRStaking';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
-import { LiquidityPools } from '@/components/LiquidityPools';
 import { TournamentHub } from '@/components/tournament/TournamentHub';
 
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +24,6 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
-import { NodePurchase } from '@/components/NodePurchase';
 
 const Index = () => {
   const { toast } = useToast();
@@ -216,20 +213,6 @@ const Index = () => {
             <TokenPurchase />
           </section>
 
-          {/* CCTR Staking Section - Touch Friendly */}
-          <section className="px-2 sm:px-4">
-            <CCTRStaking />
-          </section>
-
-          {/* Liquidity Pools Section - Stellar DeFi */}
-          <section className="px-2 sm:px-4">
-            <LiquidityPools />
-          </section>
-
-          {/* CCTR Node Purchase Section - Mobile Optimized */}
-          <section className="px-2 sm:px-4">
-            <NodePurchase />
-          </section>
         </div>
       </main>
       {/* Mobile-Enhanced Footer */}
