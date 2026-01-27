@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
-import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID } from '@creit.tech/stellar-wallets-kit';
+import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID, XBULL_ID } from '@creit.tech/stellar-wallets-kit';
 import freighterApi from '@stellar/freighter-api';
 
 interface WalletOption extends WalletInfo {
@@ -28,7 +28,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const [lobstrInstalled] = useState(true); // LOBSTR uses WalletConnect, always available
   const [freighterInstalled, setFreighterInstalled] = useState(false);
   const [albedoInstalled] = useState(true); // Albedo is web-based, always available
-  const [xbullInstalled, setXbullInstalled] = useState(false);
+  const [xbullInstalled] = useState(true); // xBull uses WalletConnect via Stellar Wallets Kit
   const [hotwalletInstalled] = useState(true); // Hot Wallet is web-based
 
   // Check wallet extensions on mount
@@ -46,22 +46,18 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         setFreighterInstalled(!!(window as any).freighter);
       }
 
-      // Check xBull - it can expose itself as xBullSDK or xBull
-      if (typeof window !== 'undefined') {
-        const hasXbull = (window as any).xBullSDK || (window as any).xBull || (window as any).xbull;
-        setXbullInstalled(!!hasXbull);
-      }
+      // xBull is available via Stellar Wallets Kit, no extension detection needed
     };
     if (isOpen) {
       checkExtensions();
     }
   }, [isOpen]);
 
-  // Initialize Stellar Wallets Kit for LOBSTR
-  const getStellarKit = () => {
+  // Initialize Stellar Wallets Kit
+  const getStellarKit = (walletId: string = LOBSTR_ID) => {
     return new StellarWalletsKit({
       network: WalletNetwork.PUBLIC,
-      selectedWalletId: LOBSTR_ID,
+      selectedWalletId: walletId,
       modules: allowAllModules()
     });
   };
@@ -191,35 +187,28 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // xBull wallet connection
+  // xBull wallet connection using Stellar Wallets Kit
   const connectXbull = async () => {
     try {
-      // xBull can expose itself under different names
-      const xBullSDK = (window as any).xBullSDK || (window as any).xBull || (window as any).xbull;
-      if (!xBullSDK) {
-        throw new Error('xBull wallet not found. Please install the xBull extension.');
-      }
+      const kit = getStellarKit(XBULL_ID);
+      
+      // Open modal to connect xBull
+      await kit.openModal({
+        onWalletSelected: async (option) => {
+          kit.setWallet(option.id);
+        }
+      });
 
-      // Try different connection methods based on xBull version
-      let publicKey;
-      if (typeof xBullSDK.connect === 'function') {
-        publicKey = await xBullSDK.connect();
-      } else if (typeof xBullSDK.getPublicKey === 'function') {
-        publicKey = await xBullSDK.getPublicKey();
-      } else if (typeof xBullSDK.requestAccess === 'function') {
-        const result = await xBullSDK.requestAccess();
-        publicKey = result?.publicKey || result;
-      }
-
-      if (publicKey) {
-        onWalletConnected('xbull', publicKey, 'stellar');
+      // Get the address
+      const { address } = await kit.getAddress();
+      
+      if (address) {
+        onWalletConnected('xbull', address, 'stellar');
         onClose();
         toast({
           title: "xBull Connected!",
-          description: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
         });
-      } else {
-        throw new Error('No public key returned from xBull');
       }
     } catch (error: any) {
       toast({
