@@ -4,6 +4,8 @@ import { NeonMatchGrid } from '@/components/games/neon-match/NeonMatchGrid';
 import { NeonMatchHUD } from '@/components/games/neon-match/NeonMatchHUD';
 import { NeonMatchLeaderboard } from '@/components/games/neon-match/NeonMatchLeaderboard';
 import { NeonMatchEndModal } from '@/components/games/neon-match/NeonMatchEndModal';
+import { NeonMatchAchievements } from '@/components/games/neon-match/NeonMatchAchievements';
+import { NeonMatchAchievementToast } from '@/components/games/neon-match/NeonMatchAchievementToast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Play, RotateCcw, Trophy, Gamepad2, Coins, Wallet, Sparkles, Crown } from 'lucide-react';
@@ -31,6 +33,11 @@ const NeonMatch: React.FC = () => {
     hasEnoughCCTR,
     entryFee,
     gameMode,
+    achievements,
+    newlyUnlocked,
+    clearNewlyUnlocked,
+    unlockedCount,
+    totalCount,
   } = useNeonMatch();
 
   const leaderboardRef = useRef<HTMLDivElement>(null);
@@ -97,8 +104,12 @@ const NeonMatch: React.FC = () => {
                 }
               >
                 {gameMode === 'ranked' ? <Crown className="w-3 h-3 mr-1" /> : <Gamepad2 className="w-3 h-3 mr-1" />}
-                {gameMode === 'ranked' ? 'Ranked' : 'Free Play'}
-              </Badge>
+              {gameMode === 'ranked' ? 'Ranked' : 'Free Play'}
+            </Badge>
+            )}
+            {/* Compact achievement display */}
+            {unlockedCount > 0 && (
+              <NeonMatchAchievements achievements={achievements} compact />
             )}
           </div>
         </div>
@@ -270,8 +281,23 @@ const NeonMatch: React.FC = () => {
               />
             </div>
           )}
+
+          {/* Achievements Section (always visible when not in mode select) */}
+          {gameMode && (
+            <div className="mt-6">
+              <NeonMatchAchievements achievements={achievements} />
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Achievement Unlock Toast */}
+      {newlyUnlocked.length > 0 && (
+        <NeonMatchAchievementToast
+          achievements={newlyUnlocked}
+          onComplete={clearNewlyUnlocked}
+        />
+      )}
 
       {/* End Game Modal */}
       <NeonMatchEndModal
