@@ -51,38 +51,55 @@ const NeonMatch: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-blue-950 relative overflow-hidden">
-      {/* Neon Grid Overlay */}
+      {/* Animated Neon Grid Overlay */}
       <div 
-        className="absolute inset-0 opacity-10 pointer-events-none"
+        className="absolute inset-0 opacity-20 pointer-events-none animate-grid-pulse"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(6, 182, 212, 0.3) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(6, 182, 212, 0.3) 1px, transparent 1px)
+            linear-gradient(rgba(6, 182, 212, 0.4) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(236, 72, 153, 0.3) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px',
+          backgroundSize: '60px 60px',
         }}
       />
 
-      {/* Glow Effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Scanline Effect */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-20"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 4px)',
+        }}
+      />
+
+      {/* Animated Glow Orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow-delayed" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-breathe" />
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute w-2 h-2 bg-cyan-400 rounded-full animate-float-particle-1 opacity-60" style={{ left: '10%', top: '20%' }} />
+        <div className="absolute w-1 h-1 bg-pink-400 rounded-full animate-float-particle-2 opacity-60" style={{ left: '80%', top: '30%' }} />
+        <div className="absolute w-1.5 h-1.5 bg-purple-400 rounded-full animate-float-particle-3 opacity-60" style={{ left: '30%', top: '70%' }} />
+        <div className="absolute w-2 h-2 bg-cyan-300 rounded-full animate-float-particle-4 opacity-40" style={{ left: '70%', top: '60%' }} />
+        <div className="absolute w-1 h-1 bg-pink-300 rounded-full animate-float-particle-5 opacity-50" style={{ left: '50%', top: '40%' }} />
+      </div>
 
       <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Wallet Status Bar */}
-        <div className="mb-4">
+        <div className="mb-4 animate-fade-in">
           <WalletStatusBar />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Link to="/">
-            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10">
+            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-all duration-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
           </Link>
           
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 bg-clip-text text-transparent animate-text-shimmer drop-shadow-[0_0_30px_rgba(236,72,153,0.5)]">
             NEON MATCH 36
           </h1>
 
@@ -316,7 +333,7 @@ const NeonMatch: React.FC = () => {
         gameMode={gameMode}
       />
 
-      {/* Custom CSS for animations */}
+      {/* Custom CSS for neon animations */}
       <style>{`
         @keyframes pulse-subtle {
           0%, 100% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
@@ -324,6 +341,89 @@ const NeonMatch: React.FC = () => {
         }
         .animate-pulse-subtle {
           animation: pulse-subtle 2s ease-in-out infinite;
+        }
+        
+        @keyframes grid-pulse {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.25; }
+        }
+        .animate-grid-pulse {
+          animation: grid-pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.15; transform: scale(1); }
+          50% { opacity: 0.3; transform: scale(1.1); }
+        }
+        .animate-pulse-glow {
+          animation: pulse-glow 3s ease-in-out infinite;
+        }
+        .animate-pulse-glow-delayed {
+          animation: pulse-glow 3s ease-in-out infinite 1.5s;
+        }
+        
+        @keyframes breathe {
+          0%, 100% { opacity: 0.08; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.15; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        .animate-breathe {
+          animation: breathe 5s ease-in-out infinite;
+        }
+        
+        @keyframes float-particle-1 {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          25% { transform: translateY(-30px) translateX(15px); }
+          50% { transform: translateY(-10px) translateX(-10px); }
+          75% { transform: translateY(-40px) translateX(5px); }
+        }
+        .animate-float-particle-1 { animation: float-particle-1 8s ease-in-out infinite; }
+        
+        @keyframes float-particle-2 {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          33% { transform: translateY(-20px) translateX(-20px); }
+          66% { transform: translateY(-35px) translateX(10px); }
+        }
+        .animate-float-particle-2 { animation: float-particle-2 10s ease-in-out infinite; }
+        
+        @keyframes float-particle-3 {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-25px) translateX(-15px); }
+        }
+        .animate-float-particle-3 { animation: float-particle-3 6s ease-in-out infinite; }
+        
+        @keyframes float-particle-4 {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          40% { transform: translateY(-15px) translateX(20px); }
+          80% { transform: translateY(-30px) translateX(-5px); }
+        }
+        .animate-float-particle-4 { animation: float-particle-4 9s ease-in-out infinite; }
+        
+        @keyframes float-particle-5 {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          25% { transform: translateY(-20px) translateX(-10px); }
+          75% { transform: translateY(-10px) translateX(15px); }
+        }
+        .animate-float-particle-5 { animation: float-particle-5 7s ease-in-out infinite; }
+        
+        @keyframes text-shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        .animate-text-shimmer {
+          background-size: 200% auto;
+          animation: text-shimmer 3s linear infinite;
+        }
+        
+        @keyframes neon-flicker {
+          0%, 100% { opacity: 1; }
+          92% { opacity: 1; }
+          93% { opacity: 0.8; }
+          94% { opacity: 1; }
+          96% { opacity: 0.9; }
+          97% { opacity: 1; }
+        }
+        .animate-neon-flicker {
+          animation: neon-flicker 5s ease-in-out infinite;
         }
       `}</style>
     </div>
