@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { PAYMENT_CONFIG } from '@/types/wallet';
+import { STELLAR_NETWORK } from '@/config/stellar';
 
-// Stellar USDC asset configuration (Mainnet)
-export const STELLAR_USDC = {
-  code: 'USDC',
-  issuer: 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN', // Circle USDC issuer
-  decimals: 7,
-};
+// Stellar USDC asset configuration (using network config)
+export const STELLAR_USDC = STELLAR_NETWORK.assets.USDC;
 
 // CCC Rewards Token on Soroban (placeholder contract)
 export const CCC_TOKEN = {
@@ -69,7 +66,7 @@ export const useStellarPayment = () => {
     try {
       // Stellar Horizon API call to get account balances
       const response = await fetch(
-        `https://horizon.stellar.org/accounts/${address}`
+        `${STELLAR_NETWORK.horizonUrl}/accounts/${address}`
       );
       
       if (!response.ok) {
@@ -96,7 +93,7 @@ export const useStellarPayment = () => {
   const hasUSDCTrustline = useCallback(async (address: string): Promise<boolean> => {
     try {
       const response = await fetch(
-        `https://horizon.stellar.org/accounts/${address}`
+        `${STELLAR_NETWORK.horizonUrl}/accounts/${address}`
       );
       
       if (!response.ok) return false;

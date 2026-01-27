@@ -1,8 +1,10 @@
 import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { UnifiedWalletDropdown } from './UnifiedWalletDropdown';
 import { useCart } from '@/contexts/CartContext';
+import { STELLAR_NETWORK } from '@/config/stellar';
 
 export const TopBar = () => {
   const { setIsOpen, items } = useCart();
@@ -12,8 +14,17 @@ export const TopBar = () => {
     <header className="border-b border-neon-cyan/20 bg-card/30 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between h-12">
-          {/* Empty left space for balance */}
-          <div className="flex-1" />
+          {/* Network indicator */}
+          <div className="flex-1 flex items-center gap-2">
+            {!STELLAR_NETWORK.isMainnet && (
+              <Badge 
+                variant="outline" 
+                className="bg-amber-500/20 border-amber-500/50 text-amber-400 text-xs font-medium animate-pulse"
+              >
+                ⚠️ {STELLAR_NETWORK.networkName} • Mainnet Soon
+              </Badge>
+            )}
+          </div>
 
           {/* Right side actions */}
           <div className="flex items-center gap-3">

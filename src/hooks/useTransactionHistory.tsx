@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { STELLAR_NETWORK } from '@/config/stellar';
 
 type ChainType = 'solana' | 'ethereum' | 'stellar';
 
@@ -29,8 +30,8 @@ interface UseTransactionHistoryReturn {
   refreshHistory: () => Promise<void>;
 }
 
-// Stellar Horizon API
-const STELLAR_HORIZON = 'https://horizon.stellar.org';
+// Stellar Horizon API - using centralized config
+const STELLAR_HORIZON = STELLAR_NETWORK.horizonUrl;
 
 export const useTransactionHistory = (connectedWallets: WalletInput[]): UseTransactionHistoryReturn => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);

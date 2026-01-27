@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { STELLAR_NETWORK } from '@/config/stellar';
 
 type ChainType = 'solana' | 'ethereum' | 'stellar';
 
@@ -26,8 +27,8 @@ interface UseWalletBalancesReturn {
   getBalance: (address: string) => WalletBalance | null;
 }
 
-// RPC endpoints - using CORS-friendly alternatives
-const STELLAR_HORIZON = 'https://horizon.stellar.org';
+// RPC endpoints - using centralized config
+const STELLAR_HORIZON = STELLAR_NETWORK.horizonUrl;
 
 export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBalancesReturn => {
   const [balances, setBalances] = useState<Record<string, WalletBalance>>({});
