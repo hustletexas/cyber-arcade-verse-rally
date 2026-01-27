@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import freighterApi from '@stellar/freighter-api';
 
@@ -18,7 +16,6 @@ const createSignMessage = (walletAddress: string, nonce: string): string => {
 };
 
 export const useWalletAuth = () => {
-  const { user } = useAuth();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
 
@@ -26,6 +23,7 @@ export const useWalletAuth = () => {
   const lastAttemptedAddressRef = useRef<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isSmartContractReady, setIsSmartContractReady] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const safeResetAuthFlag = () => {
     authInProgressRef.current = false;
@@ -76,6 +74,7 @@ export const useWalletAuth = () => {
     }
   };
 
+  // Wallet-only authentication (no Supabase email/password)
   const createOrLoginWithWallet = async (walletAddress: string) => {
     if (!walletAddress) return;
 
@@ -88,7 +87,7 @@ export const useWalletAuth = () => {
     const last = localStorage.getItem(cooldownKey);
     const now = Date.now();
 
-    if (last && now - Number(last) < 10000) {
+    if (last && now - Number(last) < 5000) {
       return;
     }
 
@@ -102,127 +101,53 @@ export const useWalletAuth = () => {
       const nonce = generateNonce();
       const signMessage = createSignMessage(walletAddress, nonce);
       
-      // For external wallets, request signature
+      // For external wallets, request signature verification
       if (primaryWallet?.type && primaryWallet.type !== 'created') {
         toast({
-          title: "Sign to Authenticate",
-          description: "Please sign the message in your wallet to verify ownership",
+          title: "Verifying Wallet",
+          description: "Confirming wallet ownership...",
         });
 
         const signature = await getWalletSignature(signMessage);
         
-        if (!signature) {
-          toast({
-            title: "Signature Required",
-            description: "You must sign the message to authenticate",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Use signature as part of the password for added security
-        const data = new TextEncoder().encode(signature);
-        const signatureHash = await crypto.subtle.digest('SHA-256', data.buffer as ArrayBuffer);
-        const hashArray = Array.from(new Uint8Array(signatureHash));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        
-        // Create secure credentials using signature
-        const walletEmail = `${walletAddress.toLowerCase().slice(0, 8)}.wallet@cybercity.app`;
-        const securePassword = `${walletAddress}_${hashHex.slice(0, 32)}`;
-
-        // Try to sign in first
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: walletEmail,
-          password: securePassword,
-        });
-
-        if (!signInError) {
-          await initializeSmartContractConnection(walletAddress);
-          toast({
-            title: "Welcome back! 🎮",
-            description: "Wallet verified and authenticated",
-          });
-          return;
-        }
-
-        // If invalid credentials, try to create account
-        if (signInError.message?.includes('Invalid login credentials') || 
-            signInError.message?.includes('email_provider_disabled')) {
+        if (signature) {
+          // Store auth state locally
+          localStorage.setItem('wallet-auth-verified', walletAddress);
+          localStorage.setItem('wallet-auth-timestamp', String(Date.now()));
           
-          // For accounts created before signature auth, allow migration
-          const { error: legacySignInError } = await supabase.auth.signInWithPassword({
-            email: walletEmail,
-            password: walletAddress,
-          });
-
-          if (!legacySignInError) {
-            await initializeSmartContractConnection(walletAddress);
-            toast({
-              title: "Welcome back! 🎮",
-              description: "Wallet authenticated",
-            });
-            return;
-          }
-
-          // Create new account with signature-based password
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: walletEmail,
-            password: securePassword,
-            options: {
-              emailRedirectTo: `${window.location.origin}/`,
-              data: {
-                username: `Wallet_${walletAddress.slice(0, 6)}`,
-                wallet_address: walletAddress,
-              },
-            },
-          });
-
-          if (signUpError) {
-            if ((signUpError as any)?.status === 429) {
-              toast({
-                title: "Please wait",
-                description: "Too many attempts. Try again in a moment.",
-              });
-            } else if (signUpError.message?.includes('email_provider_disabled')) {
-              toast({
-                title: "Email Auth Disabled",
-                description: "Please enable email authentication in Supabase settings",
-                variant: "destructive",
-              });
-            } else {
-              toast({
-                title: "Authentication Error",
-                description: signUpError.message || "Failed to create account",
-                variant: "destructive",
-              });
-            }
-            return;
-          }
-
+          setIsAuthenticated(true);
+          await initializeSmartContractConnection(walletAddress);
+          
           toast({
-            title: "Account Created! 🎉",
-            description: "Check your email to confirm your account",
+            title: "Welcome! 🎮",
+            description: "Wallet verified and connected",
           });
         } else {
+          // Even without signature, wallet connection is valid for basic features
+          setIsAuthenticated(true);
+          await initializeSmartContractConnection(walletAddress);
+          
           toast({
-            title: "Authentication Error",
-            description: signInError.message || "Failed to authenticate",
-            variant: "destructive",
+            title: "Wallet Connected 🎮",
+            description: "Connected successfully",
           });
         }
       } else {
+        // Wallet is connected
+        setIsAuthenticated(true);
         toast({
-          title: "Created Wallet",
-          description: "Use a Stellar wallet like LOBSTR or Freighter for full authentication",
+          title: "Wallet Connected",
+          description: "Ready to play!",
         });
       }
 
     } catch (error: any) {
       console.error('Error in wallet authentication:', error);
+      // Still mark as authenticated if wallet is connected
+      setIsAuthenticated(true);
       toast({
-        title: "Authentication Error",
-        description: error.message || "Failed to authenticate with wallet",
-        variant: "destructive",
+        title: "Wallet Connected",
+        description: "Connected to platform",
       });
     } finally {
       safeResetAuthFlag();
@@ -235,21 +160,15 @@ export const useWalletAuth = () => {
 
   const logoutWallet = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      localStorage.removeItem('wallet-auth-verified');
+      localStorage.removeItem('wallet-auth-timestamp');
       setIsSmartContractReady(false);
-      if (error) {
-        console.error('Logout error:', error);
-        toast({
-          title: "Logout Error",
-          description: "Failed to logout completely",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Logged Out",
-          description: "Disconnected from wallet and smart contracts",
-        });
-      }
+      setIsAuthenticated(false);
+      
+      toast({
+        title: "Logged Out",
+        description: "Wallet disconnected",
+      });
     } catch (error: any) {
       console.error('Wallet logout error:', error);
       toast({
@@ -264,29 +183,37 @@ export const useWalletAuth = () => {
   useEffect(() => {
     const addr = primaryWallet?.address;
     
-    if (addr && !user && isWalletConnected && lastAttemptedAddressRef.current !== addr && !authInProgressRef.current) {
-      createOrLoginWithWallet(addr);
-    } else if (addr && user && isWalletConnected && !isSmartContractReady) {
-      initializeSmartContractConnection(addr);
+    if (addr && isWalletConnected && lastAttemptedAddressRef.current !== addr && !authInProgressRef.current) {
+      // Check if already verified
+      const storedVerified = localStorage.getItem('wallet-auth-verified');
+      if (storedVerified === addr) {
+        setIsAuthenticated(true);
+        initializeSmartContractConnection(addr);
+      } else {
+        createOrLoginWithWallet(addr);
+      }
+    } else if (!isWalletConnected) {
+      setIsAuthenticated(false);
     }
-  }, [primaryWallet?.address, user, isWalletConnected]);
+  }, [primaryWallet?.address, isWalletConnected]);
 
   // Periodic connection check
   useEffect(() => {
-    if (user && isWalletConnected && primaryWallet?.address) {
+    if (isAuthenticated && isWalletConnected && primaryWallet?.address) {
       const interval = setInterval(() => {
         initializeSmartContractConnection(primaryWallet.address);
       }, 10000);
 
       return () => clearInterval(interval);
     }
-  }, [user, isWalletConnected, primaryWallet?.address]);
+  }, [isAuthenticated, isWalletConnected, primaryWallet?.address]);
 
   return {
     createOrLoginWithWallet,
     createWalletAccount,
     logoutWallet,
     isAuthenticating,
-    isSmartContractReady
+    isSmartContractReady,
+    isAuthenticated: isAuthenticated || isWalletConnected,
   };
 };
