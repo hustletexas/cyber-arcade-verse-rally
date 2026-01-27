@@ -5,6 +5,11 @@ members = [
     "node-system",
     "liquidity-pool",
     "tournament-raffle",
+    "nft-pass",
+    "rewards-vault",
+    "results-attestation",
+    "compute-credits",
+    "host-rewards",
 ]
 
 [profile.release]

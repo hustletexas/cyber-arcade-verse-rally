@@ -91,6 +91,149 @@ purchase_tickets(buyer, raffle_id, quantity)
 draw_winner(raffle_id)
 ```
 
+### 5. NFT Pass (`nft-pass/`) 🆕
+Gate access to tournaments, premium servers, and VIP perks.
+
+**Pass Tiers:**
+| Tier | Price (CCTR) | Access Level |
+|------|-------------|--------------|
+| Bronze | 100 | Basic tournaments |
+| Silver | 500 | Premium servers |
+| Gold | 2,000 | VIP perks + all access |
+| Platinum | 10,000 | Season pass + exclusive |
+
+**Features:**
+- Tiered access control with traits
+- **Soulbound option** for non-transferable passes
+- Configurable access gates
+- Admin key rotation
+
+**Key Functions:**
+```rust
+initialize(admin, attestation_key)
+mint_pass(recipient, tier, is_soulbound, expires_at, metadata_uri, cctr_token)
+transfer(pass_id, from, to)  // Fails if soulbound
+check_access(user, gate_id)
+add_trait(pass_id, trait_key, trait_value)
+create_gate(gate_id, required_tier, required_traits)
+rotate_admin(new_admin)
+```
+
+### 6. Rewards Vault (`rewards-vault/`) 🆕
+Secure escrow for tournament payouts that no one can "mess with."
+
+**Two Patterns:**
+1. **Treasury → Distribution**: Admin funds vault, vault pays winners
+2. **Per-Tournament Escrow**: Entry funds go into escrow, then paid out
+
+**Security Features:**
+- ✅ **Nonce per match payout** (prevents replay attacks)
+- ✅ **Deadline enforcement** (10-minute window for signed payloads)
+- ✅ **Max payout caps** per tournament
+- ✅ **Admin key rotation**
+- ✅ **Multisig for vault withdrawals** (configurable threshold)
+
+**Key Functions:**
+```rust
+initialize(admin, attestation_key, max_payout_cap, multisig_signers, threshold)
+fund_treasury(funder, token, amount)
+create_tournament_escrow(tournament_id, entry_fee, max_payout_cap, deadline)
+enter_tournament(player, tournament_id, token)
+payout(tournament_id, recipient, amount, nonce, token)  // Attestation key only
+propose_withdrawal(proposer, token, amount, recipient)  // Multisig
+approve_withdrawal(signer, withdrawal_id)
+emergency_refund(tournament_id, token)  // Admin only
+rotate_admin(new_admin)
+rotate_attestation_key(new_key)
+```
+
+### 7. Results Attestation (`results-attestation/`) 🆕
+Lightweight contract for immutable game result audit trail.
+
+**Purpose:** Prevent disputes without putting gameplay on-chain.
+**Important:** Does NOT compute results—just records/attests to them.
+
+**Features:**
+- Immutable match attestations (once recorded, cannot be changed)
+- Tournament-level attestations
+- Dispute filing and resolution system
+- Multiple attestation keys (rotation supported)
+- One-purpose signing key (separate from treasury)
+
+**Key Functions:**
+```rust
+initialize(admin, attestation_keys)
+attest_match(attester, tournament_id, match_id, result_hash, winner, participants, scores, metadata_hash)
+attest_tournament(attester, tournament_id, final_results_hash, total_matches, winner, runner_up, prize_distribution_hash)
+file_dispute(challenger, match_id, reason_hash)
+resolve_dispute(resolver, dispute_id, resolution_hash)
+verify_result(match_id, result_hash)  // Returns true if hash matches
+add_attestation_key(new_key)
+remove_attestation_key(key_to_remove)
+```
+
+### 8. Compute Credits (`compute-credits/`) 🆕
+CCC/credits as a real on-chain asset (earn/buy/spend).
+
+**Strategy:** Start off-chain (fast, cheap) → Bridge to on-chain for power users/hosts.
+
+**Features:**
+- Purchasable credit packages with bonuses
+- Earn credits (gameplay/achievements)
+- Spend credits (tournaments/features)
+- Transfer between users
+- Role-based minting/burning
+- Daily mint limits (prevents abuse)
+- Max supply cap
+
+**Key Functions:**
+```rust
+initialize(admin, usdc_token, max_supply, daily_mint_limit)
+buy_credits(buyer, package_id)  // Uses USDC
+award_credits(minter, recipient, amount, description)  // Minter role
+spend_credits(user, amount, description)
+transfer_credits(from, to, amount)
+burn_credits(burner, user, amount)  // Burner role
+create_package(credits, price_usdc, bonus_credits)
+add_minter(minter)
+add_burner(burner)
+set_limits(max_supply, daily_mint_limit)
+```
+
+### 9. Host Rewards (`host-rewards/`) 🆕
+Pay people who provide compute nodes / server capacity.
+
+**Purpose:** Transparent rules for decentralized compute providers.
+
+**Security Features:**
+- ✅ **One-purpose attestation key** (not treasury key)
+- ✅ **Nonce per payout** (prevents replay)
+- ✅ **Deadline enforcement**
+- ✅ **Max payout caps** per job
+- ✅ **Admin key rotation**
+- ✅ Stake slashing for misbehavior
+
+**Host Features:**
+- Stake CCTR to register as provider
+- Reputation scoring (0-1000)
+- Heartbeat for liveness proof
+- Job tracking and completion proofs
+
+**Key Functions:**
+```rust
+initialize(admin, attestation_key, cctr_token, min_stake, max_payout_per_job)
+register_host(host, stake_amount)
+add_stake(host, amount)
+withdraw_stake(host, amount)
+heartbeat(host)
+create_job(job_id, host, requester, job_type, reward_amount)  // Attestation key
+complete_job(job_id, proof_hash)  // Attestation key
+claim_payout(job_id, nonce, deadline, attestation_hash, token)  // With security checks
+slash_stake(host, amount, reason_hash)  // Admin only
+rotate_admin(new_admin)
+rotate_attestation_key(new_key)
+```
+
 ## Development Setup
 
 ### Prerequisites
@@ -118,17 +261,10 @@ soroban network add testnet \
 # Build all contracts
 cd soroban-contracts
 
-# Build CCTR Token
-cd cctr-token && cargo build --target wasm32-unknown-unknown --release
-
-# Build Node System
-cd ../node-system && cargo build --target wasm32-unknown-unknown --release
-
-# Build Liquidity Pool
-cd ../liquidity-pool && cargo build --target wasm32-unknown-unknown --release
-
-# Build Tournament & Raffle
-cd ../tournament-raffle && cargo build --target wasm32-unknown-unknown --release
+# Build each contract
+for contract in cctr-token node-system liquidity-pool tournament-raffle nft-pass rewards-vault results-attestation compute-credits host-rewards; do
+  cd $contract && cargo build --target wasm32-unknown-unknown --release && cd ..
+done
 ```
 
 ### Optimizing WASM
@@ -165,14 +301,19 @@ soroban contract invoke \
 
 ## Contract Addresses (Testnet)
 
-After deployment, update these addresses:
+After deployment, update environment variables:
 
-| Contract | Address |
+| Contract | Env Variable |
 |----------|---------|
-| CCTR Token | `C...` |
-| Node System | `C...` |
-| Liquidity Pool | `C...` |
-| Tournament & Raffle | `C...` |
+| CCTR Token | `VITE_CCTR_TOKEN_CONTRACT` |
+| Node System | `VITE_NODE_SYSTEM_CONTRACT` |
+| Liquidity Pool | `VITE_LIQUIDITY_POOL_CONTRACT` |
+| Tournament & Raffle | `VITE_TOURNAMENT_RAFFLE_CONTRACT` |
+| NFT Pass | `VITE_NFT_PASS_CONTRACT` |
+| Rewards Vault | `VITE_REWARDS_VAULT_CONTRACT` |
+| Results Attestation | `VITE_RESULTS_ATTESTATION_CONTRACT` |
+| Compute Credits | `VITE_COMPUTE_CREDITS_CONTRACT` |
+| Host Rewards | `VITE_HOST_REWARDS_CONTRACT` |
 
 ## Token Addresses (Stellar)
 
@@ -182,13 +323,28 @@ After deployment, update these addresses:
 | XLM | Native |
 | CCTR | Deploy using cctr-token contract |
 
-## Security Considerations
+## Security Architecture
 
-1. **Admin Controls**: All admin functions require authentication
-2. **Overflow Protection**: Enabled in release builds
-3. **Reentrancy**: Not applicable (Soroban's execution model)
-4. **Access Control**: Token transfers require caller auth
-5. **Slippage Protection**: All swaps/liquidity ops have min output
+### Key Separation
+- **Admin Key**: Full contract control, key rotation
+- **Attestation Key**: Single-purpose signing for results/payouts
+- **Multisig**: Treasury withdrawals require multiple signatures
+
+### Replay Protection
+- Nonce-per-payout for all reward distributions
+- Sequential nonce validation
+- Nonce usage tracking
+
+### Time-Based Security
+- Deadline enforcement (10-minute windows)
+- Expired payloads are rejected
+- Prevents indefinite signature validity
+
+### Financial Guards
+- Max payout caps per tournament/job
+- Daily mint limits for credits
+- Stake requirements for hosts
+- Slashing for misbehavior
 
 ## Testing
 
@@ -203,18 +359,27 @@ cargo test -- --nocapture
 
 ## Integration with Frontend
 
-Use the Stellar SDK to interact with deployed contracts:
+Use the `useSorobanContracts` hook:
 
 ```typescript
-import { Contract, Server } from '@stellar/stellar-sdk';
+import { useSorobanContracts } from '@/hooks/useSorobanContracts';
 
-const server = new Server('https://soroban-testnet.stellar.org');
-const contract = new Contract(CONTRACT_ID);
+function MyComponent() {
+  const { 
+    mintPass,
+    checkPassAccess,
+    enterTournamentEscrow,
+    verifyResult,
+    buyCredits,
+    registerHost
+  } = useSorobanContracts();
 
-// Example: Get CCTR balance
-const result = await server.simulateTransaction(
-  contract.call('balance', userAddress)
-);
+  // Example: Check tournament access
+  const hasAccess = await checkPassAccess('premium_tournament');
+  
+  // Example: Buy compute credits
+  await buyCredits(1); // Package ID 1
+}
 ```
 
 ## License
