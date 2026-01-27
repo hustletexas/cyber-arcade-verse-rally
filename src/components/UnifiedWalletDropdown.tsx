@@ -774,7 +774,7 @@ export const UnifiedWalletDropdown = () => {
 
             {activeAction === 'receive' && (
               <div className="space-y-4">
-                <div className="flex flex-col items-center p-5 bg-muted rounded-lg">
+                <div className="flex flex-col items-center p-5">
                   <div className="w-28 h-28 bg-white rounded-lg p-2 mb-4">
                     <div className="w-full h-full flex items-center justify-center">
                       <QrCode size={80} className="text-black" />
