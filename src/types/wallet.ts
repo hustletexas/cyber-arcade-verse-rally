@@ -95,7 +95,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'hotwallet',
     name: 'Hot Wallet',
     icon: '🔥',
-    logoUrl: '/images/wallets/hotwallet.png?v=1',
+    logoUrl: '/images/wallets/hotwallet.png?v=2',
     chain: 'stellar',
     downloadUrl: 'https://hotwallet.app/',
     description: 'Fast and simple Stellar wallet'
