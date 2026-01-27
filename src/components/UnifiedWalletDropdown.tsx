@@ -673,24 +673,27 @@ export const UnifiedWalletDropdown = () => {
 
       {/* Actions Modal */}
       <Dialog open={showActionsModal} onOpenChange={setShowActionsModal}>
-        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-md animate-scale-in">
-          <DialogHeader className="text-center">
+        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-sm sm:max-w-md animate-scale-in overflow-hidden">
+          <DialogHeader className="text-center pb-2">
             <DialogTitle className="text-xl text-neon-cyan font-display text-center">
               {activeAction === 'buy' && '💳 Buy Crypto'}
               {activeAction === 'send' && '📤 Send Tokens'}
               {activeAction === 'receive' && '📥 Receive Tokens'}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Manage your Stellar wallet transactions
+            </DialogDescription>
           </DialogHeader>
           
           <Tabs value={activeAction} onValueChange={(v) => setActiveAction(v as any)} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-card/50 rounded-xl p-1 mb-4">
-              <TabsTrigger value="buy" className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green rounded-lg transition-all text-sm">
+              <TabsTrigger value="buy" className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green rounded-lg transition-all text-xs sm:text-sm px-2">
                 Buy
               </TabsTrigger>
-              <TabsTrigger value="send" className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink rounded-lg transition-all text-sm">
+              <TabsTrigger value="send" className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink rounded-lg transition-all text-xs sm:text-sm px-2">
                 Send
               </TabsTrigger>
-              <TabsTrigger value="receive" className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan rounded-lg transition-all text-sm">
+              <TabsTrigger value="receive" className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan rounded-lg transition-all text-xs sm:text-sm px-2">
                 Receive
               </TabsTrigger>
             </TabsList>
@@ -744,24 +747,24 @@ export const UnifiedWalletDropdown = () => {
               </Button>
             </TabsContent>
 
-            <TabsContent value="receive" className="space-y-4 mt-0 animate-fade-in">
-              <div className="flex flex-col items-center p-6 bg-card/50 rounded-xl border border-neon-cyan/30">
-                <div className="w-32 h-32 bg-white rounded-2xl p-3 mb-4 shadow-xl shadow-neon-cyan/20">
+            <TabsContent value="receive" className="mt-0 animate-fade-in">
+              <div className="flex flex-col items-center p-4 sm:p-6 bg-card/50 rounded-xl border border-neon-cyan/30">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-2xl p-2 sm:p-3 mb-4 shadow-xl shadow-neon-cyan/20 flex-shrink-0">
                   <div className="w-full h-full flex items-center justify-center">
-                    <QrCode size={80} className="text-black" />
+                    <QrCode size={72} className="text-black" />
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mb-2 text-center">Your Wallet Address</p>
-                <div className="flex items-center gap-2 p-3 bg-card rounded-xl border border-neon-cyan/30 w-full max-w-full overflow-hidden">
-                  <code className="flex-1 text-xs text-neon-cyan truncate min-w-0">
-                    {primaryWallet?.address}
+                <div className="flex items-center gap-2 p-2 sm:p-3 bg-card rounded-xl border border-neon-cyan/30 w-full overflow-hidden">
+                  <code className="flex-1 text-[10px] sm:text-xs text-neon-cyan truncate block">
+                    {primaryWallet?.address || 'Connect wallet to view'}
                   </code>
-                  <Button size="sm" variant="ghost" onClick={copyAddress} className="h-7 px-2 hover:bg-neon-cyan/10 transition-all hover:scale-110 flex-shrink-0">
+                  <Button size="sm" variant="ghost" onClick={copyAddress} className="h-7 w-7 p-0 hover:bg-neon-cyan/10 transition-all flex-shrink-0">
                     <Copy size={14} />
                   </Button>
                 </div>
               </div>
-              <p className="text-xs text-center text-muted-foreground px-4">
+              <p className="text-xs text-center text-muted-foreground mt-4">
                 Only send Stellar (XLM) and Stellar assets to this address
               </p>
             </TabsContent>
