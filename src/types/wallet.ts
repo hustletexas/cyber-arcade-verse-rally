@@ -1,14 +1,10 @@
-// Multi-chain wallet types
+// Stellar-only wallet types
 
-export type ChainType = 'solana' | 'ethereum' | 'stellar';
+export type ChainType = 'stellar';
 
 export type WalletType = 
-  | 'phantom' 
-  | 'metamask'
-  | 'coinbase' 
   | 'lobstr'
   | 'freighter'
-  | 'leap'
   | 'created';
 
 export interface ChainInfo {
@@ -41,22 +37,6 @@ export interface ConnectedWallet {
 }
 
 export const CHAINS: Record<ChainType, ChainInfo> = {
-  solana: {
-    id: 'solana',
-    name: 'Solana',
-    symbol: 'SOL',
-    icon: '◎',
-    color: 'rgb(156, 106, 222)',
-    logoUrl: '/images/wallets/solana.png'
-  },
-  ethereum: {
-    id: 'ethereum',
-    name: 'Ethereum',
-    symbol: 'ETH',
-    icon: '⟠',
-    color: 'rgb(98, 126, 234)',
-    logoUrl: '/images/wallets/ethereum.png'
-  },
   stellar: {
     id: 'stellar',
     name: 'Stellar',
@@ -82,44 +62,6 @@ export const WALLETS: WalletInfo[] = [
     isPopular: true
   },
   {
-    id: 'phantom',
-    name: 'Phantom',
-    icon: '👻',
-    logoUrl: '/images/wallets/phantom.png',
-    chain: 'solana',
-    downloadUrl: 'https://phantom.app/',
-    description: 'The friendly crypto wallet',
-    isPopular: true
-  },
-  {
-    id: 'metamask',
-    name: 'MetaMask',
-    icon: '🦊',
-    logoUrl: '/images/wallets/metamask.png',
-    chain: 'ethereum',
-    downloadUrl: 'https://metamask.io/',
-    description: 'The crypto wallet & gateway to Web3',
-    isPopular: true
-  },
-  {
-    id: 'coinbase',
-    name: 'Coinbase Wallet',
-    icon: '🔵',
-    logoUrl: '/images/wallets/coinbase.png?v=2',
-    chain: 'ethereum',
-    downloadUrl: 'https://www.coinbase.com/wallet',
-    description: 'Your key to the world of crypto'
-  },
-  {
-    id: 'leap',
-    name: 'Leap',
-    icon: '🐸',
-    logoUrl: '/images/wallets/leap.png?v=2',
-    chain: 'ethereum',
-    downloadUrl: 'https://www.leapwallet.io/',
-    description: 'Multi-chain Cosmos & EVM wallet'
-  },
-  {
     id: 'freighter',
     name: 'Freighter',
     icon: '🚀',
@@ -131,12 +73,10 @@ export const WALLETS: WalletInfo[] = [
 ];
 
 export const getChainForWallet = (walletType: WalletType): ChainType => {
-  const wallet = WALLETS.find(w => w.id === walletType);
-  // Default to Stellar (primary chain for USDC payments, CCC rewards, pass gating)
-  return wallet?.chain || 'stellar';
+  return 'stellar';
 };
 
-// Default chain for new users - Stellar for USDC on-ramp compatibility
+// Default chain - Stellar only
 export const DEFAULT_CHAIN: ChainType = 'stellar';
 
 // Payment configuration - Stellar-first architecture

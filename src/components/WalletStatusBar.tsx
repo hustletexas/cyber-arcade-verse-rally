@@ -1,17 +1,10 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { WalletConnectionModal } from '@/components/WalletConnectionModal';
 import { CheckCircle, Wallet } from 'lucide-react';
-import { CHAINS, ChainType } from '@/types/wallet';
+import { CHAINS } from '@/types/wallet';
 
 interface WalletStatusBarProps {
   showChainSelector?: boolean;
@@ -24,9 +17,7 @@ export const WalletStatusBar = ({ showChainSelector = true, compact = false }: W
     primaryWallet, 
     getWalletIcon, 
     connectWallet,
-    activeChain,
-    setActiveChain,
-    connectedWallets 
+    activeChain
   } = useMultiWallet();
   const [showWalletModal, setShowWalletModal] = useState(false);
 
@@ -34,8 +25,6 @@ export const WalletStatusBar = ({ showChainSelector = true, compact = false }: W
     connectWallet(walletType as any, address);
     setShowWalletModal(false);
   };
-
-  const availableChains = [...new Set(connectedWallets.map(w => w.chain))];
 
   if (compact) {
     return (
@@ -47,20 +36,9 @@ export const WalletStatusBar = ({ showChainSelector = true, compact = false }: W
               <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30 text-xs">
                 {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 6)}...{primaryWallet.address.slice(-4)}
               </Badge>
-              {showChainSelector && availableChains.length > 1 && (
-                <Select value={activeChain} onValueChange={(v) => setActiveChain(v as ChainType)}>
-                  <SelectTrigger className="h-6 w-20 text-xs border-neon-cyan/30 bg-card/50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-neon-cyan/30 z-50">
-                    {availableChains.map(chain => (
-                      <SelectItem key={chain} value={chain} className="text-xs">
-                        {CHAINS[chain].icon} {chain.toUpperCase()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-[10px]">
+                ✦ Stellar
+              </Badge>
             </div>
           ) : (
             <Button
@@ -93,8 +71,8 @@ export const WalletStatusBar = ({ showChainSelector = true, compact = false }: W
               <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30">
                 {getWalletIcon(primaryWallet.type)} {primaryWallet.address.slice(0, 8)}...{primaryWallet.address.slice(-4)}
               </Badge>
-              <Badge className="bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30">
-                {CHAINS[primaryWallet.chain]?.icon} {primaryWallet.chain?.toUpperCase()}
+              <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                ✦ Stellar
               </Badge>
             </>
           ) : (
@@ -106,31 +84,6 @@ export const WalletStatusBar = ({ showChainSelector = true, compact = false }: W
         </div>
 
         <div className="flex items-center gap-2">
-          {showChainSelector && isWalletConnected && availableChains.length > 0 && (
-            <Select value={activeChain} onValueChange={(v) => setActiveChain(v as ChainType)}>
-              <SelectTrigger className="h-8 w-32 text-xs border-neon-cyan/30 bg-card/80">
-                <SelectValue placeholder="Select Chain" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-neon-cyan/30 z-50">
-                {Object.values(CHAINS).map(chain => (
-                  <SelectItem 
-                    key={chain.id} 
-                    value={chain.id}
-                    disabled={!availableChains.includes(chain.id)}
-                    className="text-xs"
-                  >
-                    <span className="flex items-center gap-2">
-                      {chain.icon} {chain.name}
-                      {availableChains.includes(chain.id) && (
-                        <CheckCircle className="w-3 h-3 text-neon-green" />
-                      )}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
           {!isWalletConnected && (
             <Button
               onClick={() => setShowWalletModal(true)}

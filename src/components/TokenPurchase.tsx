@@ -22,24 +22,8 @@ export const TokenPurchase = () => {
 
   const handleWalletConnect = async () => {
     if (!isWalletConnected) {
-      // Try to connect to Phantom automatically first
-      if (window.solana && window.solana.isPhantom) {
-        try {
-          const response = await window.solana.connect();
-          const address = response.publicKey.toString();
-          await connectWallet('phantom', address);
-          
-          toast({
-            title: "🎉 Phantom Connected!",
-            description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-          });
-        } catch (error) {
-          console.error('Failed to connect Phantom:', error);
-          setShowWalletModal(true);
-        }
-      } else {
-        setShowWalletModal(true);
-      }
+      // Open wallet modal to connect Stellar wallets
+      setShowWalletModal(true);
     }
   };
 

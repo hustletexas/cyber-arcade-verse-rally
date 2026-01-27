@@ -102,42 +102,13 @@ export const CommunityHub = () => {
     window.open('https://discord.gg/cybercityarcade', '_blank');
   };
 
-  const handlePhantomConnect = async () => {
-    try {
-      if (typeof window !== 'undefined' && 'solana' in window) {
-        const provider = (window as any).solana;
-        if (provider?.isPhantom) {
-          const response = await provider.connect();
-          if (response?.publicKey) {
-            // Just connect the wallet, don't try to create user account
-            await connectWallet('phantom', response.publicKey.toString());
-            toast({
-              title: "Wallet Connected!",
-              description: "You can now participate in the chat",
-            });
-          }
-        } else {
-          window.open('https://phantom.app/', '_blank');
-          toast({
-            title: "Install Phantom Wallet",
-            description: "Please install Phantom wallet to connect",
-          });
-        }
-      } else {
-        window.open('https://phantom.app/', '_blank');
-        toast({
-          title: "Install Phantom Wallet", 
-          description: "Please install Phantom wallet to connect",
-        });
-      }
-    } catch (error) {
-      console.error('Phantom connection error:', error);
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Phantom wallet",
-        variant: "destructive",
-      });
-    }
+  const handleStellarConnect = async () => {
+    // Wallet connection is now handled via WalletConnectionModal
+    // This function shows guidance for users
+    toast({
+      title: "Connect Wallet",
+      description: "Please use the wallet button in the header to connect your Stellar wallet",
+    });
   };
 
   const handleSendMessage = async () => {
@@ -336,12 +307,12 @@ export const CommunityHub = () => {
             {/* Chat Input or Connection Options */}
             {!isAuthenticatedForChat ? (
               <div className="text-center p-4">
-                {/* Phantom Wallet Connect Only */}
+                {/* Stellar Wallet Connect Only */}
                 <Button 
-                  onClick={handlePhantomConnect}
+                  onClick={handleStellarConnect}
                   className="w-full h-10 text-sm hover:scale-105 transition-all duration-200"
                   style={{
-                    background: 'linear-gradient(45deg, #AB9FF2, #9CA3FF)',
+                    background: 'linear-gradient(45deg, #14b9ff, #00d4aa)',
                     color: 'black',
                     fontWeight: 'bold'
                   }}
@@ -350,7 +321,7 @@ export const CommunityHub = () => {
                   CONNECT WALLET TO CHAT
                 </Button>
                 <p className="text-xs text-gray-400 mt-2">
-                  Connect your Phantom wallet to join the conversation
+                  Connect your Stellar wallet to join the conversation
                 </p>
               </div>
             ) : (

@@ -124,20 +124,10 @@ export const RaffleSection = () => {
     }
   ]);
 
-  const connectSolanaWallet = async () => {
-    try {
-      if (window.solana && window.solana.isPhantom) {
-        const response = await window.solana.connect();
-        if (response?.publicKey) {
-          await connectWallet('phantom', response.publicKey.toString());
-          await createOrLoginWithWallet(response.publicKey.toString());
-        }
-      } else {
-        window.open('https://phantom.app/', '_blank');
-      }
-    } catch (error) {
-      console.error('Wallet connection error:', error);
-    }
+  const connectStellarWallet = async () => {
+    // Wallet connection is handled by the WalletConnectionModal
+    // This function is kept for API compatibility
+    console.log('Please use the wallet connection modal to connect a Stellar wallet');
   };
 
   const purchaseRaffleTickets = async (raffleId: string, tickets: number) => {
@@ -384,12 +374,12 @@ export const RaffleSection = () => {
         <Card className="arcade-frame border-neon-pink/30">
           <CardContent className="text-center py-8">
             <div className="text-4xl mb-4">🔐</div>
-            <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Solana Wallet</h3>
+            <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Your Stellar Wallet</h3>
             <p className="text-muted-foreground mb-4">
-              Connect your Solana wallet to open treasure chests, enter raffles, and earn CCTR rewards
+              Connect your Stellar wallet to open treasure chests, enter raffles, and earn CCTR rewards
             </p>
-            <Button onClick={connectSolanaWallet} className="cyber-button">
-              🚀 Connect Phantom Wallet
+            <Button onClick={connectStellarWallet} className="cyber-button">
+              ✦ Connect Stellar Wallet
             </Button>
           </CardContent>
         </Card>

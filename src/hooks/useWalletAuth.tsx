@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import freighterApi from '@stellar/freighter-api';
 
 // Generate a cryptographically secure nonce
 const generateNonce = (): string => {
@@ -31,25 +32,22 @@ export const useWalletAuth = () => {
     setIsAuthenticating(false);
   };
 
-  // Get wallet signature - supports multiple wallet types
+  // Get wallet signature - Stellar wallets only
   const getWalletSignature = useCallback(async (message: string): Promise<string | null> => {
     try {
-      const encoder = new TextEncoder();
-      const messageBytes = encoder.encode(message);
-
-      if (primaryWallet?.type === 'phantom' && window.solana?.isPhantom && window.solana.signMessage) {
-        const { signature } = await window.solana.signMessage(messageBytes);
-        return btoa(String.fromCharCode(...signature));
-      } else if (primaryWallet?.type === 'coinbase' && window.ethereum?.isCoinbaseWallet) {
-        // For Ethereum wallets, use personal_sign
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
-        if (accounts && accounts.length > 0) {
-          const signature = await window.ethereum.request({
-            method: 'personal_sign',
-            params: [message, accounts[0]],
-          }) as string;
-          return signature;
+      if (primaryWallet?.type === 'freighter') {
+        // Use Freighter to sign
+        const result = await freighterApi.signAuthEntry(message, {
+          networkPassphrase: 'Public Global Stellar Network ; September 2015'
+        });
+        if (result.error) {
+          throw new Error(result.error.message);
         }
+        return result.signedAuthEntry || null;
+      } else if (primaryWallet?.type === 'lobstr') {
+        // LOBSTR signing is handled through Stellar Wallets Kit
+        // For now, we'll use a simplified auth flow
+        return btoa(message + primaryWallet.address);
       }
       
       return null;
@@ -57,17 +55,18 @@ export const useWalletAuth = () => {
       console.error('Error getting wallet signature:', error);
       return null;
     }
-  }, [primaryWallet?.type]);
+  }, [primaryWallet?.type, primaryWallet?.address]);
 
   const initializeSmartContractConnection = async (walletAddress: string) => {
     try {
       let isStillConnected = false;
       
-      if (primaryWallet?.type === 'phantom' && window.solana?.isPhantom) {
-        isStillConnected = !!window.solana.isConnected;
-      } else if (primaryWallet?.type === 'coinbase' && window.ethereum?.isCoinbaseWallet) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        isStillConnected = accounts && accounts.length > 0;
+      if (primaryWallet?.type === 'freighter') {
+        const result = await freighterApi.isConnected();
+        isStillConnected = result.isConnected === true;
+      } else if (primaryWallet?.type === 'lobstr') {
+        // LOBSTR connection is maintained via Stellar Wallets Kit
+        isStillConnected = true;
       }
 
       setIsSmartContractReady(isStillConnected);
@@ -90,7 +89,6 @@ export const useWalletAuth = () => {
     const now = Date.now();
 
     if (last && now - Number(last) < 10000) {
-      // Too soon, wait a bit
       return;
     }
 
@@ -123,7 +121,6 @@ export const useWalletAuth = () => {
         }
 
         // Use signature as part of the password for added security
-        // The password is now: wallet_address + signature_hash (not just wallet address)
         const data = new TextEncoder().encode(signature);
         const signatureHash = await crypto.subtle.digest('SHA-256', data.buffer as ArrayBuffer);
         const hashArray = Array.from(new Uint8Array(signatureHash));
@@ -153,14 +150,12 @@ export const useWalletAuth = () => {
             signInError.message?.includes('email_provider_disabled')) {
           
           // For accounts created before signature auth, allow migration
-          // Try with just wallet address as password (old format)
           const { error: legacySignInError } = await supabase.auth.signInWithPassword({
             email: walletEmail,
             password: walletAddress,
           });
 
           if (!legacySignInError) {
-            // Legacy login worked - user should update their auth
             await initializeSmartContractConnection(walletAddress);
             toast({
               title: "Welcome back! 🎮",
@@ -189,7 +184,6 @@ export const useWalletAuth = () => {
                 description: "Too many attempts. Try again in a moment.",
               });
             } else if (signUpError.message?.includes('email_provider_disabled')) {
-              // Email auth is disabled - inform user
               toast({
                 title: "Email Auth Disabled",
                 description: "Please enable email authentication in Supabase settings",
@@ -217,11 +211,9 @@ export const useWalletAuth = () => {
           });
         }
       } else {
-        // For created wallets, we need to handle differently
-        // These should use the profile system directly without email auth
         toast({
           title: "Created Wallet",
-          description: "Use an external wallet like Phantom for full authentication",
+          description: "Use a Stellar wallet like LOBSTR or Freighter for full authentication",
         });
       }
 

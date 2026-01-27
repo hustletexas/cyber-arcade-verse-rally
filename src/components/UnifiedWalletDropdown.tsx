@@ -199,7 +199,7 @@ export const UnifiedWalletDropdown = () => {
                 <Avatar className="w-8 h-8 border-2 border-neon-cyan/50 transition-all duration-300 group-hover:border-neon-cyan group-hover:shadow-lg group-hover:shadow-neon-cyan/30">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-white text-xs font-bold">
-                    {getWalletIcon(primaryWallet?.type || 'phantom')}
+                    {getWalletIcon(primaryWallet?.type || 'lobstr')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-neon-green rounded-full border-2 border-background animate-pulse" />
@@ -313,7 +313,7 @@ export const UnifiedWalletDropdown = () => {
               <div className="flex items-center gap-2">
                 {primaryWallet?.chain && (
                   <Badge variant="outline" className="text-[10px] border-neon-cyan/30 text-neon-cyan">
-                    {getChainIcon(primaryWallet.chain)} {primaryWallet.chain?.toUpperCase()}
+                    {getChainIcon()} ✦ STELLAR
                   </Badge>
                 )}
                 <Button
@@ -334,13 +334,8 @@ export const UnifiedWalletDropdown = () => {
             <div className="space-y-2">
               {connectedWallets.map((wallet) => {
                 const walletBalance = balances[wallet.address];
-                const chainColors = {
-                  solana: { color: 'text-purple-400', bg: 'bg-purple-400/10', icon: '◎' },
-                  ethereum: { color: 'text-blue-400', bg: 'bg-blue-400/10', icon: '⟠' },
-                  stellar: { color: 'text-cyan-400', bg: 'bg-cyan-400/10', icon: '✦' }
-                };
-                const chain = wallet.chain || 'solana';
-                const style = chainColors[chain];
+                // Stellar-only styling
+                const style = { color: 'text-cyan-400', bg: 'bg-cyan-400/10', icon: '✦' };
                 
                 return (
                   <div 
@@ -349,7 +344,7 @@ export const UnifiedWalletDropdown = () => {
                   >
                     <div className="flex items-center gap-2">
                       <span className={`${style.color} font-medium text-sm`}>
-                        {style.icon} {walletBalance?.symbol || wallet.symbol || chain.toUpperCase().slice(0, 3)}
+                        {style.icon} {walletBalance?.symbol || wallet.symbol || 'XLM'}
                       </span>
                       <span className="text-[10px] text-muted-foreground">
                         {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
@@ -465,7 +460,7 @@ export const UnifiedWalletDropdown = () => {
                       <span className="text-xl">{getWalletIcon(wallet.type)}</span>
                       <div className="flex-1">
                         <span className="text-sm capitalize font-medium">{wallet.type}</span>
-                        <span className="text-[10px] text-muted-foreground ml-2">{getChainIcon(wallet.chain)} {wallet.chain}</span>
+                        <span className="text-[10px] text-muted-foreground ml-2">{getChainIcon()} stellar</span>
                       </div>
                       <span className="text-xs text-muted-foreground">{wallet.address.slice(0, 4)}...</span>
                       {primaryWallet?.address === wallet.address && (

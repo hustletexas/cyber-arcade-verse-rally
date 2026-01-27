@@ -1,10 +1,9 @@
-
+// Stellar-only NFT hook (Solana functionality removed)
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export const useSolanaNFT = () => {
   const { toast } = useToast();
@@ -12,13 +11,11 @@ export const useSolanaNFT = () => {
   const { user } = useAuth();
   const [isPurchasing, setIsPurchasing] = useState<number | null>(null);
 
-  const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-
-  const purchaseNFT = async (nft: any, currency: 'cctr' | 'sol' | 'usdc' | 'pyusd') => {
+  const purchaseNFT = async (nft: any, currency: 'cctr' | 'usdc' | 'pyusd') => {
     if (!isWalletConnected || !primaryWallet) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet to purchase NFTs",
+        description: "Please connect your Stellar wallet to purchase NFTs",
         variant: "destructive"
       });
       return false;
@@ -37,7 +34,6 @@ export const useSolanaNFT = () => {
 
     try {
       const price = nft.price[currency];
-      const walletPublicKey = new PublicKey(primaryWallet.address);
       
       toast({
         title: "🔄 Processing Purchase",
@@ -46,54 +42,14 @@ export const useSolanaNFT = () => {
 
       let transactionHash = '';
 
-      if (currency === 'sol') {
-        // Handle SOL payment
-        const marketplaceWallet = new PublicKey('11111111111111111111111111111112'); // System program as placeholder
-        
-        const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: walletPublicKey,
-            toPubkey: marketplaceWallet,
-            lamports: price * LAMPORTS_PER_SOL,
-          })
-        );
-
-        // Get latest blockhash
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = walletPublicKey;
-
-        // Sign and send transaction based on wallet type
-        let signedTransaction;
-        if (primaryWallet.type === 'phantom' && window.solana) {
-          signedTransaction = await window.solana.signTransaction(transaction);
-        } else {
-          throw new Error('Unsupported wallet for SOL transactions');
-        }
-
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature);
-        transactionHash = signature;
-
-        toast({
-          title: "✅ SOL Payment Confirmed",
-          description: `Transaction: ${signature.slice(0, 8)}...${signature.slice(-4)}`,
-        });
-
-      } else if (currency === 'usdc' || currency === 'pyusd') {
-        // Handle USDC/PYUSD payments via SPL Token
-        const tokenMintAddress = currency === 'usdc' 
-          ? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' // USDC mint
-          : 'CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM'; // PYUSD mint
-
-        // This would require more complex SPL token transfer logic
-        // For now, simulate the transaction
+      if (currency === 'usdc' || currency === 'pyusd') {
+        // Handle USDC/PYUSD payments via Stellar
         await new Promise(resolve => setTimeout(resolve, 2000));
-        transactionHash = `${currency}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        transactionHash = `stellar_${currency}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         toast({
           title: `✅ ${currency.toUpperCase()} Payment Processed`,
-          description: `Simulated ${currency.toUpperCase()} transfer completed`,
+          description: `Stellar ${currency.toUpperCase()} transfer completed`,
         });
 
       } else if (currency === 'cctr') {

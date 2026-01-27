@@ -1,3 +1,4 @@
+// Stellar-only multi-chain wallet hook (simplified)
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,8 +17,8 @@ export const useMultiChainWallet = () => {
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([]);
   const [primaryWallet, setPrimaryWallet] = useState<ConnectedWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  // Default to Stellar chain - primary chain for USDC payments, CCC rewards, and pass gating
-  const [activeChain, setActiveChain] = useState<ChainType>('stellar');
+  // Stellar is the only supported chain
+  const [activeChain] = useState<ChainType>('stellar');
 
   // Check for existing wallet connections on load
   useEffect(() => {
@@ -27,92 +28,56 @@ export const useMultiChainWallet = () => {
   const checkExistingConnections = async () => {
     const wallets: ConnectedWallet[] = [];
 
-    // Check for created wallet (Solana)
+    // Check localStorage for stored Stellar wallets
     try {
-      const storedWallet = localStorage.getItem('cyberCityWallet');
-      if (storedWallet) {
-        const wallet = JSON.parse(storedWallet);
-        wallets.push({
-          type: 'created',
-          chain: 'solana',
-          address: wallet.publicKey,
-          isConnected: true,
-          symbol: 'SOL'
-        });
+      const storedWallets = localStorage.getItem('cyberCity_connectedWallets');
+      if (storedWallets) {
+        const parsed = JSON.parse(storedWallets);
+        // Only restore Stellar wallets
+        for (const wallet of parsed) {
+          if (wallet.type === 'lobstr' || wallet.type === 'freighter') {
+            wallets.push({
+              type: wallet.type,
+              chain: 'stellar',
+              address: wallet.address,
+              isConnected: true,
+              symbol: 'XLM'
+            });
+          }
+        }
       }
     } catch (error) {
-      console.error('Error loading stored wallet:', error);
+      console.error('Error loading stored wallets:', error);
     }
 
-    // Check Phantom (Solana)
-    if (window.solana && window.solana.isPhantom && window.solana.isConnected) {
-      try {
-        const response = await window.solana.connect({ onlyIfTrusted: true });
-        if (response?.publicKey) {
-          wallets.push({
-            type: 'phantom',
-            chain: 'solana',
-            address: response.publicKey.toString(),
-            isConnected: true,
-            symbol: 'SOL'
-          });
+    // Auto-connect Freighter if available
+    try {
+      const freighterApi = (window as any).freighter;
+      if (freighterApi) {
+        const isConnected = await freighterApi.isConnected();
+        if (isConnected) {
+          const publicKey = await freighterApi.getPublicKey();
+          if (publicKey && !wallets.find(w => w.type === 'freighter')) {
+            wallets.push({
+              type: 'freighter',
+              chain: 'stellar',
+              address: publicKey,
+              isConnected: true,
+              symbol: 'XLM'
+            });
+          }
         }
-      } catch (error) {
-        // Phantom wallet not auto-connected
       }
+    } catch (error) {
+      // Freighter not available
     }
-
-    // Check Coinbase (Ethereum)
-    const coinbaseProvider = (window as any).coinbaseWalletExtension || 
-      (window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet) ||
-      (window.ethereum?.isCoinbaseWallet ? window.ethereum : null);
-    
-    if (coinbaseProvider) {
-      try {
-        const accounts = await coinbaseProvider.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          wallets.push({
-            type: 'coinbase',
-            chain: 'ethereum',
-            address: accounts[0],
-            isConnected: true,
-            symbol: 'ETH'
-          });
-        }
-      } catch (error) {
-        // Coinbase wallet not auto-connected
-      }
-    }
-
-    // Check MetaMask (Ethereum)
-    if (window.ethereum && window.ethereum.isMetaMask) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          wallets.push({
-            type: 'metamask',
-            chain: 'ethereum',
-            address: accounts[0],
-            isConnected: true,
-            symbol: 'ETH'
-          });
-        }
-      } catch (error) {
-        // MetaMask wallet not auto-connected
-      }
-    }
-
-
-    // Note: LOBSTR uses WalletConnect, so we don't auto-detect it on page load
-    // Users will connect manually through the modal
 
     setConnectedWallets(wallets);
     if (wallets.length > 0 && !primaryWallet) {
-      // Prefer Stellar wallets as primary (for USDC payments/payouts and CCC rewards)
-      const stellarWallet = wallets.find(w => w.chain === 'stellar');
-      const selectedWallet = stellarWallet || wallets[0];
+      // Prefer LOBSTR as primary
+      const lobstr = wallets.find(w => w.type === 'lobstr');
+      const selectedWallet = lobstr || wallets[0];
       setPrimaryWallet(selectedWallet);
-      setActiveChain(selectedWallet.chain);
     }
   };
 
@@ -148,10 +113,9 @@ export const useMultiChainWallet = () => {
       return [...filtered, newWallet];
     });
 
-    // Set as primary if it's the first wallet
-    if (!primaryWallet) {
+    // Set as primary if it's the first wallet or LOBSTR
+    if (!primaryWallet || type === 'lobstr') {
       setPrimaryWallet(newWallet);
-      setActiveChain(chain);
     }
 
     // Link wallet to user profile if logged in
@@ -167,29 +131,6 @@ export const useMultiChainWallet = () => {
 
   const disconnectWallet = useCallback(async (type: WalletType) => {
     try {
-      // Handle specific wallet disconnection
-      switch (type) {
-        case 'phantom':
-          if (window.solana) await window.solana.disconnect();
-          break;
-        case 'metamask':
-        case 'coinbase':
-          // EVM wallets don't have a disconnect method, we just remove from state
-          break;
-        case 'lobstr':
-          // LOBSTR uses WalletConnect, disconnect handled by the kit
-          break;
-        case 'freighter':
-          // Freighter doesn't have a disconnect method
-          break;
-        case 'leap':
-          // Leap doesn't have a standard disconnect
-          break;
-        case 'created':
-          // Created wallets don't have external disconnection
-          break;
-      }
-
       setConnectedWallets(prev => prev.filter(w => w.type !== type));
       
       // Update primary wallet if disconnected
@@ -197,7 +138,6 @@ export const useMultiChainWallet = () => {
         const remaining = connectedWallets.filter(w => w.type !== type);
         if (remaining.length > 0) {
           setPrimaryWallet(remaining[0]);
-          setActiveChain(remaining[0].chain);
         } else {
           setPrimaryWallet(null);
         }
@@ -219,7 +159,6 @@ export const useMultiChainWallet = () => {
 
   const switchPrimaryWallet = useCallback(async (wallet: ConnectedWallet) => {
     setPrimaryWallet(wallet);
-    setActiveChain(wallet.chain);
     
     // Update profile with new primary wallet
     if (user) {
@@ -233,23 +172,13 @@ export const useMultiChainWallet = () => {
   }, [toast, user]);
 
   const switchChain = useCallback((chain: ChainType) => {
-    setActiveChain(chain);
-    
-    // Find a wallet on the new chain and set as primary
-    const walletOnChain = connectedWallets.find(w => w.chain === chain);
-    if (walletOnChain) {
-      setPrimaryWallet(walletOnChain);
-    }
-  }, [connectedWallets]);
+    // No-op - only Stellar is supported
+  }, []);
 
   const getWalletIcon = (type: WalletType) => {
     switch (type) {
-      case 'phantom': return '👻';
-      case 'metamask': return '🦊';
-      case 'coinbase': return '🔵';
       case 'lobstr': return '🌟';
       case 'freighter': return '🚀';
-      case 'leap': return '🐸';
       case 'created': return '💰';
       default: return '🔗';
     }
@@ -263,7 +192,7 @@ export const useMultiChainWallet = () => {
 
   const isWalletConnected = connectedWallets.length > 0;
   const hasMultipleWallets = connectedWallets.length > 1;
-  const hasMultipleChains = new Set(connectedWallets.map(w => w.chain)).size > 1;
+  const hasMultipleChains = false; // Stellar only
 
   return {
     connectedWallets,
