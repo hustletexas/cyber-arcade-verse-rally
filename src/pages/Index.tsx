@@ -92,7 +92,7 @@ const Index = () => {
           </div>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
-            The Ultimate Web3 Gaming Experience • Solana Powered • Real Prizes
+            The Ultimate Web3 Gaming Experience • Stellar Powered • Real Prizes
           </p>
 
           {/* Mobile-Enhanced Action Buttons */}
