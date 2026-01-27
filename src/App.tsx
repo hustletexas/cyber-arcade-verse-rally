@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import TokenCreator from "./pages/TokenCreator";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import NeonMatch from "./pages/NeonMatch";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +29,7 @@ const App = () => (
                 <Route path="/token-creator" element={<TokenCreator />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/games/neon-match-36" element={<NeonMatch />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
