@@ -7,8 +7,10 @@ import { TetrisGame } from './games/TetrisGame';
 import { PacManGame } from './games/PacManGame';
 import { GalagaGame } from './games/GalagaGame';
 import { useAuth } from '@/hooks/useAuth';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 
 interface TournamentGameInterfaceProps {
   tournamentId: string;
@@ -22,6 +24,7 @@ export const TournamentGameInterface = ({
   onClose 
 }: TournamentGameInterfaceProps) => {
   const { user } = useAuth();
+  const { isWalletConnected, primaryWallet } = useMultiWallet();
   const [highScore, setHighScore] = useState(0);
   const [currentScore, setCurrentScore] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -170,7 +173,9 @@ export const TournamentGameInterface = ({
               </Button>
             </div>
             
-            <div className="flex justify-between items-center text-sm">
+            <WalletStatusBar compact />
+            
+            <div className="flex justify-between items-center text-sm mt-3">
               <div className="space-y-1">
                 <div className="text-neon-green font-mono">
                   High Score: {highScore}

@@ -6,14 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { useSolanaScore } from '@/hooks/useSolanaScore';
+import { useUserBalance } from '@/hooks/useUserBalance';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
-import { Brain, Zap, MessageCircle, CheckCircle } from 'lucide-react';
+import { Brain, Zap, MessageCircle } from 'lucide-react';
 
 export const AIGamingCoach = () => {
   const { toast } = useToast();
-  const { primaryWallet, isWalletConnected, getWalletIcon } = useMultiWallet();
-  const { submitScore, isSubmitting } = useSolanaScore();
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
+  const { balance, deductBalance } = useUserBalance();
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -42,15 +42,27 @@ export const AIGamingCoach = () => {
     setIsLoading(true);
 
     try {
-      // Charge CCTR for the question via Edge Function using connected Solana wallet
-      const paymentResult = await submitScore(-QUESTION_COST, 'ai_coaching');
-      
-      if (!paymentResult.success) {
+      // Check CCTR balance
+      if (balance.cctr_balance < QUESTION_COST) {
         toast({
-          title: "Payment Failed",
-          description: "Unable to charge CCTR for AI coaching. Check your wallet connection.",
+          title: "Insufficient Balance",
+          description: `You need ${QUESTION_COST} CCTR for AI coaching. Current balance: ${balance.cctr_balance}`,
           variant: "destructive",
         });
+        setIsLoading(false);
+        return;
+      }
+
+      // Deduct CCTR for the question
+      const result = await deductBalance(QUESTION_COST);
+      
+      if (!result.success) {
+        toast({
+          title: "Payment Failed",
+          description: result.error || "Unable to charge CCTR for AI coaching",
+          variant: "destructive",
+        });
+        setIsLoading(false);
         return;
       }
 
@@ -114,21 +126,27 @@ export const AIGamingCoach = () => {
 
         {/* Question Input */}
         <div className="space-y-4">
+          {isWalletConnected && (
+            <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+              💰 Balance: {balance.cctr_balance} CCTR
+            </Badge>
+          )}
+          
           <div className="flex gap-3">
             <Input
               placeholder="Ask your gaming question... (e.g., 'How to improve my aim?')"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="flex-1 cyber-input"
-              disabled={isLoading || isSubmitting}
+              disabled={isLoading}
             />
             <Button
               onClick={handleAskQuestion}
-              disabled={isLoading || isSubmitting || !question.trim() || !isWalletConnected}
+              disabled={isLoading || !question.trim() || !isWalletConnected}
               className="cyber-button"
             >
               <MessageCircle size={16} className="mr-2" />
-              {isLoading || isSubmitting ? 'PROCESSING...' : 'ASK AI'}
+              {isLoading ? 'PROCESSING...' : 'ASK AI'}
             </Button>
           </div>
 
