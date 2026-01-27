@@ -4,7 +4,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export const useNFTMinting = () => {
   const { toast } = useToast();
@@ -12,17 +11,15 @@ export const useNFTMinting = () => {
   const { user } = useAuth();
   const [isMinting, setIsMinting] = useState(false);
 
-  const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-
   const NFT_METADATA = {
     name: "Cyber City Arcade Genesis",
     symbol: "CCA",
-    description: "Genesis NFT from Cyber City Arcade - Your gateway to the ultimate Web3 gaming experience on Solana",
+    description: "Genesis NFT from Cyber City Arcade - Your gateway to the ultimate Web3 gaming experience on Stellar",
     image: "/lovable-uploads/814b2b6d-23ad-4774-8f3b-ea14fb7c8ff9.png",
     attributes: [
       { trait_type: "Collection", value: "Genesis" },
       { trait_type: "Rarity", value: "Common" },
-      { trait_type: "Network", value: "Solana" },
+      { trait_type: "Network", value: "Stellar" },
       { trait_type: "Utility", value: "Gaming Access" }
     ],
     properties: {
@@ -83,7 +80,7 @@ export const useNFTMinting = () => {
     if (!isWalletConnected || !primaryWallet) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet to mint your free NFT",
+        description: "Please connect your Stellar wallet to mint your free NFT",
         variant: "destructive"
       });
       return false;
@@ -114,26 +111,28 @@ export const useNFTMinting = () => {
 
       toast({
         title: "🔄 Minting Your NFT",
-        description: "Creating your Cyber City Arcade Genesis NFT...",
+        description: "Creating your Cyber City Arcade Genesis NFT on Stellar...",
       });
 
-      // For now, simulate the minting process
-      // In production, you would use @metaplex-foundation/js or similar
-      const walletPublicKey = new PublicKey(primaryWallet.address);
+      // Generate Stellar-style transaction hash and mint address
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 11);
+      const walletPrefix = primaryWallet.address.substring(0, 8);
       
-      // Simulate transaction delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Generate mock transaction hash and mint address
-      const transactionHash = `mint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const mintAddress = `mint_${walletPublicKey.toString().slice(0, 8)}_${Date.now()}`;
+      // Stellar transaction hashes are 64 character hex strings
+      const transactionHash = `stellar_${timestamp}_${randomSuffix}`.padEnd(64, '0');
+      // Soroban contract addresses start with 'C'
+      const mintAddress = `C${walletPrefix}${timestamp}`.substring(0, 56);
 
-      // Record the mint
+      // Simulate minting delay (in production, this would be a Soroban contract call)
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
+      // Record the mint in database
       await recordMint(transactionHash, mintAddress);
 
       toast({
         title: "🎉 NFT Minted Successfully!",
-        description: "Your Cyber City Arcade Genesis NFT has been minted!",
+        description: "Your Cyber City Arcade Genesis NFT has been minted on Stellar!",
       });
 
       toast({
@@ -148,7 +147,7 @@ export const useNFTMinting = () => {
       
       let errorMessage = 'Minting failed. Please try again.';
       if (error.message?.includes('insufficient')) {
-        errorMessage = 'Insufficient SOL for transaction fees.';
+        errorMessage = 'Insufficient XLM for transaction fees.';
       } else if (error.message?.includes('rejected')) {
         errorMessage = 'Transaction was rejected.';
       }
