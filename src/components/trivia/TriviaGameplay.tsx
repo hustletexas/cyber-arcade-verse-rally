@@ -16,11 +16,12 @@ import { LoadingText } from '@/components/ui/loading-states';
 
 interface TriviaGameplayProps {
   category: string;
-  onGameComplete: () => void;
+  playMode: 'free' | 'paid';
+  onGameComplete: (correctAnswers?: number) => void;
   onBackToMenu: () => void;
 }
 
-export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: TriviaGameplayProps) => {
+export const TriviaGameplay = ({ category, playMode, onGameComplete, onBackToMenu }: TriviaGameplayProps) => {
   const { user } = useAuth();
   const { balance, refetch: refetchBalance } = useUserBalance();
   const { toast } = useToast();
@@ -110,14 +111,14 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
     if (isCorrect) {
       setCorrectAnswers(correctAnswers + 1);
       
-      // Award 1 CCTR for each correct answer
-      const points = 1;
+      // Award points based on play mode
+      const points = playMode === 'paid' ? 1 : 0;
       
       setScore(score + points);
 
       toast({
         title: "Correct! 🎉",
-        description: `+1 CCTR earned!`,
+        description: playMode === 'paid' ? `+1 CCTR earned!` : `Great job!`,
       });
     } else {
       toast({
@@ -184,8 +185,8 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
   const endGame = async () => {
     setGameStatus('finished');
     
-    // Award CCTR tokens for correct answers using secure server-side function
-    if (user && correctAnswers > 0) {
+    // Award CCTR tokens for correct answers only in paid mode
+    if (playMode === 'paid' && user && correctAnswers > 0) {
       try {
         const { data, error } = await supabase.rpc('award_trivia_rewards', {
           correct_answers_param: correctAnswers,
@@ -208,25 +209,28 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
       }
     }
     
+    const message = playMode === 'paid' 
+      ? `You earned ${score} CCTR with ${correctAnswers}/${questions.length} correct answers!`
+      : `You got ${correctAnswers}/${questions.length} correct! Connect wallet to earn CCTR.`;
+    
     toast({
       title: "Game Complete! 🏆",
-      description: `You earned ${score} CCTR with ${correctAnswers}/${questions.length} correct answers!`,
+      description: message,
     });
     
-    // Submit score to Solana blockchain if wallet is connected
-    if (isWalletConnected()) {
+    // Submit score to Solana blockchain if wallet is connected and paid mode
+    if (playMode === 'paid' && isWalletConnected()) {
       const result = await submitScore(score, category);
       if (result.success) {
-        // Score successfully submitted to Solana blockchain
         toast({
           title: "Score Submitted! 🔗",
-          description: "Your score has been recorded on the Solana blockchain",
+          description: "Your score has been recorded on the blockchain",
         });
       }
     }
 
     setTimeout(() => {
-      onGameComplete();
+      onGameComplete(correctAnswers);
     }, 3000);
   };
 
@@ -268,8 +272,8 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
         <CardContent className="text-center">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="p-4 bg-gray-800/30 rounded">
-              <div className="text-3xl font-bold text-neon-green">{score}</div>
-              <p className="text-sm text-muted-foreground">CCTR Earned</p>
+              <div className="text-3xl font-bold text-neon-green">{playMode === 'paid' ? score : correctAnswers}</div>
+              <p className="text-sm text-muted-foreground">{playMode === 'paid' ? 'CCTR Earned' : 'Correct Answers'}</p>
             </div>
             <div className="p-4 bg-gray-800/30 rounded">
               <div className="text-3xl font-bold text-neon-purple">{correctAnswers}/{questions.length}</div>
@@ -281,13 +285,18 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
             </div>
           </div>
           
-          <div className="mb-4">
-            <Badge className="bg-neon-cyan text-black text-lg px-4 py-2 mb-2">
-              🎮 {category.replace('-', ' ').toUpperCase()} MASTER
+          <div className="mb-4 space-y-2">
+            <Badge className={`text-black text-lg px-4 py-2 ${playMode === 'paid' ? 'bg-neon-cyan' : 'bg-neon-green'}`}>
+              {playMode === 'paid' ? '💎 PAID MODE' : '🎮 FREE PLAY'}
             </Badge>
+            <div>
+              <Badge className="bg-neon-purple text-black px-3 py-1">
+                🎮 {category.replace('-', ' ').toUpperCase()} MASTER
+              </Badge>
+            </div>
           </div>
           
-          {connectedWallet && (
+          {playMode === 'paid' && connectedWallet && (
             <div className="mb-6">
               <Badge className="bg-neon-green text-black text-lg px-4 py-2">
                 🔗 Blockchain Verified! +{score} CCTR
@@ -297,6 +306,14 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
                   Submitting to blockchain...
                 </p>
               )}
+            </div>
+          )}
+          
+          {playMode === 'free' && !connectedWallet && (
+            <div className="mb-6">
+              <p className="text-sm text-neon-pink">
+                💡 Connect wallet to earn CCTR tokens in paid mode!
+              </p>
             </div>
           )}
           
@@ -346,8 +363,8 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
         
         <Card className="holographic p-4">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Score</span>
-            <span className="text-xl font-bold text-neon-green">{score} CCTR</span>
+            <span className="text-sm text-muted-foreground">{playMode === 'paid' ? 'Score' : 'Correct'}</span>
+            <span className="text-xl font-bold text-neon-green">{playMode === 'paid' ? `${score} CCTR` : `${correctAnswers}/${questions.length}`}</span>
           </div>
         </Card>
       </div>
@@ -361,7 +378,7 @@ export const TriviaGameplay = ({ category, onGameComplete, onBackToMenu }: Trivi
               currentQuestion.difficulty === 'medium' ? 'bg-yellow-500' :
               'bg-red-500'
             } text-white`}>
-              {currentQuestion.difficulty.toUpperCase()} • +1 CCTR if correct
+              {currentQuestion.difficulty.toUpperCase()} {playMode === 'paid' ? '• +1 CCTR if correct' : ''}
             </Badge>
             <Badge variant="outline" className="border-neon-cyan text-neon-cyan">
               🎮 {category.replace('-', ' ').toUpperCase()}
