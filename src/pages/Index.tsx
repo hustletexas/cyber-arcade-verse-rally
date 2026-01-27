@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
-import { CommunityMarketplace } from '@/components/CommunityMarketplace';
+
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { RaffleSection } from '@/components/RaffleSection';
@@ -160,10 +160,6 @@ const Index = () => {
             <AIGamingCoach />
           </section>
 
-          {/* Community Marketplace Section - Mobile Enhanced */}
-          <section className="px-2 sm:px-4">
-            <CommunityMarketplace />
-          </section>
 
           {/* Merchandise Store Section - Touch Friendly */}
           <section className="px-2 sm:px-4">
