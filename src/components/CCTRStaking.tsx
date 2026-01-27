@@ -99,7 +99,7 @@ export const CCTRStaking = () => {
     if (!isWalletConnected) {
       toast({
         title: "Wallet Not Connected",
-        description: "Please connect your Solana wallet to stake CCTR tokens",
+        description: "Please connect your Stellar wallet to stake CCTR tokens",
         variant: "destructive"
       });
       return;

@@ -26,10 +26,10 @@ export const WalletActions = () => {
   // Available tokens for swapping
   const availableTokens = [
     { symbol: 'CCTR', name: 'Cyber City Token', balance: balance.cctr_balance },
-    { symbol: 'SOL', name: 'Solana', balance: 0.5 },
+    { symbol: 'XLM', name: 'Stellar Lumens', balance: 150.0 },
     { symbol: 'USDC', name: 'USD Coin', balance: 25.00 },
-    { symbol: 'BONK', name: 'Bonk', balance: 1200000 },
-    { symbol: 'RAY', name: 'Raydium', balance: 12.5 }
+    { symbol: 'PYUSD', name: 'PayPal USD', balance: 50.00 },
+    { symbol: 'AQUA', name: 'Aqua Network', balance: 500 }
   ];
 
   const copyToClipboard = async (text: string, label: string) => {
@@ -410,7 +410,7 @@ export const WalletActions = () => {
 
               <div className="bg-muted/20 p-4 rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Important:</strong> Only send Solana-based tokens to this address. 
+                  <strong>Important:</strong> Only send Stellar-based tokens to this address. 
                   Sending tokens from other networks may result in permanent loss.
                 </p>
               </div>

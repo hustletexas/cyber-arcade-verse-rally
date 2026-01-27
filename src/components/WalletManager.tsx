@@ -297,7 +297,7 @@ export const WalletManager = () => {
     try {
       toast({
         title: "Creating Wallet...",
-        description: "Generating a new secure Solana wallet",
+        description: "Generating a new secure Stellar wallet",
       });
 
       const { Keypair } = await import('@solana/web3.js');

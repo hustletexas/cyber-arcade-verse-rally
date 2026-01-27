@@ -234,7 +234,7 @@ export const TriviaRewards = ({ onBackToMenu }: TriviaRewardsProps) => {
 
           <div className="text-center mt-6 p-4 bg-gray-800/30 rounded">
             <p className="text-sm text-muted-foreground">
-              🔒 NFTs are automatically distributed via Solana smart contracts every Sunday
+              🔒 NFTs are automatically distributed via Soroban smart contracts every Sunday
             </p>
           </div>
         </CardContent>

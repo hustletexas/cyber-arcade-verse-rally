@@ -91,17 +91,17 @@ export const TriviaGame = () => {
 
   const connectWallet = async () => {
     try {
-      if (window.solana && window.solana.isPhantom) {
+      if (window.freighter) {
         toast({
-          title: "Connecting Phantom Wallet...",
+          title: "Connecting Stellar Wallet...",
           description: "Please approve the connection request",
         });
 
-        const response = await window.solana.connect();
-        if (response?.publicKey) {
+        const publicKey = await window.freighter.getPublicKey();
+        if (publicKey) {
           toast({
             title: "Wallet Connected! 🎉",
-            description: `Connected to ${response.publicKey.toString().slice(0, 8)}...${response.publicKey.toString().slice(-4)}`,
+            description: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
           });
           
           // Reload user stats after wallet connection
@@ -109,13 +109,13 @@ export const TriviaGame = () => {
         }
       } else {
         toast({
-          title: "Phantom Wallet Not Found",
-          description: "Please install Phantom wallet extension to play",
+          title: "Stellar Wallet Not Found",
+          description: "Please install Freighter wallet extension to play",
           variant: "destructive",
         });
         
-        // Open Phantom website in new tab
-        window.open('https://phantom.app/', '_blank');
+        // Open Freighter website in new tab
+        window.open('https://freighter.app/', '_blank');
       }
     } catch (error) {
       console.error('Wallet connection error:', error);

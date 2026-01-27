@@ -248,23 +248,21 @@ const Index = () => {
           
           <div className="text-center">
             <p className="text-neon-purple font-mono text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed">
-              © 2024 Cyber City Arcade • Powered by Solana
+              © 2024 Cyber City Arcade • Powered by Stellar
             </p>
             <div className="flex flex-wrap justify-center gap-1 sm:gap-2 md:gap-6 text-xs md:text-sm text-muted-foreground">
-              <span>Solana</span>
+              <span>Stellar</span>
               <span>•</span>
               <button 
-                onClick={() => window.open('https://magiceden.io/', '_blank')} 
+                onClick={() => window.open('https://aqua.network/', '_blank')} 
                 className="hover:text-neon-cyan transition-colors cursor-pointer touch-manipulation py-1"
               >
-                Magic Eden
+                Aqua Network
               </button>
               <span>•</span>
-              <span>PayPal</span>
+              <span>LOBSTR</span>
               <span>•</span>
-              <span>Phantom</span>
-              <span>•</span>
-              <span>Coinbase</span>
+              <span>Freighter</span>
             </div>
           </div>
         </div>

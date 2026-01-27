@@ -49,12 +49,12 @@ const mockNFTs = [
   // Epic NFTs
   {
     id: 4,
-    name: "Solana Arcade Champion",
-    price: { cctr: 500, sol: 1.4, usdc: 126, pyusd: 126 },
+    name: "Stellar Arcade Champion",
+    price: { cctr: 500, xlm: 1000, usdc: 126, pyusd: 126 },
     image: "/lovable-uploads/ad465959-8a2b-40c4-bb3d-512e3b2246dc.png",
     rarity: "Epic",
-    seller: "SolanaGaming",
-    description: "Elite cyberpunk gamer with VR headset exploring the neon-lit Solana blockchain arcade district",
+    seller: "StellarGaming",
+    description: "Elite cyberpunk gamer with VR headset exploring the neon-lit Stellar blockchain arcade district",
     supply: { total: 500, remaining: 432 }
   },
   {
@@ -240,7 +240,7 @@ export const Marketplace = () => {
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
           🛒 NFT MARKETPLACE
-          <Badge className="bg-neon-cyan text-black">SOLANA POWERED</Badge>
+          <Badge className="bg-neon-cyan text-black">STELLAR POWERED</Badge>
           {getTotalItems() > 0 && (
             <Button
               onClick={() => setIsOpen(true)}
