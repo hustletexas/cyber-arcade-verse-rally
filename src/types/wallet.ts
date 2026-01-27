@@ -77,7 +77,7 @@ export const WALLETS: WalletInfo[] = [
     id: 'albedo',
     name: 'Albedo',
     icon: '🔐',
-    logoUrl: '/images/wallets/albedo.png?v=1',
+    logoUrl: '/images/wallets/albedo.png?v=2',
     chain: 'stellar',
     downloadUrl: 'https://albedo.link/',
     description: 'Web-based Stellar authentication'
