@@ -23,6 +23,17 @@ import type {
   PoolInfo,
   TournamentInfo,
   RaffleInfo,
+  PassTier,
+  PassInfo,
+  AccessGate,
+  TournamentEscrow,
+  PayoutRecord,
+  MatchAttestation,
+  Dispute,
+  CreditPackage,
+  UserCredits,
+  HostProvider,
+  ComputeJob,
 } from '@/types/soroban';
 
 // Contract addresses - these should be updated after deployment
@@ -31,6 +42,11 @@ const CONTRACT_ADDRESSES = {
   nodeSystem: import.meta.env.VITE_NODE_SYSTEM_CONTRACT || '',
   liquidityPool: import.meta.env.VITE_LIQUIDITY_POOL_CONTRACT || '',
   tournamentRaffle: import.meta.env.VITE_TOURNAMENT_RAFFLE_CONTRACT || '',
+  nftPass: import.meta.env.VITE_NFT_PASS_CONTRACT || '',
+  rewardsVault: import.meta.env.VITE_REWARDS_VAULT_CONTRACT || '',
+  resultsAttestation: import.meta.env.VITE_RESULTS_ATTESTATION_CONTRACT || '',
+  computeCredits: import.meta.env.VITE_COMPUTE_CREDITS_CONTRACT || '',
+  hostRewards: import.meta.env.VITE_HOST_REWARDS_CONTRACT || '',
 };
 
 // Soroban RPC endpoint
@@ -1001,6 +1017,432 @@ export const useSorobanContracts = () => {
     }
   }, [getStellarAddress, signAndSubmitTransaction]);
 
+  // ============================================
+  // NFT PASS METHODS
+  // ============================================
+
+  const mintPass = useCallback(async (
+    tier: PassTier,
+    isSoulbound: boolean,
+    expiresAt: number,
+    metadataUri: string
+  ): Promise<string | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const recipient = getStellarAddress();
+      if (!recipient) {
+        throw new Error('No Stellar wallet connected');
+      }
+
+      const tierValue = tier === 'bronze' ? 0 : tier === 'silver' ? 1 : tier === 'gold' ? 2 : 3;
+
+      const txHash = await signAndSubmitTransaction(
+        CONTRACT_ADDRESSES.nftPass,
+        'mint_pass',
+        [
+          nativeToScVal(recipient, { type: 'address' }),
+          nativeToScVal(tierValue, { type: 'u32' }),
+          nativeToScVal(isSoulbound, { type: 'bool' }),
+          nativeToScVal(expiresAt, { type: 'u64' }),
+          nativeToScVal(metadataUri, { type: 'string' }),
+          nativeToScVal(CONTRACT_ADDRESSES.cctrToken, { type: 'address' }),
+        ]
+      );
+
+      toast.success(`${tier.charAt(0).toUpperCase() + tier.slice(1)} Pass minted!`);
+      return txHash;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to mint pass';
+      setError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getStellarAddress, signAndSubmitTransaction]);
+
+  const checkPassAccess = useCallback(async (gateId: string): Promise<boolean> => {
+    try {
+      const user = getStellarAddress();
+      if (!user) return false;
+
+      if (!CONTRACT_ADDRESSES.nftPass) return false;
+
+      const hasAccess = await invokeContractRead(
+        CONTRACT_ADDRESSES.nftPass,
+        'check_access',
+        [
+          nativeToScVal(user, { type: 'address' }),
+          nativeToScVal(gateId, { type: 'symbol' }),
+        ]
+      ) as boolean;
+
+      return hasAccess;
+    } catch (err) {
+      console.error('Failed to check access:', err);
+      return false;
+    }
+  }, [getStellarAddress, invokeContractRead]);
+
+  const getUserPasses = useCallback(async (address?: string): Promise<number[]> => {
+    try {
+      const targetAddress = address || getStellarAddress();
+      if (!targetAddress) return [];
+
+      if (!CONTRACT_ADDRESSES.nftPass) return [];
+
+      const passes = await invokeContractRead(
+        CONTRACT_ADDRESSES.nftPass,
+        'get_owner_passes',
+        [nativeToScVal(targetAddress, { type: 'address' })]
+      ) as number[];
+
+      return passes || [];
+    } catch (err) {
+      console.error('Failed to get user passes:', err);
+      return [];
+    }
+  }, [getStellarAddress, invokeContractRead]);
+
+  // ============================================
+  // REWARDS VAULT METHODS
+  // ============================================
+
+  const enterTournamentEscrow = useCallback(async (
+    tournamentId: string,
+    token: string
+  ): Promise<string | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const player = getStellarAddress();
+      if (!player) {
+        throw new Error('No Stellar wallet connected');
+      }
+
+      // Convert tournament ID to bytes32
+      const tournamentIdBytes = new Uint8Array(32);
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(tournamentId);
+      tournamentIdBytes.set(encoded.slice(0, 32));
+
+      const txHash = await signAndSubmitTransaction(
+        CONTRACT_ADDRESSES.rewardsVault,
+        'enter_tournament',
+        [
+          nativeToScVal(player, { type: 'address' }),
+          nativeToScVal(tournamentIdBytes, { type: 'bytes' }),
+          nativeToScVal(token, { type: 'address' }),
+        ]
+      );
+
+      toast.success('Tournament entry successful!');
+      return txHash;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to enter tournament';
+      setError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getStellarAddress, signAndSubmitTransaction]);
+
+  const getTournamentEscrow = useCallback(async (tournamentId: string): Promise<TournamentEscrow | null> => {
+    try {
+      if (!CONTRACT_ADDRESSES.rewardsVault) return null;
+
+      const tournamentIdBytes = new Uint8Array(32);
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(tournamentId);
+      tournamentIdBytes.set(encoded.slice(0, 32));
+
+      const escrow = await invokeContractRead(
+        CONTRACT_ADDRESSES.rewardsVault,
+        'get_tournament',
+        [nativeToScVal(tournamentIdBytes, { type: 'bytes' })]
+      ) as TournamentEscrow | null;
+
+      return escrow;
+    } catch (err) {
+      console.error('Failed to get tournament escrow:', err);
+      return null;
+    }
+  }, [invokeContractRead]);
+
+  // ============================================
+  // RESULTS ATTESTATION METHODS
+  // ============================================
+
+  const getMatchAttestation = useCallback(async (matchId: string): Promise<MatchAttestation | null> => {
+    try {
+      if (!CONTRACT_ADDRESSES.resultsAttestation) return null;
+
+      const matchIdBytes = new Uint8Array(32);
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(matchId);
+      matchIdBytes.set(encoded.slice(0, 32));
+
+      const attestation = await invokeContractRead(
+        CONTRACT_ADDRESSES.resultsAttestation,
+        'get_match',
+        [nativeToScVal(matchIdBytes, { type: 'bytes' })]
+      ) as MatchAttestation | null;
+
+      return attestation;
+    } catch (err) {
+      console.error('Failed to get match attestation:', err);
+      return null;
+    }
+  }, [invokeContractRead]);
+
+  const verifyResult = useCallback(async (matchId: string, resultHash: string): Promise<boolean> => {
+    try {
+      if (!CONTRACT_ADDRESSES.resultsAttestation) return false;
+
+      const matchIdBytes = new Uint8Array(32);
+      const encoder = new TextEncoder();
+      matchIdBytes.set(encoder.encode(matchId).slice(0, 32));
+
+      const resultHashBytes = new Uint8Array(32);
+      resultHashBytes.set(encoder.encode(resultHash).slice(0, 32));
+
+      const isValid = await invokeContractRead(
+        CONTRACT_ADDRESSES.resultsAttestation,
+        'verify_result',
+        [
+          nativeToScVal(matchIdBytes, { type: 'bytes' }),
+          nativeToScVal(resultHashBytes, { type: 'bytes' }),
+        ]
+      ) as boolean;
+
+      return isValid;
+    } catch (err) {
+      console.error('Failed to verify result:', err);
+      return false;
+    }
+  }, [invokeContractRead]);
+
+  const fileDispute = useCallback(async (matchId: string, reasonHash: string): Promise<number | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const challenger = getStellarAddress();
+      if (!challenger) {
+        throw new Error('No Stellar wallet connected');
+      }
+
+      const matchIdBytes = new Uint8Array(32);
+      const reasonHashBytes = new Uint8Array(32);
+      const encoder = new TextEncoder();
+      matchIdBytes.set(encoder.encode(matchId).slice(0, 32));
+      reasonHashBytes.set(encoder.encode(reasonHash).slice(0, 32));
+
+      const txHash = await signAndSubmitTransaction(
+        CONTRACT_ADDRESSES.resultsAttestation,
+        'file_dispute',
+        [
+          nativeToScVal(challenger, { type: 'address' }),
+          nativeToScVal(matchIdBytes, { type: 'bytes' }),
+          nativeToScVal(reasonHashBytes, { type: 'bytes' }),
+        ]
+      );
+
+      toast.success('Dispute filed successfully');
+      // Note: The actual dispute ID is returned from the contract
+      return txHash ? 1 : null;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to file dispute';
+      setError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getStellarAddress, signAndSubmitTransaction]);
+
+  // ============================================
+  // COMPUTE CREDITS METHODS
+  // ============================================
+
+  const buyCredits = useCallback(async (packageId: number): Promise<string | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const buyer = getStellarAddress();
+      if (!buyer) {
+        throw new Error('No Stellar wallet connected');
+      }
+
+      const txHash = await signAndSubmitTransaction(
+        CONTRACT_ADDRESSES.computeCredits,
+        'buy_credits',
+        [
+          nativeToScVal(buyer, { type: 'address' }),
+          nativeToScVal(packageId, { type: 'u32' }),
+        ]
+      );
+
+      toast.success('Credits purchased!');
+      return txHash;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to buy credits';
+      setError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getStellarAddress, signAndSubmitTransaction]);
+
+  const getCreditsBalance = useCallback(async (address?: string): Promise<bigint> => {
+    try {
+      const targetAddress = address || getStellarAddress();
+      if (!targetAddress) return BigInt(0);
+
+      if (!CONTRACT_ADDRESSES.computeCredits) return BigInt(0);
+
+      const balance = await invokeContractRead(
+        CONTRACT_ADDRESSES.computeCredits,
+        'get_balance',
+        [nativeToScVal(targetAddress, { type: 'address' })]
+      ) as bigint;
+
+      return balance || BigInt(0);
+    } catch (err) {
+      console.error('Failed to get credits balance:', err);
+      return BigInt(0);
+    }
+  }, [getStellarAddress, invokeContractRead]);
+
+  const spendCredits = useCallback(async (amount: bigint, description: string): Promise<string | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const user = getStellarAddress();
+      if (!user) {
+        throw new Error('No Stellar wallet connected');
+      }
+
+      const txHash = await signAndSubmitTransaction(
+        CONTRACT_ADDRESSES.computeCredits,
+        'spend_credits',
+        [
+          nativeToScVal(user, { type: 'address' }),
+          nativeToScVal(amount, { type: 'i128' }),
+          nativeToScVal(description, { type: 'string' }),
+        ]
+      );
+
+      toast.success('Credits spent successfully');
+      return txHash;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to spend credits';
+      setError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getStellarAddress, signAndSubmitTransaction]);
+
+  const getCreditPackages = useCallback(async (): Promise<CreditPackage[]> => {
+    try {
+      if (!CONTRACT_ADDRESSES.computeCredits) return [];
+
+      const packages = await invokeContractRead(
+        CONTRACT_ADDRESSES.computeCredits,
+        'get_all_packages',
+        []
+      ) as CreditPackage[];
+
+      return packages || [];
+    } catch (err) {
+      console.error('Failed to get credit packages:', err);
+      return [];
+    }
+  }, [invokeContractRead]);
+
+  // ============================================
+  // HOST REWARDS METHODS
+  // ============================================
+
+  const registerHost = useCallback(async (stakeAmount: bigint): Promise<string | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const host = getStellarAddress();
+      if (!host) {
+        throw new Error('No Stellar wallet connected');
+      }
+
+      const txHash = await signAndSubmitTransaction(
+        CONTRACT_ADDRESSES.hostRewards,
+        'register_host',
+        [
+          nativeToScVal(host, { type: 'address' }),
+          nativeToScVal(stakeAmount, { type: 'i128' }),
+        ]
+      );
+
+      toast.success('Registered as compute host!');
+      return txHash;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to register host';
+      setError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getStellarAddress, signAndSubmitTransaction]);
+
+  const getHostInfo = useCallback(async (address?: string): Promise<HostProvider | null> => {
+    try {
+      const targetAddress = address || getStellarAddress();
+      if (!targetAddress) return null;
+
+      if (!CONTRACT_ADDRESSES.hostRewards) return null;
+
+      const host = await invokeContractRead(
+        CONTRACT_ADDRESSES.hostRewards,
+        'get_host',
+        [nativeToScVal(targetAddress, { type: 'address' })]
+      ) as HostProvider | null;
+
+      return host;
+    } catch (err) {
+      console.error('Failed to get host info:', err);
+      return null;
+    }
+  }, [getStellarAddress, invokeContractRead]);
+
+  const hostHeartbeat = useCallback(async (): Promise<string | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const host = getStellarAddress();
+      if (!host) {
+        throw new Error('No Stellar wallet connected');
+      }
+
+      const txHash = await signAndSubmitTransaction(
+        CONTRACT_ADDRESSES.hostRewards,
+        'heartbeat',
+        [nativeToScVal(host, { type: 'address' })]
+      );
+
+      return txHash;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send heartbeat';
+      setError(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getStellarAddress, signAndSubmitTransaction]);
+
   return {
     // State
     isLoading,
@@ -1040,6 +1482,31 @@ export const useSorobanContracts = () => {
     stakeLPTokens,
     unstakeLPTokens,
     claimStakingRewards,
+
+    // NFT Pass (NEW)
+    mintPass,
+    checkPassAccess,
+    getUserPasses,
+
+    // Rewards Vault (NEW)
+    enterTournamentEscrow,
+    getTournamentEscrow,
+
+    // Results Attestation (NEW)
+    getMatchAttestation,
+    verifyResult,
+    fileDispute,
+
+    // Compute Credits (NEW)
+    buyCredits,
+    getCreditsBalance,
+    spendCredits,
+    getCreditPackages,
+
+    // Host Rewards (NEW)
+    registerHost,
+    getHostInfo,
+    hostHeartbeat,
   };
 };
 

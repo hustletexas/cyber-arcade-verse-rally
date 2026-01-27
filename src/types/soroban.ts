@@ -4,6 +4,152 @@ export type NodeTier = 'basic' | 'premium' | 'legendary';
 
 export type TournamentStatus = 'upcoming' | 'active' | 'completed' | 'cancelled';
 
+// === NFT Pass Types ===
+export type PassTier = 'bronze' | 'silver' | 'gold' | 'platinum';
+
+export interface PassInfo {
+  id: number;
+  owner: string;
+  tier: PassTier;
+  issuedAt: number;
+  expiresAt: number;
+  isSoulbound: boolean;
+  metadataUri: string;
+  traits: Record<string, string>;
+}
+
+export interface AccessGate {
+  gateId: string;
+  requiredTier: PassTier;
+  requiredTraits: string[];
+  isActive: boolean;
+}
+
+// === Rewards Vault Types ===
+export interface TournamentEscrow {
+  tournamentId: string;
+  totalDeposited: bigint;
+  entryFee: bigint;
+  maxPayoutCap: bigint;
+  entriesCount: number;
+  isFinalized: boolean;
+  createdAt: number;
+  deadline: number;
+}
+
+export interface PayoutRecord {
+  claimId: number;
+  tournamentId: string;
+  recipient: string;
+  amount: bigint;
+  nonce: number;
+  deadline: number;
+  paid: boolean;
+  paidAt: number;
+}
+
+export interface PendingWithdrawal {
+  id: number;
+  token: string;
+  amount: bigint;
+  recipient: string;
+  approvalCount: number;
+  threshold: number;
+  executed: boolean;
+}
+
+// === Results Attestation Types ===
+export interface MatchAttestation {
+  tournamentId: string;
+  matchId: string;
+  resultHash: string;
+  winner: string;
+  participants: string[];
+  scores: Record<string, number>;
+  metadataHash: string;
+  attestedAt: number;
+  attestedBy: string;
+}
+
+export interface TournamentAttestation {
+  tournamentId: string;
+  finalResultsHash: string;
+  totalMatches: number;
+  winner: string;
+  runnerUp: string;
+  prizeDistributionHash: string;
+  finalizedAt: number;
+}
+
+export interface Dispute {
+  id: number;
+  matchId: string;
+  challenger: string;
+  reasonHash: string;
+  createdAt: number;
+  resolved: boolean;
+  resolutionHash: string;
+  resolvedAt: number;
+}
+
+// === Compute Credits Types ===
+export interface CreditPackage {
+  id: number;
+  credits: bigint;
+  priceUsdc: bigint;
+  bonusCredits: bigint;
+  isActive: boolean;
+}
+
+export interface UserCredits {
+  balance: bigint;
+  lifetimeEarned: bigint;
+  lifetimeSpent: bigint;
+  lastActivity: number;
+}
+
+export type CreditTxType = 'purchase' | 'earn' | 'spend' | 'transfer' | 'burn' | 'admin_mint';
+
+// === Host Rewards Types ===
+export interface HostProvider {
+  address: string;
+  stakeAmount: bigint;
+  registeredAt: number;
+  totalEarnings: bigint;
+  totalJobsCompleted: number;
+  reputationScore: number;
+  isActive: boolean;
+  lastHeartbeat: number;
+}
+
+export type JobType = 'tournament_server' | 'game_relay' | 'content_delivery' | 'custom';
+export type JobStatus = 'pending' | 'active' | 'completed' | 'disputed' | 'cancelled';
+
+export interface ComputeJob {
+  jobId: string;
+  host: string;
+  requester: string;
+  jobType: JobType;
+  rewardAmount: bigint;
+  startedAt: number;
+  completedAt: number;
+  status: JobStatus;
+  proofHash: string;
+}
+
+export interface PayoutClaim {
+  claimId: number;
+  jobId: string;
+  host: string;
+  amount: bigint;
+  nonce: number;
+  deadline: number;
+  attestationHash: string;
+  paid: boolean;
+  paidAt: number;
+}
+
+// === Existing Types ===
 export interface CCTRBalance {
   balance: bigint;
   formatted: string;
@@ -85,6 +231,11 @@ export interface SorobanContractAddresses {
   nodeSystem: string;
   liquidityPool: string;
   tournamentRaffle: string;
+  nftPass: string;
+  rewardsVault: string;
+  resultsAttestation: string;
+  computeCredits: string;
+  hostRewards: string;
 }
 
 // Supported token assets
@@ -148,6 +299,14 @@ export const NODE_TIERS: Record<NodeTier, NodeTierConfig> = {
   },
 };
 
+// Pass tier pricing
+export const PASS_TIERS: Record<PassTier, { price: bigint; name: string }> = {
+  bronze: { price: BigInt(100_0000000), name: 'Bronze Pass' },
+  silver: { price: BigInt(500_0000000), name: 'Silver Pass' },
+  gold: { price: BigInt(2000_0000000), name: 'Gold Pass' },
+  platinum: { price: BigInt(10000_0000000), name: 'Platinum Pass' },
+};
+
 // Pool pairs configuration
 export const POOL_PAIRS: PoolPair[] = [
   { tokenA: 'USDC', tokenB: 'XLM', name: 'USDC/XLM' },
@@ -188,4 +347,26 @@ export const formatUSDC = (amount: bigint): string => {
 export const parseUSDC = (amount: string | number): bigint => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
   return BigInt(Math.floor(numAmount * 10_000_000));
+};
+
+// Format credits with commas
+export const formatCredits = (amount: bigint): string => {
+  return (Number(amount) / 10_000_000).toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
+// Convert hash bytes to hex string
+export const bytesToHex = (bytes: Uint8Array): string => {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+// Convert hex string to bytes
+export const hexToBytes = (hex: string): Uint8Array => {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+  }
+  return bytes;
 };
