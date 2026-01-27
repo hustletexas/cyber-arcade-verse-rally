@@ -235,7 +235,7 @@ export const TokenPurchase = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Network:</span>
-                    <span className="text-neon-purple font-bold">Solana</span>
+                    <span className="text-neon-purple font-bold">Stellar (Soroban)</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Contract:</span>
@@ -319,7 +319,7 @@ export const TokenPurchase = () => {
                 {processing ? (
                   "💳 Processing..."
                 ) : !isWalletConnected ? (
-                  "🔗 CONNECT PHANTOM WALLET"
+                  "🔗 CONNECT STELLAR WALLET"
                 ) : (
                   `💰 BUY ${amount.toLocaleString()} $CCTR`
                 )}
