@@ -158,7 +158,7 @@ export const UnifiedWalletDropdown = () => {
     { name: 'X', icon: '𝕏', url: 'https://x.com/stellarhustle_', color: 'hover:bg-white/20 hover:shadow-white/20' },
     { name: 'Email', icon: '💬', url: 'mailto:cybercityarcade@gmail.com', color: 'hover:bg-indigo-500/30 hover:shadow-indigo-500/20' },
     { name: 'Discord', icon: '🎮', url: 'https://discord.gg/83vpV7NBUU', color: 'hover:bg-indigo-500/30 hover:shadow-indigo-500/20' },
-    { name: 'Instagram', icon: '📷', url: 'https://instagram.com/cybercityarcade', color: 'hover:bg-pink-500/30 hover:shadow-pink-500/20' },
+    { name: 'YouTube', icon: '▶️', url: 'https://www.youtube.com/@Stellarhustle', color: 'hover:bg-red-500/30 hover:shadow-red-500/20' },
   ];
 
   if (!isWalletConnected) {
