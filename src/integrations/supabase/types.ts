@@ -240,6 +240,54 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_limits: {
+        Row: {
+          last_play_date: string
+          plays_today: number
+          user_id: string
+        }
+        Insert: {
+          last_play_date?: string
+          plays_today?: number
+          user_id: string
+        }
+        Update: {
+          last_play_date?: string
+          plays_today?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      match_scores: {
+        Row: {
+          created_at: string
+          id: string
+          mismatches: number
+          moves: number
+          score: number
+          time_seconds: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mismatches?: number
+          moves: number
+          score: number
+          time_seconds: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mismatches?: number
+          moves?: number
+          score?: number
+          time_seconds?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       nft_creation_orders: {
         Row: {
           artwork_url: string | null
