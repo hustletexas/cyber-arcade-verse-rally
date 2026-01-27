@@ -45,6 +45,7 @@ import { ChainType, WalletType } from '@/types/wallet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { StellarSwap } from '@/components/dex/StellarSwap';
 
 export const UnifiedWalletDropdown = () => {
   const { user, signOut } = useAuth();
@@ -768,37 +769,19 @@ export const UnifiedWalletDropdown = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Swap Modal with StellarX DEX */}
+      {/* Swap Modal */}
       <Dialog open={showSwapModal} onOpenChange={setShowSwapModal}>
-        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-purple/30 max-w-2xl animate-scale-in">
+        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-purple/30 max-w-md animate-scale-in">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl text-neon-purple font-display flex items-center gap-2">
-                <ArrowLeftRight className="animate-pulse" size={24} />
-                Swap Tokens
-              </DialogTitle>
-              <a href="https://www.stellarx.com" target="_blank" rel="noreferrer">
-                <Button variant="outline" size="sm" className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black">
-                  StellarX <ExternalLink size={12} className="ml-1" />
-                </Button>
-              </a>
-            </div>
+            <DialogTitle className="text-2xl text-neon-purple font-display flex items-center gap-2">
+              <ArrowLeftRight className="animate-pulse" size={24} />
+              Swap Tokens
+            </DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Swap Stellar tokens using StellarX
+              Swap between XLM, USDC, and PYUSD
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-xl overflow-hidden border border-neon-purple/30">
-            <iframe
-              title="StellarX Swap"
-              src="https://www.stellarx.com/"
-              className="w-full"
-              style={{ height: 520, border: '0' }}
-              allow="clipboard-read; clipboard-write; accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Powered by StellarX. Connect your Stellar wallet (LOBSTR or Freighter) to swap tokens.
-          </p>
+          <StellarSwap compact />
         </DialogContent>
       </Dialog>
 
