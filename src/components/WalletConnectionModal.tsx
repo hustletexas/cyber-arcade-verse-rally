@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles } from 'lucide-react';
@@ -41,11 +40,8 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         
         // Fallback: use the API to check
         const result = await freighterApi.isConnected();
-        // Extension is installed if isConnected is true OR if there's no error
-        // (error only occurs when extension is not installed at all)
         setFreighterInstalled(result.isConnected === true || result.error === undefined);
       } catch (e) {
-        // If the API call fails completely, check for window.freighter
         setFreighterInstalled(!!(window as any).freighter);
       }
     };
@@ -61,90 +57,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       selectedWalletId: LOBSTR_ID,
       modules: allowAllModules()
     });
-  };
-
-  // Solana wallet connections
-  const connectPhantom = async () => {
-    try {
-      if (window.solana && window.solana.isPhantom) {
-        const response = await window.solana.connect();
-        const address = response.publicKey.toString();
-        onWalletConnected('phantom', address, 'solana');
-        onClose();
-        toast({
-          title: "Phantom Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
-      } else {
-        throw new Error('Phantom not found');
-      }
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Phantom wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // EVM wallet connections
-  const connectMetaMask = async () => {
-    try {
-      if (window.ethereum && window.ethereum.isMetaMask) {
-        const accounts = await window.ethereum.request({ 
-          method: 'eth_requestAccounts' 
-        });
-        if (accounts && accounts.length > 0) {
-          const address = accounts[0];
-          onWalletConnected('metamask', address, 'ethereum');
-          onClose();
-          toast({
-            title: "MetaMask Connected!",
-            description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-          });
-        }
-      } else {
-        throw new Error('MetaMask not found');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Connection Failed",
-        description: error?.message || "Failed to connect to MetaMask wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const connectCoinbase = async () => {
-    try {
-      // Check for Coinbase Wallet - it can inject as coinbaseWalletExtension or in ethereum providers
-      const coinbaseProvider = (window as any).coinbaseWalletExtension || 
-        ((window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet)) ||
-        (window.ethereum?.isCoinbaseWallet ? window.ethereum : null);
-      
-      if (coinbaseProvider) {
-        const accounts = await coinbaseProvider.request({ 
-          method: 'eth_requestAccounts' 
-        });
-        if (accounts && accounts.length > 0) {
-          const address = accounts[0];
-          onWalletConnected('coinbase', address, 'ethereum');
-          onClose();
-          toast({
-            title: "Coinbase Connected!",
-            description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-          });
-          return;
-        }
-      }
-      throw new Error('Coinbase Wallet not found');
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Coinbase wallet. Please install the extension.",
-        variant: "destructive",
-      });
-    }
   };
 
   // Stellar wallet connection using LOBSTR via Stellar Wallets Kit
@@ -186,7 +98,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       const freighterWindow = (window as any).freighter;
       
       if (!freighterWindow) {
-        // Double-check with the API
         const connectedResult = await freighterApi.isConnected();
         if (!connectedResult.isConnected && connectedResult.error) {
           throw new Error('Freighter not found. Please install the Freighter browser extension.');
@@ -233,84 +144,13 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Leap wallet connection (Cosmos/EVM)
-  const connectLeap = async () => {
-    try {
-      if (window.leap) {
-        await window.leap.enable();
-        try {
-          const key = await window.leap.getKey('cosmoshub-4');
-          if (key?.bech32Address) {
-            onWalletConnected('leap', key.bech32Address, 'ethereum');
-            onClose();
-            toast({
-              title: "Leap Connected!",
-              description: `Connected to ${key.bech32Address.slice(0, 12)}...${key.bech32Address.slice(-4)}`,
-            });
-            return;
-          }
-        } catch {
-          // Fall back to ethereum if cosmos fails
-        }
-      }
-      
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        if (accounts && accounts.length > 0) {
-          onWalletConnected('leap', accounts[0], 'ethereum');
-          onClose();
-          toast({
-            title: "Leap Connected!",
-            description: `Connected to ${accounts[0].slice(0, 8)}...${accounts[0].slice(-4)}`,
-          });
-          return;
-        }
-      }
-      
-      throw new Error('Leap wallet not found');
-    } catch (error: any) {
-      toast({
-        title: "Connection Failed",
-        description: error?.message || "Failed to connect to Leap wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
   const getWalletOptions = (): WalletOption[] => {
-    // Check for Coinbase Wallet in various injection points
-    const hasCoinbase = !!(
-      (window as any).coinbaseWalletExtension || 
-      (window.ethereum as any)?.providers?.find((p: any) => p.isCoinbaseWallet) ||
-      window.ethereum?.isCoinbaseWallet
-    );
-
-    // LOBSTR at top, then other popular wallets, then Leap, then Freighter
+    // LOBSTR at top (recommended), then Freighter
     return [
       {
         ...WALLETS.find(w => w.id === 'lobstr')!,
         isInstalled: lobstrInstalled,
         connect: connectLobstr
-      },
-      {
-        ...WALLETS.find(w => w.id === 'phantom')!,
-        isInstalled: !!(window.solana && window.solana.isPhantom),
-        connect: connectPhantom
-      },
-      {
-        ...WALLETS.find(w => w.id === 'metamask')!,
-        isInstalled: !!(window.ethereum && window.ethereum.isMetaMask),
-        connect: connectMetaMask
-      },
-      {
-        ...WALLETS.find(w => w.id === 'coinbase')!,
-        isInstalled: hasCoinbase,
-        connect: connectCoinbase
-      },
-      {
-        ...WALLETS.find(w => w.id === 'leap')!,
-        isInstalled: !!window.leap,
-        connect: connectLeap
       },
       {
         ...WALLETS.find(w => w.id === 'freighter')!,
@@ -382,6 +222,11 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                 Detected
               </Badge>
             )}
+            {wallet.id === 'lobstr' && (
+              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[10px] px-1.5 py-0 font-medium">
+                Recommended
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             {chain.logoUrl ? (
@@ -413,29 +258,31 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         {/* Header */}
         <DialogHeader className="p-6 pb-4 border-b border-white/5">
           <DialogTitle className="text-xl text-white font-semibold flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
               <Wallet size={20} className="text-white" />
             </div>
-            Connect Wallet
+            Connect Stellar Wallet
           </DialogTitle>
           <p className="text-sm text-white/50 mt-2">
-            Choose a wallet to connect to Cyber City Arcade
+            Choose a Stellar wallet to connect to Cyber City Arcade
           </p>
         </DialogHeader>
 
         <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
           {/* Popular Wallets */}
-          <div>
-            <div className="flex items-center gap-2 mb-4 px-1">
-              <Sparkles size={14} className="text-yellow-500" />
-              <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Popular</span>
+          {popularWallets.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <Sparkles size={14} className="text-yellow-500" />
+                <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Recommended</span>
+              </div>
+              <div className="space-y-3">
+                {popularWallets.map(wallet => (
+                  <WalletButton key={wallet.id} wallet={wallet} />
+                ))}
+              </div>
             </div>
-            <div className="space-y-3">
-              {popularWallets.map(wallet => (
-                <WalletButton key={wallet.id} wallet={wallet} />
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* Other Wallets */}
           {otherWallets.length > 0 && (
@@ -455,14 +302,14 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-white/5 bg-white/[0.02]">
           <p className="text-xs text-white/30 text-center">
-            New to crypto?{' '}
+            New to Stellar?{' '}
             <a 
-              href="https://phantom.app/" 
+              href="https://lobstr.co/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-purple-400 hover:text-purple-300 transition-colors"
+              className="text-cyan-400 hover:text-cyan-300 transition-colors"
             >
-              Learn about wallets
+              Get LOBSTR wallet
             </a>
           </p>
         </div>

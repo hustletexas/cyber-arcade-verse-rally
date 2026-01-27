@@ -1,19 +1,19 @@
-// Re-export from the new multi-chain wallet hook for backward compatibility
+// Stellar-only multi-wallet hook
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-// Legacy types for backward compatibility
-export type WalletType = 'phantom' | 'coinbase' | 'metamask' | 'lobstr' | 'freighter' | 'leap' | 'created';
+// Stellar-only wallet types
+export type WalletType = 'lobstr' | 'freighter' | 'created';
 
 export interface ConnectedWallet {
   type: WalletType;
   address: string;
   isConnected: boolean;
   balance?: number;
-  chain?: 'solana' | 'ethereum' | 'stellar';
-  symbol?: string;
+  chain: 'stellar';
+  symbol: 'XLM';
 }
 
 export const useMultiWallet = () => {
@@ -22,31 +22,7 @@ export const useMultiWallet = () => {
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([]);
   const [primaryWallet, setPrimaryWallet] = useState<ConnectedWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeChain, setActiveChain] = useState<'solana' | 'ethereum' | 'stellar'>('stellar');
-
-  const getChainForWallet = (type: WalletType): 'solana' | 'ethereum' | 'stellar' => {
-    switch (type) {
-      case 'metamask':
-      case 'coinbase':
-      case 'leap':
-        return 'ethereum';
-      case 'lobstr':
-      case 'freighter':
-        return 'stellar';
-      default:
-        // Default to Stellar for USDC payments and CCC rewards
-        return 'stellar';
-    }
-  };
-
-  const getSymbolForChain = (chain: 'solana' | 'ethereum' | 'stellar'): string => {
-    switch (chain) {
-      case 'ethereum': return 'ETH';
-      case 'solana': return 'SOL';
-      // Default to Stellar - primary chain for payments
-      default: return 'XLM';
-    }
-  };
+  const [activeChain] = useState<'stellar'>('stellar');
 
   // Wallet storage key for cross-tab sync
   const WALLET_STORAGE_KEY = 'cyberCity_connectedWallets';
@@ -57,7 +33,15 @@ export const useMultiWallet = () => {
     try {
       const stored = localStorage.getItem(WALLET_STORAGE_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const wallets = JSON.parse(stored);
+        // Filter to only Stellar wallets
+        return wallets.filter((w: any) => 
+          w.type === 'lobstr' || w.type === 'freighter' || w.type === 'created'
+        ).map((w: any) => ({
+          ...w,
+          chain: 'stellar' as const,
+          symbol: 'XLM' as const
+        }));
       }
     } catch (error) {
       console.error('Error loading stored wallets:', error);
@@ -69,7 +53,15 @@ export const useMultiWallet = () => {
     try {
       const stored = localStorage.getItem(PRIMARY_WALLET_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const wallet = JSON.parse(stored);
+        // Only return if it's a Stellar wallet
+        if (wallet.type === 'lobstr' || wallet.type === 'freighter' || wallet.type === 'created') {
+          return {
+            ...wallet,
+            chain: 'stellar' as const,
+            symbol: 'XLM' as const
+          };
+        }
       }
     } catch (error) {
       console.error('Error loading primary wallet:', error);
@@ -97,7 +89,9 @@ export const useMultiWallet = () => {
       if (e.key === WALLET_STORAGE_KEY && e.newValue) {
         try {
           const wallets = JSON.parse(e.newValue);
-          setConnectedWallets(wallets);
+          setConnectedWallets(wallets.filter((w: any) => 
+            w.type === 'lobstr' || w.type === 'freighter' || w.type === 'created'
+          ));
         } catch (error) {
           console.error('Error syncing wallets:', error);
         }
@@ -105,7 +99,9 @@ export const useMultiWallet = () => {
       if (e.key === PRIMARY_WALLET_KEY && e.newValue) {
         try {
           const primary = JSON.parse(e.newValue);
-          setPrimaryWallet(primary);
+          if (primary.type === 'lobstr' || primary.type === 'freighter' || primary.type === 'created') {
+            setPrimaryWallet(primary);
+          }
         } catch (error) {
           console.error('Error syncing primary wallet:', error);
         }
@@ -123,26 +119,23 @@ export const useMultiWallet = () => {
 
   const autoConnectFreighter = async (): Promise<ConnectedWallet | null> => {
     try {
-      // Check if Freighter extension is available
       const freighterApi = (window as any).freighter;
       if (!freighterApi) {
         console.log('Freighter extension not detected');
         return null;
       }
 
-      // Check if Freighter is connected (user previously approved)
       const isConnected = await freighterApi.isConnected();
       if (!isConnected) {
         console.log('Freighter not previously approved');
         return null;
       }
 
-      // Get the public key without prompting (only works if previously approved)
       const publicKey = await freighterApi.getPublicKey();
       if (publicKey) {
         console.log('Freighter auto-connected:', publicKey.substring(0, 8) + '...');
         return {
-          type: 'freighter' as WalletType,
+          type: 'freighter',
           address: publicKey,
           isConnected: true,
           chain: 'stellar',
@@ -157,14 +150,13 @@ export const useMultiWallet = () => {
 
   const autoConnectLobstr = async (): Promise<ConnectedWallet | null> => {
     try {
-      // Check localStorage for stored LOBSTR connection
       const storedWallets = loadStoredWallets();
       const storedLobstr = storedWallets.find(w => w.type === 'lobstr');
       
       if (storedLobstr && storedLobstr.address) {
         console.log('LOBSTR restored from storage:', storedLobstr.address.substring(0, 8) + '...');
         return {
-          type: 'lobstr' as WalletType,
+          type: 'lobstr',
           address: storedLobstr.address,
           isConnected: true,
           chain: 'stellar',
@@ -181,19 +173,16 @@ export const useMultiWallet = () => {
     setIsLoading(true);
     
     try {
-      // First, load from localStorage for consistent cross-tab experience
       const storedWallets = loadStoredWallets();
       const storedPrimary = loadPrimaryWallet();
       
       if (storedWallets.length > 0) {
-        // Prioritize Stellar wallets (LOBSTR, Freighter)
         const hasStoredLobstr = storedWallets.some(w => w.type === 'lobstr');
         const hasStoredFreighter = storedWallets.some(w => w.type === 'freighter');
         
         let updatedWallets = [...storedWallets];
         let stellarWallet: ConnectedWallet | null = null;
         
-        // Verify and restore LOBSTR first (primary default wallet)
         if (hasStoredLobstr) {
           const lobstrWallet = await autoConnectLobstr();
           if (lobstrWallet) {
@@ -204,7 +193,6 @@ export const useMultiWallet = () => {
           }
         }
         
-        // Verify Freighter is still connected if stored
         if (hasStoredFreighter) {
           const freighterWallet = await autoConnectFreighter();
           if (freighterWallet) {
@@ -215,7 +203,6 @@ export const useMultiWallet = () => {
               stellarWallet = freighterWallet;
             }
           } else {
-            // Freighter no longer connected, remove it
             updatedWallets = updatedWallets.filter(w => w.type !== 'freighter');
           }
         }
@@ -223,57 +210,45 @@ export const useMultiWallet = () => {
         // Ensure all wallets have correct chain data
         updatedWallets = updatedWallets.map(w => ({
           ...w,
-          chain: getChainForWallet(w.type),
-          symbol: getSymbolForChain(getChainForWallet(w.type))
+          chain: 'stellar' as const,
+          symbol: 'XLM' as const
         }));
         
         setConnectedWallets(updatedWallets);
         
-        // Always prefer Stellar wallet as primary
         let primary: ConnectedWallet | null = null;
         if (stellarWallet) {
           primary = stellarWallet;
         } else if (storedPrimary && updatedWallets.some(w => w.type === storedPrimary.type)) {
           primary = updatedWallets.find(w => w.type === storedPrimary.type) || null;
         } else {
-          // Find first Stellar wallet, or fallback to first wallet
-          primary = updatedWallets.find(w => w.chain === 'stellar') || updatedWallets[0] || null;
+          primary = updatedWallets[0] || null;
         }
         
         setPrimaryWallet(primary);
-        setActiveChain(primary?.chain || 'stellar');
         saveWalletsToStorage(updatedWallets, primary);
         setIsLoading(false);
         return;
       }
 
-      // No stored wallets - try auto-connecting Stellar wallets ONLY (no ETH auto-connect)
+      // No stored wallets - try auto-connecting Stellar wallets
       const wallets: ConnectedWallet[] = [];
       
-      // Auto-connect LOBSTR first (primary default wallet)
       const lobstrWallet = await autoConnectLobstr();
       if (lobstrWallet) {
         wallets.push(lobstrWallet);
       }
       
-      // Auto-connect Freighter second
       const freighterWallet = await autoConnectFreighter();
       if (freighterWallet) {
         wallets.push(freighterWallet);
       }
 
-      // DO NOT auto-connect MetaMask, Coinbase, or Phantom on initial load
-      // Users must explicitly connect these wallets
-      // This prevents unwanted ETH wallet connections when Stellar is the primary chain
-
       setConnectedWallets(wallets);
       if (wallets.length > 0) {
-        // Always prefer LOBSTR, then other Stellar wallets
         const lobstr = wallets.find(w => w.type === 'lobstr');
-        const stellarWallet = lobstr || wallets.find(w => w.chain === 'stellar');
-        const primary = stellarWallet || wallets[0];
+        const primary = lobstr || wallets[0];
         setPrimaryWallet(primary);
-        setActiveChain('stellar'); // Always default to Stellar
         saveWalletsToStorage(wallets, primary);
       }
     } finally {
@@ -291,92 +266,54 @@ export const useMultiWallet = () => {
         .eq('id', user.id);
 
       if (error) throw error;
-      
-      // Wallet linked to profile successfully
     } catch (error) {
       console.error('Error linking wallet to profile:', error);
     }
   };
 
   const connectWallet = useCallback(async (type: WalletType, address: string) => {
-    const chain = getChainForWallet(type);
-    const symbol = getSymbolForChain(chain);
-    
     const newWallet: ConnectedWallet = {
       type,
       address,
       isConnected: true,
-      chain,
-      symbol
+      chain: 'stellar',
+      symbol: 'XLM'
     };
 
     setConnectedWallets(prev => {
       const filtered = prev.filter(w => w.type !== type);
       const updated = [...filtered, newWallet];
       
-      // Determine primary - always prefer Stellar wallets (LOBSTR > Freighter > others)
+      // Prefer LOBSTR as primary
       let newPrimary = newWallet;
-      if (chain !== 'stellar' && primaryWallet?.chain === 'stellar') {
-        // Keep existing Stellar wallet as primary
-        newPrimary = primaryWallet;
-      } else if (chain === 'stellar') {
-        // New Stellar wallet becomes primary
-        // Prefer LOBSTR over Freighter
-        if (type === 'lobstr' || !updated.some(w => w.type === 'lobstr')) {
-          newPrimary = newWallet;
-        }
+      if (type !== 'lobstr' && updated.some(w => w.type === 'lobstr')) {
+        newPrimary = updated.find(w => w.type === 'lobstr')!;
       }
       
       saveWalletsToStorage(updated, newPrimary);
       return updated;
     });
 
-    // Set as primary if it's the first wallet or a Stellar wallet (preferred)
-    if (!primaryWallet || chain === 'stellar') {
+    // Set as primary if it's the first wallet or LOBSTR
+    if (!primaryWallet || type === 'lobstr') {
       setPrimaryWallet(newWallet);
-      setActiveChain('stellar');
     }
 
-    // Link wallet to user profile if logged in
     if (user) {
       await linkWalletToProfile(address);
     }
 
     toast({
       title: "Wallet Connected!",
-      description: `${type.charAt(0).toUpperCase() + type.slice(1)} wallet connected on ${chain.charAt(0).toUpperCase() + chain.slice(1)}`,
+      description: `${type.charAt(0).toUpperCase() + type.slice(1)} wallet connected on Stellar`,
     });
   }, [primaryWallet, toast, user]);
 
   const disconnectWallet = useCallback(async (type: WalletType) => {
     try {
-      // Handle specific wallet disconnection
-      switch (type) {
-        case 'phantom':
-          if (window.solana) await window.solana.disconnect();
-          break;
-        case 'metamask':
-        case 'coinbase':
-          // EVM wallets don't have a disconnect method
-          break;
-        case 'lobstr':
-          // LOBSTR uses WalletConnect, disconnect handled by the kit
-          break;
-        case 'freighter':
-          // Freighter doesn't have a disconnect method
-          break;
-        case 'leap':
-          // Leap doesn't have a standard disconnect
-          break;
-        case 'created':
-          // Created wallets don't have external disconnection
-          break;
-      }
-
       const updatedWallets = connectedWallets.filter(w => w.type !== type);
       setConnectedWallets(updatedWallets);
       
-      // Update primary wallet if disconnected
       let newPrimary: ConnectedWallet | null = null;
       if (primaryWallet?.type === type) {
         newPrimary = updatedWallets.length > 0 ? updatedWallets[0] : null;
@@ -385,7 +322,6 @@ export const useMultiWallet = () => {
         newPrimary = primaryWallet;
       }
 
-      // Save to localStorage for cross-tab sync
       saveWalletsToStorage(updatedWallets, newPrimary);
 
       toast({
@@ -404,11 +340,8 @@ export const useMultiWallet = () => {
 
   const switchPrimaryWallet = useCallback(async (wallet: ConnectedWallet) => {
     setPrimaryWallet(wallet);
-    
-    // Save to localStorage for cross-tab sync
     saveWalletsToStorage(connectedWallets, wallet);
     
-    // Update profile with new primary wallet
     if (user) {
       await linkWalletToProfile(wallet.address);
     }
@@ -421,28 +354,20 @@ export const useMultiWallet = () => {
 
   const getWalletIcon = (type: WalletType) => {
     switch (type) {
-      case 'phantom': return '👻';
-      case 'metamask': return '🦊';
-      case 'coinbase': return '🔵';
       case 'lobstr': return '🌟';
       case 'freighter': return '🚀';
-      case 'leap': return '🐸';
       case 'created': return '💰';
       default: return '🔗';
     }
   };
 
-  const getChainIcon = (chain?: 'solana' | 'ethereum' | 'stellar') => {
-    switch (chain) {
-      case 'ethereum': return '⟠';
-      case 'stellar': return '✦';
-      default: return '◎';
-    }
+  const getChainIcon = () => {
+    return '✦'; // Stellar icon
   };
 
   const isWalletConnected = connectedWallets.length > 0;
   const hasMultipleWallets = connectedWallets.length > 1;
-  const hasMultipleChains = new Set(connectedWallets.map(w => w.chain)).size > 1;
+  const hasMultipleChains = false; // Stellar only
 
   return {
     connectedWallets,
@@ -452,7 +377,7 @@ export const useMultiWallet = () => {
     hasMultipleChains,
     isLoading,
     activeChain,
-    setActiveChain,
+    setActiveChain: () => {}, // No-op since we only support Stellar
     connectWallet,
     disconnectWallet,
     switchPrimaryWallet,
