@@ -737,10 +737,47 @@ export const UnifiedWalletDropdown = () => {
                     {buyAmount ? (parseFloat(buyAmount) * 10).toFixed(2) : '0'} XLM
                   </p>
                 </div>
-                <Button onClick={handleBuy} className="w-full bg-neon-green hover:bg-neon-green/90 text-black">
-                  <CreditCard size={16} className="mr-2" />
-                  Continue to Payment
-                </Button>
+                
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Payment Method</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      onClick={() => {
+                        if (!buyAmount || parseFloat(buyAmount) <= 0) {
+                          toast({ title: "Enter Amount", description: "Please enter a valid amount first", variant: "destructive" });
+                          return;
+                        }
+                        window.open(`https://www.paypal.com/checkoutnow?amount=${buyAmount}`, '_blank');
+                        toast({ title: "PayPal", description: "Redirecting to PayPal checkout..." });
+                      }}
+                      variant="outline" 
+                      className="h-14 bg-black/50 border-[#0070ba]/50 hover:border-[#0070ba] hover:bg-[#0070ba]/10 flex flex-col items-center justify-center gap-1"
+                    >
+                      <span className="text-[#0070ba] font-bold text-sm">PayPal</span>
+                      <span className="text-[10px] text-muted-foreground">Fiat to Crypto</span>
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        if (!buyAmount || parseFloat(buyAmount) <= 0) {
+                          toast({ title: "Enter Amount", description: "Please enter a valid amount first", variant: "destructive" });
+                          return;
+                        }
+                        const moonPayUrl = `https://buy.moonpay.com?apiKey=pk_test_123&currencyCode=xlm&baseCurrencyAmount=${buyAmount}&baseCurrencyCode=usd`;
+                        window.open(moonPayUrl, '_blank');
+                        toast({ title: "MoonPay", description: "Redirecting to MoonPay..." });
+                      }}
+                      variant="outline" 
+                      className="h-14 bg-black/50 border-[#7D00FF]/50 hover:border-[#7D00FF] hover:bg-[#7D00FF]/10 flex flex-col items-center justify-center gap-1"
+                    >
+                      <span className="text-[#7D00FF] font-bold text-sm">MoonPay</span>
+                      <span className="text-[10px] text-muted-foreground">Card / Bank</span>
+                    </Button>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-center text-muted-foreground">
+                  Select a payment provider to purchase crypto with fiat
+                </p>
               </div>
             )}
 
