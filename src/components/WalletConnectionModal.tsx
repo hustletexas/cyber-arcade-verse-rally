@@ -27,26 +27,32 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const [connecting, setConnecting] = useState<string | null>(null);
   const [lobstrInstalled] = useState(true); // LOBSTR uses WalletConnect, always available
   const [freighterInstalled, setFreighterInstalled] = useState(false);
+  const [albedoInstalled] = useState(true); // Albedo is web-based, always available
+  const [xbullInstalled, setXbullInstalled] = useState(false);
+  const [hotwalletInstalled] = useState(true); // Hot Wallet is web-based
 
-  // Check Freighter installation on mount
+  // Check wallet extensions on mount
   useEffect(() => {
-    const checkFreighter = async () => {
+    const checkExtensions = async () => {
+      // Check Freighter
       try {
-        // First check if the Freighter extension is available in the window
         if (typeof window !== 'undefined' && (window as any).freighter) {
           setFreighterInstalled(true);
-          return;
+        } else {
+          const result = await freighterApi.isConnected();
+          setFreighterInstalled(result.isConnected === true || result.error === undefined);
         }
-        
-        // Fallback: use the API to check
-        const result = await freighterApi.isConnected();
-        setFreighterInstalled(result.isConnected === true || result.error === undefined);
       } catch (e) {
         setFreighterInstalled(!!(window as any).freighter);
       }
+
+      // Check xBull
+      if (typeof window !== 'undefined' && (window as any).xBullSDK) {
+        setXbullInstalled(true);
+      }
     };
     if (isOpen) {
-      checkFreighter();
+      checkExtensions();
     }
   }, [isOpen]);
 
@@ -144,8 +150,100 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
+  // Albedo wallet connection (web-based)
+  const connectAlbedo = async () => {
+    try {
+      // Albedo uses a popup-based authentication
+      const albedo = (window as any).albedo;
+      if (albedo) {
+        const result = await albedo.publicKey({});
+        if (result.pubkey) {
+          onWalletConnected('albedo', result.pubkey, 'stellar');
+          onClose();
+          toast({
+            title: "Albedo Connected!",
+            description: `Connected to ${result.pubkey.slice(0, 8)}...${result.pubkey.slice(-4)}`,
+          });
+        }
+      } else {
+        // Open Albedo in a new window for web-based auth
+        const width = 400;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        window.open(
+          'https://albedo.link/intent/public_key',
+          'albedo',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+        toast({
+          title: "Albedo Opened",
+          description: "Complete authentication in the Albedo popup window",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error?.message || "Failed to connect to Albedo",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // xBull wallet connection
+  const connectXbull = async () => {
+    try {
+      const xBullSDK = (window as any).xBullSDK;
+      if (!xBullSDK) {
+        throw new Error('xBull wallet not found. Please install the xBull extension.');
+      }
+
+      const publicKey = await xBullSDK.connect();
+      if (publicKey) {
+        onWalletConnected('xbull', publicKey, 'stellar');
+        onClose();
+        toast({
+          title: "xBull Connected!",
+          description: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-4)}`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error?.message || "Failed to connect to xBull wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Hot Wallet connection (web-based)
+  const connectHotwallet = async () => {
+    try {
+      // Hot Wallet uses WalletConnect or deep linking
+      const width = 400;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      window.open(
+        'https://hotwallet.app/',
+        'hotwallet',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+      toast({
+        title: "Hot Wallet",
+        description: "Complete connection in the Hot Wallet window",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error?.message || "Failed to connect to Hot Wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getWalletOptions = (): WalletOption[] => {
-    // LOBSTR at top (recommended), then Freighter
+    // LOBSTR at top (recommended), then other wallets
     return [
       {
         ...WALLETS.find(w => w.id === 'lobstr')!,
@@ -156,6 +254,21 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         ...WALLETS.find(w => w.id === 'freighter')!,
         isInstalled: freighterInstalled,
         connect: connectFreighter
+      },
+      {
+        ...WALLETS.find(w => w.id === 'albedo')!,
+        isInstalled: albedoInstalled,
+        connect: connectAlbedo
+      },
+      {
+        ...WALLETS.find(w => w.id === 'xbull')!,
+        isInstalled: xbullInstalled,
+        connect: connectXbull
+      },
+      {
+        ...WALLETS.find(w => w.id === 'hotwallet')!,
+        isInstalled: hotwalletInstalled,
+        connect: connectHotwallet
       }
     ];
   };

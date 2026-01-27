@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 // Stellar-only wallet types
-export type WalletType = 'lobstr' | 'freighter' | 'created';
+export type WalletType = 'lobstr' | 'freighter' | 'albedo' | 'xbull' | 'hotwallet' | 'created';
 
 export interface ConnectedWallet {
   type: WalletType;
@@ -35,8 +35,9 @@ export const useMultiWallet = () => {
       if (stored) {
         const wallets = JSON.parse(stored);
         // Filter to only Stellar wallets
+        const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
         return wallets.filter((w: any) => 
-          w.type === 'lobstr' || w.type === 'freighter' || w.type === 'created'
+          stellarWalletTypes.includes(w.type)
         ).map((w: any) => ({
           ...w,
           chain: 'stellar' as const,
@@ -55,7 +56,8 @@ export const useMultiWallet = () => {
       if (stored) {
         const wallet = JSON.parse(stored);
         // Only return if it's a Stellar wallet
-        if (wallet.type === 'lobstr' || wallet.type === 'freighter' || wallet.type === 'created') {
+        const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
+        if (stellarWalletTypes.includes(wallet.type)) {
           return {
             ...wallet,
             chain: 'stellar' as const,
@@ -89,8 +91,9 @@ export const useMultiWallet = () => {
       if (e.key === WALLET_STORAGE_KEY && e.newValue) {
         try {
           const wallets = JSON.parse(e.newValue);
+          const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
           setConnectedWallets(wallets.filter((w: any) => 
-            w.type === 'lobstr' || w.type === 'freighter' || w.type === 'created'
+            stellarWalletTypes.includes(w.type)
           ));
         } catch (error) {
           console.error('Error syncing wallets:', error);
@@ -99,7 +102,8 @@ export const useMultiWallet = () => {
       if (e.key === PRIMARY_WALLET_KEY && e.newValue) {
         try {
           const primary = JSON.parse(e.newValue);
-          if (primary.type === 'lobstr' || primary.type === 'freighter' || primary.type === 'created') {
+          const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
+          if (stellarWalletTypes.includes(primary.type)) {
             setPrimaryWallet(primary);
           }
         } catch (error) {
@@ -356,6 +360,9 @@ export const useMultiWallet = () => {
     switch (type) {
       case 'lobstr': return '🌟';
       case 'freighter': return '🚀';
+      case 'albedo': return '🔐';
+      case 'xbull': return '🐂';
+      case 'hotwallet': return '🔥';
       case 'created': return '💰';
       default: return '🔗';
     }
