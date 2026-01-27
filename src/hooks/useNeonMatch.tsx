@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
+import { useNeonMatchAchievements, GameStats } from '@/hooks/useNeonMatchAchievements';
 import { Card, GameState, PAIR_IDS, DailyLimit, LeaderboardEntry, GAME_ENTRY_FEE } from '@/types/neon-match';
 import { toast } from '@/hooks/use-toast';
 
@@ -65,9 +66,20 @@ export function useNeonMatch() {
   const [isLoading, setIsLoading] = useState(true);
   const [showEndModal, setShowEndModal] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
+  const [lastGameStats, setLastGameStats] = useState<GameStats | null>(null);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const matchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Achievements
+  const {
+    achievements,
+    newlyUnlocked,
+    checkAchievements,
+    clearNewlyUnlocked,
+    unlockedCount,
+    totalCount,
+  } = useNeonMatchAchievements(walletAddress);
 
   // Check if user can play ranked
   const canPlayRanked = dailyLimit ? dailyLimit.plays_today < MAX_DAILY_PLAYS : true;
@@ -269,6 +281,16 @@ export function useNeonMatch() {
     const score = calculateScore(state.timeSeconds, state.moves, state.mismatches);
     setFinalScore(score);
 
+    // Check achievements
+    const stats: GameStats = {
+      score,
+      timeSeconds: state.timeSeconds,
+      moves: state.moves,
+      mismatches: state.mismatches,
+    };
+    setLastGameStats(stats);
+    checkAchievements(stats);
+
     // Only save score for ranked mode
     if (gameMode === 'ranked' && walletAddress) {
       try {
@@ -287,7 +309,7 @@ export function useNeonMatch() {
     }
 
     setShowEndModal(true);
-  }, [walletAddress, gameMode, fetchLeaderboards]);
+  }, [walletAddress, gameMode, fetchLeaderboards, checkAchievements]);
 
   // Handle card click
   const onCardClick = useCallback((cardId: string) => {
@@ -400,5 +422,12 @@ export function useNeonMatch() {
     hasEnoughCCTR,
     entryFee: GAME_ENTRY_FEE,
     gameMode,
+    // Achievements
+    achievements,
+    newlyUnlocked,
+    clearNewlyUnlocked,
+    unlockedCount,
+    totalCount,
+    lastGameStats,
   };
 }
