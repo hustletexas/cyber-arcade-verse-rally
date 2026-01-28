@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useNeonMatchAchievements, GameStats } from '@/hooks/useNeonMatchAchievements';
+import { useWinnerChests } from '@/hooks/useWinnerChests';
 import { Card, GameState, PAIR_IDS, DailyLimit, LeaderboardEntry, GAME_ENTRY_FEE } from '@/types/neon-match';
 import { toast } from '@/hooks/use-toast';
 
@@ -57,6 +58,7 @@ const initialGameState: GameState = {
 export function useNeonMatch() {
   const { isWalletConnected, primaryWallet } = useMultiWallet();
   const { balance, deductBalance, refetch: refetchBalance } = useUserBalance();
+  const { grantChestEligibility } = useWinnerChests();
   const walletAddress = primaryWallet?.address;
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [dailyLimit, setDailyLimit] = useState<DailyLimit | null>(null);
@@ -67,6 +69,7 @@ export function useNeonMatch() {
   const [showEndModal, setShowEndModal] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
   const [lastGameStats, setLastGameStats] = useState<GameStats | null>(null);
+  const [chestEarned, setChestEarned] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const matchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -280,6 +283,7 @@ export function useNeonMatch() {
 
     const score = calculateScore(state.timeSeconds, state.moves, state.mismatches);
     setFinalScore(score);
+    setChestEarned(false);
 
     // Check achievements
     const stats: GameStats = {
@@ -303,13 +307,25 @@ export function useNeonMatch() {
         });
         
         fetchLeaderboards();
+
+        // Grant free chest for perfect game (0 mismatches)!
+        if (state.mismatches === 0) {
+          const chestGranted = await grantChestEligibility('game', 'neon-match-36-perfect');
+          if (chestGranted) {
+            setChestEarned(true);
+            toast({
+              title: "🏆 PERFECT GAME!",
+              description: "You earned a FREE Winner's Treasure Chest! Check the Raffles section to claim it.",
+            });
+          }
+        }
       } catch (err) {
         console.error('Error saving score:', err);
       }
     }
 
     setShowEndModal(true);
-  }, [walletAddress, gameMode, fetchLeaderboards, checkAchievements]);
+  }, [walletAddress, gameMode, fetchLeaderboards, checkAchievements, grantChestEligibility]);
 
   // Handle card click
   const onCardClick = useCallback((cardId: string) => {
@@ -422,6 +438,7 @@ export function useNeonMatch() {
     hasEnoughCCTR,
     entryFee: GAME_ENTRY_FEE,
     gameMode,
+    chestEarned,
     // Achievements
     achievements,
     newlyUnlocked,

@@ -9,10 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
+import { useWinnerChests } from '@/hooks/useWinnerChests';
 import { supabase } from '@/integrations/supabase/client';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
-import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles } from 'lucide-react';
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles, Award, Star } from 'lucide-react';
 import { ChestOpeningAnimation } from './ChestOpeningAnimation';
 
 interface Raffle {
@@ -31,9 +31,6 @@ interface Raffle {
 interface TreasureChest {
   id: string;
   name: string;
-  price: {
-    cctr: number;
-  };
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   image: string;
   description: string;
@@ -47,11 +44,12 @@ export const RaffleSection = () => {
   const { primaryWallet, isWalletConnected, getWalletIcon, connectWallet } = useMultiWallet();
   const { createOrLoginWithWallet } = useWalletAuth();
   const { balance } = useUserBalance();
+  const { eligibleChests, hasUnclaimedChests, unclaimedCount, claimChest } = useWinnerChests();
   const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
   const [processingPayment, setProcessingPayment] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cctr'>('cctr');
   const [chestAnimationOpen, setChestAnimationOpen] = useState(false);
-  const [openingChest, setOpeningChest] = useState<{ name: string; rarity: 'common' | 'rare' | 'epic' | 'legendary' } | null>(null);
+  const [openingChest, setOpeningChest] = useState<{ name: string; rarity: 'common' | 'rare' | 'epic' | 'legendary'; eligibilityId?: string } | null>(null);
 
   const [raffles] = useState<Raffle[]>([
     {
@@ -104,29 +102,24 @@ export const RaffleSection = () => {
     }
   ]);
 
-  const [treasureChests] = useState<TreasureChest[]>([
-    {
-      id: 'epic',
-      name: 'Epic Treasure Vault',
-      price: { cctr: 100 },
-      rarity: 'epic',
-      image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
-      description: 'Ultimate gaming rewards for champions',
-      rewards: [
-        '500-2000 CCTR Tokens',
-        'Epic Gaming NFT',
-        'Tournament Entry Pass',
-        'Monthly Tournament Subscription',
-        'Exclusive Game Beta Access',
-        'Physical Gaming Merchandise',
-        'Gaming Hardware Vouchers'
-      ]
-    }
-  ]);
+  const [treasureChest] = useState<TreasureChest>({
+    id: 'winner-chest',
+    name: 'Winner\'s Treasure Vault',
+    rarity: 'epic',
+    image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
+    description: 'FREE reward chest for game & tournament winners!',
+    rewards: [
+      '500-2000 CCTR Tokens',
+      'Epic Gaming NFT',
+      'Tournament Entry Pass',
+      'Monthly Tournament Subscription',
+      'Exclusive Game Beta Access',
+      'Physical Gaming Merchandise',
+      'Gaming Hardware Vouchers'
+    ]
+  });
 
   const connectStellarWallet = async () => {
-    // Wallet connection is handled by the WalletConnectionModal
-    // This function is kept for API compatibility
     console.log('Please use the wallet connection modal to connect a Stellar wallet');
   };
 
@@ -137,7 +130,6 @@ export const RaffleSection = () => {
     
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      // Purchase completed successfully
     } catch (error) {
       console.error('Purchase error:', error);
     } finally {
@@ -145,19 +137,18 @@ export const RaffleSection = () => {
     }
   };
 
-  const openTreasureChest = async (chestId: string, paymentMethod: 'cctr') => {
-    if (!user || !isWalletConnected) return;
+  const openWinnerChest = async (eligibilityId: string) => {
+    if (!isWalletConnected || !hasUnclaimedChests) return;
     
-    // Find the chest to get its details
-    const chest = treasureChests.find(c => c.id === chestId);
-    if (!chest) return;
-    
-    setProcessingPayment(chestId);
+    setProcessingPayment('winner-chest');
     
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
-      // Set the chest details and open the animation
-      setOpeningChest({ name: chest.name, rarity: chest.rarity });
+      setOpeningChest({ 
+        name: treasureChest.name, 
+        rarity: treasureChest.rarity,
+        eligibilityId 
+      });
       setChestAnimationOpen(true);
     } catch (error) {
       console.error('Chest opening error:', error);
@@ -166,7 +157,11 @@ export const RaffleSection = () => {
     }
   };
 
-  const handleChestAnimationClose = () => {
+  const handleChestAnimationClose = async () => {
+    // Claim the chest in the database when animation closes
+    if (openingChest?.eligibilityId) {
+      await claimChest(openingChest.eligibilityId, 'random', 'pending');
+    }
     setChestAnimationOpen(false);
     setOpeningChest(null);
   };
@@ -207,79 +202,137 @@ export const RaffleSection = () => {
         </CardContent>
       </Card>
 
-      {/* Mystery Treasure Chests */}
-      <Card className="arcade-frame">
+      {/* Winner's Treasure Chest - FREE for winners only */}
+      <Card className="arcade-frame border-2 border-neon-green/50">
         <CardHeader>
-          <CardTitle className="font-display text-2xl text-neon-pink">🏴‍☠️ MYSTERY TREASURE CHESTS</CardTitle>
-          <p className="text-neon-cyan">Each chest contains random prizes! Higher rarity = Better rewards!</p>
+          <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
+            🏆 WINNER'S TREASURE VAULT
+            <Badge className="bg-neon-green text-black animate-pulse">FREE FOR WINNERS</Badge>
+          </CardTitle>
+          <p className="text-neon-cyan">Win games & tournaments to earn FREE treasure chest rewards! One chest per winner per game.</p>
         </CardHeader>
         <CardContent>
-          <div className="w-full">
-              {treasureChests.map((chest) => (
-                <Card key={chest.id} className="vending-machine hover:scale-105 transition-transform">
-                  <CardContent className="p-0">
-                    <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden relative group">
-                      <img 
-                        src={chest.image} 
-                        alt={chest.name} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                      />
-                      {/* Animated sparkle overlay */}
-                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                        <Sparkles className="absolute top-2 left-3 w-4 h-4 text-yellow-300 animate-pulse opacity-80" />
-                        <Sparkles className="absolute top-4 right-4 w-3 h-3 text-white animate-ping opacity-60" style={{ animationDuration: '2s' }} />
-                        <Sparkles className="absolute bottom-6 left-5 w-3 h-3 text-neon-cyan animate-pulse opacity-70" style={{ animationDelay: '0.5s' }} />
-                        <Sparkles className="absolute bottom-3 right-6 w-4 h-4 text-neon-pink animate-ping opacity-50" style={{ animationDuration: '3s', animationDelay: '1s' }} />
-                        <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-yellow-200 animate-pulse opacity-60" style={{ animationDelay: '0.3s' }} />
-                      </div>
-                      {/* Shimmer sweep effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                      {/* Magical glow on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-neon-purple/30 via-transparent to-neon-cyan/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </div>
-                    <div className="p-4 space-y-3">
-                      <div className="text-center">
-                        <Badge className={`${getRarityColor(chest.rarity)} text-white text-xs mb-2`}>
-                          {chest.rarity.toUpperCase()}
-                        </Badge>
-                        <h3 className="font-bold text-lg text-neon-cyan">{chest.name}</h3>
-                        <p className="text-sm text-muted-foreground">{chest.description}</p>
-                      </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Chest Display */}
+            <Card className="vending-machine hover:scale-105 transition-transform">
+              <CardContent className="p-0">
+                <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden relative group">
+                  <img 
+                    src={treasureChest.image} 
+                    alt={treasureChest.name} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  />
+                  {/* Animated sparkle overlay */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <Sparkles className="absolute top-2 left-3 w-4 h-4 text-yellow-300 animate-pulse opacity-80" />
+                    <Sparkles className="absolute top-4 right-4 w-3 h-3 text-white animate-ping opacity-60" style={{ animationDuration: '2s' }} />
+                    <Sparkles className="absolute bottom-6 left-5 w-3 h-3 text-neon-cyan animate-pulse opacity-70" style={{ animationDelay: '0.5s' }} />
+                    <Sparkles className="absolute bottom-3 right-6 w-4 h-4 text-neon-pink animate-ping opacity-50" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+                    <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-yellow-200 animate-pulse opacity-60" style={{ animationDelay: '0.3s' }} />
+                  </div>
+                  {/* Shimmer sweep effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                  {/* Magical glow on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-neon-purple/30 via-transparent to-neon-cyan/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="text-center">
+                    <Badge className="bg-purple-500 text-white text-xs mb-2">
+                      {treasureChest.rarity.toUpperCase()}
+                    </Badge>
+                    <h3 className="font-bold text-lg text-neon-cyan">{treasureChest.name}</h3>
+                    <p className="text-sm text-muted-foreground">{treasureChest.description}</p>
+                  </div>
 
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-bold text-neon-green">Possible Rewards:</h4>
-                        <ul className="text-xs text-muted-foreground space-y-1">
-                          {chest.rewards.map((reward, index) => (
-                            <li key={index}>• {reward}</li>
-                          ))}
-                        </ul>
-                      </div>
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-bold text-neon-green">Possible Rewards:</h4>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {treasureChest.rewards.map((reward, index) => (
+                        <li key={index}>• {reward}</li>
+                      ))}
+                    </ul>
+                  </div>
 
-                      <div className="space-y-3">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-neon-green mb-2">
-                            {chest.price.cctr} CCTR
-                          </div>
-                          <p className="text-xs text-muted-foreground">Only payment method</p>
-                        </div>
-                        
-                        <Button 
-                          onClick={() => openTreasureChest(chest.id, selectedPaymentMethod)}
-                          disabled={processingPayment === chest.id || !isAuthenticated}
-                          className="cyber-button w-full"
-                        >
-                          {processingPayment === chest.id 
-                            ? "⏳ OPENING..." 
-                            : !isAuthenticated 
-                              ? "🔐 CONNECT TO PLAY" 
-                              : "🎁 OPEN CHEST"
-                          }
-                        </Button>
+                  <div className="space-y-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-neon-green mb-2">
+                        🎁 FREE
                       </div>
+                      <p className="text-xs text-muted-foreground">Win games or tournaments to claim</p>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Eligibility & Claim Section */}
+            <div className="space-y-4">
+              {/* How to Earn */}
+              <Card className="holographic p-4">
+                <h4 className="font-bold text-neon-pink mb-3 flex items-center gap-2">
+                  <Award className="w-5 h-5" />
+                  How to Earn Free Chests
+                </h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2 text-muted-foreground">
+                    <Star className="w-4 h-4 text-neon-cyan" />
+                    Win a Trivia game (top score)
+                  </li>
+                  <li className="flex items-center gap-2 text-muted-foreground">
+                    <Star className="w-4 h-4 text-neon-cyan" />
+                    Complete Neon Match 36 with a perfect score
+                  </li>
+                  <li className="flex items-center gap-2 text-muted-foreground">
+                    <Star className="w-4 h-4 text-neon-cyan" />
+                    Place 1st in any Tournament
+                  </li>
+                  <li className="flex items-center gap-2 text-muted-foreground">
+                    <Trophy className="w-4 h-4 text-yellow-400" />
+                    One chest per wallet per win
+                  </li>
+                </ul>
+              </Card>
+
+              {/* Your Chests Status */}
+              <Card className="holographic p-4">
+                <h4 className="font-bold text-neon-green mb-3 flex items-center gap-2">
+                  <Gift className="w-5 h-5" />
+                  Your Winner's Chests
+                </h4>
+                
+                {!isWalletConnected ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    🔐 Connect wallet to view your chests
+                  </p>
+                ) : hasUnclaimedChests ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-neon-green/10 rounded-lg border border-neon-green/30">
+                      <span className="text-neon-green font-bold">
+                        🎉 You have {unclaimedCount} chest{unclaimedCount > 1 ? 's' : ''} to open!
+                      </span>
+                    </div>
+                    {eligibleChests.map((chest) => (
+                      <Button
+                        key={chest.id}
+                        onClick={() => openWinnerChest(chest.id)}
+                        disabled={processingPayment === 'winner-chest'}
+                        className="cyber-button w-full"
+                      >
+                        {processingPayment === 'winner-chest' 
+                          ? "⏳ OPENING..." 
+                          : `🎁 OPEN CHEST (${chest.source_type}: ${chest.source_id})`
+                        }
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground text-sm mb-2">No chests available</p>
+                    <p className="text-xs text-neon-cyan">Win a game or tournament to earn one!</p>
+                  </div>
+                )}
+              </Card>
+            </div>
           </div>
         </CardContent>
       </Card>
