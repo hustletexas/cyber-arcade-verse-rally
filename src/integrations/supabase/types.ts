@@ -1495,6 +1495,69 @@ export type Database = {
         }
         Relationships: []
       }
+      winner_chest_claims: {
+        Row: {
+          claimed_at: string
+          created_at: string
+          id: string
+          reward_type: string | null
+          reward_value: string | null
+          source_id: string
+          source_type: string
+          wallet_address: string
+        }
+        Insert: {
+          claimed_at?: string
+          created_at?: string
+          id?: string
+          reward_type?: string | null
+          reward_value?: string | null
+          source_id: string
+          source_type: string
+          wallet_address: string
+        }
+        Update: {
+          claimed_at?: string
+          created_at?: string
+          id?: string
+          reward_type?: string | null
+          reward_value?: string | null
+          source_id?: string
+          source_type?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      winner_chest_eligibility: {
+        Row: {
+          created_at: string
+          earned_at: string
+          id: string
+          is_claimed: boolean
+          source_id: string
+          source_type: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          earned_at?: string
+          id?: string
+          is_claimed?: boolean
+          source_id: string
+          source_type: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          earned_at?: string
+          id?: string
+          is_claimed?: boolean
+          source_id?: string
+          source_type?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       nft_mints_secure: {
