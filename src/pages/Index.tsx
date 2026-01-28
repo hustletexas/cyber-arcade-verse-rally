@@ -191,7 +191,7 @@ const Index = () => {
                 </div>
                 <Link to="/games/neon-match-36">
                   <Button className="bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600 text-white font-bold text-lg px-8 py-4 shadow-[0_0_30px_rgba(6,182,212,0.4)]">
-                    🎮 PLAY NOW
+                    🎮 CHOOSE YOUR MODE
                   </Button>
                 </Link>
               </div>
