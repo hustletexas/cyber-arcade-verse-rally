@@ -159,7 +159,7 @@ const NeonMatch: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                 {/* Free Play Card */}
-                <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/30 hover:border-green-400/50 transition-all hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] cursor-pointer group"
+                <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/30 hover:border-green-400/50 transition-all hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] cursor-pointer group hover:scale-[1.02]"
                   onClick={() => startGame('free')}>
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -183,17 +183,20 @@ const NeonMatch: React.FC = () => {
                         <span>Score not saved to leaderboard</span>
                       </div>
                     </div>
-                    <Button 
-                      className="w-full mt-4 bg-green-600 hover:bg-green-500 text-white"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Play Free
-                    </Button>
+                    <div className="w-full mt-4 py-2 px-4 rounded-md bg-green-600 text-white font-medium flex items-center justify-center gap-2 group-hover:bg-green-500 transition-colors">
+                      <Play className="w-4 h-4" />
+                      Click to Play Free
+                    </div>
                   </CardContent>
                 </Card>
 
                 {/* Ranked Play Card */}
-                <Card className="bg-gradient-to-br from-yellow-900/30 to-orange-900/20 border-yellow-500/30 hover:border-yellow-400/50 transition-all hover:shadow-[0_0_30px_rgba(234,179,8,0.2)] cursor-pointer group"
+                <Card 
+                  className={`bg-gradient-to-br from-yellow-900/30 to-orange-900/20 border-yellow-500/30 transition-all hover:shadow-[0_0_30px_rgba(234,179,8,0.2)] group ${
+                    isAuthenticated && hasEnoughCCTR && canPlay 
+                      ? 'cursor-pointer hover:border-yellow-400/50 hover:scale-[1.02]' 
+                      : 'opacity-80'
+                  }`}
                   onClick={() => isAuthenticated && hasEnoughCCTR && canPlay && startGame('ranked')}>
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-yellow-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -219,12 +222,12 @@ const NeonMatch: React.FC = () => {
                     </div>
 
                     {!isAuthenticated ? (
-                      <div className="mt-4">
+                      <div className="mt-4" onClick={(e) => e.stopPropagation()}>
                         <p className="text-yellow-400/60 text-xs mb-2">Connect wallet to play ranked</p>
                         <WalletStatusBar />
                       </div>
                     ) : !hasEnoughCCTR ? (
-                      <div className="mt-4">
+                      <div className="mt-4" onClick={(e) => e.stopPropagation()}>
                         <p className="text-yellow-400/60 text-xs mb-2">
                           Need {entryFee} CCTR (You have {cctrBalance})
                         </p>
@@ -235,19 +238,14 @@ const NeonMatch: React.FC = () => {
                         </Link>
                       </div>
                     ) : !canPlay ? (
-                      <Button 
-                        disabled
-                        className="w-full mt-4 bg-gray-600 text-gray-400"
-                      >
+                      <div className="w-full mt-4 py-2 px-4 rounded-md bg-gray-600 text-gray-400 font-medium flex items-center justify-center gap-2">
                         Daily Limit Reached
-                      </Button>
+                      </div>
                     ) : (
-                      <Button 
-                        className="w-full mt-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold"
-                      >
-                        <Crown className="w-4 h-4 mr-2" />
-                        Play Ranked ({entryFee} CCTR)
-                      </Button>
+                      <div className="w-full mt-4 py-2 px-4 rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold flex items-center justify-center gap-2 group-hover:from-yellow-600 group-hover:to-orange-600 transition-colors">
+                        <Crown className="w-4 h-4" />
+                        Click to Play ({entryFee} CCTR)
+                      </div>
                     )}
                   </CardContent>
                 </Card>
