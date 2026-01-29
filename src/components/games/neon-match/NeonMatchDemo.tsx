@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { CARD_ICONS, SPRITE_CONFIG } from '@/types/neon-match';
 import { cn } from '@/lib/utils';
 
@@ -9,107 +9,117 @@ interface DemoCard {
   isMatched: boolean;
 }
 
-const DEMO_PAIRS = ['arcade', 'controller', 'trophy', 'diamond'];
+// Fixed card layout for predictable demo
+const DEMO_LAYOUT: { pairId: string }[] = [
+  { pairId: 'arcade' },
+  { pairId: 'controller' },
+  { pairId: 'trophy' },
+  { pairId: 'diamond' },
+  { pairId: 'arcade' },
+  { pairId: 'controller' },
+  { pairId: 'trophy' },
+  { pairId: 'diamond' },
+];
 
 export const NeonMatchDemo: React.FC = () => {
-  const [cards, setCards] = useState<DemoCard[]>([]);
-  const [animationStep, setAnimationStep] = useState(0);
+  const [flippedIndices, setFlippedIndices] = useState<Set<number>>(new Set());
+  const [matchedIndices, setMatchedIndices] = useState<Set<number>>(new Set());
+  const stepRef = useRef(0);
 
-  // Initialize demo cards
   useEffect(() => {
-    const demoCards: DemoCard[] = DEMO_PAIRS.flatMap((pairId, index) => [
-      { id: `${pairId}-1`, pairId, isFlipped: false, isMatched: false },
-      { id: `${pairId}-2`, pairId, isFlipped: false, isMatched: false },
-    ]);
-    // Shuffle for display
-    const shuffled = [...demoCards].sort(() => Math.random() - 0.5);
-    setCards(shuffled);
+    const runAnimation = () => {
+      const step = stepRef.current;
+      
+      switch (step) {
+        case 0:
+          // Flip card 0 (arcade)
+          setFlippedIndices(new Set([0]));
+          break;
+        case 1:
+          // Flip card 4 (arcade match)
+          setFlippedIndices(new Set([0, 4]));
+          break;
+        case 2:
+          // Mark as matched
+          setMatchedIndices(new Set([0, 4]));
+          break;
+        case 3:
+          // Flip card 1 (controller)
+          setFlippedIndices(new Set([0, 4, 1]));
+          break;
+        case 4:
+          // Flip card 3 (diamond - wrong)
+          setFlippedIndices(new Set([0, 4, 1, 3]));
+          break;
+        case 5:
+          // Flip back wrong cards
+          setFlippedIndices(new Set([0, 4]));
+          break;
+        case 6:
+          // Flip controller again
+          setFlippedIndices(new Set([0, 4, 1]));
+          break;
+        case 7:
+          // Flip controller match
+          setFlippedIndices(new Set([0, 4, 1, 5]));
+          break;
+        case 8:
+          // Mark controller as matched
+          setMatchedIndices(new Set([0, 4, 1, 5]));
+          break;
+        case 9:
+          // Reset everything
+          setFlippedIndices(new Set());
+          setMatchedIndices(new Set());
+          stepRef.current = -1;
+          break;
+      }
+      
+      stepRef.current += 1;
+    };
+
+    const timer = setInterval(runAnimation, 900);
+    
+    // Run first step immediately after a short delay
+    const initialTimer = setTimeout(runAnimation, 500);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(initialTimer);
+    };
   }, []);
 
-  // Demo animation sequence
-  useEffect(() => {
-    if (cards.length === 0) return;
-
-    const sequence = [
-      // Step 1: Flip first card
-      () => {
-        setCards(prev => prev.map((c, i) => i === 0 ? { ...c, isFlipped: true } : c));
-      },
-      // Step 2: Flip second card (match)
-      () => {
-        const firstCard = cards[0];
-        const matchIndex = cards.findIndex((c, i) => i !== 0 && c.pairId === firstCard.pairId);
-        setCards(prev => prev.map((c, i) => i === matchIndex ? { ...c, isFlipped: true } : c));
-      },
-      // Step 3: Show match
-      () => {
-        const firstCard = cards[0];
-        setCards(prev => prev.map(c => 
-          c.pairId === firstCard.pairId ? { ...c, isMatched: true } : c
-        ));
-      },
-      // Step 4: Flip third card
-      () => {
-        const unmatchedIndex = cards.findIndex(c => !c.isFlipped);
-        if (unmatchedIndex !== -1) {
-          setCards(prev => prev.map((c, i) => i === unmatchedIndex ? { ...c, isFlipped: true } : c));
-        }
-      },
-      // Step 5: Flip non-matching fourth card
-      () => {
-        const thirdCard = cards.find((c, i) => c.isFlipped && !c.isMatched);
-        if (thirdCard) {
-          const nonMatchIndex = cards.findIndex((c, i) => !c.isFlipped && c.pairId !== thirdCard.pairId);
-          if (nonMatchIndex !== -1) {
-            setCards(prev => prev.map((c, i) => i === nonMatchIndex ? { ...c, isFlipped: true } : c));
-          }
-        }
-      },
-      // Step 6: Flip back non-matching cards
-      () => {
-        setCards(prev => prev.map(c => 
-          c.isFlipped && !c.isMatched ? { ...c, isFlipped: false } : c
-        ));
-      },
-      // Step 7: Reset and restart
-      () => {
-        setCards(prev => prev.map(c => ({ ...c, isFlipped: false, isMatched: false })));
-        setAnimationStep(0);
-      },
-    ];
-
-    const timer = setTimeout(() => {
-      if (animationStep < sequence.length) {
-        sequence[animationStep]();
-        setAnimationStep(prev => prev + 1);
-      }
-    }, animationStep === 0 ? 1500 : 800);
-
-    return () => clearTimeout(timer);
-  }, [animationStep, cards]);
-
   return (
-    <div className="grid grid-cols-4 gap-2 w-full max-w-[200px] mx-auto">
-      {cards.map((card) => (
-        <DemoCard key={card.id} card={card} />
+    <div className="grid grid-cols-4 gap-2 w-full max-w-[180px] mx-auto p-2">
+      {DEMO_LAYOUT.map((layout, index) => (
+        <DemoCard 
+          key={index} 
+          pairId={layout.pairId}
+          isFlipped={flippedIndices.has(index)}
+          isMatched={matchedIndices.has(index)}
+        />
       ))}
     </div>
   );
 };
 
-const DemoCard: React.FC<{ card: DemoCard }> = ({ card }) => {
-  const iconData = CARD_ICONS[card.pairId];
+const DemoCard: React.FC<{ pairId: string; isFlipped: boolean; isMatched: boolean }> = ({ 
+  pairId, 
+  isFlipped, 
+  isMatched 
+}) => {
+  const iconData = CARD_ICONS[pairId];
   
   const bgPositionX = (iconData.col / (SPRITE_CONFIG.columns - 1)) * 100;
   const bgPositionY = (iconData.row / (SPRITE_CONFIG.rows - 1)) * 100;
 
   return (
-    <div className="relative aspect-square">
+    <div className="relative aspect-square" style={{ perspective: '400px' }}>
       <div
-        className="absolute inset-0 w-full h-full transition-transform duration-500"
+        className="absolute inset-0 w-full h-full transition-transform duration-500 ease-in-out"
         style={{
           transformStyle: 'preserve-3d',
-          transform: card.isFlipped || card.isMatched ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          transform: isFlipped || isMatched ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
         {/* Card Back */}
@@ -117,11 +127,11 @@ const DemoCard: React.FC<{ card: DemoCard }> = ({ card }) => {
           className={cn(
             "absolute inset-0 w-full h-full rounded-md flex items-center justify-center",
             "bg-gradient-to-br from-[#0a0a0f] to-[#1a0a20] border transition-all duration-300",
-            "border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.3)]"
+            "border-cyan-500/50 shadow-[0_0_8px_rgba(6,182,212,0.4)]"
           )}
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <span className="text-lg opacity-50 font-bold bg-gradient-to-br from-cyan-400 to-pink-500 bg-clip-text text-transparent">
+          <span className="text-base opacity-60 font-bold bg-gradient-to-br from-cyan-400 to-pink-500 bg-clip-text text-transparent">
             ?
           </span>
         </div>
@@ -130,9 +140,9 @@ const DemoCard: React.FC<{ card: DemoCard }> = ({ card }) => {
         <div
           className={cn(
             "absolute inset-0 w-full h-full rounded-md overflow-hidden border transition-all duration-300",
-            card.isMatched 
-              ? "border-green-400 shadow-[0_0_15px_rgba(74,222,128,0.5)]" 
-              : "border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]"
+            isMatched 
+              ? "border-green-400 shadow-[0_0_12px_rgba(74,222,128,0.6)]" 
+              : "border-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.5)]"
           )}
           style={{ 
             backfaceVisibility: 'hidden',
@@ -148,8 +158,8 @@ const DemoCard: React.FC<{ card: DemoCard }> = ({ card }) => {
               backgroundRepeat: 'no-repeat',
             }}
           />
-          {card.isMatched && (
-            <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent" />
+          {isMatched && (
+            <div className="absolute inset-0 bg-gradient-to-t from-green-500/40 to-transparent animate-pulse" />
           )}
         </div>
       </div>
