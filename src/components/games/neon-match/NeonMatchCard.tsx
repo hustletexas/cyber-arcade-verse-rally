@@ -11,12 +11,10 @@ interface NeonMatchCardProps {
 export const NeonMatchCard: React.FC<NeonMatchCardProps> = ({ card, onClick, disabled }) => {
   const iconData = CARD_ICONS[card.pairId];
   
-  // Calculate background position for sprite sheet (5 cols x 6 rows)
-  // Each cell is 1/5 of width (20%) and 1/6 of height (16.67%)
-  // Background-size is 500% x 600% to show just one cell
-  // Position calculation: col * (100 / (cols-1)) for percentage positioning
-  const bgPositionX = (iconData.col / (SPRITE_CONFIG.columns - 1)) * 100;
-  const bgPositionY = (iconData.row / (SPRITE_CONFIG.rows - 1)) * 100;
+  // Calculate background position for sprite sheet (5 cols x 7 rows)
+  // Use percentage-based positioning for even display
+  const bgPositionX = iconData.col * 25; // 100 / (5-1) = 25
+  const bgPositionY = iconData.row * (100 / (SPRITE_CONFIG.rows - 1));
   
   return (
     <div
