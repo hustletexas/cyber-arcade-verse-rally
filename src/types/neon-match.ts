@@ -42,7 +42,7 @@ export interface LeaderboardEntry {
 }
 
 // NFT card icons - using sprite sheet positions (column, row)
-// The sprite sheet is 5 columns x 6 rows (30 total icons, using first 18)
+// The sprite sheet is 5 columns x 7 rows (35 total icons, using first 18)
 export const CARD_ICONS: Record<string, { col: number; row: number; name: string }> = {
   arcade: { col: 0, row: 0, name: 'Arcade Machine' },
   controller: { col: 1, row: 0, name: 'Game Controller' },
@@ -66,11 +66,11 @@ export const CARD_ICONS: Record<string, { col: number; row: number; name: string
 
 export const PAIR_IDS = Object.keys(CARD_ICONS);
 
-// Sprite sheet configuration
+// Sprite sheet configuration - 5 columns x 7 rows
 export const SPRITE_CONFIG = {
   imagePath: '/images/nft-cards/nft-icons-grid.png',
   columns: 5,
-  rows: 6,
+  rows: 7,
 };
 
 // Game entry fee in CCTR

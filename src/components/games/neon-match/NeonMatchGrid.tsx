@@ -14,7 +14,7 @@ export const NeonMatchGrid: React.FC<NeonMatchGridProps> = ({
   isLocked,
 }) => {
   return (
-    <div className="grid grid-cols-6 gap-1.5 sm:gap-2 md:gap-3 w-full max-w-[600px] mx-auto p-2 sm:p-4">
+    <div className="grid grid-cols-6 gap-2 sm:gap-2.5 md:gap-3 w-full max-w-[580px] mx-auto p-3 sm:p-4">
       {cards.map((card) => (
         <NeonMatchCard
           key={card.id}

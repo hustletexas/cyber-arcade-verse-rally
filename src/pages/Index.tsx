@@ -179,12 +179,7 @@ const Index = () => {
           <section className="px-2 sm:px-4">
             <div className="cyber-panel p-6 sm:p-8 rounded-2xl border-2 border-cyan-500/30 bg-gradient-to-br from-black/80 via-purple-950/40 to-blue-950/40">
               <div className="flex flex-col lg:flex-row items-center gap-8">
-                {/* Animated Demo */}
-                <div className="flex-shrink-0">
-                  <NeonMatchDemo />
-                </div>
-                
-                {/* Content */}
+                {/* Content - Left side */}
                 <div className="text-center lg:text-left flex-1">
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neon-cyan mb-4">
                     🎴 NEON MATCH 36
@@ -202,6 +197,11 @@ const Index = () => {
                       🎮 CHOOSE YOUR MODE
                     </Button>
                   </Link>
+                </div>
+                
+                {/* Animated Demo - Right side */}
+                <div className="flex-shrink-0">
+                  <NeonMatchDemo />
                 </div>
               </div>
             </div>
