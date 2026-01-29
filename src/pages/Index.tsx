@@ -15,6 +15,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { TriviaGame } from '@/components/TriviaGame';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { TournamentHub } from '@/components/tournament/TournamentHub';
+import { NeonMatchDemo } from '@/components/games/neon-match/NeonMatchDemo';
 
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
@@ -177,23 +178,31 @@ const Index = () => {
           {/* Neon Match Game Section */}
           <section className="px-2 sm:px-4">
             <div className="cyber-panel p-6 sm:p-8 rounded-2xl border-2 border-cyan-500/30 bg-gradient-to-br from-black/80 via-purple-950/40 to-blue-950/40">
-              <div className="text-center">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neon-cyan mb-4">
-                  🎴 NEON MATCH 36
-                </h2>
-                <p className="text-foreground mb-6 max-w-lg mx-auto">
-                  Test your memory in this cyberpunk card matching challenge! Match 18 pairs of neon icons, earn bonuses for speed & efficiency.
-                </p>
-                <div className="flex flex-wrap justify-center gap-3 mb-6">
-                  <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">36 Cards</Badge>
-                  <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30">Leaderboard</Badge>
-                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Daily Rewards</Badge>
+              <div className="flex flex-col lg:flex-row items-center gap-8">
+                {/* Animated Demo */}
+                <div className="flex-shrink-0">
+                  <NeonMatchDemo />
                 </div>
-                <Link to="/games/neon-match-36">
-                  <Button className="bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600 text-white font-bold text-lg px-8 py-4 shadow-[0_0_30px_rgba(6,182,212,0.4)]">
-                    🎮 CHOOSE YOUR MODE
-                  </Button>
-                </Link>
+                
+                {/* Content */}
+                <div className="text-center lg:text-left flex-1">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neon-cyan mb-4">
+                    🎴 NEON MATCH 36
+                  </h2>
+                  <p className="text-foreground mb-6 max-w-lg mx-auto lg:mx-0">
+                    Test your memory in this cyberpunk card matching challenge! Match 18 pairs of neon icons, earn bonuses for speed & efficiency.
+                  </p>
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-6">
+                    <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">36 Cards</Badge>
+                    <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30">Leaderboard</Badge>
+                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Daily Rewards</Badge>
+                  </div>
+                  <Link to="/games/neon-match-36">
+                    <Button className="bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600 text-white font-bold text-lg px-8 py-4 shadow-[0_0_30px_rgba(6,182,212,0.4)]">
+                      🎮 CHOOSE YOUR MODE
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
