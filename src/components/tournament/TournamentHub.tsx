@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Trophy, Users, Settings, Calendar, Gamepad2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Trophy, Users, Settings, Calendar, Gamepad2, GitBranch } from 'lucide-react';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/hooks/useAuth';
 import { TournamentList } from './TournamentList';
 import { TournamentAdminDashboard } from './TournamentAdminDashboard';
 import { MyTournaments } from './MyTournaments';
+import { BracketPreview } from './BracketPreview';
 
 export const TournamentHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState('browse');
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
   const { user, isAdmin } = useAuth();
   const { fetchTournaments, tournaments, loading } = useTournaments();
 
@@ -22,6 +24,13 @@ export const TournamentHub: React.FC = () => {
     ['published', 'registration_open'].includes(t.status)
   );
   const activeTournaments = tournaments.filter(t => t.status === 'in_progress');
+
+  // Select first active tournament for bracket preview
+  useEffect(() => {
+    if (activeTournaments.length > 0 && !selectedTournamentId) {
+      setSelectedTournamentId(activeTournaments[0].id);
+    }
+  }, [activeTournaments, selectedTournamentId]);
 
   return (
     <div className="space-y-6">
@@ -43,6 +52,50 @@ export const TournamentHub: React.FC = () => {
           </Badge>
         </div>
       </div>
+
+      {/* Live Bracket Preview - Show when there are active tournaments */}
+      {activeTournaments.length > 0 && (
+        <Card className="arcade-frame border-neon-green/50">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="font-display text-xl text-neon-green flex items-center gap-2">
+                <GitBranch className="w-5 h-5" />
+                LIVE BRACKET
+              </CardTitle>
+              {activeTournaments.length > 1 && (
+                <div className="flex gap-2">
+                  {activeTournaments.map(t => (
+                    <Badge 
+                      key={t.id}
+                      className={`cursor-pointer transition-all ${
+                        selectedTournamentId === t.id 
+                          ? 'bg-neon-green text-black' 
+                          : 'bg-muted hover:bg-neon-green/20'
+                      }`}
+                      onClick={() => setSelectedTournamentId(t.id)}
+                    >
+                      {t.title}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedTournamentId && (
+              <p className="text-sm text-muted-foreground">
+                {activeTournaments.find(t => t.id === selectedTournamentId)?.title} — {activeTournaments.find(t => t.id === selectedTournamentId)?.game}
+              </p>
+            )}
+          </CardHeader>
+          <CardContent>
+            {selectedTournamentId && (
+              <BracketPreview 
+                tournamentId={selectedTournamentId} 
+                isAdmin={isAdmin}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
