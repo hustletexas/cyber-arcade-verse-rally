@@ -1399,23 +1399,37 @@ export const getRandomQuestionsForCategory = (category: string, count: number = 
   return shuffled.slice(0, count);
 };
 
-// Function to get all questions for a category
+// Gaming subcategories to combine into one "gaming" category
+const gamingSubcategories = ['nintendo64', 'playstation1', 'playstation2', 'xbox', 'gamecube', 'retro', 'arcade', 'pc-gaming', 'nintendo-handheld'];
+
+// Entertainment subcategories to combine into one "entertainment" category
+const entertainmentSubcategories = ['cartoons', 'sports', 'music', 'movies'];
+
+// Function to get all questions for a category (supports consolidated categories)
 export const getAllQuestionsForCategory = (category: string): TriviaQuestion[] => {
+  if (category === 'gaming') {
+    // Combine all gaming subcategories
+    return gamingSubcategories.flatMap(sub => gamingTriviaQuestions[sub] || []);
+  }
+  if (category === 'entertainment') {
+    // Combine all entertainment subcategories
+    return entertainmentSubcategories.flatMap(sub => gamingTriviaQuestions[sub] || []);
+  }
   return gamingTriviaQuestions[category] || [];
 };
 
 // Function to get a random mix of difficulties
 export const getRandomMixedQuestions = (category: string, count: number = 10): TriviaQuestion[] => {
-  const categoryQuestions = gamingTriviaQuestions[category] || [];
+  const categoryQuestions = getAllQuestionsForCategory(category);
   
   if (categoryQuestions.length === 0) {
     return [];
   }
 
   // Separate questions by difficulty
-  const easy = categoryQuestions.filter(q => q.difficulty === 'easy');
-  const medium = categoryQuestions.filter(q => q.difficulty === 'medium');
-  const hard = categoryQuestions.filter(q => q.difficulty === 'hard');
+  const easy = [...categoryQuestions.filter(q => q.difficulty === 'easy')];
+  const medium = [...categoryQuestions.filter(q => q.difficulty === 'medium')];
+  const hard = [...categoryQuestions.filter(q => q.difficulty === 'hard')];
 
   const selectedQuestions: TriviaQuestion[] = [];
 
