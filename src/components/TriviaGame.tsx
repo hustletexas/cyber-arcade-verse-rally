@@ -237,160 +237,99 @@ export const TriviaGame = () => {
   const connectedWallet = primaryWallet;
 
   return (
-    <div className="space-y-6">
-      {/* Header with Navigation */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-3xl text-neon-cyan text-center">
-            🎮 GAMING TRIVIA CHALLENGE
-          </CardTitle>
-          <p className="text-center text-muted-foreground">
-            Test your gaming knowledge • Play FREE or earn CCTR tokens!
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <WalletStatusBar />
-          
-          {/* Wallet & Balance Status */}
-          <div className="flex flex-wrap justify-center gap-3">
-            {isWalletConnected && primaryWallet && (
-              <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-                ✓ Wallet: {primaryWallet.address.slice(0, 6)}...{primaryWallet.address.slice(-4)}
-              </Badge>
-            )}
-            {user && !balanceLoading && (
-              <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple">
-                💰 Balance: {balance.cctr_balance} CCTR
-              </Badge>
-            )}
-            {!isWalletConnected && (
-              <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink">
-                💡 Connect wallet for rewards
-              </Badge>
-            )}
-          </div>
-          
-          {/* Navigation Buttons */}
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button
-              onClick={() => setCurrentView('menu')}
-              variant={currentView === 'menu' ? 'default' : 'outline'}
-              className="cyber-button"
+    <Card className="arcade-frame">
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="font-display text-3xl text-neon-cyan">
+          🎮 GAMING TRIVIA CHALLENGE
+        </CardTitle>
+        <p className="text-muted-foreground">
+          Test your gaming knowledge • Play FREE or earn CCTR tokens!
+        </p>
+        
+        {/* Wallet & Balance Status */}
+        <div className="flex flex-wrap justify-center gap-3 mt-4">
+          {isWalletConnected && primaryWallet && (
+            <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
+              ✓ Wallet: {primaryWallet.address.slice(0, 6)}...{primaryWallet.address.slice(-4)}
+            </Badge>
+          )}
+          {user && !balanceLoading && (
+            <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple">
+              💰 {balance.cctr_balance} CCTR
+            </Badge>
+          )}
+          {!isWalletConnected && (
+            <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink">
+              💡 Connect wallet for rewards
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      
+      <CardContent className="space-y-6">
+        {/* Category Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+          {categories.map((category) => (
+            <div 
+              key={category.id} 
+              className="holographic p-5 rounded-lg text-center hover:scale-[1.02] transition-all duration-300 border-2 border-transparent hover:border-neon-cyan"
             >
-              🏠 Main Menu
-            </Button>
-            <Button
-              onClick={() => setCurrentView('leaderboard')}
-              variant="outline"
-              className="cyber-button"
-            >
-              🏆 Leaderboard
-            </Button>
-            <Button
-              onClick={() => setCurrentView('rewards')}
-              variant="outline"
-              className="cyber-button"
-            >
-              💰 Rewards
-            </Button>
+              <div className="text-4xl mb-2">{category.emoji}</div>
+              <h3 className="font-display text-lg text-neon-cyan mb-1">{category.name}</h3>
+              <p className="text-xs text-muted-foreground mb-3">{category.description}</p>
+              <div className="flex gap-2 justify-center">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black font-bold"
+                  onClick={() => startGame(category.id, 'free')}
+                >
+                  🎮 FREE
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-gradient-to-r from-neon-purple to-neon-pink text-white font-bold hover:opacity-90"
+                  onClick={() => startGame(category.id, 'paid')}
+                >
+                  💎 CCTR
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mode Info - Compact */}
+        <div className="grid grid-cols-2 gap-3 text-center text-xs max-w-lg mx-auto">
+          <div className="p-3 rounded-lg bg-neon-green/10 border border-neon-green/30">
+            <div className="font-bold text-neon-green mb-1">🎮 FREE Mode</div>
+            <p className="text-muted-foreground">No wallet • Unlimited plays • Practice mode</p>
           </div>
-        </CardContent>
-      </Card>
-
-
-      {/* Category Selection */}
-      <Card className="arcade-frame">
-        <CardHeader>
-          <CardTitle className="font-display text-2xl text-neon-purple text-center">
-            🎯 SELECT CATEGORY
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {categories.map((category) => (
-              <Card 
-                key={category.id} 
-                className="holographic hover:scale-105 transition-all duration-300 group border-2 border-transparent hover:border-neon-cyan"
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="text-5xl mb-3 group-hover:animate-bounce">{category.emoji}</div>
-                  <h3 className="font-display text-xl text-neon-cyan mb-2">{category.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
-                  <div className="flex gap-3 justify-center">
-                    <Button 
-                      size="lg" 
-                      variant="outline"
-                      className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black font-bold"
-                      onClick={() => startGame(category.id, 'free')}
-                    >
-                      🎮 FREE PLAY
-                    </Button>
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-neon-purple to-neon-pink text-white font-bold hover:opacity-90"
-                      onClick={() => startGame(category.id, 'paid')}
-                    >
-                      💎 WIN CCTR
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="p-3 rounded-lg bg-neon-purple/10 border border-neon-purple/30">
+            <div className="font-bold text-neon-purple mb-1">💎 CCTR Mode</div>
+            <p className="text-muted-foreground">1 CCTR entry • Earn per correct • Max +9 CCTR</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Game Features */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-green">
-              🎮 FREE Mode
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• No wallet required</li>
-              <li>• Play unlimited games</li>
-              <li>• Practice and learn</li>
-              <li>• No cost, no rewards</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-cyan">
-              💎 WIN CCTR Mode
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Wallet required</li>
-              <li>• Entry: 1 CCTR token</li>
-              <li>• Earn 1 CCTR per correct answer</li>
-              <li>• Max profit: +9 CCTR per game</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card className="arcade-frame">
-          <CardHeader>
-            <CardTitle className="font-display text-lg text-neon-pink">
-              🏆 Game Features
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Console-specific challenges</li>
-              <li>• Multiple difficulty levels</li>
-              <li>• 15 seconds per question</li>
-              <li>• Leaderboard rankings</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-    </div>
+        {/* Navigation */}
+        <div className="flex justify-center gap-3 pt-2">
+          <Button
+            onClick={() => setCurrentView('leaderboard')}
+            variant="outline"
+            size="sm"
+            className="cyber-button"
+          >
+            🏆 Leaderboard
+          </Button>
+          <Button
+            onClick={() => setCurrentView('rewards')}
+            variant="outline"
+            size="sm"
+            className="cyber-button"
+          >
+            💰 Rewards
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
