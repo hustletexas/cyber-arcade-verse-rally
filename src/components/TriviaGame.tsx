@@ -297,31 +297,6 @@ export const TriviaGame = () => {
         </CardContent>
       </Card>
 
-      {/* User Stats */}
-      {isAuthenticated && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="holographic p-4 text-center">
-            <div className="text-2xl mb-2">🎮</div>
-            <div className="text-xl font-bold text-neon-cyan">{userStats.totalGames}</div>
-            <p className="text-xs text-muted-foreground">Games Played</p>
-          </Card>
-          <Card className="holographic p-4 text-center">
-            <div className="text-2xl mb-2">⭐</div>
-            <div className="text-xl font-bold text-neon-purple">{userStats.totalScore.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Total Score</p>
-          </Card>
-          <Card className="holographic p-4 text-center">
-            <div className="text-2xl mb-2">🏆</div>
-            <div className="text-xl font-bold text-neon-pink">{userStats.bestScore}</div>
-            <p className="text-xs text-muted-foreground">Best Score</p>
-          </Card>
-          <Card className="holographic p-4 text-center">
-            <div className="text-2xl mb-2">📊</div>
-            <div className="text-xl font-bold text-neon-green">{userStats.winRate}%</div>
-            <p className="text-xs text-muted-foreground">Win Rate</p>
-          </Card>
-        </div>
-      )}
 
       {/* Category Selection */}
       <Card className="arcade-frame">
