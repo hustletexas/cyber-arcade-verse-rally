@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { CartProvider } from "./contexts/CartContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import TokenCreator from "./pages/TokenCreator";
 import TermsOfService from "./pages/TermsOfService";
@@ -25,11 +24,10 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<CyberMatch />} />
                 <Route path="/token-creator" element={<TokenCreator />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/games/cyber-match" element={<CyberMatch />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
