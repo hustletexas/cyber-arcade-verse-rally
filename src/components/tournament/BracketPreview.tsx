@@ -16,14 +16,18 @@ const generateDemoMatches = (): TournamentMatch[] => {
     'Astralis', 'Gambit', 'Immortals', 'G2', 'FaZe', 'North', 'Virtus.pro', 'Liquid',
     'Cloud9', 'NAVI', 'FNATIC', 'NiP', 'MIBR', 'ENCE', 'Vitality', 'OG',
     'BIG', 'Heroic', 'Spirit', 'Complexity', 'Evil Geniuses', 'paiN', 'FURIA', 'Imperial',
-    'Mouz', 'FPX', 'GamerLegion', 'MOUZ', 'Apeks', 'Monte', 'SAW', 'Eternal Fire'
+    'Mouz', 'FPX', 'GamerLegion', 'NRG', 'Apeks', 'Monte', 'SAW', 'Eternal Fire',
+    'TheMongolz', 'Lynn', 'TYLOO', 'Rare Atom', 'Grayhound', 'Rooster', 'BOSS', 'ATK',
+    '9z', 'BESTIA', 'Case', 'Sharks', 'RED', 'ODDIK', 'Fluxo', 'Liberty',
+    'Aurora', 'Endpoint', 'Into the Breach', 'Zero Tenacity', 'ECSTATIC', 'RUBY', 'ex-Guild', 'SINNERS',
+    'KOI', '9INE', 'Sampi', 'Permitta', 'PARIVISION', 'Insilio', 'Nexus', 'Enterprise'
   ];
   
   const matches: TournamentMatch[] = [];
   let matchId = 1;
   
-  // Round 1: 16 matches (32 players)
-  for (let i = 0; i < 16; i++) {
+  // Round 1: 32 matches (64 players)
+  for (let i = 0; i < 32; i++) {
     const winner = Math.random() > 0.5 ? 'a' : 'b';
     matches.push({
       id: `demo-${matchId++}`,
@@ -45,13 +49,13 @@ const generateDemoMatches = (): TournamentMatch[] => {
     });
   }
   
-  // Round 2: 8 matches
+  // Round 2: 16 matches
   const round1Winners = matches.filter(m => m.round_number === 1).map(m => ({
     id: m.winner_id!,
     wallet: m.winner_wallet!
   }));
   
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 16; i++) {
     const winner = Math.random() > 0.5 ? 'a' : 'b';
     matches.push({
       id: `demo-${matchId++}`,
@@ -73,13 +77,13 @@ const generateDemoMatches = (): TournamentMatch[] => {
     });
   }
   
-  // Round 3: 4 matches (Quarterfinals)
+  // Round 3: 8 matches
   const round2Winners = matches.filter(m => m.round_number === 2).map(m => ({
     id: m.winner_id!,
     wallet: m.winner_wallet!
   }));
   
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 8; i++) {
     const winner = Math.random() > 0.5 ? 'a' : 'b';
     matches.push({
       id: `demo-${matchId++}`,
@@ -101,14 +105,13 @@ const generateDemoMatches = (): TournamentMatch[] => {
     });
   }
   
-  // Round 4: 2 matches (Semifinals)
+  // Round 4: 4 matches (Quarterfinals)
   const round3Winners = matches.filter(m => m.round_number === 3).map(m => ({
     id: m.winner_id!,
     wallet: m.winner_wallet!
   }));
   
-  for (let i = 0; i < 2; i++) {
-    const isCompleted = i === 0;
+  for (let i = 0; i < 4; i++) {
     const winner = Math.random() > 0.5 ? 'a' : 'b';
     matches.push({
       id: `demo-${matchId++}`,
@@ -119,10 +122,39 @@ const generateDemoMatches = (): TournamentMatch[] => {
       player_b_id: round3Winners[i * 2 + 1]?.id || null,
       player_a_wallet: round3Winners[i * 2]?.wallet || 'TBD',
       player_b_wallet: round3Winners[i * 2 + 1]?.wallet || 'TBD',
+      player_a_score: Math.floor(Math.random() * 3),
+      player_b_score: Math.floor(Math.random() * 3),
+      winner_id: winner === 'a' ? round3Winners[i * 2]?.id : round3Winners[i * 2 + 1]?.id,
+      winner_wallet: winner === 'a' ? round3Winners[i * 2]?.wallet : round3Winners[i * 2 + 1]?.wallet,
+      status: 'completed' as const,
+      disputed: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
+  
+  // Round 5: 2 matches (Semifinals)
+  const round4Winners = matches.filter(m => m.round_number === 4).map(m => ({
+    id: m.winner_id!,
+    wallet: m.winner_wallet!
+  }));
+  
+  for (let i = 0; i < 2; i++) {
+    const isCompleted = i === 0;
+    const winner = Math.random() > 0.5 ? 'a' : 'b';
+    matches.push({
+      id: `demo-${matchId++}`,
+      tournament_id: 'demo',
+      round_number: 5,
+      match_number: i + 1,
+      player_a_id: round4Winners[i * 2]?.id || null,
+      player_b_id: round4Winners[i * 2 + 1]?.id || null,
+      player_a_wallet: round4Winners[i * 2]?.wallet || 'TBD',
+      player_b_wallet: round4Winners[i * 2 + 1]?.wallet || 'TBD',
       player_a_score: isCompleted ? Math.floor(Math.random() * 3) : null,
       player_b_score: isCompleted ? Math.floor(Math.random() * 3) : null,
-      winner_id: isCompleted ? (winner === 'a' ? round3Winners[i * 2]?.id : round3Winners[i * 2 + 1]?.id) : null,
-      winner_wallet: isCompleted ? (winner === 'a' ? round3Winners[i * 2]?.wallet : round3Winners[i * 2 + 1]?.wallet) : null,
+      winner_id: isCompleted ? (winner === 'a' ? round4Winners[i * 2]?.id : round4Winners[i * 2 + 1]?.id) : null,
+      winner_wallet: isCompleted ? (winner === 'a' ? round4Winners[i * 2]?.wallet : round4Winners[i * 2 + 1]?.wallet) : null,
       status: isCompleted ? 'completed' as const : 'in_progress' as const,
       disputed: false,
       created_at: new Date().toISOString(),
@@ -130,8 +162,8 @@ const generateDemoMatches = (): TournamentMatch[] => {
     });
   }
   
-  // Round 5: Finals
-  const round4Winners = matches.filter(m => m.round_number === 4 && m.status === 'completed').map(m => ({
+  // Round 6: Finals
+  const round5Winners = matches.filter(m => m.round_number === 5 && m.status === 'completed').map(m => ({
     id: m.winner_id!,
     wallet: m.winner_wallet!
   }));
@@ -139,31 +171,11 @@ const generateDemoMatches = (): TournamentMatch[] => {
   matches.push({
     id: `demo-${matchId++}`,
     tournament_id: 'demo',
-    round_number: 5,
-    match_number: 1,
-    player_a_id: round4Winners[0]?.id || null,
-    player_b_id: null,
-    player_a_wallet: round4Winners[0]?.wallet || 'TBD',
-    player_b_wallet: 'TBD',
-    player_a_score: null,
-    player_b_score: null,
-    winner_id: null,
-    winner_wallet: null,
-    status: 'pending' as const,
-    disputed: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  });
-  
-  // Round 6: Grand Finals
-  matches.push({
-    id: `demo-${matchId++}`,
-    tournament_id: 'demo',
     round_number: 6,
     match_number: 1,
-    player_a_id: null,
+    player_a_id: round5Winners[0]?.id || null,
     player_b_id: null,
-    player_a_wallet: 'TBD',
+    player_a_wallet: round5Winners[0]?.wallet || 'TBD',
     player_b_wallet: 'TBD',
     player_a_score: null,
     player_b_score: null,
