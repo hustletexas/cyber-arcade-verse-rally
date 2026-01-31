@@ -10,184 +10,194 @@ interface BracketPreviewProps {
   isAdmin?: boolean;
 }
 
-// Demo data for showcase when no real matches exist
-const generateDemoMatches = (): TournamentMatch[] => {
+interface DemoMatch {
+  id: string;
+  teamA: string;
+  teamB: string;
+  scoreA: number | null;
+  scoreB: number | null;
+  winner: 'a' | 'b' | null;
+  status: 'completed' | 'in_progress' | 'pending';
+}
+
+// Generate demo bracket data
+const generateDemoBracket = () => {
   const teams = [
-    'Astralis', 'Gambit', 'Immortals', 'G2', 'FaZe', 'North', 'Virtus.pro', 'Liquid',
-    'Cloud9', 'NAVI', 'FNATIC', 'NiP', 'MIBR', 'ENCE', 'Vitality', 'OG',
-    'BIG', 'Heroic', 'Spirit', 'Complexity', 'Evil Geniuses', 'paiN', 'FURIA', 'Imperial',
-    'Mouz', 'FPX', 'GamerLegion', 'NRG', 'Apeks', 'Monte', 'SAW', 'Eternal Fire',
-    'TheMongolz', 'Lynn', 'TYLOO', 'Rare Atom', 'Grayhound', 'Rooster', 'BOSS', 'ATK',
-    '9z', 'BESTIA', 'Case', 'Sharks', 'RED', 'ODDIK', 'Fluxo', 'Liberty',
-    'Aurora', 'Endpoint', 'Into the Breach', 'Zero Tenacity', 'ECSTATIC', 'RUBY', 'ex-Guild', 'SINNERS',
-    'KOI', '9INE', 'Sampi', 'Permitta', 'PARIVISION', 'Insilio', 'Nexus', 'Enterprise'
+    'Astralis', 'Gambit', 'Immortals', 'G2', 'FaZe', 'North', 'Virtus.pro', 'Liquid'
   ];
   
-  const matches: TournamentMatch[] = [];
-  let matchId = 1;
+  // Upper Bracket - Round 1 (4 matches)
+  const upperR1: DemoMatch[] = [
+    { id: 'u1-1', teamA: 'Astralis', teamB: 'Gambit', scoreA: 1, scoreB: 0, winner: 'a', status: 'completed' },
+    { id: 'u1-2', teamA: 'Immortals', teamB: 'G2', scoreA: 0, scoreB: 1, winner: 'b', status: 'completed' },
+    { id: 'u1-3', teamA: 'FaZe', teamB: 'North', scoreA: 1, scoreB: 0, winner: 'a', status: 'completed' },
+    { id: 'u1-4', teamA: 'Virtus.pro', teamB: 'Liquid', scoreA: 0, scoreB: 1, winner: 'b', status: 'completed' },
+  ];
   
-  // Round 1: 32 matches (64 players)
-  for (let i = 0; i < 32; i++) {
-    const winner = Math.random() > 0.5 ? 'a' : 'b';
-    matches.push({
-      id: `demo-${matchId++}`,
-      tournament_id: 'demo',
-      round_number: 1,
-      match_number: i + 1,
-      player_a_id: `player-${i * 2}`,
-      player_b_id: `player-${i * 2 + 1}`,
-      player_a_wallet: teams[i * 2] || `Team ${i * 2 + 1}`,
-      player_b_wallet: teams[i * 2 + 1] || `Team ${i * 2 + 2}`,
-      player_a_score: Math.floor(Math.random() * 3),
-      player_b_score: Math.floor(Math.random() * 3),
-      winner_id: winner === 'a' ? `player-${i * 2}` : `player-${i * 2 + 1}`,
-      winner_wallet: winner === 'a' ? teams[i * 2] : teams[i * 2 + 1],
-      status: 'completed' as const,
-      disputed: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-  }
+  // Upper Bracket - Round 2 (2 matches)
+  const upperR2: DemoMatch[] = [
+    { id: 'u2-1', teamA: 'Astralis', teamB: 'G2', scoreA: 1, scoreB: 0, winner: 'a', status: 'completed' },
+    { id: 'u2-2', teamA: 'FaZe', teamB: 'Liquid', scoreA: 0, scoreB: 1, winner: 'b', status: 'completed' },
+  ];
   
-  // Round 2: 16 matches
-  const round1Winners = matches.filter(m => m.round_number === 1).map(m => ({
-    id: m.winner_id!,
-    wallet: m.winner_wallet!
-  }));
+  // Upper Bracket - Finals (1 match)
+  const upperFinals: DemoMatch[] = [
+    { id: 'uf-1', teamA: 'Astralis', teamB: 'Liquid', scoreA: 1, scoreB: 2, winner: 'b', status: 'completed' },
+  ];
   
-  for (let i = 0; i < 16; i++) {
-    const winner = Math.random() > 0.5 ? 'a' : 'b';
-    matches.push({
-      id: `demo-${matchId++}`,
-      tournament_id: 'demo',
-      round_number: 2,
-      match_number: i + 1,
-      player_a_id: round1Winners[i * 2]?.id || null,
-      player_b_id: round1Winners[i * 2 + 1]?.id || null,
-      player_a_wallet: round1Winners[i * 2]?.wallet || 'TBD',
-      player_b_wallet: round1Winners[i * 2 + 1]?.wallet || 'TBD',
-      player_a_score: Math.floor(Math.random() * 3),
-      player_b_score: Math.floor(Math.random() * 3),
-      winner_id: winner === 'a' ? round1Winners[i * 2]?.id : round1Winners[i * 2 + 1]?.id,
-      winner_wallet: winner === 'a' ? round1Winners[i * 2]?.wallet : round1Winners[i * 2 + 1]?.wallet,
-      status: 'completed' as const,
-      disputed: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-  }
+  // Losers Bracket - Round 1 (2 matches - losers from Upper R1)
+  const lowerR1: DemoMatch[] = [
+    { id: 'l1-1', teamA: 'Gambit', teamB: 'Immortals', scoreA: 1, scoreB: 0, winner: 'a', status: 'completed' },
+    { id: 'l1-2', teamA: 'North', teamB: 'Virtus.pro', scoreA: 0, scoreB: 1, winner: 'b', status: 'completed' },
+  ];
   
-  // Round 3: 8 matches
-  const round2Winners = matches.filter(m => m.round_number === 2).map(m => ({
-    id: m.winner_id!,
-    wallet: m.winner_wallet!
-  }));
+  // Losers Bracket - Round 2 (2 matches - LR1 winners vs Upper R2 losers)
+  const lowerR2: DemoMatch[] = [
+    { id: 'l2-1', teamA: 'Gambit', teamB: 'G2', scoreA: 0, scoreB: 1, winner: 'b', status: 'completed' },
+    { id: 'l2-2', teamA: 'Virtus.pro', teamB: 'FaZe', scoreA: null, scoreB: null, winner: null, status: 'in_progress' },
+  ];
   
-  for (let i = 0; i < 8; i++) {
-    const winner = Math.random() > 0.5 ? 'a' : 'b';
-    matches.push({
-      id: `demo-${matchId++}`,
-      tournament_id: 'demo',
-      round_number: 3,
-      match_number: i + 1,
-      player_a_id: round2Winners[i * 2]?.id || null,
-      player_b_id: round2Winners[i * 2 + 1]?.id || null,
-      player_a_wallet: round2Winners[i * 2]?.wallet || 'TBD',
-      player_b_wallet: round2Winners[i * 2 + 1]?.wallet || 'TBD',
-      player_a_score: Math.floor(Math.random() * 3),
-      player_b_score: Math.floor(Math.random() * 3),
-      winner_id: winner === 'a' ? round2Winners[i * 2]?.id : round2Winners[i * 2 + 1]?.id,
-      winner_wallet: winner === 'a' ? round2Winners[i * 2]?.wallet : round2Winners[i * 2 + 1]?.wallet,
-      status: 'completed' as const,
-      disputed: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-  }
+  // Losers Bracket - Finals (1 match)
+  const lowerFinals: DemoMatch[] = [
+    { id: 'lf-1', teamA: 'G2', teamB: 'TBD', scoreA: null, scoreB: null, winner: null, status: 'pending' },
+  ];
   
-  // Round 4: 4 matches (Quarterfinals)
-  const round3Winners = matches.filter(m => m.round_number === 3).map(m => ({
-    id: m.winner_id!,
-    wallet: m.winner_wallet!
-  }));
+  // Grand Finals
+  const grandFinals: DemoMatch[] = [
+    { id: 'gf-1', teamA: 'Liquid', teamB: 'TBD', scoreA: null, scoreB: null, winner: null, status: 'pending' },
+  ];
   
-  for (let i = 0; i < 4; i++) {
-    const winner = Math.random() > 0.5 ? 'a' : 'b';
-    matches.push({
-      id: `demo-${matchId++}`,
-      tournament_id: 'demo',
-      round_number: 4,
-      match_number: i + 1,
-      player_a_id: round3Winners[i * 2]?.id || null,
-      player_b_id: round3Winners[i * 2 + 1]?.id || null,
-      player_a_wallet: round3Winners[i * 2]?.wallet || 'TBD',
-      player_b_wallet: round3Winners[i * 2 + 1]?.wallet || 'TBD',
-      player_a_score: Math.floor(Math.random() * 3),
-      player_b_score: Math.floor(Math.random() * 3),
-      winner_id: winner === 'a' ? round3Winners[i * 2]?.id : round3Winners[i * 2 + 1]?.id,
-      winner_wallet: winner === 'a' ? round3Winners[i * 2]?.wallet : round3Winners[i * 2 + 1]?.wallet,
-      status: 'completed' as const,
-      disputed: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-  }
+  return {
+    upper: [upperR1, upperR2, upperFinals],
+    lower: [lowerR1, lowerR2, lowerFinals],
+    grandFinals,
+  };
+};
+
+const MatchCard: React.FC<{
+  match: DemoMatch;
+  isGrandFinals?: boolean;
+  isFinals?: boolean;
+}> = ({ match, isGrandFinals = false, isFinals = false }) => {
+  const isWinnerA = match.winner === 'a';
+  const isWinnerB = match.winner === 'b';
+  const isLive = match.status === 'in_progress';
+  const isPending = match.status === 'pending';
   
-  // Round 5: 2 matches (Semifinals)
-  const round4Winners = matches.filter(m => m.round_number === 4).map(m => ({
-    id: m.winner_id!,
-    wallet: m.winner_wallet!
-  }));
-  
-  for (let i = 0; i < 2; i++) {
-    const isCompleted = i === 0;
-    const winner = Math.random() > 0.5 ? 'a' : 'b';
-    matches.push({
-      id: `demo-${matchId++}`,
-      tournament_id: 'demo',
-      round_number: 5,
-      match_number: i + 1,
-      player_a_id: round4Winners[i * 2]?.id || null,
-      player_b_id: round4Winners[i * 2 + 1]?.id || null,
-      player_a_wallet: round4Winners[i * 2]?.wallet || 'TBD',
-      player_b_wallet: round4Winners[i * 2 + 1]?.wallet || 'TBD',
-      player_a_score: isCompleted ? Math.floor(Math.random() * 3) : null,
-      player_b_score: isCompleted ? Math.floor(Math.random() * 3) : null,
-      winner_id: isCompleted ? (winner === 'a' ? round4Winners[i * 2]?.id : round4Winners[i * 2 + 1]?.id) : null,
-      winner_wallet: isCompleted ? (winner === 'a' ? round4Winners[i * 2]?.wallet : round4Winners[i * 2 + 1]?.wallet) : null,
-      status: isCompleted ? 'completed' as const : 'in_progress' as const,
-      disputed: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-  }
-  
-  // Round 6: Finals
-  const round5Winners = matches.filter(m => m.round_number === 5 && m.status === 'completed').map(m => ({
-    id: m.winner_id!,
-    wallet: m.winner_wallet!
-  }));
-  
-  matches.push({
-    id: `demo-${matchId++}`,
-    tournament_id: 'demo',
-    round_number: 6,
-    match_number: 1,
-    player_a_id: round5Winners[0]?.id || null,
-    player_b_id: null,
-    player_a_wallet: round5Winners[0]?.wallet || 'TBD',
-    player_b_wallet: 'TBD',
-    player_a_score: null,
-    player_b_score: null,
-    winner_id: null,
-    winner_wallet: null,
-    status: 'pending' as const,
-    disputed: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  });
-  
-  return matches;
+  return (
+    <div 
+      className={`
+        rounded-lg overflow-hidden border transition-all duration-300 w-[150px]
+        ${isGrandFinals 
+          ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 via-background to-purple-500/10 shadow-lg shadow-yellow-500/10' 
+          : isFinals
+            ? 'border-neon-purple/50 bg-gradient-to-br from-neon-purple/10 to-background'
+            : 'border-border/50 bg-[hsl(var(--card))]'
+        }
+        ${isLive ? 'ring-2 ring-neon-cyan/50' : ''}
+      `}
+    >
+      {isGrandFinals && (
+        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-[9px] font-bold text-center py-0.5 flex items-center justify-center gap-1">
+          <Trophy className="w-3 h-3" /> GRAND FINALS
+        </div>
+      )}
+      
+      {/* Player A */}
+      <div className={`
+        flex items-center justify-between px-2 py-1.5 border-b border-border/30
+        ${isWinnerA 
+          ? 'bg-neon-green/10 border-l-2 border-l-neon-green' 
+          : isPending 
+            ? 'border-l-2 border-l-transparent opacity-50'
+            : 'border-l-2 border-l-transparent'
+        }
+      `}>
+        <span className={`text-[11px] font-medium truncate max-w-[90px] ${
+          isWinnerA ? 'text-foreground' : 
+          match.winner && !isWinnerA ? 'text-muted-foreground line-through' : 
+          'text-foreground'
+        }`}>
+          {match.teamA}
+        </span>
+        <span className={`text-[11px] font-bold min-w-[16px] text-right ${
+          isWinnerA ? 'text-neon-green' : 'text-muted-foreground'
+        }`}>
+          {match.scoreA ?? '-'}
+        </span>
+      </div>
+      
+      {/* Player B */}
+      <div className={`
+        flex items-center justify-between px-2 py-1.5
+        ${isWinnerB 
+          ? 'bg-neon-green/10 border-l-2 border-l-neon-green' 
+          : isPending 
+            ? 'border-l-2 border-l-transparent opacity-50'
+            : 'border-l-2 border-l-transparent'
+        }
+      `}>
+        <span className={`text-[11px] font-medium truncate max-w-[90px] ${
+          isWinnerB ? 'text-foreground' : 
+          match.winner && !isWinnerB ? 'text-muted-foreground line-through' : 
+          'text-foreground'
+        }`}>
+          {match.teamB}
+        </span>
+        <span className={`text-[11px] font-bold min-w-[16px] text-right ${
+          isWinnerB ? 'text-neon-green' : 'text-muted-foreground'
+        }`}>
+          {match.scoreB ?? '-'}
+        </span>
+      </div>
+      
+      {/* Live indicator */}
+      {isLive && (
+        <div className="absolute top-1 right-1">
+          <span className="flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-cyan"></span>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const RoundColumn: React.FC<{
+  title: string;
+  date: string;
+  matches: DemoMatch[];
+  isCompleted?: boolean;
+  isFinals?: boolean;
+  spacing?: number;
+}> = ({ title, date, matches, isCompleted = false, isFinals = false, spacing = 0 }) => {
+  return (
+    <div className="flex flex-col items-center" style={{ minWidth: '160px' }}>
+      {/* Round Header */}
+      <div className="text-center mb-3 pb-2 border-b border-border/30 w-full">
+        <div className="flex items-center justify-center gap-1.5 mb-0.5">
+          <span className={`text-xs font-bold ${isFinals ? 'text-neon-purple' : 'text-foreground'}`}>
+            {title}
+          </span>
+          {isCompleted && <Check className="w-3 h-3 text-neon-green" />}
+        </div>
+        <span className="text-[10px] text-muted-foreground">{date}</span>
+      </div>
+      
+      {/* Matches */}
+      <div 
+        className="flex flex-col justify-around flex-1"
+        style={{ gap: `${16 + spacing * 48}px` }}
+      >
+        {matches.map((match) => (
+          <div key={match.id} className="relative">
+            <MatchCard match={match} isFinals={isFinals} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export const BracketPreview: React.FC<BracketPreviewProps> = ({ 
@@ -211,7 +221,6 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
       if (error) throw error;
       
       if (!data || data.length === 0) {
-        setMatches(generateDemoMatches());
         setUseDemo(true);
       } else {
         setMatches((data || []) as unknown as TournamentMatch[]);
@@ -219,7 +228,6 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
       }
     } catch (error) {
       console.error('Error fetching matches:', error);
-      setMatches(generateDemoMatches());
       setUseDemo(true);
     } finally {
       setLoading(false);
@@ -230,42 +238,10 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
     fetchMatches();
   }, [tournamentId]);
 
-  // Group matches by round
-  const rounds = matches.reduce((acc, match) => {
-    const round = match.round_number;
-    if (!acc[round]) acc[round] = [];
-    acc[round].push(match);
-    return acc;
-  }, {} as Record<number, TournamentMatch[]>);
-
-  const numRounds = Object.keys(rounds).length;
-
-  const getRoundLabel = (round: number, total: number) => {
-    if (round === total) return 'Grand Finals';
-    if (round === total - 1) return 'Finals';
-    if (round === total - 2) return 'Semifinals';
-    if (round === total - 3) return 'Quarterfinals';
-    return `Round ${round}`;
-  };
-
-  const getRoundDate = (round: number) => {
-    const baseDate = new Date();
-    baseDate.setDate(baseDate.getDate() + round - 1);
-    return `${baseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 18:00`;
-  };
-
-  const isRoundCompleted = (roundMatches: TournamentMatch[]) => {
-    return roundMatches.every(m => m.status === 'completed');
-  };
-
-  const formatTeamName = (wallet: string | null) => {
-    if (!wallet || wallet === 'TBD') return 'TBD';
-    // If it looks like a wallet address, truncate it
-    if (wallet.length > 20) {
-      return `${wallet.slice(0, 6)}...`;
-    }
-    return wallet;
-  };
+  const demoBracket = generateDemoBracket();
+  const totalMatches = useDemo 
+    ? demoBracket.upper.flat().length + demoBracket.lower.flat().length + demoBracket.grandFinals.length
+    : matches.length;
 
   if (loading) {
     return (
@@ -274,6 +250,12 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
       </div>
     );
   }
+
+  const getRoundDate = (offset: number) => {
+    const baseDate = new Date();
+    baseDate.setDate(baseDate.getDate() + offset);
+    return `${baseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 18:00`;
+  };
 
   return (
     <div className="space-y-4">
@@ -284,11 +266,11 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
             LIVE
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {matches.length} matches • {numRounds} rounds
+            {totalMatches} matches • Double Elimination
           </span>
           {useDemo && (
             <Badge variant="outline" className="text-xs text-yellow-500 border-yellow-500/30">
-              Demo Data
+              Demo
             </Badge>
           )}
         </div>
@@ -298,168 +280,92 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
         </Button>
       </div>
 
-      {/* Bracket Container */}
-      <div className="bg-[hsl(var(--card))]/50 rounded-xl border border-border/50 p-6 overflow-x-auto">
-        <div className="flex gap-0 min-w-max">
-          {Object.entries(rounds).map(([roundNum, roundMatches], roundIdx) => {
-            const round = parseInt(roundNum);
-            const isFinals = round >= numRounds - 1;
-            const isGrandFinals = round === numRounds;
-            const roundComplete = isRoundCompleted(roundMatches);
-            const matchHeight = 64; // Height of each match card
-            const spacingMultiplier = Math.pow(2, roundIdx);
-            const columnWidth = 180;
-            
-            return (
-              <div key={roundNum} className="flex-shrink-0 relative" style={{ width: `${columnWidth}px` }}>
-                {/* Round Header */}
-                <div className="text-center mb-4 pb-3 border-b border-border/30">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className={`text-sm font-bold ${
-                      isGrandFinals ? 'text-yellow-400' : 
-                      isFinals ? 'text-neon-purple' : 
-                      'text-foreground'
-                    }`}>
-                      {getRoundLabel(round, numRounds)}
-                    </span>
-                    {roundComplete && (
-                      <Check className="w-4 h-4 text-neon-green" />
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {getRoundDate(round)}
-                  </span>
+      {/* Double Elimination Bracket */}
+      <div className="bg-[hsl(var(--card))]/50 rounded-xl border border-border/50 p-4 overflow-x-auto">
+        <div className="flex flex-col gap-6 min-w-max">
+          
+          {/* Upper Bracket Label */}
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-neon-purple/30 to-neon-purple/50" />
+            <span className="text-xs font-bold text-neon-purple px-3">WINNERS BRACKET</span>
+            <div className="h-px flex-1 bg-gradient-to-l from-transparent via-neon-purple/30 to-neon-purple/50" />
+          </div>
+          
+          {/* Upper Bracket */}
+          <div className="flex items-center justify-center gap-4">
+            <RoundColumn 
+              title="Round 1" 
+              date={getRoundDate(0)} 
+              matches={demoBracket.upper[0]} 
+              isCompleted={true}
+              spacing={0}
+            />
+            <div className="w-8 h-px bg-border/30" />
+            <RoundColumn 
+              title="Round 2" 
+              date={getRoundDate(1)} 
+              matches={demoBracket.upper[1]} 
+              isCompleted={true}
+              spacing={1}
+            />
+            <div className="w-8 h-px bg-border/30" />
+            <RoundColumn 
+              title="Upper Finals" 
+              date={getRoundDate(2)} 
+              matches={demoBracket.upper[2]} 
+              isCompleted={true}
+              isFinals={true}
+              spacing={2}
+            />
+          </div>
+          
+          {/* Grand Finals (Center) */}
+          <div className="flex justify-center py-4">
+            <div className="flex flex-col items-center">
+              <div className="text-center mb-3 pb-2 border-b border-yellow-500/30 w-full">
+                <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                  <Trophy className="w-4 h-4 text-yellow-400" />
+                  <span className="text-sm font-bold text-yellow-400">Grand Finals</span>
                 </div>
-                
-                {/* Matches Column */}
-                <div 
-                  className="flex flex-col justify-around relative"
-                  style={{ 
-                    gap: `${(matchHeight * (spacingMultiplier - 1)) + (16 * spacingMultiplier)}px`,
-                    paddingTop: `${(matchHeight * (spacingMultiplier - 1) / 2) + (8 * (spacingMultiplier - 1))}px`
-                  }}
-                >
-                  {roundMatches.map((match, matchIdx) => {
-                    const isWinnerA = match.winner_id === match.player_a_id && match.winner_id !== null;
-                    const isWinnerB = match.winner_id === match.player_b_id && match.winner_id !== null;
-                    const isLive = match.status === 'in_progress';
-                    const isPending = match.status === 'pending';
-                    
-                    return (
-                      <div key={match.id} className="relative">
-                        {/* Match Card */}
-                        <div 
-                          className={`
-                            rounded-lg overflow-hidden border transition-all duration-300
-                            ${isGrandFinals 
-                              ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 via-background to-purple-500/10 shadow-lg shadow-yellow-500/10' 
-                              : isFinals
-                                ? 'border-neon-purple/50 bg-gradient-to-br from-neon-purple/10 to-background'
-                                : 'border-border/50 bg-[hsl(var(--card))]'
-                            }
-                            ${isLive ? 'ring-2 ring-neon-cyan/50' : ''}
-                          `}
-                          style={{ height: `${matchHeight}px` }}
-                        >
-                          {isGrandFinals && (
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                              <Trophy className="w-6 h-6 text-yellow-400" />
-                            </div>
-                          )}
-                          
-                          {/* Player A */}
-                          <div className={`
-                            flex items-center justify-between px-3 h-1/2 border-b border-border/30
-                            ${isWinnerA 
-                              ? 'bg-neon-green/10 border-l-2 border-l-neon-green' 
-                              : isPending 
-                                ? 'border-l-2 border-l-transparent opacity-50'
-                                : 'border-l-2 border-l-transparent'
-                            }
-                          `}>
-                            <span className={`text-xs font-medium truncate max-w-[100px] ${
-                              isWinnerA ? 'text-foreground' : 
-                              match.winner_id && !isWinnerA ? 'text-muted-foreground line-through' : 
-                              'text-foreground'
-                            }`}>
-                              {formatTeamName(match.player_a_wallet)}
-                            </span>
-                            <span className={`text-xs font-bold min-w-[20px] text-right ${
-                              isWinnerA ? 'text-neon-green' : 'text-muted-foreground'
-                            }`}>
-                              {match.player_a_score ?? '-'}
-                            </span>
-                          </div>
-                          
-                          {/* Player B */}
-                          <div className={`
-                            flex items-center justify-between px-3 h-1/2
-                            ${isWinnerB 
-                              ? 'bg-neon-green/10 border-l-2 border-l-neon-green' 
-                              : isPending 
-                                ? 'border-l-2 border-l-transparent opacity-50'
-                                : 'border-l-2 border-l-transparent'
-                            }
-                          `}>
-                            <span className={`text-xs font-medium truncate max-w-[100px] ${
-                              isWinnerB ? 'text-foreground' : 
-                              match.winner_id && !isWinnerB ? 'text-muted-foreground line-through' : 
-                              'text-foreground'
-                            }`}>
-                              {formatTeamName(match.player_b_wallet)}
-                            </span>
-                            <span className={`text-xs font-bold min-w-[20px] text-right ${
-                              isWinnerB ? 'text-neon-green' : 'text-muted-foreground'
-                            }`}>
-                              {match.player_b_score ?? '-'}
-                            </span>
-                          </div>
-                          
-                          {/* Live indicator */}
-                          {isLive && (
-                            <div className="absolute top-1 right-1">
-                              <span className="flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-cyan"></span>
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Connector Lines (except for last round) */}
-                        {roundIdx < numRounds - 1 && (
-                          <>
-                            {/* Horizontal line from match */}
-                            <div 
-                              className="absolute top-1/2 -translate-y-1/2 bg-border/50"
-                              style={{ 
-                                left: `${columnWidth - 12}px`, 
-                                width: '24px',
-                                height: '2px'
-                              }}
-                            />
-                            
-                            {/* Vertical connector */}
-                            {matchIdx % 2 === 0 && roundMatches[matchIdx + 1] && (
-                              <div 
-                                className="absolute bg-border/50"
-                                style={{ 
-                                  left: `${columnWidth + 10}px`,
-                                  top: '50%',
-                                  width: '2px',
-                                  height: `${matchHeight * spacingMultiplier + 16 * spacingMultiplier}px`
-                                }}
-                              />
-                            )}
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                <span className="text-[10px] text-muted-foreground">{getRoundDate(5)}</span>
               </div>
-            );
-          })}
+              <MatchCard match={demoBracket.grandFinals[0]} isGrandFinals={true} />
+            </div>
+          </div>
+          
+          {/* Lower Bracket Label */}
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-red-500/30 to-red-500/50" />
+            <span className="text-xs font-bold text-red-400 px-3">LOSERS BRACKET</span>
+            <div className="h-px flex-1 bg-gradient-to-l from-transparent via-red-500/30 to-red-500/50" />
+          </div>
+          
+          {/* Lower Bracket */}
+          <div className="flex items-center justify-center gap-4">
+            <RoundColumn 
+              title="Losers Round 1" 
+              date={getRoundDate(1)} 
+              matches={demoBracket.lower[0]} 
+              isCompleted={true}
+              spacing={0}
+            />
+            <div className="w-8 h-px bg-border/30" />
+            <RoundColumn 
+              title="Losers Round 2" 
+              date={getRoundDate(2)} 
+              matches={demoBracket.lower[1]} 
+              isCompleted={false}
+              spacing={0}
+            />
+            <div className="w-8 h-px bg-border/30" />
+            <RoundColumn 
+              title="Losers Finals" 
+              date={getRoundDate(4)} 
+              matches={demoBracket.lower[2]} 
+              isFinals={true}
+              spacing={0}
+            />
+          </div>
         </div>
       </div>
       
