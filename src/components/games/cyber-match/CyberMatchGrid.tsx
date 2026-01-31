@@ -23,14 +23,15 @@ export const CyberMatchGrid: React.FC<CyberMatchGridProps> = ({
   return (
     <div 
       className={cn(
-        "w-full max-w-[580px] mx-auto p-3 sm:p-4 transition-transform duration-75",
+        "w-full max-w-[800px] mx-auto p-4 sm:p-6 transition-transform duration-75",
         screenShake && "animate-shake"
       )}
     >
       <div 
-        className="grid gap-2 sm:gap-2.5 md:gap-3"
+        className="grid gap-3 sm:gap-4 md:gap-5"
         style={{
-          gridTemplateColumns: `repeat(${config.columns}, 1fr)`,
+          gridTemplateColumns: `repeat(${config.columns}, minmax(80px, 120px))`,
+          justifyContent: 'center',
         }}
       >
         {cards.map((card) => (
@@ -39,7 +40,7 @@ export const CyberMatchGrid: React.FC<CyberMatchGridProps> = ({
             card={card}
             onClick={() => onCardClick(card.id)}
             disabled={isLocked || card.isFlipped || card.isMatched}
-            size={difficulty === 'hard' ? 'sm' : 'md'}
+            size="lg"
           />
         ))}
       </div>

@@ -25,9 +25,7 @@ export const CyberMatchCard: React.FC<CyberMatchCardProps> = ({
     <div
       className={cn(
         "relative w-full aspect-square cursor-pointer",
-        disabled && "pointer-events-none",
-        size === 'sm' && "max-w-[60px]",
-        size === 'lg' && "max-w-[100px]"
+        disabled && "pointer-events-none"
       )}
       onClick={onClick}
       style={{ perspective: '1000px' }}
