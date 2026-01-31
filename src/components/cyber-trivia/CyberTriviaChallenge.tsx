@@ -30,7 +30,7 @@ export const CyberTriviaChallenge: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <CyberTriviaHome
-              onStartFreePlay={() => trivia.startGame('free_play')}
+              onStartFreePlay={(category) => trivia.startGame('free_play', category)}
               onStartDailyRun={() => trivia.startGame('daily_run')}
               userStats={trivia.userStats}
               dailyLeaderboard={trivia.dailyLeaderboard}
