@@ -215,7 +215,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     disabled={loading}
                     className="cyber-cta-primary w-full py-6 text-lg font-bold text-neon-cyan"
                   >
-                    {loading ? 'Loading...' : '🎮 START FREE PLAY'}
+                    {loading ? 'Loading...' : '🎮 PLAY NOW'}
                   </Button>
                 </div>
               </Card>
