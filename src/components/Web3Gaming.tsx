@@ -45,9 +45,6 @@ export const Web3Gaming = () => {
             Play, earn, and own your gaming experience • NFT rewards • Decentralized gaming
           </p>
         </CardHeader>
-        <CardContent>
-          <WalletStatusBar />
-        </CardContent>
       </Card>
 
       {/* Gaming Tabs */}
