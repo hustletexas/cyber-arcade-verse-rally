@@ -14,7 +14,7 @@ import { VoiceChat } from './VoiceChat';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { supabase } from '@/integrations/supabase/client';
-import { WalletStatusBar } from '@/components/WalletStatusBar';
+
 
 interface Message {
   id: string;
@@ -148,9 +148,6 @@ export const CommunityHub = () => {
           <p className="text-neon-green text-base font-mono">
             Connect • Chat • Compete • Earn
           </p>
-          <div className="mt-4 max-w-md mx-auto">
-            <WalletStatusBar />
-          </div>
         </div>
 
         {/* HQ UPDATES SECTION - Full Width */}
