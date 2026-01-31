@@ -1306,6 +1306,326 @@ export type Database = {
         }
         Relationships: []
       }
+      trivia_cosmetics: {
+        Row: {
+          created_at: string
+          css_theme: Json
+          id: string
+          is_active: boolean
+          name: string
+          preview_url: string | null
+          rarity: Database["public"]["Enums"]["cosmetic_rarity"]
+          type: Database["public"]["Enums"]["cosmetic_type"]
+        }
+        Insert: {
+          created_at?: string
+          css_theme?: Json
+          id?: string
+          is_active?: boolean
+          name: string
+          preview_url?: string | null
+          rarity?: Database["public"]["Enums"]["cosmetic_rarity"]
+          type: Database["public"]["Enums"]["cosmetic_type"]
+        }
+        Update: {
+          created_at?: string
+          css_theme?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          preview_url?: string | null
+          rarity?: Database["public"]["Enums"]["cosmetic_rarity"]
+          type?: Database["public"]["Enums"]["cosmetic_type"]
+        }
+        Relationships: []
+      }
+      trivia_equipped_cosmetics: {
+        Row: {
+          avatar_frame_id: string | null
+          banner_id: string | null
+          button_skin_id: string | null
+          card_skin_id: string | null
+          updated_at: string
+          user_id: string
+          victory_fx_id: string | null
+        }
+        Insert: {
+          avatar_frame_id?: string | null
+          banner_id?: string | null
+          button_skin_id?: string | null
+          card_skin_id?: string | null
+          updated_at?: string
+          user_id: string
+          victory_fx_id?: string | null
+        }
+        Update: {
+          avatar_frame_id?: string | null
+          banner_id?: string | null
+          button_skin_id?: string | null
+          card_skin_id?: string | null
+          updated_at?: string
+          user_id?: string
+          victory_fx_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trivia_equipped_cosmetics_avatar_frame_id_fkey"
+            columns: ["avatar_frame_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_cosmetics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_equipped_cosmetics_banner_id_fkey"
+            columns: ["banner_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_cosmetics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_equipped_cosmetics_button_skin_id_fkey"
+            columns: ["button_skin_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_cosmetics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_equipped_cosmetics_card_skin_id_fkey"
+            columns: ["card_skin_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_cosmetics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_equipped_cosmetics_victory_fx_id_fkey"
+            columns: ["victory_fx_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_cosmetics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trivia_questions_v2: {
+        Row: {
+          answers: Json
+          category: string
+          correct_index: number
+          created_at: string
+          difficulty: string
+          id: string
+          is_active: boolean
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answers: Json
+          category: string
+          correct_index: number
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          category?: string
+          correct_index?: number
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trivia_run_answers: {
+        Row: {
+          answered_at: string
+          id: string
+          is_correct: boolean
+          points_earned: number
+          question_id: string
+          run_id: string
+          selected_index: number | null
+          time_remaining: number
+        }
+        Insert: {
+          answered_at?: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number
+          question_id: string
+          run_id: string
+          selected_index?: number | null
+          time_remaining?: number
+        }
+        Update: {
+          answered_at?: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number
+          question_id?: string
+          run_id?: string
+          selected_index?: number | null
+          time_remaining?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trivia_run_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_questions_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_run_answers_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trivia_runs: {
+        Row: {
+          best_streak: number
+          combo_multiplier: number
+          correct_count: number
+          created_at: string
+          current_streak: number
+          ended_at: string | null
+          id: string
+          is_active: boolean
+          lives_remaining: number | null
+          mode: Database["public"]["Enums"]["trivia_mode"]
+          score: number
+          speed_bonus: number
+          started_at: string
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number
+          combo_multiplier?: number
+          correct_count?: number
+          created_at?: string
+          current_streak?: number
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          lives_remaining?: number | null
+          mode: Database["public"]["Enums"]["trivia_mode"]
+          score?: number
+          speed_bonus?: number
+          started_at?: string
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          best_streak?: number
+          combo_multiplier?: number
+          correct_count?: number
+          created_at?: string
+          current_streak?: number
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          lives_remaining?: number | null
+          mode?: Database["public"]["Enums"]["trivia_mode"]
+          score?: number
+          speed_bonus?: number
+          started_at?: string
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trivia_user_cosmetics: {
+        Row: {
+          cosmetic_id: string
+          id: string
+          owned_at: string
+          user_id: string
+        }
+        Insert: {
+          cosmetic_id: string
+          id?: string
+          owned_at?: string
+          user_id: string
+        }
+        Update: {
+          cosmetic_id?: string
+          id?: string
+          owned_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trivia_user_cosmetics_cosmetic_id_fkey"
+            columns: ["cosmetic_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_cosmetics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trivia_user_stats: {
+        Row: {
+          accuracy: number
+          best_daily_score: number
+          best_streak: number
+          created_at: string
+          daily_spin_used_at: string | null
+          last_login_date: string | null
+          lifeline_5050_charges: number
+          lifeline_skip_charges: number
+          lifeline_time_charges: number
+          tickets_balance: number
+          total_correct: number
+          total_questions: number
+          total_runs: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number
+          best_daily_score?: number
+          best_streak?: number
+          created_at?: string
+          daily_spin_used_at?: string | null
+          last_login_date?: string | null
+          lifeline_5050_charges?: number
+          lifeline_skip_charges?: number
+          lifeline_time_charges?: number
+          tickets_balance?: number
+          total_correct?: number
+          total_questions?: number
+          total_runs?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number
+          best_daily_score?: number
+          best_streak?: number
+          created_at?: string
+          daily_spin_used_at?: string | null
+          last_login_date?: string | null
+          lifeline_5050_charges?: number
+          lifeline_skip_charges?: number
+          lifeline_time_charges?: number
+          tickets_balance?: number
+          total_correct?: number
+          total_questions?: number
+          total_runs?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -1844,6 +2164,17 @@ export type Database = {
         }
         Relationships: []
       }
+      trivia_daily_leaderboard: {
+        Row: {
+          best_streak: number | null
+          correct_count: number | null
+          rank: number | null
+          score: number | null
+          started_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       user_prizes_secure: {
         Row: {
           created_at: string | null
@@ -2006,6 +2337,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      cosmetic_rarity: "common" | "rare" | "epic" | "legendary"
+      cosmetic_type:
+        | "avatar_frame"
+        | "banner"
+        | "card_skin"
+        | "button_skin"
+        | "victory_fx"
       match_status:
         | "pending"
         | "in_progress"
@@ -2031,6 +2369,7 @@ export type Database = {
         | "in_progress"
         | "completed"
         | "cancelled"
+      trivia_mode: "free_play" | "daily_run"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2159,6 +2498,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      cosmetic_rarity: ["common", "rare", "epic", "legendary"],
+      cosmetic_type: [
+        "avatar_frame",
+        "banner",
+        "card_skin",
+        "button_skin",
+        "victory_fx",
+      ],
       match_status: [
         "pending",
         "in_progress",
@@ -2182,6 +2529,7 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
+      trivia_mode: ["free_play", "daily_run"],
     },
   },
 } as const
