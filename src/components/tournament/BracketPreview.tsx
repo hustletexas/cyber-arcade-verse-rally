@@ -198,18 +198,34 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
         <section className="cya-center">
           <div className="cya-trophy">
             <div className="cya-trophy-title">CYBER FINALS</div>
-            <div className="cya-match finals ghost">
-              <div className="cya-team">
-                <span className="cya-seed">{demoBracket.finals.teamA.seed}</span>
-                {demoBracket.finals.teamA.name}
+            
+            {/* Finals matchup with big trophy */}
+            <div className="cya-finals-matchup">
+              {/* Left Champion */}
+              <div className="cya-finalist left">
+                <div className="cya-finalist-label">NEON CHAMPION</div>
+                <div className="cya-finalist-name">{demoBracket.finals.teamA.name}</div>
+                <div className="cya-finalist-seed">Seed {demoBracket.finals.teamA.seed}</div>
               </div>
-              <div className="cya-team">
-                <span className="cya-seed">{demoBracket.finals.teamB.seed}</span>
-                {demoBracket.finals.teamB.name}
+              
+              {/* Big Trophy */}
+              <div className="cya-big-trophy">
+                <div className="cya-trophy-glow"></div>
+                <div className="cya-trophy-icon">🏆</div>
+                <div className="cya-vs">VS</div>
+              </div>
+              
+              {/* Right Champion */}
+              <div className="cya-finalist right">
+                <div className="cya-finalist-label">ARCADE CHAMPION</div>
+                <div className="cya-finalist-name">{demoBracket.finals.teamB.name}</div>
+                <div className="cya-finalist-seed">Seed {demoBracket.finals.teamB.seed}</div>
               </div>
             </div>
+            
+            {/* Winner */}
             <div className="cya-champ">
-              <span className="cya-badge">🏆</span> CHAMPION: <span className="cya-champ-name">{demoBracket.finals.champion}</span>
+              <span className="cya-badge">👑</span> GRAND CHAMPION: <span className="cya-champ-name">{demoBracket.finals.champion}</span>
             </div>
           </div>
         </section>
