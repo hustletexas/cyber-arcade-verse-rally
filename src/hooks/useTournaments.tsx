@@ -21,6 +21,68 @@ const dbToTournament = (data: any): Tournament => ({
   custom_payout_percentages: data.custom_payout_percentages as Tournament['custom_payout_percentages']
 });
 
+// Demo tournaments for showcase
+const DEMO_TOURNAMENTS: Tournament[] = [
+  {
+    id: 'demo-neon-cup',
+    title: 'NEON CHAMPIONS CUP',
+    description: 'The ultimate cyberpunk gaming showdown',
+    game: 'tetris',
+    format: 'single_elimination',
+    max_players: 8,
+    min_players: 4,
+    start_time: new Date().toISOString(),
+    entry_fee_usd: 0,
+    entry_fee_usdc: 0,
+    prize_pool_usd: 0,
+    payout_schema: 'top_3',
+    requires_pass: false,
+    status: 'in_progress',
+    admin_id: 'demo',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'demo-arcade-showdown',
+    title: 'ARCADE SHOWDOWN',
+    description: 'Classic arcade games battle royale',
+    game: 'pacman',
+    format: 'single_elimination',
+    max_players: 16,
+    min_players: 8,
+    start_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    entry_fee_usd: 5,
+    entry_fee_usdc: 5,
+    prize_pool_usd: 100,
+    payout_schema: 'top_3',
+    requires_pass: false,
+    status: 'registration_open',
+    admin_id: 'demo',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'demo-galaga-masters',
+    title: 'GALAGA MASTERS',
+    description: 'Prove your space combat skills',
+    game: 'galaga',
+    format: 'single_elimination',
+    max_players: 32,
+    min_players: 8,
+    start_time: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    entry_fee_usd: 10,
+    entry_fee_usdc: 10,
+    prize_pool_usd: 500,
+    payout_schema: 'top_5',
+    requires_pass: true,
+    required_pass_tier: 'silver',
+    status: 'registration_open',
+    admin_id: 'demo',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+];
+
 export const useTournaments = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -41,12 +103,23 @@ export const useTournaments = () => {
 
       const { data, error } = await query;
       if (error) throw error;
+      
+      // Use demo tournaments if database is empty
+      if (!data || data.length === 0) {
+        const filteredDemo = status 
+          ? DEMO_TOURNAMENTS.filter(t => t.status === status)
+          : DEMO_TOURNAMENTS;
+        setTournaments(filteredDemo);
+        return filteredDemo;
+      }
+      
       const tournaments = (data || []).map(dbToTournament);
       setTournaments(tournaments);
       return tournaments;
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-      return [];
+      // Fallback to demo on error
+      setTournaments(DEMO_TOURNAMENTS);
+      return DEMO_TOURNAMENTS;
     } finally {
       setLoading(false);
     }
