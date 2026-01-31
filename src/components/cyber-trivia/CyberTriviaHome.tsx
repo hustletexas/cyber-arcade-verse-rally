@@ -8,9 +8,10 @@ import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft } 
 import { motion, AnimatePresence } from 'framer-motion';
 
 type TriviaCategory = 'Gaming' | 'Entertainment';
+type PlayMode = 'free' | 'prize';
 
 interface CyberTriviaHomeProps {
-  onStartFreePlay: (category: TriviaCategory) => void;
+  onStartFreePlay: (category: TriviaCategory, playMode: PlayMode) => void;
   onStartDailyRun: () => void;
   userStats: TriviaUserStats | null;
   dailyLeaderboard: TriviaDailyLeaderboardEntry[];
@@ -33,8 +34,8 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
     setShowCategorySelect(true);
   };
 
-  const handleCategorySelect = (category: TriviaCategory) => {
-    onStartFreePlay(category);
+  const handleCategorySelect = (category: TriviaCategory, playMode: PlayMode) => {
+    onStartFreePlay(category, playMode);
     setShowCategorySelect(false);
   };
 
@@ -72,19 +73,16 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
               {/* Gaming Category */}
-              <Card 
-                className="cyber-glass p-8 cursor-pointer hover:border-neon-cyan/70 hover:shadow-[0_0_30px_rgba(0,255,255,0.3)] transition-all duration-300 group"
-                onClick={() => handleCategorySelect('Gaming')}
-              >
+              <Card className="cyber-glass p-6">
                 <div className="text-center space-y-4">
-                  <div className="w-20 h-20 mx-auto rounded-full bg-neon-cyan/10 flex items-center justify-center group-hover:bg-neon-cyan/20 transition-colors">
-                    <Gamepad2 className="w-10 h-10 text-neon-cyan" />
+                  <div className="w-16 h-16 mx-auto rounded-full bg-neon-cyan/10 flex items-center justify-center">
+                    <Gamepad2 className="w-8 h-8 text-neon-cyan" />
                   </div>
                   <h3 className="text-2xl font-bold text-white">GAMING</h3>
                   <p className="text-gray-400 text-sm">
-                    Video games, esports, retro classics, gaming history & culture
+                    Video games, esports, retro classics & gaming culture
                   </p>
-                  <div className="flex flex-wrap justify-center gap-2">
+                  <div className="flex flex-wrap justify-center gap-2 mb-2">
                     <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">
                       Retro
                     </Badge>
@@ -94,27 +92,38 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">
                       Console
                     </Badge>
-                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">
-                      PC
-                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <Button 
+                      onClick={() => handleCategorySelect('Gaming', 'free')}
+                      disabled={loading}
+                      variant="outline"
+                      className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 py-5"
+                    >
+                      <span className="font-bold">FREE</span>
+                    </Button>
+                    <Button 
+                      onClick={() => handleCategorySelect('Gaming', 'prize')}
+                      disabled={loading}
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5"
+                    >
+                      🏆 WIN CCTR
+                    </Button>
                   </div>
                 </div>
               </Card>
 
               {/* Entertainment Category */}
-              <Card 
-                className="cyber-glass-purple p-8 cursor-pointer hover:border-purple-400/70 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)] transition-all duration-300 group"
-                onClick={() => handleCategorySelect('Entertainment')}
-              >
+              <Card className="cyber-glass-purple p-6">
                 <div className="text-center space-y-4">
-                  <div className="w-20 h-20 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                    <Film className="w-10 h-10 text-purple-400" />
+                  <div className="w-16 h-16 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center">
+                    <Film className="w-8 h-8 text-purple-400" />
                   </div>
                   <h3 className="text-2xl font-bold text-white">ENTERTAINMENT</h3>
                   <p className="text-gray-400 text-sm">
-                    Movies, TV shows, music, sports, cartoons & pop culture
+                    Movies, TV shows, music, sports & pop culture
                   </p>
-                  <div className="flex flex-wrap justify-center gap-2">
+                  <div className="flex flex-wrap justify-center gap-2 mb-2">
                     <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">
                       Movies
                     </Badge>
@@ -124,9 +133,23 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">
                       Sports
                     </Badge>
-                    <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">
-                      TV
-                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <Button 
+                      onClick={() => handleCategorySelect('Entertainment', 'free')}
+                      disabled={loading}
+                      variant="outline"
+                      className="border-purple-400/50 text-purple-400 hover:bg-purple-500/10 py-5"
+                    >
+                      <span className="font-bold">FREE</span>
+                    </Button>
+                    <Button 
+                      onClick={() => handleCategorySelect('Entertainment', 'prize')}
+                      disabled={loading}
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5"
+                    >
+                      🏆 WIN CCTR
+                    </Button>
                   </div>
                 </div>
               </Card>
