@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useCyberMatch } from '@/hooks/useCyberMatch';
 import { 
   CyberMatchGrid, 
@@ -10,10 +10,14 @@ import {
 } from '@/components/games/cyber-match';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCcw, Coins, Crown, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Wallet, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { WalletStatusBar } from '@/components/WalletStatusBar';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useSorobanContracts } from '@/hooks/useSorobanContracts';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+
+import '@/components/games/cyber-match/cyber-match.css';
 
 const CyberMatch: React.FC = () => {
   const {
@@ -44,7 +48,23 @@ const CyberMatch: React.FC = () => {
     comboPulse,
   } = useCyberMatch();
 
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
+  const { getCCTRBalance } = useSorobanContracts();
+  const [walletCctrBalance, setWalletCctrBalance] = React.useState<string>('0.00');
   const leaderboardRef = useRef<HTMLDivElement>(null);
+
+  // Load CCTR balance when wallet is connected
+  useEffect(() => {
+    const loadBalance = async () => {
+      if (isWalletConnected && primaryWallet?.address) {
+        const balance = await getCCTRBalance(primaryWallet.address);
+        if (balance) {
+          setWalletCctrBalance(balance.formatted);
+        }
+      }
+    };
+    loadBalance();
+  }, [isWalletConnected, primaryWallet?.address, getCCTRBalance]);
 
   const scrollToLeaderboard = () => {
     setShowEndModal(false);
@@ -54,100 +74,154 @@ const CyberMatch: React.FC = () => {
   };
 
   return (
-    <div className={cn(
-      "min-h-screen bg-gradient-to-br from-black via-purple-950 to-blue-950 relative overflow-hidden",
-      screenShake && "animate-shake"
-    )}>
-      {/* Animated Cyber Grid Overlay */}
-      <div 
-        className="absolute inset-0 opacity-20 pointer-events-none animate-grid-pulse"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(6, 182, 212, 0.4) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(236, 72, 153, 0.3) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }}
-      />
-
-      {/* Scanline Effect */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-20"
-        style={{
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 4px)',
-        }}
-      />
-
+    <div className="cyber-match-container min-h-screen bg-gradient-to-br from-black via-purple-950/50 to-blue-950/50">
+      {/* Animated background grid */}
+      <div className="cyber-grid-bg" />
+      
       {/* Animated Glow Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
 
-      <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        {/* Wallet Status Bar */}
-        <div className="mb-4 animate-fade-in">
-          <WalletStatusBar />
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <Link to="/">
-            <Button variant="ghost" className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10 transition-all duration-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-          </Link>
-          
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-purple bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(236,72,153,0.5)]">
-            CYBER MATCH
-          </h1>
-
-          <div className="flex items-center gap-2">
-            {isAuthenticated && (
-              <span className="bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/30 text-yellow-400 text-sm flex items-center gap-1">
-                <Coins className="w-3 h-3" />
-                {cctrBalance} CCTR
-              </span>
-            )}
-            {gameMode && (
+      <div className="relative z-10 container mx-auto px-4 py-6 max-w-4xl">
+        {/* Wallet Status Bar - Soroban Integration */}
+        <div className="relative z-20 mb-6">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
+            <div className="flex items-center gap-3">
+              <Link to="/">
+                <Button variant="ghost" size="sm" className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10">
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  Back
+                </Button>
+              </Link>
               <Badge 
                 variant="outline" 
-                className={gameMode === 'daily' 
-                  ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' 
-                  : 'bg-green-500/20 text-green-400 border-green-500/50'
-                }
+                className="border-neon-cyan/50 text-neon-cyan flex items-center gap-1.5 px-3 py-1"
               >
-                {gameMode === 'daily' ? <Crown className="w-3 h-3 mr-1" /> : <Gamepad2 className="w-3 h-3 mr-1" />}
-                {gameMode === 'daily' ? 'Daily Run' : 'Free Match'}
+                <Zap className="w-3 h-3" />
+                <span className="text-xs font-medium">Stellar Powered</span>
               </Badge>
+            </div>
+            
+            {isWalletConnected && primaryWallet ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">CCTR:</span>
+                  <span className="text-sm font-bold text-yellow-400">{walletCctrBalance}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30">
+                  <Wallet className="w-4 h-4 text-neon-cyan" />
+                  <span className="text-sm text-neon-cyan font-mono">
+                    {primaryWallet.address.slice(0, 4)}...{primaryWallet.address.slice(-4)}
+                  </span>
+                  <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse" />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                <Wallet className="w-4 h-4 text-orange-400" />
+                <span className="text-sm text-orange-400">Connect Wallet to Play</span>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Game Area */}
-        <div className="max-w-3xl mx-auto">
-          {/* Loading */}
+        <AnimatePresence mode="wait">
+          {/* Loading State */}
           {isLoading && (
-            <div className="text-center py-12">
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-12"
+            >
               <div className="w-12 h-12 border-4 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto mb-4" />
               <p className="text-neon-cyan/70">Loading...</p>
-            </div>
+            </motion.div>
           )}
 
           {/* Mode Selection */}
           {!isLoading && !gameState.isPlaying && !gameMode && (
-            <CyberMatchModeSelect
-              isAuthenticated={isAuthenticated}
-              hasEnoughCCTR={hasEnoughCCTR}
-              cctrBalance={cctrBalance}
-              canPlay={canPlay}
-              playsRemaining={playsRemaining}
-              onStartGame={startGame}
-            />
+            <motion.div
+              key="mode-select"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Hero Section */}
+              <div className="text-center py-8">
+                <h1 
+                  className="cyber-title font-display text-4xl md:text-5xl lg:text-6xl text-neon-cyan mb-4"
+                  data-text="CYBER MATCH"
+                >
+                  CYBER MATCH
+                </h1>
+                <p className="text-lg text-gray-400 max-w-xl mx-auto">
+                  Match pairs • Build combos • Earn rewards
+                </p>
+                
+                {/* Live Activity Ticker */}
+                <div className="mt-6 py-2 border-y border-neon-cyan/20 overflow-hidden">
+                  <div className="activity-ticker">
+                    <div className="activity-ticker-content text-sm text-neon-cyan/70">
+                      🔥 Player #28 just hit a perfect clear! • 🎁 5x Combo unlocked • 
+                      🏆 New daily high score: 8,450 pts • ⚡ 156 players online now • 
+                      🎮 Hard mode trending • 🔥 Player #28 just hit a perfect clear!
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <CyberMatchModeSelect
+                isAuthenticated={isAuthenticated}
+                hasEnoughCCTR={hasEnoughCCTR}
+                cctrBalance={cctrBalance}
+                canPlay={canPlay}
+                playsRemaining={playsRemaining}
+                onStartGame={startGame}
+              />
+
+              {/* Stats & Leaderboard Preview */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <CyberMatchPlayerStats stats={playerStats} />
+                <div ref={leaderboardRef}>
+                  <CyberMatchLeaderboard
+                    todayLeaderboard={todayLeaderboard}
+                    allTimeLeaderboard={allTimeLeaderboard}
+                  />
+                </div>
+              </div>
+            </motion.div>
           )}
 
           {/* Game In Progress */}
           {gameState.isPlaying && (
-            <>
+            <motion.div
+              key="gameplay"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Game Header */}
+              <div className="text-center mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-purple bg-clip-text text-transparent">
+                  {gameMode === 'daily' ? '🏆 DAILY RUN' : '🎮 FREE MATCH'}
+                </h2>
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "mt-2",
+                    difficulty === 'easy' && "border-green-500/50 text-green-400",
+                    difficulty === 'normal' && "border-yellow-500/50 text-yellow-400",
+                    difficulty === 'hard' && "border-red-500/50 text-red-400"
+                  )}
+                >
+                  {difficulty.toUpperCase()} MODE
+                </Badge>
+              </div>
+
               <CyberMatchHUD
                 timeSeconds={gameState.timeSeconds}
                 moves={gameState.moves}
@@ -170,7 +244,7 @@ const CyberMatch: React.FC = () => {
                 screenShake={screenShake}
               />
 
-              <div className="flex justify-center gap-3 mt-4 sm:mt-6">
+              <div className="flex justify-center gap-3 mt-6">
                 <Button
                   onClick={backToModeSelect}
                   variant="outline"
@@ -190,22 +264,9 @@ const CyberMatch: React.FC = () => {
                   </Button>
                 )}
               </div>
-            </>
+            </motion.div>
           )}
-
-          {/* Leaderboard & Stats (visible when mode selected) */}
-          {gameMode && (
-            <>
-              <div ref={leaderboardRef}>
-                <CyberMatchLeaderboard
-                  todayLeaderboard={todayLeaderboard}
-                  allTimeLeaderboard={allTimeLeaderboard}
-                />
-              </div>
-              <CyberMatchPlayerStats stats={playerStats} />
-            </>
-          )}
-        </div>
+        </AnimatePresence>
       </div>
 
       {/* End Game Modal */}
@@ -222,35 +283,6 @@ const CyberMatch: React.FC = () => {
         difficulty={difficulty}
         chestEarned={chestEarned}
       />
-
-      {/* Custom CSS for animations */}
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-          20%, 40%, 60%, 80% { transform: translateX(4px); }
-        }
-        .animate-shake {
-          animation: shake 0.3s ease-in-out;
-        }
-        
-        @keyframes match-glow {
-          0% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.5); }
-          50% { box-shadow: 0 0 40px rgba(74, 222, 128, 0.8); }
-          100% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.5); }
-        }
-        .animate-match-glow {
-          animation: match-glow 0.5s ease-out;
-        }
-        
-        @keyframes grid-pulse {
-          0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.25; }
-        }
-        .animate-grid-pulse {
-          animation: grid-pulse 4s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 };
