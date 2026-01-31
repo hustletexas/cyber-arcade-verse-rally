@@ -11,7 +11,7 @@ import NotFound from "./pages/NotFound";
 import TokenCreator from "./pages/TokenCreator";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import NeonMatch from "./pages/NeonMatch";
+import CyberMatch from "./pages/CyberMatch";
 
 const queryClient = new QueryClient();
 
@@ -29,7 +29,7 @@ const App = () => (
                 <Route path="/token-creator" element={<TokenCreator />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/games/neon-match-36" element={<NeonMatch />} />
+                <Route path="/games/cyber-match" element={<CyberMatch />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
