@@ -172,13 +172,127 @@
   border-color: rgba(255, 43, 214, 0.22);
 }
 
+/* Finals Matchup Layout */
+.cya-finals-matchup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 10px;
+}
+
+.cya-finalist {
+  flex: 1;
+  text-align: center;
+  padding: 16px 12px;
+  border-radius: 16px;
+  background: rgba(4, 6, 14, 0.6);
+  border: 1px dashed rgba(0, 245, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.cya-finalist:hover {
+  border-color: rgba(0, 245, 255, 0.4);
+  background: rgba(0, 245, 255, 0.05);
+}
+
+.cya-finalist.left {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(4, 6, 14, 0.6));
+}
+
+.cya-finalist.right {
+  background: linear-gradient(135deg, rgba(255, 43, 214, 0.08), rgba(4, 6, 14, 0.6));
+}
+
+.cya-finalist-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(234, 242, 255, 0.5);
+  margin-bottom: 8px;
+}
+
+.cya-finalist-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(234, 242, 255, 0.95);
+  margin-bottom: 4px;
+}
+
+.cya-finalist-seed {
+  font-size: 10px;
+  color: rgba(0, 245, 255, 0.7);
+  font-weight: 600;
+}
+
+/* Big Trophy */
+.cya-big-trophy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 140px;
+}
+
+.cya-trophy-glow {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, rgba(255, 43, 214, 0.15) 50%, transparent 70%);
+  filter: blur(20px);
+  animation: trophy-pulse 2s ease-in-out infinite;
+}
+
+@keyframes trophy-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.cya-trophy-icon {
+  font-size: 64px;
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 40px rgba(255, 43, 214, 0.3));
+  animation: trophy-float 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes trophy-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.cya-vs {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+  text-shadow: 0 0 10px rgba(255, 43, 214, 0.5);
+}
+
 .cya-champ {
-  margin-top: 14px;
+  margin-top: 20px;
   text-align: center;
   font-weight: 850;
   letter-spacing: 0.12em;
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(234, 242, 255, 0.85);
+  padding: 12px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08), rgba(255, 43, 214, 0.08));
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .cya-badge {
@@ -188,14 +302,16 @@
   width: 28px;
   height: 28px;
   border-radius: 10px;
-  background: rgba(255, 43, 214, 0.12);
-  border: 1px solid rgba(255, 43, 214, 0.24);
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   margin-right: 8px;
+  font-size: 16px;
 }
 
 .cya-champ-name {
-  color: #fff;
-  text-shadow: 0 0 18px rgba(0, 245, 255, 0.25);
+  color: #ffd700;
+  text-shadow: 0 0 18px rgba(255, 215, 0, 0.4);
+  font-weight: 900;
 }
 
 /* responsive */
@@ -211,5 +327,15 @@
   }
   .cya-side.right {
     order: 3;
+  }
+  .cya-finals-matchup {
+    flex-direction: column;
+  }
+  .cya-big-trophy {
+    width: 100px;
+    height: 100px;
+  }
+  .cya-trophy-icon {
+    font-size: 48px;
   }
 }
