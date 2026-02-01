@@ -2635,6 +2635,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      initialize_wallet_balance: {
+        Args: { p_wallet_address: string }
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       join_solana_tournament: {
         Args: {
