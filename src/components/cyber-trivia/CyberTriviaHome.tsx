@@ -215,7 +215,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                       📊 Top 100
                     </Badge>
                   </div>
-                  <Button onClick={onStartDailyRun} disabled={loading} className="cyber-cta-secondary w-full py-6 text-lg font-bold text-purple-400">
+                  <Button variant="outline" onClick={onStartDailyRun} disabled={loading} className="w-full py-6 text-lg font-bold text-purple-400 border-purple-400/50 bg-transparent hover:bg-purple-400/10">
                     {loading ? 'Loading...' : ' START DAILY RUN'}
                   </Button>
                 </div>
