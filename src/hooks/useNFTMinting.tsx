@@ -80,7 +80,7 @@ export const useNFTMinting = () => {
     if (!isWalletConnected || !primaryWallet) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your Stellar wallet to mint your free NFT",
+        description: "Please connect your Stellar wallet to claim your NFT",
         variant: "destructive"
       });
       return false;
@@ -89,7 +89,7 @@ export const useNFTMinting = () => {
     if (!user) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to mint your NFT",
+        description: "Please log in to claim your NFT",
         variant: "destructive"
       });
       return false;
@@ -98,19 +98,19 @@ export const useNFTMinting = () => {
     setIsMinting(true);
 
     try {
-      // Check eligibility
+      // Check eligibility - only 1 NFT per wallet
       const isEligible = await checkMintEligibility();
       if (!isEligible) {
         toast({
-          title: "Already Minted",
-          description: "This wallet has already claimed a free NFT",
+          title: "Already Claimed",
+          description: "This wallet has already claimed an NFT (limit: 1 per wallet)",
           variant: "destructive"
         });
         return false;
       }
 
       toast({
-        title: "🔄 Minting Your NFT",
+        title: "🔄 Claiming Your NFT",
         description: "Creating your Cyber City Arcade Genesis NFT on Stellar...",
       });
 
@@ -131,8 +131,8 @@ export const useNFTMinting = () => {
       await recordMint(transactionHash, mintAddress);
 
       toast({
-        title: "🎉 NFT Minted Successfully!",
-        description: "Your Cyber City Arcade Genesis NFT has been minted on Stellar!",
+        title: "🎉 NFT Claimed Successfully!",
+        description: "Your Cyber City Arcade Genesis NFT has been claimed on Stellar!",
       });
 
       toast({
@@ -143,9 +143,9 @@ export const useNFTMinting = () => {
       return true;
 
     } catch (error: any) {
-      console.error('Minting error:', error);
+      console.error('Claim error:', error);
       
-      let errorMessage = 'Minting failed. Please try again.';
+      let errorMessage = 'Claim failed. Please try again.';
       if (error.message?.includes('insufficient')) {
         errorMessage = 'Insufficient XLM for transaction fees.';
       } else if (error.message?.includes('rejected')) {
@@ -153,7 +153,7 @@ export const useNFTMinting = () => {
       }
       
       toast({
-        title: "❌ Minting Failed",
+        title: "❌ Claim Failed",
         description: errorMessage,
         variant: "destructive"
       });

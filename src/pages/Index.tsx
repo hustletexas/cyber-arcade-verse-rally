@@ -42,7 +42,7 @@ const Index = () => {
     if (!isWalletConnected) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet first to mint your free NFT",
+        description: "Please connect your wallet first to claim your NFT",
         variant: "destructive",
       });
       return;
@@ -103,12 +103,12 @@ const Index = () => {
               {isMinting ? (
                 <>
                   <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm sm:text-base">MINTING...</span>
+                  <span className="text-sm sm:text-base">CLAIMING...</span>
                 </>
               ) : (
                 <>
-                  <span className="text-xl sm:text-2xl">🔨</span>
-                  <span className="text-sm sm:text-base font-semibold">MINT FREE NFT</span>
+                  <span className="text-xl sm:text-2xl">🎁</span>
+                  <span className="text-sm sm:text-base font-semibold">CLAIM NFT</span>
                 </>
               )}
             </Button>
