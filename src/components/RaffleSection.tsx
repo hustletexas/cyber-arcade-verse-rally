@@ -239,7 +239,7 @@ export const RaffleSection = () => {
               {/* Chest Display - Rotating Carousel */}
               <Card className="vending-machine hover:scale-[1.02] transition-transform relative overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden relative group max-h-48">
+                  <div className="h-44 bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden relative group">
                     <img 
                       src={currentChest.image} 
                       alt={currentChest.name} 
