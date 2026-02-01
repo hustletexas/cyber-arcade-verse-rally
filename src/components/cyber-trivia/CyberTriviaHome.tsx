@@ -216,7 +216,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     </Badge>
                   </div>
                   <Button onClick={onStartDailyRun} disabled={loading} className="cyber-cta-secondary w-full py-6 text-lg font-bold text-purple-400">
-                    {loading ? 'Loading...' : '🎯 START DAILY RUN'}
+                    {loading ? 'Loading...' : ' START DAILY RUN'}
                   </Button>
                 </div>
               </Card>
