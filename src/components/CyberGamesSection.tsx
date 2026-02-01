@@ -79,7 +79,7 @@ export const CyberGamesSection: React.FC = () => {
       </div>
 
       {/* Games Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
         <GameCard
           title="Cyber Match"
           description="Memory card matching game. Find pairs, build combos, earn rewards!"
@@ -98,6 +98,16 @@ export const CyberGamesSection: React.FC = () => {
           route="/games/cyber-sequence"
           badge="NEW"
           badgeColor="bg-neon-purple"
+        />
+        
+        <GameCard
+          title="Cyber Trivia"
+          description="Test your gaming knowledge! Answer questions, build streaks, win prizes!"
+          icon={<Zap className="w-8 h-8 text-neon-pink" />}
+          gradient="bg-gradient-to-br from-pink-900/40 via-gray-900/60 to-gray-900/40 border border-neon-pink/20"
+          route="/games/cyber-trivia"
+          badge="HOT"
+          badgeColor="bg-neon-pink"
         />
       </div>
 
