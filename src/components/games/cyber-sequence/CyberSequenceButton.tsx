@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ButtonColor, BUTTON_CONFIG } from '@/types/cyber-sequence';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +18,16 @@ export const CyberSequenceButton: React.FC<CyberSequenceButtonProps> = ({
   onPress,
 }) => {
   const [showRipple, setShowRipple] = useState(false);
+  const [showBurst, setShowBurst] = useState(false);
+
+  // Trigger burst on correct input
+  useEffect(() => {
+    if (isCorrect) {
+      setShowBurst(true);
+      const timer = setTimeout(() => setShowBurst(false), 550);
+      return () => clearTimeout(timer);
+    }
+  }, [isCorrect]);
 
   const handleClick = () => {
     if (disabled) return;
@@ -38,10 +48,20 @@ export const CyberSequenceButton: React.FC<CyberSequenceButtonProps> = ({
         `sequence-button--${color}`,
         isActive && 'sequence-button--active',
         isCorrect && 'sequence-button--correct',
+        showBurst && 'burst',
         disabled && 'opacity-60 cursor-not-allowed'
       )}
       aria-label={`${BUTTON_CONFIG[color].label} button`}
     >
+      {/* Particle burst effect */}
+      <span className="fx">
+        <span className="p"></span><span className="p"></span><span className="p"></span>
+        <span className="p"></span><span className="p"></span><span className="p"></span>
+        <span className="p"></span><span className="p"></span><span className="p"></span>
+        <span className="p"></span>
+        <span className="spark"></span><span className="spark"></span><span className="spark"></span>
+      </span>
+
       {/* Inner glow effect */}
       <div className="absolute inset-4 rounded-lg bg-white/10 backdrop-blur-sm" />
       
