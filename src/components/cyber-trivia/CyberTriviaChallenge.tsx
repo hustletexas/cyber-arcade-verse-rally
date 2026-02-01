@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useCyberTrivia } from '@/hooks/useCyberTrivia';
 import { CyberTriviaHome } from './CyberTriviaHome';
 import { CyberTriviaGameplay } from './CyberTriviaGameplay';
@@ -8,13 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useSorobanContracts } from '@/hooks/useSorobanContracts';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Wallet, Zap, ArrowLeft } from 'lucide-react';
+import { Wallet, Zap } from 'lucide-react';
 
 import './cyber-trivia.css';
 
 export const CyberTriviaChallenge: React.FC = () => {
-  const navigate = useNavigate();
   const trivia = useCyberTrivia();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { getCCTRBalance } = useSorobanContracts();
@@ -43,18 +40,6 @@ export const CyberTriviaChallenge: React.FC = () => {
     <div className="cyber-trivia-container min-h-[600px]">
       {/* Animated background grid */}
       <div className="cyber-grid-bg" />
-      
-      {/* Back Button */}
-      <div className="relative z-20 mb-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="text-neon-cyan hover:text-white hover:bg-neon-cyan/20 border border-neon-cyan/30 hover:border-neon-cyan/60 transition-all"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Arcade
-        </Button>
-      </div>
       
       {/* Wallet Status Bar - Soroban Integration */}
       <div className="relative z-20 mb-4">

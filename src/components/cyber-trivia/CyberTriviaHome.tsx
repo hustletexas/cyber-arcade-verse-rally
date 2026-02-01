@@ -166,27 +166,190 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
             </div>
 
             {/* Mode Selection CTAs */}
-            <div className="flex flex-wrap justify-center gap-4 max-w-2xl mx-auto">
-              <Button 
-                variant="outline" 
-                onClick={handleFreePlayClick} 
-                disabled={loading} 
-                className="px-8 py-6 text-lg font-bold text-neon-cyan border-neon-cyan/50 bg-transparent hover:bg-neon-cyan/10"
-              >
-                <Flame className="w-5 h-5 mr-2" />
-                {loading ? 'Loading...' : 'FREE PLAY'}
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={onStartDailyRun} 
-                disabled={loading} 
-                className="px-8 py-6 text-lg font-bold text-purple-400 border-purple-400/50 bg-transparent hover:bg-purple-400/10"
-              >
-                <Trophy className="w-5 h-5 mr-2" />
-                {loading ? 'Loading...' : 'DAILY RUN'}
-              </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {/* Free Play Card */}
+              <Card className="cyber-glass p-6 hover:border-neon-cyan/50 transition-all duration-300">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-neon-cyan/10 flex items-center justify-center">
+                    <Flame className="w-8 h-8 text-neon-cyan" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">FREE PLAY</h2>
+                  <p className="text-gray-400 text-sm">
+                    Endless questions • Build your streak • Practice mode
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan">
+                      🔥 Streak Meter
+                    </Badge>
+                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan">
+                      ⚡ Combo Multiplier
+                    </Badge>
+                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan">
+                      🎫 Earn Tickets
+                    </Badge>
+                  </div>
+                  <Button variant="outline" onClick={handleFreePlayClick} disabled={loading} className="w-full py-6 text-lg font-bold text-neon-cyan border-neon-cyan/50 bg-transparent hover:bg-neon-cyan/10">
+                    {loading ? 'Loading...' : ' PLAY NOW'}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Daily Run Card */}
+              <Card className="cyber-glass-purple p-6 hover:border-purple-500/50 transition-all duration-300">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center">
+                    <Trophy className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">DAILY RUN</h2>
+                  <p className="text-gray-400 text-sm">
+                    10 questions • 2 lives • Ranked leaderboard
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Badge variant="outline" className="border-purple-400/50 text-purple-400">
+                      🏆 Compete Daily
+                    </Badge>
+                    <Badge variant="outline" className="border-purple-400/50 text-purple-400">
+                      ❤️ 2 Lives
+                    </Badge>
+                    <Badge variant="outline" className="border-purple-400/50 text-purple-400">
+                      📊 Top 100
+                    </Badge>
+                  </div>
+                  <Button variant="outline" onClick={onStartDailyRun} disabled={loading} className="w-full py-6 text-lg font-bold text-purple-400 border-purple-400/50 bg-transparent hover:bg-purple-400/10">
+                    {loading ? 'Loading...' : ' START DAILY RUN'}
+                  </Button>
+                </div>
+              </Card>
             </div>
 
+            {/* Stats & Leaderboard */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto mt-6">
+              {/* User Stats */}
+              <Card className="cyber-glass p-5">
+                <h3 className="text-lg font-bold text-neon-cyan mb-4 flex items-center gap-2">
+                  <Target className="w-5 h-5" /> Your Stats
+                </h3>
+                {isWalletConnected && userStats ? <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 rounded-lg bg-black/30">
+                      <div className="text-2xl font-bold text-white">{userStats.best_streak}</div>
+                      <div className="text-xs text-gray-500">Best Streak</div>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-black/30">
+                      <div className="text-2xl font-bold text-neon-green">{userStats.accuracy.toFixed(1)}%</div>
+                      <div className="text-xs text-gray-500">Accuracy</div>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-black/30">
+                      <div className="text-2xl font-bold text-purple-400">{userStats.total_runs}</div>
+                      <div className="text-xs text-gray-500">Total Runs</div>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-black/30">
+                      <div className="text-2xl font-bold text-yellow-400 flex items-center justify-center gap-1">
+                        <Ticket className="w-4 h-4" /> {userStats.tickets_balance}
+                      </div>
+                      <div className="text-xs text-gray-500">Tickets</div>
+                    </div>
+                  </div> : <div className="text-center py-8 text-gray-500">
+                    <p>Connect wallet to track stats</p>
+                  </div>}
+              </Card>
+
+              {/* Daily Leaderboard Preview */}
+              <Card className="cyber-glass-purple p-6">
+                <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
+                  <Trophy className="w-5 h-5" /> Daily Leaderboard
+                </h3>
+                
+                <Tabs defaultValue="today" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-black/30 mb-4">
+                    <TabsTrigger 
+                      value="today"
+                      className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400"
+                    >
+                      <Calendar className="w-4 h-4 mr-1" />
+                      Today
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="alltime"
+                      className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400"
+                    >
+                      <Crown className="w-4 h-4 mr-1" />
+                      All Time
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="today">
+                    {dailyLeaderboard.length > 0 ? (
+                      <div className="space-y-2">
+                        {dailyLeaderboard.slice(0, 5).map((entry, idx) => (
+                          <div key={entry.user_id || idx} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
+                            <div className="flex items-center gap-3">
+                              <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
+                                #{idx + 1}
+                              </span>
+                              <span className="text-sm text-gray-300">
+                                {entry.user_id ? `${entry.user_id.slice(0, 6)}...${entry.user_id.slice(-4)}` : 'Anonymous'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-neon-cyan font-bold">{entry.score}</span>
+                              <Flame className="w-4 h-4 text-orange-400" />
+                              <span className="text-xs text-orange-400">{entry.best_streak}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {userRank > 5 && userRank <= 100 && (
+                          <div className="pt-2 border-t border-gray-700">
+                            <div className="flex items-center justify-between p-2 rounded leaderboard-you">
+                              <div className="flex items-center gap-3">
+                                <span className="font-bold text-neon-cyan">#{userRank}</span>
+                                <span className="text-sm text-gray-300">You</span>
+                              </div>
+                              <span className="text-neon-cyan font-bold">
+                                {dailyLeaderboard.find(e => e.user_id === primaryWallet?.address)?.score || 0}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Trophy className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p>No scores yet. Be the first!</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="alltime">
+                    {allTimeLeaderboard.length > 0 ? (
+                      <div className="space-y-2">
+                        {allTimeLeaderboard.slice(0, 5).map((entry, idx) => (
+                          <div key={entry.user_id || idx} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
+                            <div className="flex items-center gap-3">
+                              <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
+                                #{idx + 1}
+                              </span>
+                              <span className="text-sm text-gray-300">
+                                {entry.user_id ? `${entry.user_id.slice(0, 6)}...${entry.user_id.slice(-4)}` : 'Anonymous'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-neon-cyan font-bold">{entry.score}</span>
+                              <Flame className="w-4 h-4 text-orange-400" />
+                              <span className="text-xs text-orange-400">{entry.best_streak}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Trophy className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p>No scores yet. Be the first!</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </Card>
+            </div>
 
             {/* Lifelines Status */}
             {isWalletConnected && userStats && <Card className="cyber-glass p-4 max-w-4xl mx-auto mt-6">
