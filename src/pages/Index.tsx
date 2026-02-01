@@ -189,9 +189,9 @@ const Index = () => {
               Privacy
             </Link>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <button onClick={() => window.open('https://cybercityarcade.com/support', '_blank')} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
+            <a href="mailto:cybercityarcade@gmail.com" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               Support
-            </button>
+            </a>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
             <Link to="/terms" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               Terms
