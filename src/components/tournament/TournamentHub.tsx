@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Users, Settings, Calendar, Gamepad2, GitBranch } from 'lucide-react';
+import { Trophy, Users, Settings, Calendar, Gamepad2, GitBranch, Vote } from 'lucide-react';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/hooks/useAuth';
 import { TournamentList } from './TournamentList';
 import { TournamentAdminDashboard } from './TournamentAdminDashboard';
 import { MyTournaments } from './MyTournaments';
 import { BracketPreview } from './BracketPreview';
+import { TournamentVoting } from './TournamentVoting';
 
 export const TournamentHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState('browse');
@@ -55,10 +56,14 @@ export const TournamentHub: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-background/50 border border-border">
+        <TabsList className="grid w-full grid-cols-5 bg-background/50 border border-border">
           <TabsTrigger value="browse" className="flex items-center gap-2">
             <Gamepad2 className="w-4 h-4" />
             Browse
+          </TabsTrigger>
+          <TabsTrigger value="vote" className="flex items-center gap-2">
+            <Vote className="w-4 h-4" />
+            Vote
           </TabsTrigger>
           <TabsTrigger value="my-tournaments" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -127,6 +132,10 @@ export const TournamentHub: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
+        <TabsContent value="vote" className="mt-6">
+          <TournamentVoting />
+        </TabsContent>
 
         <TabsContent value="my-tournaments" className="mt-6">
           <MyTournaments />
