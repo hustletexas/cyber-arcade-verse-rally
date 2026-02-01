@@ -177,29 +177,6 @@ export const FeaturedGames = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="holographic text-center p-4">
-          <div className="text-2xl mb-2">🎮</div>
-          <div className="text-xl font-bold text-neon-cyan">150+</div>
-          <p className="text-xs text-muted-foreground">Available Games</p>
-        </Card>
-        <Card className="holographic text-center p-4">
-          <div className="text-2xl mb-2">👥</div>
-          <div className="text-xl font-bold text-neon-purple">1M+</div>
-          <p className="text-xs text-muted-foreground">Active Players</p>
-        </Card>
-        <Card className="holographic text-center p-4">
-          <div className="text-2xl mb-2">💰</div>
-          <div className="text-xl font-bold text-neon-green">$10M+</div>
-          <p className="text-xs text-muted-foreground">Rewards Earned</p>
-        </Card>
-        <Card className="holographic text-center p-4">
-          <div className="text-2xl mb-2">🏆</div>
-          <div className="text-xl font-bold text-neon-pink">500K+</div>
-          <p className="text-xs text-muted-foreground">NFTs Minted</p>
-        </Card>
-      </div>
     </div>
   );
 };
