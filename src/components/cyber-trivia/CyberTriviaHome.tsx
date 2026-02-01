@@ -188,7 +188,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                       🎫 Earn Tickets
                     </Badge>
                   </div>
-                  <Button onClick={handleFreePlayClick} disabled={loading} className="cyber-cta-primary w-full py-6 text-lg font-bold text-neon-cyan">
+                  <Button variant="outline" onClick={handleFreePlayClick} disabled={loading} className="w-full py-6 text-lg font-bold text-neon-cyan border-neon-cyan/50 bg-transparent hover:bg-neon-cyan/10">
                     {loading ? 'Loading...' : '🎮 PLAY NOW'}
                   </Button>
                 </div>
