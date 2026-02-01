@@ -167,9 +167,9 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
             <div className="text-center py-8">
               <h1 
                 className="cyber-title font-display text-4xl md:text-5xl lg:text-6xl text-neon-cyan mb-4"
-                data-text="CYBER TRIVIA CHALLENGE"
+                data-text="CYBER TRIVIA"
               >
-                CYBER TRIVIA CHALLENGE
+                CYBER TRIVIA
               </h1>
               <p className="text-lg text-gray-400 max-w-xl mx-auto">
                 Test your knowledge • Build streaks • Earn rewards
