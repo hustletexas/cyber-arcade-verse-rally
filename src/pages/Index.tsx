@@ -197,7 +197,7 @@ const Index = () => {
               Terms
             </Link>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <button onClick={() => window.open('https://cybercityarcade.com/about', '_blank')} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
+            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               About
             </button>
           </div>
