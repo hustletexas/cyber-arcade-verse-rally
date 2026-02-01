@@ -20,6 +20,7 @@ export const CyberTriviaChallenge: React.FC = () => {
   useEffect(() => {
     trivia.loadUserStats();
     trivia.loadDailyLeaderboard();
+    trivia.loadAllTimeLeaderboard();
   }, []);
 
   // Load CCTR balance when wallet is connected
@@ -91,6 +92,7 @@ export const CyberTriviaChallenge: React.FC = () => {
               onStartDailyRun={() => trivia.startGame('daily_run')}
               userStats={trivia.userStats}
               dailyLeaderboard={trivia.dailyLeaderboard}
+              allTimeLeaderboard={trivia.allTimeLeaderboard}
               loading={trivia.loading}
             />
           </motion.div>
