@@ -287,8 +287,8 @@ export function useCyberMatch() {
         return;
       }
 
-      // Deduct CCTR entry fee
-      const result = await deductBalance(GAME_ENTRY_FEE);
+      // Deduct CCTR entry fee using secure server-side function
+      const result = await deductBalance(GAME_ENTRY_FEE, 'cyber-match');
       if (!result.success) {
         toast({
           title: "Insufficient Balance",

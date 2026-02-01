@@ -2316,6 +2316,68 @@ export type Database = {
           },
         ]
       }
+      tournament_payouts_secure: {
+        Row: {
+          amount_usd: number | null
+          amount_usdc: number | null
+          attestation_hash: string | null
+          created_at: string | null
+          deadline: string | null
+          id: string | null
+          nonce: string | null
+          paid_at: string | null
+          payout_method: string | null
+          placement: number | null
+          status: string | null
+          tournament_id: string | null
+          transaction_hash: string | null
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          amount_usd?: number | null
+          amount_usdc?: number | null
+          attestation_hash?: never
+          created_at?: string | null
+          deadline?: string | null
+          id?: string | null
+          nonce?: never
+          paid_at?: string | null
+          payout_method?: string | null
+          placement?: number | null
+          status?: string | null
+          tournament_id?: string | null
+          transaction_hash?: never
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Update: {
+          amount_usd?: number | null
+          amount_usdc?: number | null
+          attestation_hash?: never
+          created_at?: string | null
+          deadline?: string | null
+          id?: string | null
+          nonce?: never
+          paid_at?: string | null
+          payout_method?: string | null
+          placement?: number | null
+          status?: string | null
+          tournament_id?: string | null
+          transaction_hash?: never
+          user_id?: string | null
+          wallet_address?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_payouts_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_standings_public: {
         Row: {
           created_at: string | null
@@ -2534,6 +2596,14 @@ export type Database = {
           admin_wallet_param?: string
           tournament_id_param: string
           winner_wallet_param: string
+        }
+        Returns: Json
+      }
+      deduct_game_entry_fee: {
+        Args: {
+          p_amount: number
+          p_game_type: string
+          p_wallet_address: string
         }
         Returns: Json
       }
