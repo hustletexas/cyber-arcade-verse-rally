@@ -38,6 +38,7 @@ export const useCyberTrivia = () => {
   const [gameState, setGameState] = useState<TriviaGameState>(initialGameState);
   const [userStats, setUserStats] = useState<TriviaUserStats | null>(null);
   const [dailyLeaderboard, setDailyLeaderboard] = useState<TriviaDailyLeaderboardEntry[]>([]);
+  const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<TriviaDailyLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -135,6 +136,35 @@ export const useCyberTrivia = () => {
       setDailyLeaderboard((data || []) as unknown as TriviaDailyLeaderboardEntry[]);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
+    }
+  }, []);
+
+  // Load all-time leaderboard
+  const loadAllTimeLeaderboard = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trivia_user_stats')
+        .select('user_id, best_daily_score, best_streak, total_correct')
+        .order('best_daily_score', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error('Error loading all-time leaderboard:', error);
+        return;
+      }
+
+      const formatted: TriviaDailyLeaderboardEntry[] = (data || []).map((entry, idx) => ({
+        user_id: entry.user_id,
+        score: entry.best_daily_score || 0,
+        best_streak: entry.best_streak || 0,
+        correct_count: entry.total_correct || 0,
+        started_at: '',
+        rank: idx + 1,
+      }));
+
+      setAllTimeLeaderboard(formatted);
+    } catch (error) {
+      console.error('Error loading all-time leaderboard:', error);
     }
   }, []);
 
@@ -434,6 +464,7 @@ export const useCyberTrivia = () => {
     gameState,
     userStats,
     dailyLeaderboard,
+    allTimeLeaderboard,
     loading,
     startGame,
     selectAnswer,
@@ -445,5 +476,6 @@ export const useCyberTrivia = () => {
     resetGame,
     loadUserStats,
     loadDailyLeaderboard,
+    loadAllTimeLeaderboard,
   };
 };

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TriviaUserStats, TriviaDailyLeaderboardEntry } from '@/types/cyber-trivia';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft } from 'lucide-react';
+import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft, Calendar, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 type TriviaCategory = 'Gaming' | 'Entertainment';
 type PlayMode = 'free' | 'prize';
@@ -13,6 +14,7 @@ interface CyberTriviaHomeProps {
   onStartDailyRun: () => void;
   userStats: TriviaUserStats | null;
   dailyLeaderboard: TriviaDailyLeaderboardEntry[];
+  allTimeLeaderboard: TriviaDailyLeaderboardEntry[];
   loading: boolean;
 }
 export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
@@ -20,6 +22,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
   onStartDailyRun,
   userStats,
   dailyLeaderboard,
+  allTimeLeaderboard,
   loading
 }) => {
   const {
@@ -251,41 +254,100 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
               </Card>
 
               {/* Daily Leaderboard Preview */}
-              <Card className="cyber-glass-purple p-5">
+              <Card className="cyber-glass-purple p-6">
                 <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
-                  <Trophy className="w-5 h-5" /> Today's Top 5
+                  <Trophy className="w-5 h-5" /> Daily Leaderboard
                 </h3>
-                {dailyLeaderboard.length > 0 ? <div className="space-y-2">
-                    {dailyLeaderboard.slice(0, 5).map((entry, idx) => <div key={entry.user_id} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
-                        <div className="flex items-center gap-3">
-                          <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
-                            #{idx + 1}
-                          </span>
-                          <span className="text-sm text-gray-300">
-                            {entry.user_id.slice(0, 6)}...{entry.user_id.slice(-4)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-neon-cyan font-bold">{entry.score}</span>
-                          <Flame className="w-4 h-4 text-orange-400" />
-                          <span className="text-xs text-orange-400">{entry.best_streak}</span>
-                        </div>
-                      </div>)}
-                    {userRank > 5 && userRank <= 100 && <div className="pt-2 border-t border-gray-700">
-                        <div className="flex items-center justify-between p-2 rounded leaderboard-you">
-                          <div className="flex items-center gap-3">
-                            <span className="font-bold text-neon-cyan">#{userRank}</span>
-                            <span className="text-sm text-gray-300">You</span>
+                
+                <Tabs defaultValue="today" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-black/30 mb-4">
+                    <TabsTrigger 
+                      value="today"
+                      className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400"
+                    >
+                      <Calendar className="w-4 h-4 mr-1" />
+                      Today
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="alltime"
+                      className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400"
+                    >
+                      <Crown className="w-4 h-4 mr-1" />
+                      All Time
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="today">
+                    {dailyLeaderboard.length > 0 ? (
+                      <div className="space-y-2">
+                        {dailyLeaderboard.slice(0, 5).map((entry, idx) => (
+                          <div key={entry.user_id} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
+                            <div className="flex items-center gap-3">
+                              <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
+                                #{idx + 1}
+                              </span>
+                              <span className="text-sm text-gray-300">
+                                {entry.user_id.slice(0, 6)}...{entry.user_id.slice(-4)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-neon-cyan font-bold">{entry.score}</span>
+                              <Flame className="w-4 h-4 text-orange-400" />
+                              <span className="text-xs text-orange-400">{entry.best_streak}</span>
+                            </div>
                           </div>
-                          <span className="text-neon-cyan font-bold">
-                            {dailyLeaderboard.find(e => e.user_id === primaryWallet?.address)?.score || 0}
-                          </span>
-                        </div>
-                      </div>}
-                  </div> : <div className="text-center py-8 text-gray-500">
-                    <p>No scores yet today</p>
-                    <p className="text-xs mt-1">Be the first!</p>
-                  </div>}
+                        ))}
+                        {userRank > 5 && userRank <= 100 && (
+                          <div className="pt-2 border-t border-gray-700">
+                            <div className="flex items-center justify-between p-2 rounded leaderboard-you">
+                              <div className="flex items-center gap-3">
+                                <span className="font-bold text-neon-cyan">#{userRank}</span>
+                                <span className="text-sm text-gray-300">You</span>
+                              </div>
+                              <span className="text-neon-cyan font-bold">
+                                {dailyLeaderboard.find(e => e.user_id === primaryWallet?.address)?.score || 0}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Trophy className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p>No scores yet. Be the first!</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="alltime">
+                    {allTimeLeaderboard.length > 0 ? (
+                      <div className="space-y-2">
+                        {allTimeLeaderboard.slice(0, 5).map((entry, idx) => (
+                          <div key={entry.user_id} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
+                            <div className="flex items-center gap-3">
+                              <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
+                                #{idx + 1}
+                              </span>
+                              <span className="text-sm text-gray-300">
+                                {entry.user_id.slice(0, 6)}...{entry.user_id.slice(-4)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-neon-cyan font-bold">{entry.score}</span>
+                              <Flame className="w-4 h-4 text-orange-400" />
+                              <span className="text-xs text-orange-400">{entry.best_streak}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Trophy className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p>No scores yet. Be the first!</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </Card>
             </div>
 
