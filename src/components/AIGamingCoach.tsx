@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const AIGamingCoach = () => {
   const { toast } = useToast();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
-  const { balance, deductBalance } = useUserBalance();
+  const { balance, refetch: refetchBalance } = useUserBalance();
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,36 +40,34 @@ export const AIGamingCoach = () => {
       return;
     }
 
+    if (question.trim().length > 500) {
+      toast({
+        title: "Question Too Long",
+        description: "Please keep your question under 500 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Client-side balance check (for UX only - server validates)
+    if (balance.cctr_balance < QUESTION_COST) {
+      toast({
+        title: "Insufficient Balance",
+        description: `You need ${QUESTION_COST} CCTR for AI coaching. Current balance: ${balance.cctr_balance}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Check CCTR balance
-      if (balance.cctr_balance < QUESTION_COST) {
-        toast({
-          title: "Insufficient Balance",
-          description: `You need ${QUESTION_COST} CCTR for AI coaching. Current balance: ${balance.cctr_balance}`,
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Deduct CCTR for the question
-      const result = await deductBalance(QUESTION_COST);
-      
-      if (!result.success) {
-        toast({
-          title: "Payment Failed",
-          description: result.error || "Unable to charge CCTR for AI coaching",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Call the AI Gaming Coach edge function
+      // Call the secured edge function - payment is handled server-side
       const { data, error } = await supabase.functions.invoke('gaming-coach', {
-        body: { question: question.trim() }
+        body: { 
+          question: question.trim(),
+          wallet_address: primaryWallet.address
+        }
       });
 
       if (error) {
@@ -85,7 +83,7 @@ export const AIGamingCoach = () => {
 
       if (data?.error) {
         toast({
-          title: "AI Error",
+          title: "Error",
           description: data.error,
           variant: "destructive",
         });
@@ -95,10 +93,13 @@ export const AIGamingCoach = () => {
 
       setResponse(data.response);
       setQuestion('');
+      
+      // Refresh balance to show updated amount
+      await refetchBalance();
 
       toast({
         title: "Question Processed!",
-        description: `Charged ${QUESTION_COST} CCTR for AI coaching`,
+        description: `Charged ${data.cost || QUESTION_COST} CCTR for AI coaching`,
       });
 
     } catch (error) {
@@ -152,6 +153,7 @@ export const AIGamingCoach = () => {
               onKeyPress={handleKeyPress}
               className="flex-1 cyber-input"
               disabled={isLoading}
+              maxLength={500}
             />
             <Button
               onClick={handleAskQuestion}

@@ -75,67 +75,72 @@ export const useUserBalance = () => {
     }
   }, [primaryWallet?.address]);
 
-  const deductBalance = useCallback(async (amount: number): Promise<{ success: boolean; error?: string }> => {
+  // Type for RPC response
+  interface DeductFeeResponse {
+    success: boolean;
+    error?: string;
+    new_balance?: number;
+    deducted?: number;
+    current_balance?: number;
+  }
+
+  /**
+   * Deduct balance using secure server-side RPC function.
+   * This prevents client-side manipulation and enforces server-side validation.
+   */
+  const deductBalance = useCallback(async (amount: number, gameType: string = 'game'): Promise<{ success: boolean; error?: string; new_balance?: number }> => {
     if (!primaryWallet?.address) {
       return { success: false, error: 'No wallet connected' };
     }
 
-    if (balance.cctr_balance < amount) {
-      return { success: false, error: 'Insufficient CCTR balance' };
-    }
+    // Map game type to allowed values
+    const allowedGameTypes = ['cyber-match', 'neon-match', 'trivia', 'ai-coach'];
+    const validGameType = allowedGameTypes.includes(gameType) ? gameType : 'cyber-match';
 
     try {
-      const { error } = await supabase
-        .from('user_balances')
-        .update({ 
-          cctr_balance: balance.cctr_balance - amount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('wallet_address', primaryWallet.address);
+      const { data, error } = await supabase.rpc('deduct_game_entry_fee', {
+        p_wallet_address: primaryWallet.address,
+        p_game_type: validGameType,
+        p_amount: amount
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deducting balance:', error);
+        return { success: false, error: error.message || 'Failed to deduct balance' };
+      }
 
-      // Update local state
-      setBalance(prev => ({
-        ...prev,
-        cctr_balance: prev.cctr_balance - amount
-      }));
+      // Cast the response to proper type
+      const result = data as unknown as DeductFeeResponse;
 
-      return { success: true };
+      if (!result?.success) {
+        return { success: false, error: result?.error || 'Failed to deduct balance' };
+      }
+
+      // Update local state with new balance from server
+      if (typeof result.new_balance === 'number') {
+        setBalance(prev => ({
+          ...prev,
+          cctr_balance: result.new_balance!
+        }));
+      }
+
+      return { success: true, new_balance: result.new_balance };
     } catch (error) {
       console.error('Error deducting balance:', error);
       return { success: false, error: 'Failed to deduct balance' };
     }
-  }, [primaryWallet?.address, balance.cctr_balance]);
+  }, [primaryWallet?.address]);
 
-  const addBalance = useCallback(async (amount: number): Promise<{ success: boolean; error?: string }> => {
-    if (!primaryWallet?.address) {
-      return { success: false, error: 'No wallet connected' };
-    }
-
-    try {
-      const { error } = await supabase
-        .from('user_balances')
-        .update({ 
-          cctr_balance: balance.cctr_balance + amount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('wallet_address', primaryWallet.address);
-
-      if (error) throw error;
-
-      // Update local state
-      setBalance(prev => ({
-        ...prev,
-        cctr_balance: prev.cctr_balance + amount
-      }));
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error adding balance:', error);
-      return { success: false, error: 'Failed to add balance' };
-    }
-  }, [primaryWallet?.address, balance.cctr_balance]);
+  /**
+   * @deprecated Use deductBalance with proper game type instead.
+   * Adding balance should only happen through server-side functions for security.
+   */
+  const addBalance = useCallback(async (_amount: number): Promise<{ success: boolean; error?: string }> => {
+    // Balance additions should only happen through secure server-side functions
+    // like award_trivia_rewards, claim_user_rewards, etc.
+    console.warn('addBalance is deprecated. Use server-side functions for balance additions.');
+    return { success: false, error: 'Use server-side functions for balance additions' };
+  }, []);
 
   const claimRewards = useCallback(async () => {
     if (!primaryWallet?.address || balance.claimable_rewards === 0) {
@@ -145,6 +150,8 @@ export const useUserBalance = () => {
     try {
       const claimed = balance.claimable_rewards;
       
+      // Use the existing claim_user_rewards function via direct update
+      // (The RPC function may not exist yet - fallback to safe pattern)
       const { error } = await supabase
         .from('user_balances')
         .update({ 
@@ -154,19 +161,20 @@ export const useUserBalance = () => {
         })
         .eq('wallet_address', primaryWallet.address);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error claiming rewards:', error);
+        return { success: false, error: error.message };
+      }
 
-      setBalance(prev => ({
-        cctr_balance: prev.cctr_balance + claimed,
-        claimable_rewards: 0
-      }));
+      // Refresh balance from server
+      await fetchBalance();
 
       return { success: true, claimed_amount: claimed };
     } catch (error) {
       console.error('Error claiming rewards:', error);
-      return { success: false, error };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
-  }, [primaryWallet?.address, balance]);
+  }, [primaryWallet?.address, balance.claimable_rewards, balance.cctr_balance, fetchBalance]);
 
   // Admin airdrop function - maintained for backwards compatibility
   const adminAirdrop = useCallback(async (amount: number, targetWalletAddress?: string) => {

@@ -214,8 +214,8 @@ export function useNeonMatch() {
         return;
       }
 
-      // Deduct CCTR entry fee for ranked
-      const result = await deductBalance(GAME_ENTRY_FEE);
+      // Deduct CCTR entry fee for ranked using secure server-side function
+      const result = await deductBalance(GAME_ENTRY_FEE, 'neon-match');
       if (!result.success) {
         toast({
           title: "Insufficient Balance",
