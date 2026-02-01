@@ -257,19 +257,6 @@ export const Marketplace = () => {
           {/* Wallet Connection Status */}
           <WalletStatusBar />
 
-          {/* Platform Connections */}
-          <Card className="arcade-frame p-4">
-            <h3 className="font-semibold text-neon-cyan mb-3 text-sm">🔗 Platform Connections</h3>
-            <Button 
-              onClick={() => connectPlatform('Litemint', 'https://market.litemint.com/')}
-              variant="outline"
-              size="sm"
-              className="w-full border-neon-green/40 hover:bg-neon-green/10 hover:border-neon-green transition-all duration-200"
-            >
-              🍃 Litemint Marketplace
-            </Button>
-          </Card>
-
           {/* Filters and Currency Selection */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-4 items-center">
