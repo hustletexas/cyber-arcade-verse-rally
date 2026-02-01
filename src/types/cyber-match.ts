@@ -6,7 +6,7 @@ export interface Card {
 }
 
 export type GameMode = 'free' | 'daily';
-export type Difficulty = 'easy' | 'normal' | 'hard';
+export type Difficulty = 'easy' | 'normal' | 'hard' | 'hardest';
 
 export interface DifficultyConfig {
   gridSize: number;
@@ -41,6 +41,14 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
     mistakeLimit: 5,
     label: 'Hard',
     description: '24 cards (12 pairs)',
+  },
+  hardest: {
+    gridSize: 36,
+    pairs: 18,
+    columns: 6,
+    mistakeLimit: 4,
+    label: 'Hardest',
+    description: '36 cards (18 pairs)',
   },
 };
 
@@ -150,5 +158,6 @@ export const SCORING = {
     easy: 1.0,
     normal: 1.5,
     hard: 2.0,
+    hardest: 2.5,
   },
 };

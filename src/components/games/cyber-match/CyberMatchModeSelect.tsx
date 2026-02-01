@@ -49,7 +49,7 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
     setSelectedMode(null);
   };
 
-  const difficulties: Difficulty[] = ['easy', 'normal', 'hard'];
+  const difficulties: Difficulty[] = ['easy', 'normal', 'hard', 'hardest'];
 
   return (
     <AnimatePresence mode="wait">
@@ -80,11 +80,11 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {difficulties.map((diff) => {
               const config = DIFFICULTY_CONFIGS[diff];
               const isSelected = selectedDifficulty === diff;
-              const colorClass = diff === 'easy' ? 'green' : diff === 'normal' ? 'yellow' : 'red';
+              const colorClass = diff === 'easy' ? 'green' : diff === 'normal' ? 'yellow' : diff === 'hard' ? 'red' : 'purple';
               
               return (
                 <Card
@@ -96,6 +96,7 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
                     diff === 'easy' && isSelected && "border-green-400/70 shadow-[0_0_25px_rgba(74,222,128,0.3)]",
                     diff === 'normal' && isSelected && "border-yellow-400/70 shadow-[0_0_25px_rgba(234,179,8,0.3)]",
                     diff === 'hard' && isSelected && "border-red-400/70 shadow-[0_0_25px_rgba(239,68,68,0.3)]",
+                    diff === 'hardest' && isSelected && "border-purple-400/70 shadow-[0_0_25px_rgba(168,85,247,0.3)]",
                     !isSelected && "hover:border-neon-cyan/40"
                   )}
                 >
@@ -105,20 +106,23 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
                       isSelected && "scale-110",
                       diff === 'easy' && "bg-green-500/20",
                       diff === 'normal' && "bg-yellow-500/20",
-                      diff === 'hard' && "bg-red-500/20"
+                      diff === 'hard' && "bg-red-500/20",
+                      diff === 'hardest' && "bg-purple-500/20"
                     )}>
                       <Grid3X3 className={cn(
                         "w-7 h-7",
                         diff === 'easy' && "text-green-400",
                         diff === 'normal' && "text-yellow-400",
-                        diff === 'hard' && "text-red-400"
+                        diff === 'hard' && "text-red-400",
+                        diff === 'hardest' && "text-purple-400"
                       )} />
                     </div>
                     <h3 className={cn(
                       "text-xl font-bold",
                       diff === 'easy' && "text-green-400",
                       diff === 'normal' && "text-yellow-400",
-                      diff === 'hard' && "text-red-400"
+                      diff === 'hard' && "text-red-400",
+                      diff === 'hardest' && "text-purple-400"
                     )}>
                       {config.label.toUpperCase()}
                     </h3>
@@ -128,7 +132,8 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
                         "text-xs",
                         diff === 'easy' && "border-green-500/50 text-green-400",
                         diff === 'normal' && "border-yellow-500/50 text-yellow-400",
-                        diff === 'hard' && "border-red-500/50 text-red-400"
+                        diff === 'hard' && "border-red-500/50 text-red-400",
+                        diff === 'hardest' && "border-purple-500/50 text-purple-400"
                       )}>
                         {config.pairs} pairs
                       </Badge>
