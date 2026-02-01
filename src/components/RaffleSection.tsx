@@ -299,8 +299,7 @@ export const RaffleSection = () => {
                   {hasUnclaimedChests ? 'Your Winner\'s Chests' : 'Chest Rewards'}
                 </h4>
                 
-                {!isWalletConnected ? (
-                  <div className="space-y-2">
+                {!isWalletConnected ? <div className="space-y-2">
                     <p className="text-xs text-muted-foreground text-center">🔐 Connect wallet to claim</p>
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 text-xs">
@@ -316,28 +315,16 @@ export const RaffleSection = () => {
                         <span className="text-muted-foreground">2000-5000 CCTR, Legendary NFT</span>
                       </div>
                     </div>
-                  </div>
-                ) : hasUnclaimedChests ? (
-                  <div className="space-y-2">
+                  </div> : hasUnclaimedChests ? <div className="space-y-2">
                     <div className="p-2 bg-neon-green/10 rounded-lg border border-neon-green/30 text-center">
                       <span className="text-neon-green font-bold text-sm">
                         🎉 {unclaimedCount} chest{unclaimedCount > 1 ? 's' : ''} to open!
                       </span>
                     </div>
-                    {eligibleChests.slice(0, 2).map(chest => (
-                      <Button 
-                        key={chest.id} 
-                        onClick={() => openWinnerChest(chest.id)} 
-                        disabled={processingPayment === 'winner-chest'} 
-                        className="cyber-button w-full text-xs py-2" 
-                        size="sm"
-                      >
+                    {eligibleChests.slice(0, 2).map(chest => <Button key={chest.id} onClick={() => openWinnerChest(chest.id)} disabled={processingPayment === 'winner-chest'} className="cyber-button w-full text-xs py-2" size="sm">
                         {processingPayment === 'winner-chest' ? "⏳ OPENING..." : "🎁 OPEN CHEST"}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
+                      </Button>)}
+                  </div> : <div className="space-y-2">
                     <p className="text-xs text-muted-foreground text-center mb-2">Win a game to earn a chest!</p>
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 text-xs">
@@ -345,7 +332,7 @@ export const RaffleSection = () => {
                         <span className="text-muted-foreground">500-1000 CCTR, Epic NFT</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs">
-                        <Badge className="bg-orange-500 text-white text-[10px] px-1.5">RARE</Badge>
+                        <Badge className="text-white text-[10px] px-1.5 bg-blue-700">RARE</Badge>
                         <span className="text-muted-foreground">250-500 CCTR, Rare NFT</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs">
@@ -353,8 +340,7 @@ export const RaffleSection = () => {
                         <span className="text-muted-foreground">2000-5000 CCTR, Legendary NFT</span>
                       </div>
                     </div>
-                  </div>
-                )}
+                  </div>}
               </Card>
             </div>
           </div>
