@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
-
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { RaffleSection } from '@/components/RaffleSection';
@@ -15,7 +14,6 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { TournamentHub } from '@/components/tournament/TournamentHub';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
-
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useNFTMinting } from '@/hooks/useNFTMinting';
@@ -24,13 +22,24 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
-
 const Index = () => {
-  const { toast } = useToast();
-  const { isWalletConnected } = useMultiWallet();
-  const { mintFreeNFT, isMinting } = useNFTMinting();
-  const { user, loading } = useAuth();
-  const { trackAchievement } = useAchievements();
+  const {
+    toast
+  } = useToast();
+  const {
+    isWalletConnected
+  } = useMultiWallet();
+  const {
+    mintFreeNFT,
+    isMinting
+  } = useNFTMinting();
+  const {
+    user,
+    loading
+  } = useAuth();
+  const {
+    trackAchievement
+  } = useAchievements();
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -42,20 +51,17 @@ const Index = () => {
       toast({
         title: "Wallet Required",
         description: "Please connect your wallet first to claim your NFT",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     const result = await mintFreeNFT();
     if (result) {
       // Track NFT minting achievement
       trackAchievement('nft_minted');
     }
   };
-
-  return (
-    <div className="min-h-screen bg-black">
+  return <div className="min-h-screen bg-black">
       {/* Mobile-Optimized Animated Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
@@ -78,14 +84,9 @@ const Index = () => {
         <div className="text-center mb-6 sm:mb-8 md:mb-12">
           {/* Mobile-Optimized Main Logo */}
           <div className="flex justify-center mb-4 sm:mb-6">
-            <img 
-              src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" 
-              alt="Cyber City Arcade" 
-              className="w-64 h-80 sm:w-80 sm:h-96 md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" 
-              style={{
-                filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
-              }} 
-            />
+            <img src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" alt="Cyber City Arcade" className="w-64 h-80 sm:w-80 sm:h-96 md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" style={{
+            filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
+          }} />
           </div>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
@@ -94,30 +95,18 @@ const Index = () => {
 
           {/* Mobile-Enhanced Action Buttons */}
           <div className="flex flex-col items-center gap-3 sm:gap-4 mb-6 md:mb-8 px-2 sm:px-4">
-            <Button 
-              onClick={handleMintNFT} 
-              disabled={isMinting}
-              className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]"
-            >
-              {isMinting ? (
-                <>
+            <Button onClick={handleMintNFT} disabled={isMinting} className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]">
+              {isMinting ? <>
                   <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span className="text-sm sm:text-base">CLAIMING...</span>
-                </>
-              ) : (
-                <>
+                </> : <>
                   <span className="text-xl sm:text-2xl">🎁</span>
                   <span className="text-sm sm:text-base font-semibold">CLAIM NFT</span>
-                </>
-              )}
+                </>}
             </Button>
             
             {/* Mobile-Optimized Tutorial Button */}
-            <Button 
-              onClick={() => setShowTutorial(true)}
-              variant="outline"
-              className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base"
-            >
+            <Button onClick={() => setShowTutorial(true)} variant="outline" className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base">
               <span className="text-base sm:text-lg mr-2">📚</span>
               Take Tutorial
             </Button>
@@ -196,46 +185,31 @@ const Index = () => {
         <div className="container mx-auto px-3 sm:px-4">
           {/* Mobile-Optimized Footer Links */}
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
-            <Link 
-              to="/privacy"
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
-            >
+            <Link to="/privacy" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               Privacy
             </Link>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <button 
-              onClick={() => window.open('https://cybercityarcade.com/support', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
-            >
+            <button onClick={() => window.open('https://cybercityarcade.com/support', '_blank')} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               Support
             </button>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <Link 
-              to="/terms"
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
-            >
+            <Link to="/terms" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               Terms
             </Link>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <button 
-              onClick={() => window.open('https://cybercityarcade.com/about', '_blank')} 
-              className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2"
-            >
+            <button onClick={() => window.open('https://cybercityarcade.com/about', '_blank')} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               About
             </button>
           </div>
           
           <div className="text-center">
             <p className="text-neon-purple font-mono text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed">
-              © 2024 Cyber City Arcade • Powered by Stellar
+              © 2024 Cyber City Arcade LLC • Powered by Stellar
             </p>
             <div className="flex flex-wrap justify-center gap-1 sm:gap-2 md:gap-6 text-xs md:text-sm text-muted-foreground">
               <span>Stellar</span>
               <span>•</span>
-              <button 
-                onClick={() => window.open('https://aqua.network/', '_blank')} 
-                className="hover:text-neon-cyan transition-colors cursor-pointer touch-manipulation py-1"
-              >
+              <button onClick={() => window.open('https://aqua.network/', '_blank')} className="hover:text-neon-cyan transition-colors cursor-pointer touch-manipulation py-1">
                 Aqua Network
               </button>
               <span>•</span>
@@ -251,12 +225,7 @@ const Index = () => {
       <CartDrawer />
       
       {/* Welcome Tutorial */}
-      <WelcomeTutorial 
-        isOpen={showTutorial}
-        onClose={() => setShowTutorial(false)}
-      />
-    </div>
-  );
+      <WelcomeTutorial isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
+    </div>;
 };
-
 export default Index;
