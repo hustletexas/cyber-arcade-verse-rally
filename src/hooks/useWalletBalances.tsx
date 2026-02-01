@@ -10,6 +10,13 @@ interface WalletInput {
   type?: string;
 }
 
+interface StellarAsset {
+  code: string;
+  issuer?: string;
+  balance: number;
+  assetType: string;
+}
+
 interface WalletBalance {
   address: string;
   chain: ChainType;
@@ -18,6 +25,7 @@ interface WalletBalance {
   usdValue?: number;
   isLoading: boolean;
   error?: string;
+  stellarAssets?: StellarAsset[];
 }
 
 interface UseWalletBalancesReturn {
@@ -25,6 +33,7 @@ interface UseWalletBalancesReturn {
   isLoading: boolean;
   refreshBalances: () => Promise<void>;
   getBalance: (address: string) => WalletBalance | null;
+  getStellarAssets: (address: string) => StellarAsset[];
 }
 
 // RPC endpoints - using centralized config
@@ -111,24 +120,48 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
     }
   };
 
-  // Fetch Stellar balance
-  const fetchStellarBalance = async (address: string): Promise<number> => {
+  // Fetch all Stellar balances (XLM and tokens)
+  const fetchStellarBalances = async (address: string): Promise<{ xlmBalance: number; assets: StellarAsset[] }> => {
     try {
       const response = await fetch(`${STELLAR_HORIZON}/accounts/${address}`);
       if (!response.ok) {
         if (response.status === 404) {
           // Account not funded yet
-          return 0;
+          return { xlmBalance: 0, assets: [] };
         }
         throw new Error('Failed to fetch Stellar account');
       }
       const data = await response.json();
-      // Find native XLM balance
-      const nativeBalance = data.balances?.find((b: any) => b.asset_type === 'native');
-      return nativeBalance ? parseFloat(nativeBalance.balance) : 0;
+      
+      const assets: StellarAsset[] = [];
+      let xlmBalance = 0;
+      
+      // Parse all balances from Horizon response
+      if (data.balances && Array.isArray(data.balances)) {
+        for (const b of data.balances) {
+          if (b.asset_type === 'native') {
+            xlmBalance = parseFloat(b.balance);
+            assets.push({
+              code: 'XLM',
+              balance: xlmBalance,
+              assetType: 'native'
+            });
+          } else {
+            // Credit alphanum tokens (e.g., USDC, CCTR)
+            assets.push({
+              code: b.asset_code || 'Unknown',
+              issuer: b.asset_issuer,
+              balance: parseFloat(b.balance),
+              assetType: b.asset_type
+            });
+          }
+        }
+      }
+      
+      return { xlmBalance, assets };
     } catch (error) {
-      console.error('Error fetching XLM balance:', error);
-      return 0;
+      console.error('Error fetching Stellar balances:', error);
+      return { xlmBalance: 0, assets: [] };
     }
   };
 
@@ -140,12 +173,14 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
       chain,
       balance: 0,
       symbol: wallet.symbol || '',
-      isLoading: true
+      isLoading: true,
+      stellarAssets: []
     };
 
     try {
       let balance = 0;
       let symbol = '';
+      let stellarAssets: StellarAsset[] = [];
 
       switch (wallet.chain) {
         case 'solana':
@@ -157,7 +192,9 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
           symbol = 'ETH';
           break;
         case 'stellar':
-          balance = await fetchStellarBalance(wallet.address);
+          const stellarData = await fetchStellarBalances(wallet.address);
+          balance = stellarData.xlmBalance;
+          stellarAssets = stellarData.assets;
           symbol = 'XLM';
           break;
       }
@@ -166,6 +203,7 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
         ...baseBalance,
         balance,
         symbol,
+        stellarAssets,
         isLoading: false
       };
     } catch (error: any) {
@@ -209,6 +247,12 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
     return balances[address] || null;
   }, [balances]);
 
+  // Get Stellar assets for a specific address
+  const getStellarAssets = useCallback((address: string): StellarAsset[] => {
+    const walletBalance = balances[address];
+    return walletBalance?.stellarAssets || [];
+  }, [balances]);
+
   // Fetch balances when wallets change
   useEffect(() => {
     if (connectedWallets.length > 0) {
@@ -231,9 +275,12 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
     balances,
     isLoading,
     refreshBalances,
-    getBalance
+    getBalance,
+    getStellarAssets
   };
 };
+
+export type { StellarAsset };
 
 // Format balance for display
 export const formatBalance = (balance: number, decimals: number = 4): string => {

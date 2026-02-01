@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
-import { useWalletBalances, formatBalance } from '@/hooks/useWalletBalances';
+import { useWalletBalances, formatBalance, StellarAsset } from '@/hooks/useWalletBalances';
 import { useTransactionHistory, formatTxHash, getExplorerUrl, Transaction } from '@/hooks/useTransactionHistory';
 import { 
   Wallet, 
@@ -64,7 +64,7 @@ export const UnifiedWalletDropdown = () => {
     getChainIcon
   } = useMultiWallet();
   
-  const { balances, isLoading: balancesLoading, refreshBalances } = useWalletBalances(connectedWallets);
+  const { balances, isLoading: balancesLoading, refreshBalances, getStellarAssets } = useWalletBalances(connectedWallets);
   const { transactions, isLoading: txLoading, refreshHistory } = useTransactionHistory(connectedWallets);
   const { logoutWallet } = useWalletAuth();
   
@@ -259,28 +259,58 @@ export const UnifiedWalletDropdown = () => {
                 </Badge>
               </div>
               
-              {/* Balance display */}
-              <div className="flex items-center justify-between p-4 bg-card/70 backdrop-blur-sm rounded-2xl border border-neon-cyan/20 shadow-inner">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Total Balance</p>
-                  <p className="text-2xl font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
-                    {balance.cctr_balance.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-neon-cyan font-medium">$CCTR</p>
+              {/* Balance display with Stellar tokens */}
+              <div className="p-4 bg-card/70 backdrop-blur-sm rounded-2xl border border-neon-cyan/20 shadow-inner space-y-3">
+                {/* CCTR and Claimable row */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">$CCTR Balance</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
+                      {balance.cctr_balance.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground mb-1">Claimable</p>
+                    <p className="text-xl font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
+                    {balance.claimable_rewards > 0 && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => setShowRewardsModal(true)}
+                        className="mt-1 h-6 px-2 text-[10px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105"
+                      >
+                        Claim
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground mb-1">Claimable</p>
-                  <p className="text-xl font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
-                  {balance.claimable_rewards > 0 && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => setShowRewardsModal(true)}
-                      className="mt-1 h-6 px-2 text-[10px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105"
-                    >
-                      Claim
-                    </Button>
-                  )}
-                </div>
+                
+                {/* Stellar Token Balances */}
+                {primaryWallet && (() => {
+                  const stellarAssets = getStellarAssets(primaryWallet.address);
+                  if (stellarAssets.length > 0) {
+                    return (
+                      <div className="pt-3 border-t border-neon-cyan/10">
+                        <p className="text-xs text-muted-foreground mb-2">Stellar Tokens</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {stellarAssets.map((asset, idx) => (
+                            <div 
+                              key={`${asset.code}-${asset.issuer || 'native'}-${idx}`}
+                              className="flex items-center justify-between p-2 bg-black/30 rounded-lg border border-white/5"
+                            >
+                              <span className="text-xs font-medium text-neon-cyan">
+                                {asset.code === 'XLM' ? '✦' : '◆'} {asset.code}
+                              </span>
+                              <span className="text-xs font-bold text-white">
+                                {formatBalance(asset.balance, asset.code === 'XLM' ? 2 : 4)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
