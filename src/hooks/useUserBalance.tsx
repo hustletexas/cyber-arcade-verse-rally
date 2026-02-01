@@ -42,30 +42,33 @@ export const useUserBalance = () => {
           claimable_rewards: data.claimable_rewards || 0
         });
       } else {
-        // No balance record exists for this wallet - create one with starter tokens
-        // Generate a deterministic UUID from wallet address for user_id
-        const walletHash = primaryWallet.address.slice(0, 32).padEnd(32, '0');
-        const generatedUserId = `${walletHash.slice(0, 8)}-${walletHash.slice(8, 12)}-4${walletHash.slice(13, 16)}-a${walletHash.slice(17, 20)}-${walletHash.slice(20, 32)}`;
+        // No balance record exists - use secure server-side function to initialize
+        interface InitBalanceResponse {
+          success: boolean;
+          cctr_balance?: number;
+          claimable_rewards?: number;
+          error?: string;
+          created?: boolean;
+        }
         
-        const { data: newBalance, error: insertError } = await supabase
-          .from('user_balances')
-          .insert({
-            user_id: generatedUserId,
-            wallet_address: primaryWallet.address,
-            cctr_balance: 100, // Starter balance
-            claimable_rewards: 0
-          })
-          .select('cctr_balance, claimable_rewards')
-          .single();
-
-        if (insertError) {
-          console.error('Error creating balance:', insertError);
-          setBalance({ cctr_balance: 0, claimable_rewards: 0 });
-        } else if (newBalance) {
-          setBalance({
-            cctr_balance: newBalance.cctr_balance || 0,
-            claimable_rewards: newBalance.claimable_rewards || 0
+        const { data: initData, error: initError } = await supabase
+          .rpc('initialize_wallet_balance', {
+            p_wallet_address: primaryWallet.address
           });
+
+        const initResult = initData as unknown as InitBalanceResponse | null;
+
+        if (initError) {
+          console.error('Error initializing balance:', initError);
+          setBalance({ cctr_balance: 0, claimable_rewards: 0 });
+        } else if (initResult?.success) {
+          setBalance({
+            cctr_balance: initResult.cctr_balance || 0,
+            claimable_rewards: initResult.claimable_rewards || 0
+          });
+        } else {
+          console.error('Balance init failed:', initResult?.error);
+          setBalance({ cctr_balance: 0, claimable_rewards: 0 });
         }
       }
     } catch (error) {
