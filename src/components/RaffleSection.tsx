@@ -211,7 +211,7 @@ export const RaffleSection = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle className="font-display text-3xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent">
-                 TREASURE VAULT & RAFFLES
+                 CYBER CHEST   
               </CardTitle>
               <p className="text-muted-foreground mt-1">
                 Win games for FREE chests • Enter raffles for epic prizes • Earn CCTR
