@@ -1484,6 +1484,13 @@ export type Database = {
             foreignKeyName: "trivia_run_answers_run_id_fkey"
             columns: ["run_id"]
             isOneToOne: false
+            referencedRelation: "trivia_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_run_answers_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
             referencedRelation: "trivia_runs"
             referencedColumns: ["id"]
           },
@@ -1880,6 +1887,36 @@ export type Database = {
       }
     }
     Views: {
+      match_scores_leaderboard: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          mismatches: number | null
+          moves: number | null
+          player_id: string | null
+          score: number | null
+          time_seconds: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          mismatches?: number | null
+          moves?: number | null
+          player_id?: never
+          score?: number | null
+          time_seconds?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          mismatches?: number | null
+          moves?: number | null
+          player_id?: never
+          score?: number | null
+          time_seconds?: number | null
+        }
+        Relationships: []
+      }
       nft_mints_secure: {
         Row: {
           created_at: string | null
@@ -2164,6 +2201,35 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_bracket_public: {
+        Row: {
+          bracket_position: string | null
+          completed_at: string | null
+          created_at: string | null
+          disputed: boolean | null
+          id: string | null
+          match_number: number | null
+          player_a_score: number | null
+          player_a_wallet: string | null
+          player_b_score: number | null
+          player_b_wallet: string | null
+          round_number: number | null
+          scheduled_time: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["match_status"] | null
+          tournament_id: string | null
+          winner_wallet: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_matches_secure: {
         Row: {
           bracket_position: string | null
@@ -2250,6 +2316,29 @@ export type Database = {
           },
         ]
       }
+      tournament_standings_public: {
+        Row: {
+          created_at: string | null
+          finalized: boolean | null
+          id: string | null
+          losses: number | null
+          placement: number | null
+          points: number | null
+          prize_amount_usd: number | null
+          tournament_id: string | null
+          wallet_address: string | null
+          wins: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_standings_secure: {
         Row: {
           created_at: string | null
@@ -2310,10 +2399,52 @@ export type Database = {
         Row: {
           best_streak: number | null
           correct_count: number | null
+          player_id: string | null
           rank: number | null
           score: number | null
           started_at: string | null
-          user_id: string | null
+        }
+        Relationships: []
+      }
+      trivia_leaderboard: {
+        Row: {
+          best_streak: number | null
+          combo_multiplier: number | null
+          correct_count: number | null
+          ended_at: string | null
+          id: string | null
+          mode: Database["public"]["Enums"]["trivia_mode"] | null
+          player_id: string | null
+          score: number | null
+          speed_bonus: number | null
+          started_at: string | null
+          total_questions: number | null
+        }
+        Insert: {
+          best_streak?: number | null
+          combo_multiplier?: number | null
+          correct_count?: number | null
+          ended_at?: string | null
+          id?: string | null
+          mode?: Database["public"]["Enums"]["trivia_mode"] | null
+          player_id?: never
+          score?: number | null
+          speed_bonus?: number | null
+          started_at?: string | null
+          total_questions?: number | null
+        }
+        Update: {
+          best_streak?: number | null
+          combo_multiplier?: number | null
+          correct_count?: number | null
+          ended_at?: string | null
+          id?: string | null
+          mode?: Database["public"]["Enums"]["trivia_mode"] | null
+          player_id?: never
+          score?: number | null
+          speed_bonus?: number | null
+          started_at?: string | null
+          total_questions?: number | null
         }
         Relationships: []
       }
