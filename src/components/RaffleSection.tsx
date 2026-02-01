@@ -50,6 +50,7 @@ export const RaffleSection = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cctr'>('cctr');
   const [chestAnimationOpen, setChestAnimationOpen] = useState(false);
   const [openingChest, setOpeningChest] = useState<{ name: string; rarity: 'common' | 'rare' | 'epic' | 'legendary'; eligibilityId?: string } | null>(null);
+  const [currentChestIndex, setCurrentChestIndex] = useState(0);
 
   const [raffles] = useState<Raffle[]>([
     {
@@ -102,22 +103,42 @@ export const RaffleSection = () => {
     }
   ]);
 
-  const [treasureChest] = useState<TreasureChest>({
-    id: 'winner-chest',
-    name: 'Winner\'s Treasure Vault',
-    rarity: 'epic',
-    image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
-    description: 'FREE reward chest for game & tournament winners!',
-    rewards: [
-      '500-2000 CCTR Tokens',
-      'Epic Gaming NFT',
-      'Tournament Entry Pass',
-      'Monthly Tournament Subscription',
-      'Exclusive Game Beta Access',
-      'Physical Gaming Merchandise',
-      'Gaming Hardware Vouchers'
-    ]
-  });
+  const treasureChests: TreasureChest[] = [
+    {
+      id: 'epic-chest',
+      name: 'Epic Treasure Vault',
+      rarity: 'epic',
+      image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
+      description: 'Epic rewards for skilled winners!',
+      rewards: ['500-1000 CCTR', 'Epic NFT', 'Tournament Pass']
+    },
+    {
+      id: 'rare-chest',
+      name: 'Rare Treasure Vault',
+      rarity: 'rare',
+      image: '/lovable-uploads/rare-chest.png',
+      description: 'Rare rewards with golden treasures!',
+      rewards: ['250-500 CCTR', 'Rare NFT', 'Game Credits']
+    },
+    {
+      id: 'legendary-chest',
+      name: 'Legendary Treasure Vault',
+      rarity: 'legendary',
+      image: '/lovable-uploads/legendary-chest.png',
+      description: 'Ultimate rewards for champions!',
+      rewards: ['2000-5000 CCTR', 'Legendary NFT', 'Premium Access']
+    }
+  ];
+
+  const currentChest = treasureChests[currentChestIndex];
+
+  // Auto-rotate chests every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentChestIndex((prev) => (prev + 1) % treasureChests.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const connectStellarWallet = async () => {
     console.log('Please use the wallet connection modal to connect a Stellar wallet');
@@ -145,8 +166,8 @@ export const RaffleSection = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       setOpeningChest({ 
-        name: treasureChest.name, 
-        rarity: treasureChest.rarity,
+        name: currentChest.name, 
+        rarity: currentChest.rarity,
         eligibilityId 
       });
       setChestAnimationOpen(true);
@@ -215,14 +236,15 @@ export const RaffleSection = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Chest Display - Compact */}
-              <Card className="vending-machine hover:scale-[1.02] transition-transform">
+              {/* Chest Display - Rotating Carousel */}
+              <Card className="vending-machine hover:scale-[1.02] transition-transform relative overflow-hidden">
                 <CardContent className="p-0">
                   <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden relative group max-h-48">
                     <img 
-                      src={treasureChest.image} 
-                      alt={treasureChest.name} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      src={currentChest.image} 
+                      alt={currentChest.name} 
+                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 animate-fade-in" 
+                      key={currentChest.id}
                     />
                     <div className="absolute inset-0 pointer-events-none overflow-hidden">
                       <Sparkles className="absolute top-2 left-3 w-4 h-4 text-yellow-300 animate-pulse opacity-80" />
@@ -233,11 +255,24 @@ export const RaffleSection = () => {
                   </div>
                   <div className="p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <Badge className="bg-purple-500 text-white text-xs">EPIC</Badge>
+                      <Badge className={`text-white text-xs ${currentChest.rarity === 'legendary' ? 'bg-yellow-500' : currentChest.rarity === 'rare' ? 'bg-orange-500' : 'bg-purple-500'}`}>
+                        {currentChest.rarity.toUpperCase()}
+                      </Badge>
                       <span className="text-xl font-bold text-neon-green">🎁 FREE</span>
                     </div>
-                    <h4 className="font-bold text-neon-cyan text-sm">{treasureChest.name}</h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{treasureChest.description}</p>
+                    <h4 className="font-bold text-neon-cyan text-sm">{currentChest.name}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{currentChest.description}</p>
+                    
+                    {/* Carousel Dots */}
+                    <div className="flex justify-center gap-1.5 pt-1">
+                      {treasureChests.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentChestIndex(idx)}
+                          className={`w-2 h-2 rounded-full transition-all ${idx === currentChestIndex ? 'bg-neon-cyan w-4' : 'bg-muted-foreground/40 hover:bg-muted-foreground'}`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
