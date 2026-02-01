@@ -40,7 +40,8 @@ export const CyberTriviaGameplay: React.FC<CyberTriviaGameplayProps> = ({
     if (gameState.timeRemaining === 0 && !gameState.showResult) {
       onSubmitAnswer();
     }
-  }, [gameState.timeRemaining, gameState.showResult, onSubmitAnswer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.timeRemaining, gameState.showResult]);
 
   // Auto-advance after showing result
   useEffect(() => {
@@ -48,7 +49,8 @@ export const CyberTriviaGameplay: React.FC<CyberTriviaGameplayProps> = ({
       const timer = setTimeout(onNextQuestion, 2000);
       return () => clearTimeout(timer);
     }
-  }, [gameState.showResult, onNextQuestion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.showResult, gameState.currentQuestionIndex]);
 
   if (!currentQuestion) return null;
 
