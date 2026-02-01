@@ -16,7 +16,7 @@ export const CyberMatchPlayerStats: React.FC<CyberMatchPlayerStatsProps> = ({ st
   ] : [];
 
   return (
-    <Card className="cyber-glass p-5">
+    <Card className="cyber-glass p-6">
       <h3 className="text-lg font-bold text-neon-cyan mb-4 flex items-center gap-2">
         <Target className="w-5 h-5" /> Your Stats
       </h3>
