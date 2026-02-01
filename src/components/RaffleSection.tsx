@@ -214,7 +214,7 @@ export const RaffleSection = () => {
                  CYBER CHEST   
               </CardTitle>
               <p className="text-muted-foreground mt-1">
-                Win games for FREE chests • Enter raffles for epic prizes • Earn CCTR
+                Win games for FREE chests or Enter raffles for epic prizes and Earn CCTR
               </p>
             </div>
             <WalletStatusBar />
