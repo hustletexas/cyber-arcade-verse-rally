@@ -2164,6 +2164,148 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_matches_secure: {
+        Row: {
+          bracket_position: string | null
+          completed_at: string | null
+          created_at: string | null
+          dispute_reason: string | null
+          disputed: boolean | null
+          id: string | null
+          match_code: string | null
+          match_metadata: Json | null
+          match_number: number | null
+          player_a_id: string | null
+          player_a_score: number | null
+          player_a_wallet: string | null
+          player_b_id: string | null
+          player_b_score: number | null
+          player_b_wallet: string | null
+          round_number: number | null
+          scheduled_time: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["match_status"] | null
+          tournament_id: string | null
+          updated_at: string | null
+          winner_id: string | null
+          winner_wallet: string | null
+        }
+        Insert: {
+          bracket_position?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          dispute_reason?: string | null
+          disputed?: boolean | null
+          id?: string | null
+          match_code?: string | null
+          match_metadata?: Json | null
+          match_number?: number | null
+          player_a_id?: string | null
+          player_a_score?: number | null
+          player_a_wallet?: never
+          player_b_id?: string | null
+          player_b_score?: number | null
+          player_b_wallet?: never
+          round_number?: number | null
+          scheduled_time?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["match_status"] | null
+          tournament_id?: string | null
+          updated_at?: string | null
+          winner_id?: string | null
+          winner_wallet?: never
+        }
+        Update: {
+          bracket_position?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          dispute_reason?: string | null
+          disputed?: boolean | null
+          id?: string | null
+          match_code?: string | null
+          match_metadata?: Json | null
+          match_number?: number | null
+          player_a_id?: string | null
+          player_a_score?: number | null
+          player_a_wallet?: never
+          player_b_id?: string | null
+          player_b_score?: number | null
+          player_b_wallet?: never
+          round_number?: number | null
+          scheduled_time?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["match_status"] | null
+          tournament_id?: string | null
+          updated_at?: string | null
+          winner_id?: string | null
+          winner_wallet?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_standings_secure: {
+        Row: {
+          created_at: string | null
+          finalized: boolean | null
+          finalized_at: string | null
+          id: string | null
+          losses: number | null
+          placement: number | null
+          points: number | null
+          prize_amount_usd: number | null
+          prize_amount_usdc: number | null
+          tournament_id: string | null
+          user_id: string | null
+          wallet_address: string | null
+          wins: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          finalized?: boolean | null
+          finalized_at?: string | null
+          id?: string | null
+          losses?: number | null
+          placement?: number | null
+          points?: number | null
+          prize_amount_usd?: number | null
+          prize_amount_usdc?: number | null
+          tournament_id?: string | null
+          user_id?: string | null
+          wallet_address?: never
+          wins?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          finalized?: boolean | null
+          finalized_at?: string | null
+          id?: string | null
+          losses?: number | null
+          placement?: number | null
+          points?: number | null
+          prize_amount_usd?: number | null
+          prize_amount_usdc?: number | null
+          tournament_id?: string | null
+          user_id?: string | null
+          wallet_address?: never
+          wins?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trivia_daily_leaderboard: {
         Row: {
           best_streak: number | null
