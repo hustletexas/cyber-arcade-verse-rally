@@ -281,13 +281,13 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     {dailyLeaderboard.length > 0 ? (
                       <div className="space-y-2">
                         {dailyLeaderboard.slice(0, 5).map((entry, idx) => (
-                          <div key={entry.user_id} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
+                          <div key={entry.user_id || idx} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
                             <div className="flex items-center gap-3">
                               <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
                                 #{idx + 1}
                               </span>
                               <span className="text-sm text-gray-300">
-                                {entry.user_id.slice(0, 6)}...{entry.user_id.slice(-4)}
+                                {entry.user_id ? `${entry.user_id.slice(0, 6)}...${entry.user_id.slice(-4)}` : 'Anonymous'}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -323,13 +323,13 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     {allTimeLeaderboard.length > 0 ? (
                       <div className="space-y-2">
                         {allTimeLeaderboard.slice(0, 5).map((entry, idx) => (
-                          <div key={entry.user_id} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
+                          <div key={entry.user_id || idx} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
                             <div className="flex items-center gap-3">
                               <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
                                 #{idx + 1}
                               </span>
                               <span className="text-sm text-gray-300">
-                                {entry.user_id.slice(0, 6)}...{entry.user_id.slice(-4)}
+                                {entry.user_id ? `${entry.user_id.slice(0, 6)}...${entry.user_id.slice(-4)}` : 'Anonymous'}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
