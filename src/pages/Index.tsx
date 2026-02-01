@@ -12,10 +12,8 @@ import { TokenPurchase } from '@/components/TokenPurchase';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
-import { TriviaGame } from '@/components/TriviaGame';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { TournamentHub } from '@/components/tournament/TournamentHub';
-import { CyberMatchGame } from '@/components/CyberMatchGame';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
 
 import { useToast } from '@/hooks/use-toast';
@@ -171,19 +169,9 @@ const Index = () => {
           </section>
 
 
-          {/* Trivia Section - Touch Enhanced */}
-          <section className="px-2 sm:px-4">
-            <TriviaGame />
-          </section>
-
           {/* Cyber Arcade Games Section */}
           <section className="px-2 sm:px-4">
             <CyberGamesSection />
-          </section>
-
-          {/* Cyber Match Game Section */}
-          <section className="px-2 sm:px-4">
-            <CyberMatchGame />
           </section>
 
           {/* Raffles Section - Mobile Friendly */}
