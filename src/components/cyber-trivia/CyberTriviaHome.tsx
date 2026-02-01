@@ -165,6 +165,27 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
               </div>
             </div>
 
+            {/* Mode Selection CTAs */}
+            <div className="flex flex-wrap justify-center gap-4 max-w-2xl mx-auto">
+              <Button 
+                variant="outline" 
+                onClick={handleFreePlayClick} 
+                disabled={loading} 
+                className="px-8 py-6 text-lg font-bold text-neon-cyan border-neon-cyan/50 bg-transparent hover:bg-neon-cyan/10"
+              >
+                <Flame className="w-5 h-5 mr-2" />
+                {loading ? 'Loading...' : 'FREE PLAY'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={onStartDailyRun} 
+                disabled={loading} 
+                className="px-8 py-6 text-lg font-bold text-purple-400 border-purple-400/50 bg-transparent hover:bg-purple-400/10"
+              >
+                <Trophy className="w-5 h-5 mr-2" />
+                {loading ? 'Loading...' : 'DAILY RUN'}
+              </Button>
+            </div>
 
 
             {/* Lifelines Status */}
