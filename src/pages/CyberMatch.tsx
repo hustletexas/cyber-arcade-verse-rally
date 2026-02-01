@@ -10,8 +10,8 @@ import {
 } from '@/components/games/cyber-match';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCcw, Wallet, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, RotateCcw, Wallet, Zap, Home } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useSorobanContracts } from '@/hooks/useSorobanContracts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import '@/components/games/cyber-match/cyber-match.css';
 
 const CyberMatch: React.FC = () => {
+  const navigate = useNavigate();
   const {
     gameState,
     canPlay,
@@ -87,12 +88,24 @@ const CyberMatch: React.FC = () => {
         <div className="relative z-20 mb-6">
           <div className="flex items-center justify-between p-3 rounded-lg bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
             <div className="flex items-center gap-3">
-              <Link to="/">
-                <Button variant="ghost" size="sm" className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10">
-                  <ArrowLeft className="w-4 h-4 mr-1" />
-                  Back
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate(-1)}
+                className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/')}
+                className="text-gray-400 hover:text-white hover:bg-white/10"
+              >
+                <Home className="w-4 h-4 mr-1" />
+                Home
+              </Button>
               <Badge 
                 variant="outline" 
                 className="border-neon-cyan/50 text-neon-cyan flex items-center gap-1.5 px-3 py-1"
