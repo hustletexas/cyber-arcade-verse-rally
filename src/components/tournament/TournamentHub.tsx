@@ -53,50 +53,6 @@ export const TournamentHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Live Bracket Preview - Show when there are active tournaments */}
-      {activeTournaments.length > 0 && (
-        <Card className="arcade-frame border-neon-green/50">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="font-display text-xl text-neon-green flex items-center gap-2">
-                <GitBranch className="w-5 h-5" />
-                LIVE BRACKET
-              </CardTitle>
-              {activeTournaments.length > 1 && (
-                <div className="flex gap-2">
-                  {activeTournaments.map(t => (
-                    <Badge 
-                      key={t.id}
-                      className={`cursor-pointer transition-all ${
-                        selectedTournamentId === t.id 
-                          ? 'bg-neon-green text-black' 
-                          : 'bg-muted hover:bg-neon-green/20'
-                      }`}
-                      onClick={() => setSelectedTournamentId(t.id)}
-                    >
-                      {t.title}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-            {selectedTournamentId && (
-              <p className="text-sm text-muted-foreground">
-                {activeTournaments.find(t => t.id === selectedTournamentId)?.title} — {activeTournaments.find(t => t.id === selectedTournamentId)?.game}
-              </p>
-            )}
-          </CardHeader>
-          <CardContent>
-            {selectedTournamentId && (
-              <BracketPreview 
-                tournamentId={selectedTournamentId} 
-                isAdmin={isAdmin}
-              />
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 bg-background/50 border border-border">
@@ -119,6 +75,50 @@ export const TournamentHub: React.FC = () => {
             </TabsTrigger>
           )}
         </TabsList>
+
+        {/* Live Bracket Preview - Show when there are active tournaments */}
+        {activeTournaments.length > 0 && (
+          <Card className="arcade-frame border-neon-green/50 mt-6">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-display text-xl text-neon-green flex items-center gap-2">
+                  <GitBranch className="w-5 h-5" />
+                  LIVE BRACKET
+                </CardTitle>
+                {activeTournaments.length > 1 && (
+                  <div className="flex gap-2">
+                    {activeTournaments.map(t => (
+                      <Badge 
+                        key={t.id}
+                        className={`cursor-pointer transition-all ${
+                          selectedTournamentId === t.id 
+                            ? 'bg-neon-green text-black' 
+                            : 'bg-muted hover:bg-neon-green/20'
+                        }`}
+                        onClick={() => setSelectedTournamentId(t.id)}
+                      >
+                        {t.title}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {selectedTournamentId && (
+                <p className="text-sm text-muted-foreground">
+                  {activeTournaments.find(t => t.id === selectedTournamentId)?.title} — {activeTournaments.find(t => t.id === selectedTournamentId)?.game}
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              {selectedTournamentId && (
+                <BracketPreview 
+                  tournamentId={selectedTournamentId} 
+                  isAdmin={isAdmin}
+                />
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <TabsContent value="browse" className="mt-6">
           <TournamentList 
