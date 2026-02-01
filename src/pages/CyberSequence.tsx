@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
 import { useCyberSequence } from '@/hooks/useCyberSequence';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
@@ -108,8 +108,32 @@ const CyberSequence: React.FC = () => {
   const ticketsEarned = calculateTickets() + (isNewPersonalBest ? SCORING.ticketsNewPersonalBest : 0);
 
   return (
-    <div className="cyber-sequence-container min-h-screen p-4 md:p-8">
-      <div className="relative z-10 max-w-4xl mx-auto">
+    <div className="cyber-sequence-container min-h-screen">
+      {/* Navigation Header */}
+      <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-sm border-b border-neon-cyan/20">
+        <div className="container mx-auto px-4 py-3 flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="text-neon-cyan hover:text-neon-cyan/80 hover:bg-neon-cyan/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="text-gray-400 hover:text-white hover:bg-white/10"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Home
+          </Button>
+        </div>
+      </div>
+
+      <div className="relative z-10 max-w-4xl mx-auto p-4 md:p-8">
         {phase === 'menu' && (
           <>
             <CyberSequenceModeSelect
