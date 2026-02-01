@@ -250,6 +250,103 @@
   100% { transform: translate(-50%, -50%) scale(20); opacity: 0; }
 }
 
+/* ---------- PARTICLE BURST ---------- */
+.sequence-button {
+  --px: 50%;
+  --py: 50%;
+}
+
+.sequence-button--cyan { --c: #00ffff; }
+.sequence-button--purple { --c: #9333ea; }
+.sequence-button--green { --c: #22c55e; }
+.sequence-button--red { --c: #ef4444; }
+
+/* Container for particles */
+.sequence-button .fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+/* Each particle */
+.sequence-button .p {
+  position: absolute;
+  left: var(--px);
+  top: var(--py);
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--c) 85%, white);
+  box-shadow: 0 0 16px color-mix(in oklab, var(--c) 40%, transparent);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+/* Trigger: add .burst to the button */
+.sequence-button.burst .p {
+  opacity: 1;
+  animation: particleFly 0.55s ease-out forwards;
+}
+
+/* Different directions using nth-child */
+.sequence-button .p:nth-child(1) { --dx: 0px; --dy: -54px; --s: 1.0; }
+.sequence-button .p:nth-child(2) { --dx: 34px; --dy: -42px; --s: 0.9; }
+.sequence-button .p:nth-child(3) { --dx: 54px; --dy: 0px; --s: 1.05; }
+.sequence-button .p:nth-child(4) { --dx: 36px; --dy: 42px; --s: 0.85; }
+.sequence-button .p:nth-child(5) { --dx: 0px; --dy: 54px; --s: 1.0; }
+.sequence-button .p:nth-child(6) { --dx: -36px; --dy: 42px; --s: 0.9; }
+.sequence-button .p:nth-child(7) { --dx: -54px; --dy: 0px; --s: 1.05; }
+.sequence-button .p:nth-child(8) { --dx: -34px; --dy: -42px; --s: 0.85; }
+.sequence-button .p:nth-child(9) { --dx: 18px; --dy: -62px; --s: 0.75; }
+.sequence-button .p:nth-child(10) { --dx: -18px; --dy: -62px; --s: 0.75; }
+
+@keyframes particleFly {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+    filter: blur(0.2px);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--s));
+    opacity: 0;
+    filter: blur(0.6px);
+  }
+}
+
+/* Spark streaks */
+.sequence-button .spark {
+  position: absolute;
+  left: var(--px);
+  top: var(--py);
+  width: 28px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--c) 80%, white), transparent);
+  transform: translate(-50%, -50%) rotate(var(--r));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sequence-button.burst .spark {
+  opacity: 1;
+  animation: sparkOut 0.45s ease-out forwards;
+}
+
+.sequence-button .spark:nth-child(11) { --r: 20deg; }
+.sequence-button .spark:nth-child(12) { --r: 70deg; }
+.sequence-button .spark:nth-child(13) { --r: 120deg; }
+
+@keyframes sparkOut {
+  0% { transform: translate(-50%, -50%) rotate(var(--r)) scaleX(0.4); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--r)) scaleX(1.25); opacity: 0; }
+}
+
 /* Screen shake animation */
 .sequence-shake {
   animation: shake 0.5s ease-in-out;
