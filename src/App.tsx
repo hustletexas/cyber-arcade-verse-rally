@@ -13,6 +13,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CyberMatch from "./pages/CyberMatch";
 import CyberSequence from "./pages/CyberSequence";
+import CyberTrivia from "./pages/CyberTrivia";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/games/cyber-match" element={<CyberMatch />} />
                 <Route path="/games/cyber-sequence" element={<CyberSequence />} />
+                <Route path="/games/cyber-trivia" element={<CyberTrivia />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
