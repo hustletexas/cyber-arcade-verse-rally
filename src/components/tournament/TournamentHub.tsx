@@ -76,8 +76,16 @@ export const TournamentHub: React.FC = () => {
           )}
         </TabsList>
 
+        {/* Tournament Cards - Browse tab content moved above live bracket */}
+        <TabsContent value="browse" className="mt-6">
+          <TournamentList 
+            tournaments={tournaments.filter(t => t.status !== 'draft')} 
+            loading={loading}
+          />
+        </TabsContent>
+
         {/* Live Bracket Preview - Show when there are active tournaments */}
-        {activeTournaments.length > 0 && (
+        {activeTournaments.length > 0 && activeTab === 'browse' && (
           <Card className="arcade-frame border-neon-green/50 mt-6">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -119,13 +127,6 @@ export const TournamentHub: React.FC = () => {
             </CardContent>
           </Card>
         )}
-
-        <TabsContent value="browse" className="mt-6">
-          <TournamentList 
-            tournaments={tournaments.filter(t => t.status !== 'draft')} 
-            loading={loading}
-          />
-        </TabsContent>
 
         <TabsContent value="my-tournaments" className="mt-6">
           <MyTournaments />
