@@ -8,7 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
-import { Brain, Zap, MessageCircle } from 'lucide-react';
+import { Brain, Zap, MessageCircle, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AIGamingCoach = () => {
   const { toast } = useToast();
@@ -66,11 +67,33 @@ export const AIGamingCoach = () => {
         return;
       }
 
-      // Generate AI response (simplified keyword-based for now)
-      const aiResponse = generateAIResponse(question);
-      setResponse(aiResponse);
-      
-      // Clear the question input to allow for new questions
+      // Call the AI Gaming Coach edge function
+      const { data, error } = await supabase.functions.invoke('gaming-coach', {
+        body: { question: question.trim() }
+      });
+
+      if (error) {
+        console.error('Gaming coach error:', error);
+        toast({
+          title: "AI Error",
+          description: error.message || "Failed to get AI response",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.error) {
+        toast({
+          title: "AI Error",
+          description: data.error,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      setResponse(data.response);
       setQuestion('');
 
       toast({
@@ -90,21 +113,10 @@ export const AIGamingCoach = () => {
     }
   };
 
-  const generateAIResponse = (question: string): string => {
-    const lowerQuestion = question.toLowerCase();
-    
-    if (lowerQuestion.includes('strategy') || lowerQuestion.includes('tactic')) {
-      return "🎯 Gaming Strategy: Focus on positioning, map control, and resource management. Practice your aim daily and study pro player gameplay patterns.";
-    } else if (lowerQuestion.includes('improve') || lowerQuestion.includes('better')) {
-      return "📈 Improvement Tips: Analyze your replays, identify weaknesses, practice specific skills in training modes, and maintain consistent play schedules.";
-    } else if (lowerQuestion.includes('tournament') || lowerQuestion.includes('compete')) {
-      return "🏆 Tournament Prep: Study the meta, practice under pressure, maintain good mental health, and develop consistent warm-up routines.";
-    } else if (lowerQuestion.includes('team') || lowerQuestion.includes('communication')) {
-      return "👥 Team Play: Clear communication, defined roles, regular practice together, and positive attitude are key to team success.";
-    } else if (lowerQuestion.includes('build') || lowerQuestion.includes('loadout')) {
-      return "⚔️ Build Optimization: Adapt your build to the current meta, practice different configurations, and understand item synergies.";
-    } else {
-      return "🤖 AI Coach: Great question! Focus on consistent practice, review your gameplay, learn from mistakes, and stay updated with meta changes. Keep grinding!";
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAskQuestion();
     }
   };
 
@@ -137,6 +149,7 @@ export const AIGamingCoach = () => {
               placeholder="Ask your gaming question... (e.g., 'How to improve my aim?')"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              onKeyPress={handleKeyPress}
               className="flex-1 cyber-input"
               disabled={isLoading}
             />
@@ -145,8 +158,12 @@ export const AIGamingCoach = () => {
               disabled={isLoading || !question.trim() || !isWalletConnected}
               className="cyber-button"
             >
-              <MessageCircle size={16} className="mr-2" />
-              {isLoading ? 'PROCESSING...' : 'ASK AI'}
+              {isLoading ? (
+                <Loader2 size={16} className="mr-2 animate-spin" />
+              ) : (
+                <MessageCircle size={16} className="mr-2" />
+              )}
+              {isLoading ? 'THINKING...' : 'ASK AI'}
             </Button>
           </div>
 
@@ -160,12 +177,12 @@ export const AIGamingCoach = () => {
         {response && (
           <Card className="holographic p-6">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-neon-cyan flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-neon-cyan flex items-center justify-center shrink-0">
                 🤖
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-neon-cyan mb-2">AI Gaming Coach Response:</h3>
-                <p className="text-gray-300 leading-relaxed">{response}</p>
+                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">{response}</div>
               </div>
             </div>
           </Card>
@@ -176,25 +193,25 @@ export const AIGamingCoach = () => {
           <h3 className="font-bold text-neon-pink mb-3">💡 Sample Questions:</h3>
           <div className="grid gap-2 text-sm">
             <button
-              onClick={() => setQuestion("How can I improve my reaction time?")}
+              onClick={() => setQuestion("How can I improve my reaction time in FPS games?")}
               className="text-left p-2 rounded hover:bg-gray-800 transition-colors text-gray-400"
-              disabled={!isWalletConnected}
+              disabled={!isWalletConnected || isLoading}
             >
-              • How can I improve my reaction time?
+              • How can I improve my reaction time in FPS games?
             </button>
             <button
-              onClick={() => setQuestion("What's the best strategy for tournaments?")}
+              onClick={() => setQuestion("What's the best strategy for winning esports tournaments?")}
               className="text-left p-2 rounded hover:bg-gray-800 transition-colors text-gray-400"
-              disabled={!isWalletConnected}
+              disabled={!isWalletConnected || isLoading}
             >
-              • What's the best strategy for tournaments?
+              • What's the best strategy for winning esports tournaments?
             </button>
             <button
-              onClick={() => setQuestion("How to build better team communication?")}
+              onClick={() => setQuestion("How do I build better team communication in competitive games?")}
               className="text-left p-2 rounded hover:bg-gray-800 transition-colors text-gray-400"
-              disabled={!isWalletConnected}
+              disabled={!isWalletConnected || isLoading}
             >
-              • How to build better team communication?
+              • How do I build better team communication in competitive games?
             </button>
           </div>
         </Card>
