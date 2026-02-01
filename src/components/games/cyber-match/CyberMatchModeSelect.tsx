@@ -207,7 +207,8 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
                   </Badge>
                 </div>
                 <Button 
-                  className="cyber-cta-primary w-full py-6 text-lg font-bold text-neon-cyan"
+                  variant="outline"
+                  className="w-full py-6 text-lg font-bold text-neon-cyan border-neon-cyan/50 bg-transparent hover:bg-neon-cyan/10"
                 >
                   🎮 PLAY FREE
                 </Button>
