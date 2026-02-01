@@ -136,7 +136,7 @@ export const CyberMatchGame: React.FC = () => {
               <CyberMatchModeSelect isAuthenticated={isAuthenticated} hasEnoughCCTR={hasEnoughCCTR} cctrBalance={cctrBalance} canPlay={canPlay} playsRemaining={playsRemaining} onStartGame={startGame} />
 
               {/* Stats & Leaderboard Preview */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-6">
                 <CyberMatchPlayerStats stats={playerStats} />
                 <div ref={leaderboardRef}>
                   <CyberMatchLeaderboard todayLeaderboard={todayLeaderboard} allTimeLeaderboard={allTimeLeaderboard} />
