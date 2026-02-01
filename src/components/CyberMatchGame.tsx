@@ -125,7 +125,7 @@ export const CyberMatchGame: React.FC = () => {
         }}>
               {/* Hero Section - Compact */}
               <div className="text-center py-4">
-                <h2 className="cyber-title font-display text-2xl sm:text-3xl md:text-4xl text-neon-cyan mb-2" data-text="CYBER MATCH">
+                <h2 className="cyber-title font-display sm:text-3xl md:text-4xl text-neon-cyan mb-2 text-7xl" data-text="CYBER MATCH">
                    CYBER MATCH
                 </h2>
                 <p className="text-sm text-gray-400">

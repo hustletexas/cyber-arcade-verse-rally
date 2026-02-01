@@ -6,10 +6,8 @@ import { TriviaUserStats, TriviaDailyLeaderboardEntry } from '@/types/cyber-triv
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
 type TriviaCategory = 'Gaming' | 'Entertainment';
 type PlayMode = 'free' | 'prize';
-
 interface CyberTriviaHomeProps {
   onStartFreePlay: (category: TriviaCategory, playMode: PlayMode) => void;
   onStartDailyRun: () => void;
@@ -17,51 +15,46 @@ interface CyberTriviaHomeProps {
   dailyLeaderboard: TriviaDailyLeaderboardEntry[];
   loading: boolean;
 }
-
 export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
   onStartFreePlay,
   onStartDailyRun,
   userStats,
   dailyLeaderboard,
-  loading,
+  loading
 }) => {
-  const { primaryWallet, isWalletConnected } = useMultiWallet();
+  const {
+    primaryWallet,
+    isWalletConnected
+  } = useMultiWallet();
   const [showCategorySelect, setShowCategorySelect] = useState(false);
-
   const userRank = dailyLeaderboard.findIndex(e => e.user_id === primaryWallet?.address) + 1;
-
   const handleFreePlayClick = () => {
     setShowCategorySelect(true);
   };
-
   const handleCategorySelect = (category: TriviaCategory, playMode: PlayMode) => {
     onStartFreePlay(category, playMode);
     setShowCategorySelect(false);
   };
-
   const handleBackToMenu = () => {
     setShowCategorySelect(false);
   };
-
-  return (
-    <div className="relative z-10 space-y-6">
+  return <div className="relative z-10 space-y-6">
       <AnimatePresence mode="wait">
-        {showCategorySelect ? (
-          <motion.div
-            key="category-select"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3 }}
-            className="py-8"
-          >
+        {showCategorySelect ? <motion.div key="category-select" initial={{
+        opacity: 0,
+        scale: 0.95
+      }} animate={{
+        opacity: 1,
+        scale: 1
+      }} exit={{
+        opacity: 0,
+        scale: 0.95
+      }} transition={{
+        duration: 0.3
+      }} className="py-8">
             {/* Category Selection */}
             <div className="text-center mb-8">
-              <Button
-                variant="ghost"
-                onClick={handleBackToMenu}
-                className="text-neon-cyan hover:text-neon-cyan/80 mb-4"
-              >
+              <Button variant="ghost" onClick={handleBackToMenu} className="text-neon-cyan hover:text-neon-cyan/80 mb-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
@@ -94,19 +87,10 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3 pt-2">
-                    <Button 
-                      onClick={() => handleCategorySelect('Gaming', 'free')}
-                      disabled={loading}
-                      variant="outline"
-                      className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 py-5"
-                    >
+                    <Button onClick={() => handleCategorySelect('Gaming', 'free')} disabled={loading} variant="outline" className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 py-5">
                       <span className="font-bold">FREE</span>
                     </Button>
-                    <Button 
-                      onClick={() => handleCategorySelect('Gaming', 'prize')}
-                      disabled={loading}
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5"
-                    >
+                    <Button onClick={() => handleCategorySelect('Gaming', 'prize')} disabled={loading} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5">
                       🏆 WIN CCTR
                     </Button>
                   </div>
@@ -135,40 +119,31 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3 pt-2">
-                    <Button 
-                      onClick={() => handleCategorySelect('Entertainment', 'free')}
-                      disabled={loading}
-                      variant="outline"
-                      className="border-purple-400/50 text-purple-400 hover:bg-purple-500/10 py-5"
-                    >
+                    <Button onClick={() => handleCategorySelect('Entertainment', 'free')} disabled={loading} variant="outline" className="border-purple-400/50 text-purple-400 hover:bg-purple-500/10 py-5">
                       <span className="font-bold">FREE</span>
                     </Button>
-                    <Button 
-                      onClick={() => handleCategorySelect('Entertainment', 'prize')}
-                      disabled={loading}
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5"
-                    >
+                    <Button onClick={() => handleCategorySelect('Entertainment', 'prize')} disabled={loading} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5">
                       🏆 WIN CCTR
                     </Button>
                   </div>
                 </div>
               </Card>
             </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="main-menu"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
+          </motion.div> : <motion.div key="main-menu" initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} exit={{
+        opacity: 0,
+        y: -20
+      }} transition={{
+        duration: 0.3
+      }}>
             {/* Hero Section */}
             <div className="text-center py-8">
-              <h1 
-                className="cyber-title font-display text-4xl md:text-5xl lg:text-6xl text-neon-cyan mb-4"
-                data-text="CYBER TRIVIA"
-              >
+              <h1 className="cyber-title font-display md:text-5xl lg:text-6xl text-neon-cyan mb-4 text-7xl" data-text="CYBER TRIVIA">
                 CYBER TRIVIA
               </h1>
               <p className="text-lg text-gray-400 max-w-xl mx-auto">
@@ -210,11 +185,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                       🎫 Earn Tickets
                     </Badge>
                   </div>
-                  <Button 
-                    onClick={handleFreePlayClick}
-                    disabled={loading}
-                    className="cyber-cta-primary w-full py-6 text-lg font-bold text-neon-cyan"
-                  >
+                  <Button onClick={handleFreePlayClick} disabled={loading} className="cyber-cta-primary w-full py-6 text-lg font-bold text-neon-cyan">
                     {loading ? 'Loading...' : '🎮 PLAY NOW'}
                   </Button>
                 </div>
@@ -241,11 +212,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                       📊 Top 100
                     </Badge>
                   </div>
-                  <Button 
-                    onClick={onStartDailyRun}
-                    disabled={loading}
-                    className="cyber-cta-secondary w-full py-6 text-lg font-bold text-purple-400"
-                  >
+                  <Button onClick={onStartDailyRun} disabled={loading} className="cyber-cta-secondary w-full py-6 text-lg font-bold text-purple-400">
                     {loading ? 'Loading...' : '🎯 START DAILY RUN'}
                   </Button>
                 </div>
@@ -259,8 +226,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                 <h3 className="text-lg font-bold text-neon-cyan mb-4 flex items-center gap-2">
                   <Target className="w-5 h-5" /> Your Stats
                 </h3>
-                {isWalletConnected && userStats ? (
-                  <div className="grid grid-cols-2 gap-4">
+                {isWalletConnected && userStats ? <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-3 rounded-lg bg-black/30">
                       <div className="text-2xl font-bold text-white">{userStats.best_streak}</div>
                       <div className="text-xs text-gray-500">Best Streak</div>
@@ -279,12 +245,9 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                       </div>
                       <div className="text-xs text-gray-500">Tickets</div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  </div> : <div className="text-center py-8 text-gray-500">
                     <p>Connect wallet to track stats</p>
-                  </div>
-                )}
+                  </div>}
               </Card>
 
               {/* Daily Leaderboard Preview */}
@@ -292,21 +255,10 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                 <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
                   <Trophy className="w-5 h-5" /> Today's Top 5
                 </h3>
-                {dailyLeaderboard.length > 0 ? (
-                  <div className="space-y-2">
-                    {dailyLeaderboard.slice(0, 5).map((entry, idx) => (
-                      <div 
-                        key={entry.user_id}
-                        className={`flex items-center justify-between p-2 rounded ${
-                          entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'
-                        }`}
-                      >
+                {dailyLeaderboard.length > 0 ? <div className="space-y-2">
+                    {dailyLeaderboard.slice(0, 5).map((entry, idx) => <div key={entry.user_id} className={`flex items-center justify-between p-2 rounded ${entry.user_id === primaryWallet?.address ? 'leaderboard-you' : 'bg-black/20'}`}>
                         <div className="flex items-center gap-3">
-                          <span className={`font-bold ${
-                            idx === 0 ? 'text-yellow-400' : 
-                            idx === 1 ? 'text-gray-300' : 
-                            idx === 2 ? 'text-orange-400' : 'text-gray-500'
-                          }`}>
+                          <span className={`font-bold ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
                             #{idx + 1}
                           </span>
                           <span className="text-sm text-gray-300">
@@ -318,10 +270,8 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                           <Flame className="w-4 h-4 text-orange-400" />
                           <span className="text-xs text-orange-400">{entry.best_streak}</span>
                         </div>
-                      </div>
-                    ))}
-                    {userRank > 5 && userRank <= 100 && (
-                      <div className="pt-2 border-t border-gray-700">
+                      </div>)}
+                    {userRank > 5 && userRank <= 100 && <div className="pt-2 border-t border-gray-700">
                         <div className="flex items-center justify-between p-2 rounded leaderboard-you">
                           <div className="flex items-center gap-3">
                             <span className="font-bold text-neon-cyan">#{userRank}</span>
@@ -331,21 +281,16 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                             {dailyLeaderboard.find(e => e.user_id === primaryWallet?.address)?.score || 0}
                           </span>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
+                      </div>}
+                  </div> : <div className="text-center py-8 text-gray-500">
                     <p>No scores yet today</p>
                     <p className="text-xs mt-1">Be the first!</p>
-                  </div>
-                )}
+                  </div>}
               </Card>
             </div>
 
             {/* Lifelines Status */}
-            {isWalletConnected && userStats && (
-              <Card className="cyber-glass p-4 max-w-4xl mx-auto mt-6">
+            {isWalletConnected && userStats && <Card className="cyber-glass p-4 max-w-4xl mx-auto mt-6">
                 <div className="flex flex-wrap justify-center gap-6">
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-full bg-neon-cyan/10 flex items-center justify-center text-lg">
@@ -375,11 +320,8 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     </div>
                   </div>
                 </div>
-              </Card>
-            )}
-          </motion.div>
-        )}
+              </Card>}
+          </motion.div>}
       </AnimatePresence>
-    </div>
-  );
+    </div>;
 };
