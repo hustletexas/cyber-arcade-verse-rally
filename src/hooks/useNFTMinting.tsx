@@ -1,9 +1,17 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+
+interface MintResponse {
+  success?: boolean;
+  transactionHash?: string;
+  mintAddress?: string;
+  ledger?: number;
+  error?: string;
+  details?: string;
+}
 
 export const useNFTMinting = () => {
   const { toast } = useToast();
@@ -54,28 +62,6 @@ export const useNFTMinting = () => {
     }
   };
 
-  const recordMint = async (transactionHash: string, mintAddress: string) => {
-    if (!primaryWallet || !user) return;
-
-    try {
-      const { error } = await supabase
-        .from('nft_mints')
-        .insert({
-          user_id: user.id,
-          wallet_address: primaryWallet.address,
-          nft_name: NFT_METADATA.name,
-          mint_address: mintAddress,
-          transaction_hash: transactionHash,
-          metadata: NFT_METADATA,
-          status: 'completed'
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Failed to record mint:', error);
-    }
-  };
-
   const mintFreeNFT = async (): Promise<boolean> => {
     if (!isWalletConnected || !primaryWallet) {
       toast({
@@ -86,19 +72,13 @@ export const useNFTMinting = () => {
       return false;
     }
 
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to claim your NFT",
-        variant: "destructive"
-      });
-      return false;
-    }
+    // Generate deterministic user ID from wallet address for wallet-only architecture
+    const walletUserId = primaryWallet.address;
 
     setIsMinting(true);
 
     try {
-      // Check eligibility - only 1 NFT per wallet
+      // Check eligibility first (quick client-side check)
       const isEligible = await checkMintEligibility();
       if (!isEligible) {
         toast({
@@ -111,46 +91,46 @@ export const useNFTMinting = () => {
 
       toast({
         title: "🔄 Claiming Your NFT",
-        description: "Creating your Cyber City Arcade Genesis NFT on Stellar...",
+        description: "Creating claimable balance on Stellar Mainnet...",
       });
 
-      // Generate Stellar-style transaction hash and mint address
-      const timestamp = Date.now();
-      const randomSuffix = Math.random().toString(36).substring(2, 11);
-      const walletPrefix = primaryWallet.address.substring(0, 8);
-      
-      // Stellar transaction hashes are 64 character hex strings
-      const transactionHash = `stellar_${timestamp}_${randomSuffix}`.padEnd(64, '0');
-      // Soroban contract addresses start with 'C'
-      const mintAddress = `C${walletPrefix}${timestamp}`.substring(0, 56);
+      // Call the Edge Function to create the claimable balance
+      const { data, error } = await supabase.functions.invoke('mint-nft-claimable', {
+        body: {
+          claimantPublicKey: primaryWallet.address,
+          nftName: NFT_METADATA.name,
+          metadata: NFT_METADATA,
+          userId: walletUserId
+        }
+      });
 
-      // Simulate minting delay (in production, this would be a Soroban contract call)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      const response = data as MintResponse | null;
 
-      // Record the mint in database
-      await recordMint(transactionHash, mintAddress);
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to create claimable balance');
+      }
+
+      if (!response?.success) {
+        throw new Error(response?.error || 'Failed to create claimable balance');
+      }
 
       toast({
         title: "🎉 NFT Claimed Successfully!",
-        description: "Your Cyber City Arcade Genesis NFT has been claimed on Stellar!",
+        description: "A claimable balance has been created for your Stellar wallet!",
       });
 
       toast({
         title: "📋 Transaction Complete",
-        description: `TX: ${transactionHash.slice(0, 12)}... | Mint: ${mintAddress.slice(0, 8)}...`,
+        description: `TX: ${response.transactionHash?.slice(0, 12)}... | Ledger: ${response.ledger}`,
       });
 
       return true;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Claim error:', error);
       
-      let errorMessage = 'Claim failed. Please try again.';
-      if (error.message?.includes('insufficient')) {
-        errorMessage = 'Insufficient XLM for transaction fees.';
-      } else if (error.message?.includes('rejected')) {
-        errorMessage = 'Transaction was rejected.';
-      }
+      const errorMessage = error instanceof Error ? error.message : 'Claim failed. Please try again.';
       
       toast({
         title: "❌ Claim Failed",
@@ -167,6 +147,7 @@ export const useNFTMinting = () => {
   return {
     mintFreeNFT,
     isMinting,
-    nftMetadata: NFT_METADATA
+    nftMetadata: NFT_METADATA,
+    checkMintEligibility
   };
 };

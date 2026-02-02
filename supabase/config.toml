@@ -19,3 +19,6 @@ verify_jwt = false
 
 [functions.gaming-coach]
 verify_jwt = false
+
+[functions.mint-nft-claimable]
+verify_jwt = false
