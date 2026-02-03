@@ -246,90 +246,13 @@ export const RaffleSection = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Cyber Slots Machine */}
+              {/* Cyber Slots Machine - Now Full Width */}
               <CyberSlotsMachine 
                 onWin={(rarity, tokens) => {
                   // Handle win - could open chest animation or award tokens
                   console.log(`Won ${tokens} CCTR and ${rarity} chest!`);
                 }}
               />
-
-              {/* How to Earn - Compact */}
-              <Card className="holographic p-4 flex flex-col justify-center">
-                <h4 className="font-bold text-neon-pink mb-3 flex items-center gap-2 text-sm">
-                  <Award className="w-4 h-4" />
-                  How to Earn Free Chests
-                </h4>
-                <ul className="space-y-1.5 text-xs">
-                  <li className="flex items-center gap-2 text-muted-foreground">
-                    <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
-                    Win a Trivia game (top score)
-                  </li>
-                  <li className="flex items-center gap-2 text-muted-foreground">
-                    <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
-                    Complete Neon Match 36 perfectly
-                  </li>
-                  <li className="flex items-center gap-2 text-muted-foreground">
-                    <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
-                    Place 1st in any Tournament
-                  </li>
-                  <li className="flex items-center gap-2 text-muted-foreground">
-                    <Trophy className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-                    One chest per wallet per win
-                  </li>
-                </ul>
-              </Card>
-
-              {/* Your Chests Status - Compact */}
-              <Card className="holographic p-4 flex flex-col">
-                <h4 className="font-bold text-neon-green mb-3 flex items-center gap-2 text-sm">
-                  <Gift className="w-4 h-4" />
-                  {hasUnclaimedChests ? 'Your Winner\'s Chests' : 'Chest Rewards'}
-                </h4>
-                
-                {!isWalletConnected ? <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground text-center">🔐 Connect wallet to claim</p>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-xs">
-                        <Badge className="bg-purple-500 text-white text-[10px] px-1.5">EPIC</Badge>
-                        <span className="text-muted-foreground">500-1000 CCTR, Epic NFT</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <Badge className="bg-orange-500 text-white text-[10px] px-1.5">RARE</Badge>
-                        <span className="text-muted-foreground">250-500 CCTR, Rare NFT</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <Badge className="bg-yellow-500 text-white text-[10px] px-1.5">LEGENDARY</Badge>
-                        <span className="text-muted-foreground">2000-5000 CCTR, Legendary NFT</span>
-                      </div>
-                    </div>
-                  </div> : hasUnclaimedChests ? <div className="space-y-2">
-                    <div className="p-2 bg-neon-green/10 rounded-lg border border-neon-green/30 text-center">
-                      <span className="text-neon-green font-bold text-sm">
-                        🎉 {unclaimedCount} chest{unclaimedCount > 1 ? 's' : ''} to open!
-                      </span>
-                    </div>
-                    {eligibleChests.slice(0, 2).map(chest => <Button key={chest.id} onClick={() => openWinnerChest(chest.id)} disabled={processingPayment === 'winner-chest'} className="cyber-button w-full text-xs py-2" size="sm">
-                        {processingPayment === 'winner-chest' ? "⏳ OPENING..." : "🎁 OPEN CHEST"}
-                      </Button>)}
-                  </div> : <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground text-center mb-2">Win a game to earn a chest!</p>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-xs">
-                        <Badge className="bg-purple-500 text-white text-[10px] px-1.5">EPIC</Badge>
-                        <span className="text-muted-foreground">500-1000 CCTR, Epic NFT</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <Badge className="text-white text-[10px] px-1.5 bg-blue-700">RARE</Badge>
-                        <span className="text-muted-foreground">250-500 CCTR, Rare NFT</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <Badge className="bg-yellow-500 text-white text-[10px] px-1.5">LEGENDARY</Badge>
-                        <span className="text-muted-foreground">2000-5000 CCTR, Legendary NFT</span>
-                      </div>
-                    </div>
-                  </div>}
-              </Card>
             </div>
           </div>
 

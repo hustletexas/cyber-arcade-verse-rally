@@ -171,56 +171,56 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   const remainingSpins = MAX_DAILY_SPINS - spinCount;
 
   return (
-    <Card className="vending-machine hover:scale-[1.01] transition-transform relative overflow-hidden border-2 border-neon-cyan/30">
+    <Card className="vending-machine hover:scale-[1.01] transition-transform relative overflow-hidden border-2 border-neon-cyan/30 col-span-full lg:col-span-3">
       <CardContent className="p-4">
         {/* Header */}
-        <div className="text-center mb-3">
-          <h3 className="font-display text-lg bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent flex items-center justify-center gap-2">
-            <Zap className="w-5 h-5 text-neon-cyan" />
+        <div className="text-center mb-4">
+          <h3 className="font-display text-2xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent flex items-center justify-center gap-3">
+            <Zap className="w-6 h-6 text-neon-cyan" />
             CYBER SLOTS
-            <Zap className="w-5 h-5 text-neon-pink" />
+            <Zap className="w-6 h-6 text-neon-pink" />
           </h3>
-          <p className="text-xs text-muted-foreground">Match 3 chests to win CCTR + Chest!</p>
+          <p className="text-sm text-muted-foreground">Match 3 chests to win CCTR + unlock that chest!</p>
         </div>
 
         {/* Slot Machine Display */}
-        <div className="bg-gradient-to-b from-black/80 to-neon-purple/20 rounded-lg p-3 border border-neon-purple/30 relative">
+        <div className="bg-gradient-to-b from-black/80 to-neon-purple/20 rounded-xl p-4 border border-neon-purple/30 relative">
           {/* Win Overlay */}
           {showWin && winInfo && (
-            <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center rounded-lg animate-fade-in">
-              <div className="text-center space-y-2">
-                <div className="flex items-center justify-center gap-2">
-                  <Trophy className="w-8 h-8 text-yellow-400 animate-bounce" />
-                  <span className="text-2xl font-bold text-yellow-400">JACKPOT!</span>
-                  <Trophy className="w-8 h-8 text-yellow-400 animate-bounce" />
+            <div className="absolute inset-0 bg-black/90 z-10 flex items-center justify-center rounded-xl animate-fade-in">
+              <div className="text-center space-y-3">
+                <div className="flex items-center justify-center gap-3">
+                  <Trophy className="w-10 h-10 text-yellow-400 animate-bounce" />
+                  <span className="text-3xl font-bold text-yellow-400">JACKPOT!</span>
+                  <Trophy className="w-10 h-10 text-yellow-400 animate-bounce" />
                 </div>
-                <Badge className={`bg-gradient-to-r ${getRarityColor(winInfo.rarity)} text-white text-lg px-4 py-1`}>
-                  {winInfo.rarity.toUpperCase()} CHEST
+                <Badge className={`bg-gradient-to-r ${getRarityColor(winInfo.rarity)} text-white text-xl px-6 py-2`}>
+                  {winInfo.rarity.toUpperCase()} CHEST UNLOCKED!
                 </Badge>
-                <p className="text-neon-green font-bold text-xl">+{winInfo.tokens} CCTR</p>
+                <p className="text-neon-green font-bold text-2xl">+{winInfo.tokens} CCTR</p>
                 <Button 
-                  size="sm" 
+                  size="lg" 
                   onClick={() => setShowWin(false)}
-                  className="cyber-button mt-2"
+                  className="cyber-button mt-3"
                 >
-                  <Gift className="w-4 h-4 mr-1" />
+                  <Gift className="w-5 h-5 mr-2" />
                   Claim Rewards
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Reels Container */}
-          <div className="flex justify-center gap-2 mb-3">
+          {/* Reels Container - Full Width */}
+          <div className="flex justify-center gap-3 md:gap-6 mb-4">
             {reels.map((symbol, index) => (
               <div
                 key={index}
                 className={`
-                  relative w-20 h-24 rounded-lg overflow-hidden
+                  relative flex-1 max-w-[180px] aspect-[3/4] rounded-xl overflow-hidden
                   bg-gradient-to-b from-neon-purple/30 to-black/60
-                  border-2 border-neon-cyan/40
+                  border-3 border-neon-cyan/50
                   ${reelAnimations[index] ? 'animate-pulse' : ''}
-                  ${showWin && winInfo ? `shadow-lg ${getRarityGlow(winInfo.rarity)}` : ''}
+                  ${showWin && winInfo ? `shadow-xl ${getRarityGlow(winInfo.rarity)}` : 'shadow-lg shadow-neon-purple/30'}
                   transition-all duration-300
                 `}
               >
@@ -238,83 +238,125 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                   style={{ animationDuration: '2s', animationIterationCount: 'infinite' }} 
                 />
                 {/* Rarity indicator */}
-                <div className={`absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r ${getRarityColor(symbol.rarity)}`} />
+                <div className={`absolute bottom-0 inset-x-0 h-2 bg-gradient-to-r ${getRarityColor(symbol.rarity)}`} />
+                {/* Rarity label */}
+                <Badge className={`absolute top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-[10px] px-2`}>
+                  {symbol.rarity.toUpperCase()}
+                </Badge>
               </div>
             ))}
           </div>
 
-          {/* Spin Counter */}
-          <div className="flex items-center justify-center gap-2 mb-3">
-            {[...Array(MAX_DAILY_SPINS)].map((_, i) => (
-              <div
-                key={i}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  i < remainingSpins 
-                    ? 'bg-neon-green shadow-lg shadow-neon-green/50' 
-                    : 'bg-muted-foreground/30'
-                }`}
-              />
-            ))}
-            <span className="text-xs text-muted-foreground ml-2">
-              {remainingSpins}/{MAX_DAILY_SPINS} spins
-            </span>
-          </div>
+          {/* Spin Counter & Button Row */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* Spin Counter */}
+            <div className="flex items-center gap-2">
+              {[...Array(MAX_DAILY_SPINS)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-4 h-4 rounded-full transition-all ${
+                    i < remainingSpins 
+                      ? 'bg-neon-green shadow-lg shadow-neon-green/50' 
+                      : 'bg-muted-foreground/30'
+                  }`}
+                />
+              ))}
+              <span className="text-sm text-muted-foreground ml-2">
+                {remainingSpins}/{MAX_DAILY_SPINS} spins left
+              </span>
+            </div>
 
-          {/* Spin Button */}
-          <Button
-            onClick={spin}
-            disabled={isSpinning || remainingSpins <= 0 || !isWalletConnected}
-            className={`
-              w-full cyber-button text-lg font-bold py-3
-              ${isSpinning ? 'animate-pulse' : ''}
-              disabled:opacity-50 disabled:cursor-not-allowed
-            `}
-          >
-            {isSpinning ? (
-              <>
-                <Sparkles className="w-5 h-5 mr-2 animate-spin" />
-                SPINNING...
-              </>
-            ) : remainingSpins <= 0 ? (
-              'NO SPINS LEFT'
-            ) : !isWalletConnected ? (
-              'CONNECT WALLET'
-            ) : (
-              <>
-                <Star className="w-5 h-5 mr-2" />
-                FREE SPIN
-              </>
-            )}
-          </Button>
+            {/* Spin Button */}
+            <Button
+              onClick={spin}
+              disabled={isSpinning || remainingSpins <= 0 || !isWalletConnected}
+              size="lg"
+              className={`
+                cyber-button text-xl font-bold px-10 py-4
+                ${isSpinning ? 'animate-pulse' : ''}
+                disabled:opacity-50 disabled:cursor-not-allowed
+              `}
+            >
+              {isSpinning ? (
+                <>
+                  <Sparkles className="w-6 h-6 mr-2 animate-spin" />
+                  SPINNING...
+                </>
+              ) : remainingSpins <= 0 ? (
+                'NO SPINS LEFT'
+              ) : !isWalletConnected ? (
+                'CONNECT WALLET'
+              ) : (
+                <>
+                  <Star className="w-6 h-6 mr-2" />
+                  FREE SPIN
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
-        {/* Rewards Info */}
-        <div className="mt-3 space-y-1.5 text-xs">
-          <p className="text-center text-muted-foreground font-medium">Match 3 to Win:</p>
-          <div className="grid grid-cols-2 gap-1">
-            <div className="flex items-center gap-1.5">
-              <Badge className="bg-green-500 text-white text-[10px] px-1.5">COMMON</Badge>
-              <span className="text-muted-foreground">150 CCTR</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Badge className="bg-blue-500 text-white text-[10px] px-1.5">RARE</Badge>
-              <span className="text-muted-foreground">450 CCTR</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Badge className="bg-purple-500 text-white text-[10px] px-1.5">EPIC</Badge>
-              <span className="text-muted-foreground">1500 CCTR</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Badge className="bg-yellow-500 text-white text-[10px] px-1.5">LEGEND</Badge>
-              <span className="text-muted-foreground">6000 CCTR</span>
+        {/* Rules & Rewards Section at Bottom */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* How to Play */}
+          <div className="bg-gradient-to-br from-neon-purple/10 to-neon-cyan/10 rounded-lg p-4 border border-neon-purple/20">
+            <h4 className="font-bold text-neon-pink mb-2 flex items-center gap-2 text-sm">
+              <Zap className="w-4 h-4" />
+              How to Play
+            </h4>
+            <ul className="space-y-1.5 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
+                Get 3 free spins every day
+              </li>
+              <li className="flex items-center gap-2">
+                <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
+                Match 3 chests of the same rarity
+              </li>
+              <li className="flex items-center gap-2">
+                <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
+                Win CCTR tokens + unlock that chest
+              </li>
+              <li className="flex items-center gap-2">
+                <Trophy className="w-3 h-3 text-yellow-400 flex-shrink-0" />
+                Higher rarity = bigger rewards!
+              </li>
+            </ul>
+          </div>
+
+          {/* Rewards Table */}
+          <div className="bg-gradient-to-br from-neon-cyan/10 to-neon-green/10 rounded-lg p-4 border border-neon-cyan/20">
+            <h4 className="font-bold text-neon-green mb-2 flex items-center gap-2 text-sm">
+              <Gift className="w-4 h-4" />
+              Match 3 Rewards
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
+                <Badge className="bg-green-500 text-white text-[10px] px-1.5">COMMON</Badge>
+                <span className="text-muted-foreground">150 CCTR + Chest</span>
+              </div>
+              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
+                <Badge className="bg-blue-500 text-white text-[10px] px-1.5">RARE</Badge>
+                <span className="text-muted-foreground">450 CCTR + Chest</span>
+              </div>
+              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
+                <Badge className="bg-purple-500 text-white text-[10px] px-1.5">EPIC</Badge>
+                <span className="text-muted-foreground">1500 CCTR + Chest</span>
+              </div>
+              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
+                <Badge className="bg-yellow-500 text-white text-[10px] px-1.5">LEGEND</Badge>
+                <span className="text-muted-foreground">6000 CCTR + Chest</span>
+              </div>
             </div>
           </div>
         </div>
       </CardContent>
 
       {/* Decorative Corner Sparkles */}
-      <Sparkles className="absolute top-2 right-2 w-4 h-4 text-neon-cyan animate-pulse opacity-60" />
-      <Sparkles className="absolute bottom-2 left-2 w-4 h-4 text-neon-pink animate-pulse opacity-60" style={{ animationDelay: '0.5s' }} />
+      <Sparkles className="absolute top-3 right-3 w-5 h-5 text-neon-cyan animate-pulse opacity-60" />
+      <Sparkles className="absolute top-3 left-3 w-5 h-5 text-neon-pink animate-pulse opacity-60" style={{ animationDelay: '0.3s' }} />
+      <Sparkles className="absolute bottom-3 right-3 w-5 h-5 text-neon-green animate-pulse opacity-60" style={{ animationDelay: '0.6s' }} />
+      <Sparkles className="absolute bottom-3 left-3 w-5 h-5 text-yellow-400 animate-pulse opacity-60" style={{ animationDelay: '0.9s' }} />
     </Card>
   );
 };
