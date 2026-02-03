@@ -104,7 +104,7 @@ export const WalletBalanceDisplay = () => {
     if (result?.success) {
       toast({
         title: "🎉 Rewards Claimed!",
-        description: `Successfully claimed ${balance.claimable_rewards} $CCTR tokens!`,
+        description: `Successfully claimed ${balance.claimable_rewards} CCC credits!`,
       });
     } else {
       toast({
@@ -193,16 +193,16 @@ export const WalletBalanceDisplay = () => {
 
         <TabsContent value="balances" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* CCTR Balance */}
+            {/* CCC Balance */}
             <Card className="vending-machine">
               <CardContent className="p-6 text-center">
                 <div className="text-3xl font-black text-neon-green mb-2">
                   {loading ? '...' : balance.cctr_balance.toLocaleString()}
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">$CCTR Tokens</p>
-                <div className="text-lg text-neon-purple">
-                  ≈ ${loading ? '...' : (balance.cctr_balance * 0.045).toFixed(2)} USD
-                </div>
+                <p className="text-sm text-muted-foreground mb-2">CCC Credits</p>
+                <Badge className="bg-neon-cyan/20 text-neon-cyan text-xs">
+                  Cyber City Credits
+                </Badge>
               </CardContent>
             </Card>
 
@@ -212,7 +212,7 @@ export const WalletBalanceDisplay = () => {
                 <div className="text-3xl font-black text-neon-pink mb-2">
                   {loading ? '...' : balance.claimable_rewards.toLocaleString()}
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">Claimable $CCTR</p>
+                <p className="text-sm text-muted-foreground mb-2">Claimable CCC</p>
                 <Button 
                   onClick={handleClaimRewards}
                   disabled={loading || balance.claimable_rewards === 0}

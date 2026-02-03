@@ -8,16 +8,16 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 interface CyberMatchModeSelectProps {
   isAuthenticated: boolean;
-  hasEnoughCCTR: boolean;
-  cctrBalance: number;
+  hasEnoughCCC: boolean;
+  cccBalance: number;
   canPlay: boolean;
   playsRemaining: number;
   onStartGame: (mode: GameMode, difficulty: Difficulty) => void;
 }
 export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
   isAuthenticated,
-  hasEnoughCCTR,
-  cctrBalance,
+  hasEnoughCCC,
+  cccBalance,
   canPlay,
   playsRemaining,
   onStartGame
@@ -139,7 +139,7 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
             </Card>
 
             {/* Daily Match Run Card */}
-            <Card className={cn("cyber-glass-pink p-6 transition-all duration-300", isAuthenticated && hasEnoughCCTR && canPlay ? "cursor-pointer hover:border-neon-pink/50 hover:shadow-[0_0_30px_rgba(236,72,153,0.2)]" : "opacity-80")} onClick={() => isAuthenticated && hasEnoughCCTR && canPlay && setSelectedMode('daily')}>
+            <Card className={cn("cyber-glass-pink p-6 transition-all duration-300", isAuthenticated && hasEnoughCCC && canPlay ? "cursor-pointer hover:border-neon-pink/50 hover:shadow-[0_0_30px_rgba(236,72,153,0.2)]" : "opacity-80")} onClick={() => isAuthenticated && hasEnoughCCC && canPlay && setSelectedMode('daily')}>
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 mx-auto rounded-full bg-neon-pink/10 flex items-center justify-center">
                   <Crown className="w-8 h-8 text-neon-pink" />
@@ -168,12 +168,12 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
                     <Button variant="outline" className="w-full py-5 border-neon-pink/50 text-neon-pink" disabled>
                       🔒 WALLET REQUIRED
                     </Button>
-                  </div> : !hasEnoughCCTR ? <div className="pt-2">
+                  </div> : !hasEnoughCCC ? <div className="pt-2">
                     <p className="text-neon-pink/60 text-xs mb-2">
-                      Need {GAME_ENTRY_FEE} CCTR (You have {cctrBalance})
+                      Need {GAME_ENTRY_FEE} CCC (You have {cccBalance})
                     </p>
                     <Button variant="outline" className="w-full py-5 border-yellow-500/50 text-yellow-400">
-                      💰 GET MORE CCTR
+                      💰 EARN MORE CCC
                     </Button>
                   </div> : !canPlay ? <div className="pt-2">
                     <p className="text-neon-pink/60 text-xs mb-2">Daily limit reached</p>

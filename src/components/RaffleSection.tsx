@@ -122,35 +122,35 @@ export const RaffleSection = () => {
     rarity: 'epic',
     image: '/lovable-uploads/epic-cyber-chest.png',
     description: 'Epic rewards for skilled winners!',
-    rewards: ['500-1000 CCTR', 'Epic NFT', 'Tournament Pass']
+    rewards: ['500-1000 CCC', 'Epic NFT', 'Tournament Pass']
   }, {
     id: 'rare-chest',
     name: 'Rare Cyber Chest',
     rarity: 'rare',
     image: '/lovable-uploads/rare-cyber-chest.png',
     description: 'Rare rewards with golden treasures!',
-    rewards: ['250-500 CCTR', 'Rare NFT', 'Game Credits']
+    rewards: ['250-500 CCC', 'Rare NFT', 'Game Credits']
   }, {
     id: 'legendary-chest',
     name: 'Legendary Cyber Chest',
     rarity: 'legendary',
     image: '/lovable-uploads/legendary-cyber-chest.png',
     description: 'Ultimate rewards for champions!',
-    rewards: ['2000-5000 CCTR', 'Legendary NFT', 'Premium Access']
+    rewards: ['2000-5000 CCC', 'Legendary NFT', 'Premium Access']
   }, {
     id: 'common-chest',
     name: 'Cyber Chest',
     rarity: 'common',
     image: '/lovable-uploads/common-cyber-chest.png',
     description: 'Standard rewards for all players!',
-    rewards: ['100-250 CCTR', 'Common NFT', 'Bonus Credits']
+    rewards: ['100-250 CCC', 'Common NFT', 'Bonus Credits']
   }, {
     id: 'standard-chest',
     name: 'Standard Cyber Chest',
     rarity: 'rare',
     image: '/lovable-uploads/standard-cyber-chest.png',
     description: 'Quality rewards for dedicated players!',
-    rewards: ['250-500 CCTR', 'Rare NFT', 'Game Pass']
+    rewards: ['250-500 CCC', 'Rare NFT', 'Game Pass']
   }];
   const currentChest = treasureChests[currentChestIndex];
 
@@ -229,7 +229,7 @@ export const RaffleSection = () => {
                  CYBER CHEST   
               </CardTitle>
               <p className="text-muted-foreground mt-1">
-                Win games for FREE chests or Enter raffles for epic prizes and Earn CCTR
+                Win games for FREE chests or Enter raffles for epic prizes and Earn CCC
               </p>
             </div>
             <WalletStatusBar />
@@ -250,7 +250,7 @@ export const RaffleSection = () => {
               <CyberSlotsMachine 
                 onWin={(rarity, tokens) => {
                   // Handle win - could open chest animation or award tokens
-                  console.log(`Won ${tokens} CCTR and ${rarity} chest!`);
+                  console.log(`Won ${tokens} CCC and ${rarity} chest!`);
                 }}
               />
             </div>
@@ -304,12 +304,12 @@ export const RaffleSection = () => {
                       [raffle.id]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1))
                     })} className="w-14 h-8 text-xs" />
                         <span className="text-xs text-muted-foreground">
-                          × {raffle.ticketPrice} = {(selectedTickets[raffle.id] || 1) * raffle.ticketPrice} CCTR
+                          × {raffle.ticketPrice} = {(selectedTickets[raffle.id] || 1) * raffle.ticketPrice} CCC
                         </span>
                       </div>
 
                       <Button onClick={() => purchaseRaffleTickets(raffle.id, selectedTickets[raffle.id] || 1)} disabled={processingPayment === raffle.id || !isAuthenticated} className="cyber-button w-full text-xs py-2" size="sm">
-                        {processingPayment === raffle.id ? "⏳ PROCESSING..." : !isAuthenticated ? "🔐 CONNECT WALLET" : `🎫 ENTER (${(selectedTickets[raffle.id] || 1) * raffle.ticketPrice} CCTR)`}
+                        {processingPayment === raffle.id ? "⏳ PROCESSING..." : !isAuthenticated ? "🔐 CONNECT WALLET" : `🎫 ENTER (${(selectedTickets[raffle.id] || 1) * raffle.ticketPrice} CCC)`}
                       </Button>
                     </div>
                   </CardContent>

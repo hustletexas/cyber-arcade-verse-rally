@@ -130,8 +130,8 @@ export function useCyberMatch() {
   // Derived state
   const canPlayDaily = dailyLimit ? dailyLimit.plays_today < MAX_DAILY_PLAYS : true;
   const playsRemaining = dailyLimit ? MAX_DAILY_PLAYS - dailyLimit.plays_today : MAX_DAILY_PLAYS;
-  const hasEnoughCCTR = balance.cctr_balance >= GAME_ENTRY_FEE;
-  const cctrBalance = balance.cctr_balance;
+  const hasEnoughCCC = balance.cctr_balance >= GAME_ENTRY_FEE;
+  const cccBalance = balance.cctr_balance;
   const totalPairs = gameMode ? DIFFICULTY_CONFIGS[difficulty].pairs : 0;
 
   // Fetch daily limit
@@ -605,8 +605,8 @@ export function useCyberMatch() {
     restartGame,
     backToModeSelect,
     isAuthenticated: isWalletConnected,
-    cctrBalance,
-    hasEnoughCCTR,
+    cccBalance,
+    hasEnoughCCC,
     entryFee: GAME_ENTRY_FEE,
     gameMode,
     difficulty,

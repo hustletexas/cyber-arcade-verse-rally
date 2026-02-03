@@ -27,8 +27,8 @@ export const CyberMatchGame: React.FC = () => {
     restartGame,
     backToModeSelect,
     isAuthenticated,
-    cctrBalance,
-    hasEnoughCCTR,
+    cccBalance,
+    hasEnoughCCC,
     entryFee,
     gameMode,
     difficulty,
@@ -133,7 +133,7 @@ export const CyberMatchGame: React.FC = () => {
                 </p>
               </div>
 
-              <CyberMatchModeSelect isAuthenticated={isAuthenticated} hasEnoughCCTR={hasEnoughCCTR} cctrBalance={cctrBalance} canPlay={canPlay} playsRemaining={playsRemaining} onStartGame={startGame} />
+              <CyberMatchModeSelect isAuthenticated={isAuthenticated} hasEnoughCCC={hasEnoughCCC} cccBalance={cccBalance} canPlay={canPlay} playsRemaining={playsRemaining} onStartGame={startGame} />
 
               {/* Stats & Leaderboard Preview */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-6">
@@ -177,7 +177,7 @@ export const CyberMatchGame: React.FC = () => {
           opacity: 0,
           y: -20
         }} className="text-center py-6">
-              <CyberMatchModeSelect isAuthenticated={isAuthenticated} hasEnoughCCTR={hasEnoughCCTR} cctrBalance={cctrBalance} canPlay={canPlay} playsRemaining={playsRemaining} onStartGame={startGame} />
+              <CyberMatchModeSelect isAuthenticated={isAuthenticated} hasEnoughCCC={hasEnoughCCC} cccBalance={cccBalance} canPlay={canPlay} playsRemaining={playsRemaining} onStartGame={startGame} />
             </motion.div>}
         </AnimatePresence>
       </div>

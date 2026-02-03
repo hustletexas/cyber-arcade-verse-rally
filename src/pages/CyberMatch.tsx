@@ -38,8 +38,8 @@ const CyberMatch: React.FC = () => {
     restartGame,
     backToModeSelect,
     isAuthenticated,
-    cctrBalance,
-    hasEnoughCCTR,
+    cccBalance,
+    hasEnoughCCC,
     entryFee,
     gameMode,
     difficulty,
@@ -188,8 +188,8 @@ const CyberMatch: React.FC = () => {
 
               <CyberMatchModeSelect
                 isAuthenticated={isAuthenticated}
-                hasEnoughCCTR={hasEnoughCCTR}
-                cctrBalance={cctrBalance}
+                hasEnoughCCC={hasEnoughCCC}
+                cccBalance={cccBalance}
                 canPlay={canPlay}
                 playsRemaining={playsRemaining}
                 onStartGame={startGame}
@@ -289,9 +289,9 @@ const CyberMatch: React.FC = () => {
         gameState={gameState}
         finalScore={finalScore}
         ticketsEarned={ticketsEarned}
-        onPlayAgain={gameMode === 'free' ? restartGame : (canPlay && hasEnoughCCTR ? restartGame : backToModeSelect)}
+        onPlayAgain={gameMode === 'free' ? restartGame : (canPlay && hasEnoughCCC ? restartGame : backToModeSelect)}
         onViewLeaderboard={gameMode === 'daily' ? scrollToLeaderboard : backToModeSelect}
-        canPlayAgain={gameMode === 'free' || (canPlay && hasEnoughCCTR)}
+        canPlayAgain={gameMode === 'free' || (canPlay && hasEnoughCCC)}
         gameMode={gameMode}
         difficulty={difficulty}
         chestEarned={chestEarned}

@@ -7,7 +7,7 @@ import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { RaffleSection } from '@/components/RaffleSection';
-import { TokenPurchase } from '@/components/TokenPurchase';
+import { CreditsRewardsShowcase } from '@/components/CreditsRewardsShowcase';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -183,9 +183,9 @@ const Index = () => {
             <VotingSection />
           </section>
 
-          {/* Buy CCTR Section - Mobile Enhanced */}
+          {/* CCC Credits Section - How to Earn */}
           <section className="px-2 sm:px-4">
-            <TokenPurchase />
+            <CreditsRewardsShowcase />
           </section>
 
         </div>
