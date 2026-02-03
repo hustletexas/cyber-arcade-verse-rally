@@ -310,6 +310,23 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   }, [stoppedReels, isSpinning, finalReels, onWin, isDemo]);
 
   const spin = useCallback(() => {
+    // During demo mode, give a free spin (no wallet/balance required)
+    if (isContinuousDemo) {
+      stopDemoAndPlay();
+      
+      const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+      setFinalReels(results);
+      
+      setIsSpinning(true);
+      setShowWin(false);
+      setWinInfo(null);
+      setStoppedReels(0);
+      setReelSpinning([true, true, true]);
+      
+      toast.success('🎰 Free spin activated!');
+      return;
+    }
+
     if (!isWalletConnected) {
       toast.error('Connect wallet to spin!');
       return;
@@ -320,10 +337,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       return;
     }
 
-    if (isSpinning && !isContinuousDemo) return;
-
-    // Stop demo mode when player spins
-    stopDemoAndPlay();
+    if (isSpinning) return;
 
     // Deduct spin cost (in a real app, this would be a database transaction)
     toast.info(`-${SPIN_COST} CCC`);
@@ -428,7 +442,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                   <div className="spin-button-glow" />
                   <button
                     onClick={spin}
-                    disabled={(isSpinning && !isContinuousDemo) || (!hasEnoughBalance && !isContinuousDemo) || (!isWalletConnected && !isContinuousDemo)}
+                    disabled={isSpinning && !isContinuousDemo}
                     className="spin-button-hex"
                   >
                     {isContinuousDemo ? 'FREE SPIN' : isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
