@@ -142,18 +142,22 @@ const SlotReel: React.FC<{
         ))}
       </div>
 
-      {/* Gradient overlays for depth */}
-      <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/70 to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/70 to-transparent pointer-events-none z-10" />
+      {/* Top and bottom tabs instead of center line */}
+      <div className="absolute inset-x-0 top-0 h-2 pointer-events-none z-10 flex justify-between px-0">
+        <div className="w-3 h-full bg-gradient-to-b from-neon-cyan to-transparent rounded-br" />
+        <div className="w-3 h-full bg-gradient-to-b from-neon-cyan to-transparent rounded-bl" />
+      </div>
+      <div className="absolute inset-x-0 bottom-0 h-2 pointer-events-none z-10 flex justify-between px-0">
+        <div className="w-3 h-full bg-gradient-to-t from-neon-pink to-transparent rounded-tr" />
+        <div className="w-3 h-full bg-gradient-to-t from-neon-pink to-transparent rounded-tl" />
+      </div>
       
-      {/* Center line indicator */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 bg-neon-cyan/70 pointer-events-none z-10 shadow-lg shadow-neon-cyan/60" />
+      {/* Gradient overlays for depth */}
+      <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10" />
       
       {/* Shine effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
-      
-      {/* Rarity indicator bar */}
-      <div className={`absolute bottom-0 inset-x-0 h-3 bg-gradient-to-r ${getRarityColor(finalSymbol.rarity)} z-20`} />
     </div>
   );
 };
