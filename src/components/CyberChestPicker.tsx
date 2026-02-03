@@ -2,10 +2,11 @@ import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Gift, Sparkles, Lock, ChevronRight, Trophy, ShoppingCart, Gamepad2 } from 'lucide-react';
+import { Gift, Sparkles, Lock, ChevronRight, Trophy, ShoppingCart, Gamepad2, Wallet, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWinnerChests } from '@/hooks/useWinnerChests';
+import { WalletStatusBar } from '@/components/WalletStatusBar';
 
 interface CyberChest {
   id: string;
@@ -173,6 +174,11 @@ export const CyberChestPicker: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Wallet Status */}
+      <div className="flex justify-end">
+        <WalletStatusBar compact />
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="font-display text-3xl font-black tracking-widest uppercase"
