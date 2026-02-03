@@ -177,7 +177,14 @@ export const CyberChestPicker: React.FC = () => {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <Gift className="w-6 h-6 text-neon-pink" />
-          <h3 className="font-display text-xl bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent">
+          <h3 className="font-display text-2xl font-bold tracking-wider uppercase"
+              style={{
+                background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 30%, #FF8C00 60%, #B8860B 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 0 20px rgba(255, 165, 0, 0.5), 0 0 40px rgba(255, 140, 0, 0.3)',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
+              }}>
             CYBER CHEST
           </h3>
         </div>
