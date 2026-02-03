@@ -152,6 +152,11 @@ const Index = () => {
             <CommunityHub />
           </section>
 
+          {/* NFT Marketplace Section - Mobile Optimized */}
+          <section className="px-2 sm:px-4">
+            <Marketplace />
+          </section>
+
           {/* Tournament Hub Section */}
           <section className="px-2 sm:px-4">
             <TournamentHub />
@@ -171,11 +176,6 @@ const Index = () => {
           {/* Merchandise Store Section - Touch Friendly */}
           <section className="px-2 sm:px-4">
             <MerchandiseStore />
-          </section>
-
-          {/* NFT Marketplace Section - Mobile Optimized */}
-          <section className="px-2 sm:px-4">
-            <Marketplace />
           </section>
 
 
