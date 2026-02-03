@@ -22,6 +22,7 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
+import { CyberChestPicker } from '@/components/CyberChestPicker';
 const Index = () => {
   const {
     toast
@@ -180,6 +181,13 @@ const Index = () => {
           {/* Merchandise Store Section - Touch Friendly */}
           <section className="px-2 sm:px-4">
             <MerchandiseStore />
+          </section>
+
+          {/* Cyber Chest Section - Standalone Transparent */}
+          <section className="px-2 sm:px-4">
+            <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-cyan/30 rounded-xl p-6">
+              <CyberChestPicker />
+            </div>
           </section>
 
           {/* Raffles Section - Mobile Friendly */}
