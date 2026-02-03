@@ -147,11 +147,6 @@ const Index = () => {
             </div>
           </section>
 
-          {/* CCC Credits Section - How to Earn */}
-          <section className="px-2 sm:px-4">
-            <CreditsRewardsShowcase />
-          </section>
-
           {/* Community Hub Section */}
           <section className="px-2 sm:px-4">
             <CommunityHub />
@@ -172,6 +167,7 @@ const Index = () => {
             <AIGamingCoach />
           </section>
 
+
           {/* Merchandise Store Section - Touch Friendly */}
           <section className="px-2 sm:px-4">
             <MerchandiseStore />
@@ -181,6 +177,7 @@ const Index = () => {
           <section className="px-2 sm:px-4">
             <Marketplace />
           </section>
+
 
           {/* Cyber Arcade Games Section */}
           <section className="px-2 sm:px-4">
@@ -195,6 +192,11 @@ const Index = () => {
           {/* Voting Section - Touch Optimized */}
           <section className="px-2 sm:px-4">
             <VotingSection />
+          </section>
+
+          {/* CCC Credits Section - How to Earn */}
+          <section className="px-2 sm:px-4">
+            <CreditsRewardsShowcase />
           </section>
 
         </div>
