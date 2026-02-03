@@ -127,7 +127,7 @@ const ps5Games = [
     name: 'GTA 6',
     category: 'Open World Action',
     blockchain: 'N/A',
-    image: '/lovable-uploads/cyber-city-arcade-nft.png',
+    image: '/images/games/gta6.webp',
     description: 'The highly anticipated next chapter in the legendary Grand Theft Auto series',
     playUrl: null,
     downloadUrl: 'https://www.rockstargames.com/VI',
