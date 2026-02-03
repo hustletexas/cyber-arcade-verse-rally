@@ -314,10 +314,56 @@
 .arcade-button.cyan { background: linear-gradient(180deg, hsl(180 70% 50%) 0%, hsl(180 80% 35%) 100%); }
 .arcade-button.blue { background: linear-gradient(180deg, hsl(220 70% 55%) 0%, hsl(220 80% 40%) 100%); }
 
+/* ======= REWARD BUTTON ======= */
+.reward-button-hex {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 32px;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 2px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  background: linear-gradient(180deg, 
+    hsl(45 100% 55%) 0%,
+    hsl(35 100% 45%) 50%,
+    hsl(25 100% 40%) 100%
+  );
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+  box-shadow: 
+    0 4px 0 hsl(25 80% 30%),
+    0 6px 20px hsl(45 100% 40% / 0.5);
+  transition: all 0.15s ease;
+}
+
+.reward-button-hex:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 hsl(25 80% 30%),
+    0 10px 30px hsl(45 100% 50% / 0.6);
+  background: linear-gradient(180deg, 
+    hsl(45 100% 60%) 0%,
+    hsl(35 100% 50%) 50%,
+    hsl(25 100% 45%) 100%
+  );
+}
+
+.reward-button-hex:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 0 hsl(25 80% 30%),
+    0 4px 15px hsl(45 100% 40% / 0.4);
+}
+
 /* ======= HEXAGONAL SPIN BUTTON ======= */
 .spin-button-container {
   position: relative;
-  margin-top: 16px;
 }
 
 .spin-button-hex {

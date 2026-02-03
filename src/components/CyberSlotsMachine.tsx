@@ -437,16 +437,28 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                   </Badge>
                 </div>
 
-                {/* Hexagonal Spin Button */}
-                <div className="spin-button-container flex justify-center">
-                  <div className="spin-button-glow" />
+                {/* Buttons Row */}
+                <div className="flex justify-center items-center gap-4">
+                  {/* Reward Button */}
                   <button
-                    onClick={spin}
-                    disabled={!isContinuousDemo && isSpinning}
-                    className={`spin-button-hex ${isContinuousDemo ? 'demo-active' : ''}`}
+                    onClick={stopDemoAndPlay}
+                    className="reward-button-hex"
                   >
-                    {isContinuousDemo ? 'FREE SPIN' : isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
+                    <Gift className="w-5 h-5 mr-2" />
+                    REWARDS
                   </button>
+
+                  {/* Hexagonal Spin Button */}
+                  <div className="spin-button-container">
+                    <div className="spin-button-glow" />
+                    <button
+                      onClick={spin}
+                      disabled={!isContinuousDemo && isSpinning}
+                      className={`spin-button-hex ${isContinuousDemo ? 'demo-active' : ''}`}
+                    >
+                      {isContinuousDemo ? 'FREE SPIN' : isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
