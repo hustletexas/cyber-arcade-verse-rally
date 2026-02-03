@@ -377,9 +377,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                   ))}
                 </div>
 
-                {/* Arcade Buttons Row */}
-                <ArcadeButtonsRow />
-
                 {/* Spin Cost Display */}
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <Badge className="bg-neon-purple/30 text-neon-pink border border-neon-purple/50 px-4 py-1.5">
