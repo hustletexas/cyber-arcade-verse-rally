@@ -396,7 +396,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                     disabled={isSpinning || !hasEnoughBalance || !isWalletConnected}
                     className="spin-button-hex"
                   >
-                    {isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : !hasEnoughBalance ? 'LOW CCC' : 'SPIN'}
+                    {isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
                   </button>
                 </div>
               </div>
