@@ -224,14 +224,12 @@ export const RaffleSection = () => {
       <Card className="arcade-frame border-2 border-neon-purple/30 overflow-hidden">
         {/* Section Header with Wallet Status */}
         <CardHeader className="bg-gradient-to-r from-neon-purple/20 via-neon-cyan/10 to-neon-pink/20 border-b border-neon-cyan/20 pb-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
             <CardTitle className="font-display text-3xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent">
               ​  
             </CardTitle>
             <WalletStatusBar />
           </div>
-          {/* Mystery Letter Chest Game */}
-          <CyberChestPicker />
         </CardHeader>
 
         <CardContent className="p-6 space-y-8">
