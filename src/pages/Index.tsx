@@ -16,48 +16,45 @@ import { TournamentHub } from '@/components/tournament/TournamentHub';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { useNFTMinting } from '@/hooks/useNFTMinting';
+import { useSeasonPassPurchase } from '@/hooks/useSeasonPassPurchase';
 import { useAuth } from '@/hooks/useAuth';
 import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
+
 const Index = () => {
-  const {
-    toast
-  } = useToast();
-  const {
-    isWalletConnected
-  } = useMultiWallet();
-  const {
-    mintFreeNFT,
-    isMinting
-  } = useNFTMinting();
-  const {
-    user,
-    loading
-  } = useAuth();
-  const {
-    trackAchievement
-  } = useAchievements();
+  const { toast } = useToast();
+  const { isWalletConnected } = useMultiWallet();
+  const { purchaseSeasonPass, status, price } = useSeasonPassPurchase();
+  const { user, loading } = useAuth();
+  const { trackAchievement } = useAchievements();
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Tutorial is now only shown when button is clicked
-  // Removed automatic popup behavior
+  const isPurchasing = status !== 'idle' && status !== 'success' && status !== 'error';
 
-  const handleMintNFT = async () => {
+  const getButtonText = () => {
+    switch (status) {
+      case 'checkout': return 'PROCESSING PAYMENT...';
+      case 'processing': return 'CONFIRMING...';
+      case 'delivering': return 'DELIVERING NFT...';
+      case 'success': return 'PURCHASED ✓';
+      default: return `BUY SEASON PASS - $${price}`;
+    }
+  };
+
+  const handlePurchase = async () => {
     if (!isWalletConnected) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet first to claim your NFT",
+        description: "Please connect your wallet first to purchase",
         variant: "destructive"
       });
       return;
     }
-    const result = await mintFreeNFT();
-    if (result) {
-      // Track NFT minting achievement
+    const result = await purchaseSeasonPass();
+    if (result.success) {
       trackAchievement('nft_minted');
     }
   };
@@ -95,14 +92,22 @@ const Index = () => {
 
           {/* Mobile-Enhanced Action Buttons */}
           <div className="flex flex-col items-center gap-3 sm:gap-4 mb-6 md:mb-8 px-2 sm:px-4">
-            <Button onClick={handleMintNFT} disabled={isMinting} className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]">
-              {isMinting ? <>
+            <Button 
+              onClick={handlePurchase} 
+              disabled={isPurchasing || status === 'success'} 
+              className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]"
+            >
+              {isPurchasing ? (
+                <>
                   <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm sm:text-base">CLAIMING...</span>
-                </> : <>
-                  <span className="text-xl sm:text-2xl">🎁</span>
-                  <span className="text-sm sm:text-base font-semibold">CLAIM NFT</span>
-                </>}
+                  <span className="text-sm sm:text-base">{getButtonText()}</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xl sm:text-2xl">{status === 'success' ? '✅' : '🎫'}</span>
+                  <span className="text-sm sm:text-base font-semibold">{getButtonText()}</span>
+                </>
+              )}
             </Button>
             
             {/* Mobile-Optimized Tutorial Button */}
