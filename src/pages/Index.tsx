@@ -58,19 +58,26 @@ const Index = () => {
       trackAchievement('nft_minted');
     }
   };
-  return <div className="min-h-screen bg-transparent">
-      {/* Cyber City Arcade Blended Background */}
+  return <div className="min-h-screen bg-transparent relative">
+      {/* Cyber City Arcade Immersive Background - Matches NFT */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Deep purple/magenta ambient glow to match NFT */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-transparent to-purple-950/40" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[60%] bg-gradient-radial from-fuchsia-900/25 via-purple-900/15 to-transparent blur-3xl" />
+        {/* Bright hot pink/magenta radiance from top center */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-[60%] bg-gradient-to-b from-fuchsia-500/50 via-pink-600/30 to-transparent" />
         
-        {/* Cyan accent glow from bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-cyan-900/20 via-transparent to-transparent" />
+        {/* Pulsing magenta core glow */}
+        <div className="absolute top-[5%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-pink-500/40 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-fuchsia-400/30 rounded-full blur-[100px]" />
         
-        {/* Subtle animated elements */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/10 rounded-full blur-[80px] animate-float" />
+        {/* Purple atmosphere layer */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/40 to-purple-950/70" />
+        
+        {/* Cyan neon accent line at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" />
+        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-cyan-500/30 to-transparent blur-md" />
+        
+        {/* Side ambient bleeds */}
+        <div className="absolute top-0 left-0 w-1/4 h-full bg-gradient-to-r from-purple-800/30 to-transparent" />
+        <div className="absolute top-0 right-0 w-1/4 h-full bg-gradient-to-l from-purple-800/30 to-transparent" />
       </div>
 
       <TopBar />
