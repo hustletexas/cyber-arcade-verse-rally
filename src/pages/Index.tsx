@@ -22,28 +22,42 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
-
 const Index = () => {
-  const { toast } = useToast();
-  const { isWalletConnected } = useMultiWallet();
-  const { purchaseSeasonPass, status, price } = useSeasonPassPurchase();
-  const { user, loading } = useAuth();
-  const { trackAchievement } = useAchievements();
+  const {
+    toast
+  } = useToast();
+  const {
+    isWalletConnected
+  } = useMultiWallet();
+  const {
+    purchaseSeasonPass,
+    status,
+    price
+  } = useSeasonPassPurchase();
+  const {
+    user,
+    loading
+  } = useAuth();
+  const {
+    trackAchievement
+  } = useAchievements();
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
-
   const isPurchasing = status !== 'idle' && status !== 'success' && status !== 'error';
-
   const getButtonText = () => {
     switch (status) {
-      case 'checkout': return 'PROCESSING PAYMENT...';
-      case 'processing': return 'CONFIRMING...';
-      case 'delivering': return 'DELIVERING NFT...';
-      case 'success': return 'PURCHASED ✓';
-      default: return `BUY SEASON PASS - $${price}`;
+      case 'checkout':
+        return 'PROCESSING PAYMENT...';
+      case 'processing':
+        return 'CONFIRMING...';
+      case 'delivering':
+        return 'DELIVERING NFT...';
+      case 'success':
+        return 'PURCHASED ✓';
+      default:
+        return `BUY SEASON PASS - $${price}`;
     }
   };
-
   const handlePurchase = async () => {
     if (!isWalletConnected) {
       toast({
@@ -61,7 +75,7 @@ const Index = () => {
   return <div className="min-h-screen bg-transparent relative">
       {/* Galaxy Background - Exact match to NFT interior */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{
-        background: `
+      background: `
           radial-gradient(ellipse 100% 60% at 50% 0%, rgba(100, 50, 150, 0.4) 0%, transparent 50%),
           radial-gradient(ellipse 80% 50% at 30% 70%, rgba(80, 40, 120, 0.3) 0%, transparent 45%),
           radial-gradient(ellipse 70% 50% at 70% 80%, rgba(60, 30, 100, 0.25) 0%, transparent 40%),
@@ -71,10 +85,10 @@ const Index = () => {
             rgb(15, 10, 35) 60%,
             rgb(12, 8, 30) 100%)
         `
-      }}>
+    }}>
         {/* Star field matching NFT */}
         <div className="absolute inset-0" style={{
-          backgroundImage: `
+        backgroundImage: `
             radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.9) 1px, transparent 0),
             radial-gradient(1px 1px at 25% 45%, rgba(255,255,255,0.7) 1px, transparent 0),
             radial-gradient(1.5px 1.5px at 35% 15%, rgba(255,200,255,0.8) 1px, transparent 0),
@@ -91,8 +105,8 @@ const Index = () => {
             radial-gradient(1px 1px at 80% 70%, rgba(255,255,255,0.5) 1px, transparent 0),
             radial-gradient(2px 2px at 50% 50%, rgba(255,200,255,0.4) 1px, transparent 0)
           `,
-          backgroundSize: '250px 250px'
-        }} />
+        backgroundSize: '250px 250px'
+      }} />
       </div>
 
       <TopBar />
@@ -101,14 +115,9 @@ const Index = () => {
         <div className="text-center mb-6 sm:mb-8 md:mb-12">
           {/* Mobile-Optimized Main Logo */}
           <div className="flex justify-center mb-4 sm:mb-6">
-            <img 
-              src="/lovable-uploads/cyber-city-arcade-hero.png" 
-              alt="Cyber City Arcade NFT" 
-              className="w-80 h-auto sm:w-[500px] md:w-[700px] lg:w-[900px] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" 
-              style={{
-                filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
-              }} 
-            />
+            <img alt="Cyber City Arcade NFT" className="w-80 h-auto sm:w-[500px] md:w-[700px] lg:w-[900px] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" style={{
+            filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
+          }} src="/lovable-uploads/dd23db05-56ce-4fcd-8593-c174a3d2f9a7.png" />
           </div>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
@@ -117,22 +126,14 @@ const Index = () => {
 
           {/* Mobile-Enhanced Action Buttons */}
           <div className="flex flex-col items-center gap-3 sm:gap-4 mb-6 md:mb-8 px-2 sm:px-4">
-            <Button 
-              onClick={handlePurchase} 
-              disabled={isPurchasing || status === 'success'} 
-              className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]"
-            >
-              {isPurchasing ? (
-                <>
+            <Button onClick={handlePurchase} disabled={isPurchasing || status === 'success'} className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]">
+              {isPurchasing ? <>
                   <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span className="text-sm sm:text-base">{getButtonText()}</span>
-                </>
-              ) : (
-                <>
+                </> : <>
                   <span className="text-xl sm:text-2xl">{status === 'success' ? '✅' : '🎫'}</span>
                   <span className="text-sm sm:text-base font-semibold">{getButtonText()}</span>
-                </>
-              )}
+                </>}
             </Button>
             
             {/* Mobile-Optimized Tutorial Button */}
@@ -227,7 +228,10 @@ const Index = () => {
               Terms
             </Link>
             <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
+            <button onClick={() => window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          })} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
               About
             </button>
           </div>
