@@ -126,16 +126,6 @@ const Index = () => {
 
           {/* Mobile-Enhanced Action Buttons */}
           <div className="flex flex-col items-center gap-3 sm:gap-4 mb-6 md:mb-8 px-2 sm:px-4">
-            <Button onClick={handlePurchase} disabled={isPurchasing || status === 'success'} className="cyber-button flex items-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 disabled:opacity-50 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[3rem]">
-              {isPurchasing ? <>
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm sm:text-base">{getButtonText()}</span>
-                </> : <>
-                  <span className="text-xl sm:text-2xl">{status === 'success' ? '✅' : '🎫'}</span>
-                  <span className="text-sm sm:text-base font-semibold">{getButtonText()}</span>
-                </>}
-            </Button>
-            
             {/* Mobile-Optimized Tutorial Button */}
             <Button onClick={() => setShowTutorial(true)} variant="outline" className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base">
               <span className="text-base sm:text-lg mr-2">📚</span>
