@@ -58,21 +58,19 @@ const Index = () => {
       trackAchievement('nft_minted');
     }
   };
-  return <div className="min-h-screen bg-black">
-      {/* Mobile-Optimized Animated Background */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 via-neon-purple/10 to-neon-cyan/10 animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 md:w-96 md:h-96 bg-neon-cyan/5 rounded-full blur-3xl animate-float transform -translate-x-1/2 -translate-y-1/2" />
+  return <div className="min-h-screen bg-transparent">
+      {/* Cyber City Arcade Blended Background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Deep purple/magenta ambient glow to match NFT */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-transparent to-purple-950/40" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[60%] bg-gradient-radial from-fuchsia-900/25 via-purple-900/15 to-transparent blur-3xl" />
         
-        {/* Mobile-Optimized Gaming Icons Background */}
-        <div className="absolute top-5 left-5 md:top-10 md:left-10 text-xl md:text-4xl opacity-30 animate-float">🕹️</div>
-        <div className="absolute top-12 right-5 md:top-20 md:right-20 text-lg md:text-3xl opacity-20 animate-pulse">🎮</div>
-        <div className="absolute bottom-16 left-5 md:bottom-20 md:left-20 text-lg md:text-3xl opacity-25 animate-bounce">👾</div>
-        <div className="absolute bottom-5 right-5 md:bottom-10 md:right-10 text-xl md:text-4xl opacity-30 animate-float">🎯</div>
-        <div className="absolute top-1/3 left-1/4 text-base md:text-2xl opacity-20 animate-pulse">🏆</div>
-        <div className="absolute top-2/3 right-1/4 text-lg md:text-3xl opacity-25 animate-bounce">⚡</div>
-        <div className="absolute top-1/2 left-2 md:left-10 text-base md:text-2xl opacity-20 animate-float">🚀</div>
-        <div className="absolute top-1/4 right-1/3 text-lg md:text-3xl opacity-30 animate-pulse">💎</div>
+        {/* Cyan accent glow from bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-cyan-900/20 via-transparent to-transparent" />
+        
+        {/* Subtle animated elements */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/10 rounded-full blur-[80px] animate-float" />
       </div>
 
       <TopBar />
