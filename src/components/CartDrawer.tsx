@@ -11,19 +11,18 @@ import { ShoppingCart, Minus, Plus, Trash2, CreditCard } from 'lucide-react';
 export const CartDrawer = () => {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalItems, getTotalPrice, isOpen, setIsOpen } = useCart();
   const { toast } = useToast();
-  const [selectedPayment, setSelectedPayment] = useState<'XLM' | 'USDC' | 'PYUSD'>('XLM');
+  const [selectedPayment, setSelectedPayment] = useState<'USDC' | 'PYUSD'>('USDC');
   const [processing, setProcessing] = useState(false);
 
   // Mock exchange rates - in production, fetch from a price API
   const exchangeRates = {
-    XLM: 0.1, // 1 USD = ~0.1 XLM (assuming XLM is $0.10)
     USDC: 1.0, // 1 USD = 1 USDC
     PYUSD: 1.0 // 1 USD = 1 PYUSD
   };
 
   const getTotalInCrypto = () => {
     const totalUSD = getTotalPrice();
-    return (totalUSD * exchangeRates[selectedPayment]).toFixed(selectedPayment === 'XLM' ? 2 : 2);
+    return (totalUSD * exchangeRates[selectedPayment]).toFixed(2);
   };
 
   const handleCheckout = async () => {
@@ -186,8 +185,8 @@ export const CartDrawer = () => {
               {/* Payment Method Selection */}
               <div className="space-y-3">
                 <h4 className="font-bold text-neon-purple">Select Payment Method</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['XLM', 'USDC', 'PYUSD'] as const).map((method) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {(['USDC', 'PYUSD'] as const).map((method) => (
                     <Button
                       key={method}
                       variant={selectedPayment === method ? "default" : "outline"}
