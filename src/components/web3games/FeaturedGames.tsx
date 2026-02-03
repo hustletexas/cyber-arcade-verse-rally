@@ -165,18 +165,18 @@ const ps5Games = [
     rating: 4.9
   },
   {
-    id: 'hogwarts-legacy',
-    name: 'Hogwarts Legacy',
-    category: 'Action RPG',
+    id: 'fortnite',
+    name: 'Fortnite',
+    category: 'Battle Royale',
     blockchain: 'N/A',
-    image: '/lovable-uploads/neon-matrix.png',
-    description: 'Live your wizarding world fantasy in this immersive open-world RPG',
-    playUrl: null,
-    downloadUrl: 'https://www.hogwartslegacy.com/',
+    image: '/images/games/fortnite.webp',
+    description: 'Drop in and battle to be the last one standing in the iconic free-to-play battle royale',
+    playUrl: 'https://www.fortnite.com/',
+    downloadUrl: 'https://www.fortnite.com/download',
     isWebBased: false,
-    rewards: ['Spells', 'Gear', 'Trophies'],
-    players: '22M+',
-    rating: 4.7
+    rewards: ['V-Bucks', 'Battle Pass', 'Skins'],
+    players: '500M+',
+    rating: 4.8
   }
 ];
 
