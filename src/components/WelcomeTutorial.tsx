@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useAuth } from '@/hooks/useAuth';
-import { ChevronLeft, ChevronRight, Wallet, Gamepad2, Trophy, Coins, Music, Users, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Wallet, Gamepad2, Trophy, Coins, Music, Users, X, Star, Gift, Calendar, Zap, Target, Download } from 'lucide-react';
 
 interface WelcomeTutorialProps {
   isOpen: boolean;
@@ -32,45 +32,62 @@ export const WelcomeTutorial: React.FC<WelcomeTutorialProps> = ({ isOpen, onClos
     {
       id: 1,
       title: "Welcome to Cyber City Arcade! 🕹️",
-      description: "The ultimate Web3 gaming experience powered by Solana. Earn real rewards while playing games, collecting NFTs, and competing in tournaments!",
+      description: "The ultimate Web3 gaming experience powered by Stellar. Earn CCC (Cyber City Credits) while playing games, competing in tournaments, and climbing leaderboards!",
       icon: <Gamepad2 className="w-8 h-8 text-neon-cyan" />
     },
     {
       id: 2,
-      title: "Connect Your Wallet 💼",
-      description: "First, connect your Solana wallet to start your gaming journey. We support Phantom, Solflare, Backpack, and Coinbase Wallet.",
-      icon: <Wallet className="w-8 h-8 text-neon-purple" />,
+      title: "How to Create a Wallet 💼",
+      description: "To get started, you need a Stellar wallet. We recommend LOBSTR - it's free and easy to set up!\n\n1️⃣ Download LOBSTR from App Store or Google Play\n2️⃣ Create a new account with email verification\n3️⃣ Securely backup your recovery phrase\n4️⃣ Click the wallet icon in our top bar to connect",
+      icon: <Download className="w-8 h-8 text-neon-purple" />,
       action: !isWalletConnected ? {
         text: "Connect Wallet",
         onClick: () => {
-          // This will be handled by the wallet connection flow in TopBar
           onClose();
         }
       } : undefined
     },
     {
       id: 3,
-      title: "Earn CCTR Tokens 🪙",
-      description: "Complete challenges, play games, and participate in tournaments to earn CCTR tokens. Use them to purchase items, enter raffles, and stake for rewards!",
-      icon: <Coins className="w-8 h-8 text-neon-green" />
+      title: "Supported Wallets 🔐",
+      description: "We support 5 Stellar wallets:\n\n⭐ LOBSTR (Recommended) - Best for mobile & beginners\n🚀 Freighter - Browser extension, great for desktop\n🌐 Albedo - Web-based, no download needed\n🐂 xBull - Advanced features for power users\n🔥 Hot Wallet - Simple and lightweight",
+      icon: <Wallet className="w-8 h-8 text-neon-green" />
     },
     {
       id: 4,
-      title: "Compete in Tournaments 🏆",
-      description: "Join Solana-powered tournaments with real prizes! Entry fees create prize pools, and winners take home SOL and exclusive NFTs.",
-      icon: <Trophy className="w-8 h-8 text-neon-pink" />
+      title: "How to Earn CCC Points 🪙",
+      description: "CCC (Cyber City Credits) is our in-game currency. Here's how to earn:\n\n🎮 Play Games - Earn CCC for every game you complete\n📅 Daily Login - Get bonus CCC just for showing up\n🏆 Win Tournaments - Big CCC prizes for top players\n⭐ Achievements - Unlock milestones for CCC rewards\n🔥 Streaks - Build winning streaks for multipliers",
+      icon: <Coins className="w-8 h-8 text-neon-pink" />
     },
     {
       id: 5,
-      title: "Collect & Create NFTs 🎨",
-      description: "Mint your free starter NFT, create custom music NFTs, and trade in our marketplace. Every NFT is stored on Solana blockchain!",
-      icon: <Music className="w-8 h-8 text-neon-cyan" />
+      title: "Our Games 🎮",
+      description: "Explore our arcade games:\n\n🧩 Cyber Match - Memory card matching game\n🎯 Cyber Sequence - Pattern memory challenge\n🧠 Cyber Trivia - Test your gaming knowledge\n🎰 Cyber Slots - Try your luck!\n👾 Retro Classics - Pac-Man, Tetris, Galaga",
+      icon: <Target className="w-8 h-8 text-neon-cyan" />
     },
     {
       id: 6,
-      title: "Join the Community 👥",
-      description: "Connect with other gamers, share strategies, and participate in community events. The arcade is better together!",
-      icon: <Users className="w-8 h-8 text-neon-purple" />
+      title: "Tournaments & Competition 🏆",
+      description: "Compete for glory and prizes:\n\n🏅 Daily Tournaments - Quick competitions with CCC prizes\n👑 Weekly Championships - Bigger stakes, bigger rewards\n📊 Live Leaderboards - Track your rank in real-time\n🎖️ Bracket Tournaments - Single elimination showdowns",
+      icon: <Trophy className="w-8 h-8 text-neon-purple" />
+    },
+    {
+      id: 7,
+      title: "Special Features ✨",
+      description: "More ways to enjoy the arcade:\n\n🎵 Music Player - Listen to cyberpunk beats while gaming\n🎁 Raffles - Enter drawings for exclusive prizes\n📦 Cyber Chests - Open chests for random rewards\n🤖 AI Gaming Coach - Get tips to improve your skills\n💬 Community Hub - Chat with other players",
+      icon: <Star className="w-8 h-8 text-neon-green" />
+    },
+    {
+      id: 8,
+      title: "Daily Rewards & Bonuses 🎁",
+      description: "Don't miss out on daily rewards:\n\n📅 Daily Login Bonus - CCC every day you visit\n🎡 Daily Spin - Free chance at bonus CCC\n🔥 Streak Bonuses - Keep your streak alive for 2x-5x multipliers\n🎯 Daily Challenges - Complete tasks for extra CCC",
+      icon: <Calendar className="w-8 h-8 text-neon-pink" />
+    },
+    {
+      id: 9,
+      title: "Ready to Play! 🚀",
+      description: "You're all set! Connect your wallet, start playing games, and earn CCC. Check the leaderboards to see where you rank, and don't forget to claim your daily rewards. Good luck, player!",
+      icon: <Zap className="w-8 h-8 text-neon-cyan" />
     }
   ];
 
