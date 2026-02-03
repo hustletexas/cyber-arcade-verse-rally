@@ -1,8 +1,176 @@
 /* Cyber Slots Machine Styles */
 
+/* ======= CABINET FRAME ======= */
+.slots-cabinet {
+  --cabinet-border: 8px;
+  --light-size: 12px;
+  position: relative;
+  background: linear-gradient(180deg, 
+    hsl(240 20% 12%) 0%, 
+    hsl(260 30% 8%) 50%,
+    hsl(240 20% 6%) 100%
+  );
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 
+    0 0 0 4px hsl(var(--neon-purple) / 0.3),
+    0 0 40px hsl(var(--neon-purple) / 0.2),
+    inset 0 2px 20px rgba(255,255,255,0.05);
+}
+
+.slots-cabinet::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--neon-cyan)) 0%,
+    hsl(var(--neon-purple)) 25%,
+    hsl(var(--neon-pink)) 50%,
+    hsl(var(--neon-purple)) 75%,
+    hsl(var(--neon-cyan)) 100%
+  );
+  z-index: -1;
+  opacity: 0.6;
+}
+
+/* ======= ARCADE LIGHTS ======= */
+.arcade-lights {
+  position: absolute;
+  inset: -16px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.arcade-light {
+  position: absolute;
+  width: var(--light-size);
+  height: var(--light-size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, 
+    rgba(255,255,255,0.9) 0%, 
+    var(--light-color) 40%, 
+    var(--light-color-dark) 100%
+  );
+  box-shadow: 
+    0 0 10px var(--light-color),
+    0 0 20px var(--light-color),
+    inset 0 -2px 4px rgba(0,0,0,0.3);
+  animation: light-idle 2s ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+.arcade-light.top { top: 0; }
+.arcade-light.bottom { bottom: 0; }
+.arcade-light.left { left: 0; }
+.arcade-light.right { right: 0; }
+
+/* Light colors */
+.arcade-light.cyan { 
+  --light-color: hsl(var(--neon-cyan)); 
+  --light-color-dark: hsl(var(--neon-cyan) / 0.6);
+}
+.arcade-light.pink { 
+  --light-color: hsl(var(--neon-pink)); 
+  --light-color-dark: hsl(var(--neon-pink) / 0.6);
+}
+.arcade-light.green { 
+  --light-color: hsl(142 70% 50%); 
+  --light-color-dark: hsl(142 70% 30%);
+}
+.arcade-light.yellow { 
+  --light-color: hsl(45 100% 50%); 
+  --light-color-dark: hsl(45 100% 30%);
+}
+.arcade-light.purple { 
+  --light-color: hsl(var(--neon-purple)); 
+  --light-color-dark: hsl(var(--neon-purple) / 0.6);
+}
+
+@keyframes light-idle {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 0.7; transform: scale(1); }
+}
+
+/* ======= WIN ANIMATION ======= */
+.slots-cabinet.winning .arcade-light {
+  animation: light-flash 0.15s ease-in-out infinite alternate;
+}
+
+@keyframes light-flash {
+  0% { 
+    opacity: 0.3; 
+    transform: scale(0.8);
+    box-shadow: 0 0 5px var(--light-color);
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1.3);
+    box-shadow: 
+      0 0 15px var(--light-color),
+      0 0 30px var(--light-color),
+      0 0 45px var(--light-color);
+  }
+}
+
+.slots-cabinet.winning {
+  animation: cabinet-shake 0.1s ease-in-out;
+}
+
+@keyframes cabinet-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* ======= REELS DISPLAY ======= */
+.slots-display {
+  background: linear-gradient(180deg,
+    hsl(240 40% 5%) 0%,
+    hsl(260 50% 3%) 100%
+  );
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 
+    inset 0 4px 20px rgba(0,0,0,0.8),
+    inset 0 0 40px rgba(0,0,0,0.5),
+    0 0 0 3px hsl(var(--neon-purple) / 0.3);
+}
+
+.slots-display::before {
+  content: 'CYBER SLOTS';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, 
+    hsl(var(--neon-cyan)), 
+    hsl(var(--neon-pink)),
+    hsl(var(--neon-cyan))
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  animation: text-shimmer 3s linear infinite;
+  text-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.5);
+}
+
+@keyframes text-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ======= REEL CONTAINER ======= */
 .slot-reel-container {
   perspective: 1000px;
   transform-style: preserve-3d;
+  min-height: 280px;
 }
 
 .slot-reel-strip {
@@ -20,7 +188,7 @@
 .slot-reel-container::before {
   content: '';
   position: absolute;
-  inset: -2px;
+  inset: -3px;
   background: linear-gradient(
     45deg,
     hsl(var(--neon-cyan)) 0%,
@@ -29,19 +197,19 @@
   );
   border-radius: inherit;
   z-index: -1;
-  opacity: 0.5;
-  filter: blur(4px);
+  opacity: 0.6;
+  filter: blur(6px);
   animation: slot-glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes slot-glow {
   0% {
-    opacity: 0.3;
+    opacity: 0.4;
     filter: blur(4px);
   }
   100% {
-    opacity: 0.6;
-    filter: blur(6px);
+    opacity: 0.8;
+    filter: blur(8px);
   }
 }
 
@@ -56,28 +224,20 @@
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
   }
   50% {
-    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.9), 0 0 80px rgba(255, 215, 0, 0.5);
   }
 }
 
 .slot-reel-container.winner {
-  animation: win-pulse 0.5s ease-in-out infinite;
+  animation: win-pulse 0.4s ease-in-out infinite;
 }
 
 /* Reel stop bounce effect */
 @keyframes reel-stop {
-  0% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-5%);
-  }
-  60% {
-    transform: translateY(2%);
-  }
-  100% {
-    transform: translateY(0);
-  }
+  0% { transform: translateY(0); }
+  30% { transform: translateY(-5%); }
+  60% { transform: translateY(2%); }
+  100% { transform: translateY(0); }
 }
 
 .slot-reel-strip.stopped {
@@ -92,9 +252,9 @@
   background: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 4px
+    transparent 3px,
+    rgba(0, 0, 0, 0.15) 3px,
+    rgba(0, 0, 0, 0.15) 6px
   );
   pointer-events: none;
   z-index: 15;
@@ -108,9 +268,82 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.15) 0%,
     transparent 50%,
-    rgba(0, 0, 0, 0.2) 100%
+    rgba(0, 0, 0, 0.3) 100%
   );
   pointer-events: none;
+}
+
+/* ======= PULL LEVER ======= */
+.spin-button-container {
+  position: relative;
+}
+
+.spin-button-glow {
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(135deg, 
+    hsl(var(--neon-cyan)), 
+    hsl(var(--neon-pink))
+  );
+  border-radius: 16px;
+  filter: blur(10px);
+  opacity: 0.5;
+  animation: button-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes button-glow {
+  0% { opacity: 0.3; filter: blur(8px); }
+  100% { opacity: 0.7; filter: blur(12px); }
+}
+
+/* ======= JACKPOT OVERLAY ======= */
+.jackpot-overlay {
+  backdrop-filter: blur(8px);
+}
+
+.jackpot-overlay .jackpot-text {
+  animation: jackpot-flash 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes jackpot-flash {
+  0% { 
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    transform: scale(1);
+  }
+  100% { 
+    text-shadow: 
+      0 0 30px rgba(255, 215, 0, 1),
+      0 0 60px rgba(255, 215, 0, 0.8),
+      0 0 90px rgba(255, 215, 0, 0.6);
+    transform: scale(1.05);
+  }
+}
+
+/* ======= COIN SLOT ======= */
+.coin-slot {
+  width: 60px;
+  height: 8px;
+  background: linear-gradient(180deg, 
+    hsl(240 20% 15%) 0%,
+    hsl(240 20% 8%) 50%,
+    hsl(240 20% 15%) 100%
+  );
+  border-radius: 4px;
+  margin: 0 auto;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+.coin-slot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 4px;
+  background: hsl(240 30% 3%);
+  border-radius: 2px;
 }

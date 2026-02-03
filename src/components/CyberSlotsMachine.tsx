@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,11 +25,38 @@ const SLOT_SYMBOLS: SlotSymbol[] = [
 ];
 
 const MAX_DAILY_SPINS = 3;
-const REEL_SPIN_DURATION = [1200, 1600, 2000]; // Staggered stop times
+const REEL_SPIN_DURATION = [1200, 1600, 2000];
 
 interface CyberSlotsMachineProps {
   onWin?: (rarity: string, tokens: number) => void;
 }
+
+// Arcade lights configuration
+const LIGHT_COLORS = ['cyan', 'pink', 'green', 'yellow', 'purple'] as const;
+
+const generateLights = () => {
+  const lights: { position: 'top' | 'bottom' | 'left' | 'right'; offset: number; color: typeof LIGHT_COLORS[number]; delay: number }[] = [];
+  const spacing = 40;
+  
+  // Top lights
+  for (let i = 0; i < 12; i++) {
+    lights.push({ position: 'top', offset: 20 + i * spacing, color: LIGHT_COLORS[i % LIGHT_COLORS.length], delay: i * 0.1 });
+  }
+  // Bottom lights
+  for (let i = 0; i < 12; i++) {
+    lights.push({ position: 'bottom', offset: 20 + i * spacing, color: LIGHT_COLORS[(i + 2) % LIGHT_COLORS.length], delay: i * 0.1 + 0.5 });
+  }
+  // Left lights
+  for (let i = 0; i < 6; i++) {
+    lights.push({ position: 'left', offset: 40 + i * 50, color: LIGHT_COLORS[(i + 1) % LIGHT_COLORS.length], delay: i * 0.15 });
+  }
+  // Right lights
+  for (let i = 0; i < 6; i++) {
+    lights.push({ position: 'right', offset: 40 + i * 50, color: LIGHT_COLORS[(i + 3) % LIGHT_COLORS.length], delay: i * 0.15 + 0.3 });
+  }
+  
+  return lights;
+};
 
 // Single Reel Component with vertical spinning
 const SlotReel: React.FC<{
@@ -47,14 +74,11 @@ const SlotReel: React.FC<{
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number>(0);
 
-  // Generate a strip of symbols for spinning
   useEffect(() => {
     const strip: SlotSymbol[] = [];
-    // Add random symbols for the spin animation
     for (let i = 0; i < 20; i++) {
       strip.push(symbols[Math.floor(Math.random() * symbols.length)]);
     }
-    // Add the final symbol at the end
     strip.push(finalSymbol);
     setDisplaySymbols(strip);
   }, [finalSymbol, symbols]);
@@ -67,14 +91,10 @@ const SlotReel: React.FC<{
         const elapsed = currentTime - startTimeRef.current;
         const progress = Math.min(elapsed / spinDuration, 1);
         
-        // Easing function for realistic slot machine feel
-        const easeOut = (t: number) => {
-          // Start fast, slow down at the end
-          return 1 - Math.pow(1 - t, 3);
-        };
+        const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
         
         const easedProgress = easeOut(progress);
-        const totalDistance = (displaySymbols.length - 1) * 100; // percentage
+        const totalDistance = (displaySymbols.length - 1) * 100;
         const newOffset = easedProgress * totalDistance;
         
         setCurrentOffset(newOffset);
@@ -94,7 +114,6 @@ const SlotReel: React.FC<{
         }
       };
     } else {
-      // Reset to show final symbol
       setCurrentOffset((displaySymbols.length - 1) * 100);
     }
   }, [isSpinning, spinDuration, displaySymbols.length, onStop]);
@@ -112,10 +131,10 @@ const SlotReel: React.FC<{
   return (
     <div 
       className={`
-        slot-reel-container relative flex-1 max-w-[180px] aspect-[3/4] rounded-xl overflow-hidden
-        bg-gradient-to-b from-neon-purple/30 to-black/60
-        border-3 border-neon-cyan/50
-        ${showWin && winRarity ? `shadow-xl ${getRarityGlow(winRarity)}` : 'shadow-lg shadow-neon-purple/30'}
+        slot-reel-container relative flex-1 w-full max-w-[220px] rounded-xl overflow-hidden
+        bg-gradient-to-b from-neon-purple/30 to-black/80
+        border-4 border-neon-cyan/60
+        ${showWin && winRarity ? `shadow-2xl ${getRarityGlow(winRarity)} winner` : 'shadow-lg shadow-neon-purple/40'}
         transition-shadow duration-300
       `}
     >
@@ -138,9 +157,8 @@ const SlotReel: React.FC<{
               alt={symbol.name}
               className="w-full h-full object-cover"
             />
-            {/* Rarity badge on each symbol */}
             <Badge 
-              className={`absolute top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-[10px] px-2 opacity-90`}
+              className={`absolute top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-xs px-3 py-1 opacity-95 shadow-lg`}
             >
               {symbol.rarity.toUpperCase()}
             </Badge>
@@ -149,17 +167,46 @@ const SlotReel: React.FC<{
       </div>
 
       {/* Gradient overlays for depth */}
-      <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/70 to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/70 to-transparent pointer-events-none z-10" />
       
       {/* Center line indicator */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-neon-cyan/50 pointer-events-none z-10 shadow-lg shadow-neon-cyan/50" />
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 bg-neon-cyan/70 pointer-events-none z-10 shadow-lg shadow-neon-cyan/60" />
       
       {/* Shine effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
       
       {/* Rarity indicator bar */}
-      <div className={`absolute bottom-0 inset-x-0 h-2 bg-gradient-to-r ${getRarityColor(finalSymbol.rarity)} z-20`} />
+      <div className={`absolute bottom-0 inset-x-0 h-3 bg-gradient-to-r ${getRarityColor(finalSymbol.rarity)} z-20`} />
+    </div>
+  );
+};
+
+// Arcade Lights Component
+const ArcadeLights: React.FC<{ isWinning: boolean }> = ({ isWinning }) => {
+  const lights = useMemo(() => generateLights(), []);
+  
+  return (
+    <div className="arcade-lights">
+      {lights.map((light, idx) => {
+        const style: React.CSSProperties = {
+          '--delay': `${light.delay}s`,
+        } as React.CSSProperties;
+        
+        if (light.position === 'top' || light.position === 'bottom') {
+          style.left = `${light.offset}px`;
+        } else {
+          style.top = `${light.offset}px`;
+        }
+        
+        return (
+          <div
+            key={idx}
+            className={`arcade-light ${light.position} ${light.color}`}
+            style={style}
+          />
+        );
+      })}
     </div>
   );
 };
@@ -179,7 +226,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   const [isDemoWin, setIsDemoWin] = useState(false);
   const demoPlayedRef = useRef(false);
 
-  // Check/reset daily spins
   useEffect(() => {
     const today = new Date().toDateString();
     const storedDate = localStorage.getItem('cyber_slots_date');
@@ -194,12 +240,10 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     }
   }, []);
 
-  // Play demo jackpot on first load
   useEffect(() => {
     if (demoPlayedRef.current) return;
     demoPlayedRef.current = true;
     
-    // Start demo after a short delay
     const demoTimer = setTimeout(() => {
       playDemoJackpot();
     }, 1000);
@@ -208,8 +252,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   }, []);
 
   const playDemoJackpot = useCallback(() => {
-    // Set legendary symbols for jackpot
-    const legendarySymbol = SLOT_SYMBOLS[3]; // legendary
+    const legendarySymbol = SLOT_SYMBOLS[3];
     setFinalReels([legendarySymbol, legendarySymbol, legendarySymbol]);
     
     setIsDemo(true);
@@ -257,20 +300,17 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     setStoppedReels(prev => prev + 1);
   }, []);
 
-  // Check for win when all reels stop
   useEffect(() => {
     if (stoppedReels === 3 && isSpinning) {
       setIsSpinning(false);
       setStoppedReels(0);
       
-      // Don't count demo spins
       if (!isDemo) {
         const newCount = spinCount + 1;
         setSpinCount(newCount);
         localStorage.setItem('cyber_slots_spins', newCount.toString());
       }
 
-      // Check for win
       if (checkWin(finalReels)) {
         const winRarity = finalReels[0].rarity;
         const tokens = finalReels[0].tokenReward * 3;
@@ -306,7 +346,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
 
     if (isSpinning) return;
 
-    // Generate final results
     const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
     setFinalReels(results);
     
@@ -320,186 +359,194 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   const remainingSpins = MAX_DAILY_SPINS - spinCount;
 
   return (
-    <Card className="vending-machine hover:scale-[1.01] transition-transform relative overflow-hidden border-2 border-neon-cyan/30 col-span-full lg:col-span-3">
-      <CardContent className="p-4">
-        {/* Header */}
-        <div className="text-center mb-4">
-          <h3 className="font-display text-2xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent flex items-center justify-center gap-3">
-            <Zap className="w-6 h-6 text-neon-cyan" />
-            CYBER SLOTS
-            <Zap className="w-6 h-6 text-neon-pink" />
-          </h3>
-          <p className="text-sm text-muted-foreground">Match 3 chests to win CCTR + unlock that chest!</p>
-        </div>
+    <Card className="hover:scale-[1.01] transition-transform relative overflow-visible border-0 bg-transparent col-span-full lg:col-span-3">
+      <CardContent className="p-0">
+        {/* Slots Cabinet */}
+        <div className={`slots-cabinet ${showWin ? 'winning' : ''}`}>
+          {/* Arcade Lights */}
+          <ArcadeLights isWinning={showWin} />
+          
+          {/* Header */}
+          <div className="text-center mb-6 relative z-20">
+            <div className="inline-flex items-center gap-3 bg-black/60 px-6 py-3 rounded-full border border-neon-cyan/30">
+              <Zap className="w-7 h-7 text-neon-cyan animate-pulse" />
+              <h3 className="font-display text-3xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent">
+                CYBER SLOTS
+              </h3>
+              <Zap className="w-7 h-7 text-neon-pink animate-pulse" />
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">Match 3 chests to win CCC + unlock that chest!</p>
+          </div>
 
-        {/* Slot Machine Display */}
-        <div className="bg-gradient-to-b from-black/80 to-neon-purple/20 rounded-xl p-4 border border-neon-purple/30 relative">
-          {/* Win Overlay */}
-          {showWin && winInfo && (
-            <div className="absolute inset-0 bg-black/90 z-20 flex items-center justify-center rounded-xl animate-fade-in">
-              <div className="text-center space-y-3">
-                {isDemoWin && (
-                  <Badge className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 text-xs px-3 py-1 mb-2">
-                    ✨ DEMO PREVIEW ✨
+          {/* Slot Machine Display */}
+          <div className="slots-display relative">
+            {/* Win Overlay */}
+            {showWin && winInfo && (
+              <div className="jackpot-overlay absolute inset-0 bg-black/95 z-30 flex items-center justify-center rounded-xl animate-fade-in">
+                <div className="text-center space-y-4">
+                  {isDemoWin && (
+                    <Badge className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 text-sm px-4 py-1.5">
+                      ✨ DEMO PREVIEW ✨
+                    </Badge>
+                  )}
+                  <div className="flex items-center justify-center gap-4">
+                    <Trophy className="w-14 h-14 text-yellow-400 animate-bounce" />
+                    <span className="jackpot-text text-5xl font-bold text-yellow-400">JACKPOT!</span>
+                    <Trophy className="w-14 h-14 text-yellow-400 animate-bounce" />
+                  </div>
+                  <Badge className={`bg-gradient-to-r ${getRarityColor(winInfo.rarity)} text-white text-2xl px-8 py-3`}>
+                    {winInfo.rarity.toUpperCase()} CHEST UNLOCKED!
                   </Badge>
-                )}
-                <div className="flex items-center justify-center gap-3">
-                  <Trophy className="w-10 h-10 text-yellow-400 animate-bounce" />
-                  <span className="text-3xl font-bold text-yellow-400">JACKPOT!</span>
-                  <Trophy className="w-10 h-10 text-yellow-400 animate-bounce" />
+                  <p className="text-neon-green font-bold text-4xl">+{winInfo.tokens} CCC</p>
+                  <Button 
+                    size="lg" 
+                    onClick={() => { setShowWin(false); setIsDemoWin(false); }}
+                    className="cyber-button mt-4 text-lg px-8 py-6"
+                  >
+                    {isDemoWin ? (
+                      <>
+                        <Star className="w-6 h-6 mr-2" />
+                        Try Your Luck!
+                      </>
+                    ) : (
+                      <>
+                        <Gift className="w-6 h-6 mr-2" />
+                        Claim Rewards
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <Badge className={`bg-gradient-to-r ${getRarityColor(winInfo.rarity)} text-white text-xl px-6 py-2`}>
-                  {winInfo.rarity.toUpperCase()} CHEST UNLOCKED!
-                </Badge>
-                <p className="text-neon-green font-bold text-2xl">+{winInfo.tokens} CCC</p>
-                <Button 
-                  size="lg" 
-                  onClick={() => { setShowWin(false); setIsDemoWin(false); }}
-                  className="cyber-button mt-3"
+              </div>
+            )}
+
+            {/* Reels Container */}
+            <div className="flex justify-center gap-4 md:gap-6 mb-6">
+              {[0, 1, 2].map((index) => (
+                <SlotReel
+                  key={index}
+                  symbols={SLOT_SYMBOLS}
+                  finalSymbol={finalReels[index]}
+                  isSpinning={reelSpinning[index]}
+                  spinDuration={REEL_SPIN_DURATION[index]}
+                  onStop={() => handleReelStop(index)}
+                  getRarityColor={getRarityColor}
+                  showWin={showWin}
+                  winRarity={winInfo?.rarity}
+                />
+              ))}
+            </div>
+
+            {/* Coin Slot Decoration */}
+            <div className="coin-slot mb-4" />
+
+            {/* Spin Counter & Button Row */}
+            <div className="flex flex-col items-center gap-4">
+              {/* Spin Counter */}
+              <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-full">
+                {[...Array(MAX_DAILY_SPINS)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-5 h-5 rounded-full transition-all ${
+                      i < remainingSpins 
+                        ? 'bg-neon-green shadow-lg shadow-neon-green/60 animate-pulse' 
+                        : 'bg-muted-foreground/30'
+                    }`}
+                  />
+                ))}
+                <span className="text-sm text-muted-foreground ml-2 font-medium">
+                  {remainingSpins}/{MAX_DAILY_SPINS} spins left
+                </span>
+              </div>
+
+              {/* Spin Button */}
+              <div className="spin-button-container">
+                <div className="spin-button-glow" />
+                <Button
+                  onClick={spin}
+                  disabled={isSpinning || remainingSpins <= 0 || !isWalletConnected}
+                  size="lg"
+                  className={`
+                    relative z-10 cyber-button text-2xl font-bold px-12 py-6 h-auto
+                    ${isSpinning ? 'animate-pulse' : ''}
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                  `}
                 >
-                  {isDemoWin ? (
+                  {isSpinning ? (
                     <>
-                      <Star className="w-5 h-5 mr-2" />
-                      Try Your Luck!
+                      <Sparkles className="w-7 h-7 mr-3 animate-spin" />
+                      SPINNING...
                     </>
+                  ) : remainingSpins <= 0 ? (
+                    'NO SPINS LEFT'
+                  ) : !isWalletConnected ? (
+                    'CONNECT WALLET'
                   ) : (
                     <>
-                      <Gift className="w-5 h-5 mr-2" />
-                      Claim Rewards
+                      <Star className="w-7 h-7 mr-3" />
+                      FREE SPIN
                     </>
                   )}
                 </Button>
               </div>
             </div>
-          )}
-
-          {/* Reels Container */}
-          <div className="flex justify-center gap-3 md:gap-6 mb-4">
-            {[0, 1, 2].map((index) => (
-              <SlotReel
-                key={index}
-                symbols={SLOT_SYMBOLS}
-                finalSymbol={finalReels[index]}
-                isSpinning={reelSpinning[index]}
-                spinDuration={REEL_SPIN_DURATION[index]}
-                onStop={() => handleReelStop(index)}
-                getRarityColor={getRarityColor}
-                showWin={showWin}
-                winRarity={winInfo?.rarity}
-              />
-            ))}
           </div>
 
-          {/* Spin Counter & Button Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* Spin Counter */}
-            <div className="flex items-center gap-2">
-              {[...Array(MAX_DAILY_SPINS)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-4 h-4 rounded-full transition-all ${
-                    i < remainingSpins 
-                      ? 'bg-neon-green shadow-lg shadow-neon-green/50' 
-                      : 'bg-muted-foreground/30'
-                  }`}
-                />
-              ))}
-              <span className="text-sm text-muted-foreground ml-2">
-                {remainingSpins}/{MAX_DAILY_SPINS} spins left
-              </span>
+          {/* Rules & Rewards Section */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* How to Play */}
+            <div className="bg-gradient-to-br from-neon-purple/15 to-neon-cyan/15 rounded-xl p-5 border border-neon-purple/30">
+              <h4 className="font-bold text-neon-pink mb-3 flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                How to Play
+              </h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-3">
+                  <Star className="w-4 h-4 text-neon-cyan flex-shrink-0" />
+                  Get 3 free spins every day
+                </li>
+                <li className="flex items-center gap-3">
+                  <Star className="w-4 h-4 text-neon-cyan flex-shrink-0" />
+                  Match 3 chests of the same rarity
+                </li>
+                <li className="flex items-center gap-3">
+                  <Star className="w-4 h-4 text-neon-cyan flex-shrink-0" />
+                  Win CCC credits + unlock that chest
+                </li>
+                <li className="flex items-center gap-3">
+                  <Trophy className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                  Higher rarity = bigger rewards!
+                </li>
+              </ul>
             </div>
 
-            {/* Spin Button */}
-            <Button
-              onClick={spin}
-              disabled={isSpinning || remainingSpins <= 0 || !isWalletConnected}
-              size="lg"
-              className={`
-                cyber-button text-xl font-bold px-10 py-4
-                ${isSpinning ? 'animate-pulse' : ''}
-                disabled:opacity-50 disabled:cursor-not-allowed
-              `}
-            >
-              {isSpinning ? (
-                <>
-                  <Sparkles className="w-6 h-6 mr-2 animate-spin" />
-                  SPINNING...
-                </>
-              ) : remainingSpins <= 0 ? (
-                'NO SPINS LEFT'
-              ) : !isWalletConnected ? (
-                'CONNECT WALLET'
-              ) : (
-                <>
-                  <Star className="w-6 h-6 mr-2" />
-                  FREE SPIN
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Rules & Rewards Section at Bottom */}
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* How to Play */}
-          <div className="bg-gradient-to-br from-neon-purple/10 to-neon-cyan/10 rounded-lg p-4 border border-neon-purple/20">
-            <h4 className="font-bold text-neon-pink mb-2 flex items-center gap-2 text-sm">
-              <Zap className="w-4 h-4" />
-              How to Play
-            </h4>
-            <ul className="space-y-1.5 text-xs text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
-                Get 3 free spins every day
-              </li>
-              <li className="flex items-center gap-2">
-                <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
-                Match 3 chests of the same rarity
-              </li>
-              <li className="flex items-center gap-2">
-                <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
-                Win CCC credits + unlock that chest
-              </li>
-              <li className="flex items-center gap-2">
-                <Trophy className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-                Higher rarity = bigger rewards!
-              </li>
-            </ul>
-          </div>
-
-          {/* Rewards Table */}
-          <div className="bg-gradient-to-br from-neon-cyan/10 to-neon-green/10 rounded-lg p-4 border border-neon-cyan/20">
-            <h4 className="font-bold text-neon-green mb-2 flex items-center gap-2 text-sm">
-              <Gift className="w-4 h-4" />
-              Match 3 Rewards
-            </h4>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
-                <Badge className="bg-green-500 text-white text-[10px] px-1.5">COMMON</Badge>
-                <span className="text-muted-foreground">150 CCC + Chest</span>
-              </div>
-              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
-                <Badge className="bg-blue-500 text-white text-[10px] px-1.5">RARE</Badge>
-                <span className="text-muted-foreground">450 CCC + Chest</span>
-              </div>
-              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
-                <Badge className="bg-purple-500 text-white text-[10px] px-1.5">EPIC</Badge>
-                <span className="text-muted-foreground">1500 CCC + Chest</span>
-              </div>
-              <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
-                <Badge className="bg-yellow-500 text-white text-[10px] px-1.5">LEGEND</Badge>
-                <span className="text-muted-foreground">6000 CCC + Chest</span>
+            {/* Rewards Table */}
+            <div className="bg-gradient-to-br from-neon-cyan/15 to-neon-green/15 rounded-xl p-5 border border-neon-cyan/30">
+              <h4 className="font-bold text-neon-green mb-3 flex items-center gap-2">
+                <Gift className="w-5 h-5" />
+                Match 3 Rewards
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-2 bg-black/40 rounded-lg p-2">
+                  <Badge className="bg-green-500 text-white text-xs px-2">COMMON</Badge>
+                  <span className="text-sm text-muted-foreground">150 CCC</span>
+                </div>
+                <div className="flex items-center gap-2 bg-black/40 rounded-lg p-2">
+                  <Badge className="bg-blue-500 text-white text-xs px-2">RARE</Badge>
+                  <span className="text-sm text-muted-foreground">450 CCC</span>
+                </div>
+                <div className="flex items-center gap-2 bg-black/40 rounded-lg p-2">
+                  <Badge className="bg-purple-500 text-white text-xs px-2">EPIC</Badge>
+                  <span className="text-sm text-muted-foreground">1,500 CCC</span>
+                </div>
+                <div className="flex items-center gap-2 bg-black/40 rounded-lg p-2">
+                  <Badge className="bg-yellow-500 text-white text-xs px-2">LEGEND</Badge>
+                  <span className="text-sm text-muted-foreground">6,000 CCC</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </CardContent>
-
-      {/* Decorative Corner Sparkles */}
-      <Sparkles className="absolute top-3 right-3 w-5 h-5 text-neon-cyan animate-pulse opacity-60" />
-      <Sparkles className="absolute top-3 left-3 w-5 h-5 text-neon-pink animate-pulse opacity-60" style={{ animationDelay: '0.3s' }} />
-      <Sparkles className="absolute bottom-3 right-3 w-5 h-5 text-neon-green animate-pulse opacity-60" style={{ animationDelay: '0.6s' }} />
-      <Sparkles className="absolute bottom-3 left-3 w-5 h-5 text-yellow-400 animate-pulse opacity-60" style={{ animationDelay: '0.9s' }} />
     </Card>
   );
 };
