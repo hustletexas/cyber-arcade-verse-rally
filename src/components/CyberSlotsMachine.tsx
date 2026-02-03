@@ -31,32 +31,8 @@ interface CyberSlotsMachineProps {
   onWin?: (rarity: string, tokens: number) => void;
 }
 
-// Arcade lights configuration
-const LIGHT_COLORS = ['cyan', 'pink', 'green', 'yellow', 'purple'] as const;
-
-const generateLights = () => {
-  const lights: { position: 'top' | 'bottom' | 'left' | 'right'; offset: number; color: typeof LIGHT_COLORS[number]; delay: number }[] = [];
-  const spacing = 40;
-  
-  // Top lights
-  for (let i = 0; i < 12; i++) {
-    lights.push({ position: 'top', offset: 20 + i * spacing, color: LIGHT_COLORS[i % LIGHT_COLORS.length], delay: i * 0.1 });
-  }
-  // Bottom lights
-  for (let i = 0; i < 12; i++) {
-    lights.push({ position: 'bottom', offset: 20 + i * spacing, color: LIGHT_COLORS[(i + 2) % LIGHT_COLORS.length], delay: i * 0.1 + 0.5 });
-  }
-  // Left lights
-  for (let i = 0; i < 6; i++) {
-    lights.push({ position: 'left', offset: 40 + i * 50, color: LIGHT_COLORS[(i + 1) % LIGHT_COLORS.length], delay: i * 0.15 });
-  }
-  // Right lights
-  for (let i = 0; i < 6; i++) {
-    lights.push({ position: 'right', offset: 40 + i * 50, color: LIGHT_COLORS[(i + 3) % LIGHT_COLORS.length], delay: i * 0.15 + 0.3 });
-  }
-  
-  return lights;
-};
+// Arcade button colors for decorative row
+const ARCADE_BUTTON_COLORS = ['red', 'yellow', 'green', 'cyan', 'blue'] as const;
 
 // Single Reel Component with vertical spinning
 const SlotReel: React.FC<{
@@ -182,31 +158,13 @@ const SlotReel: React.FC<{
   );
 };
 
-// Arcade Lights Component
-const ArcadeLights: React.FC<{ isWinning: boolean }> = ({ isWinning }) => {
-  const lights = useMemo(() => generateLights(), []);
-  
+// Arcade Buttons Decoration Component
+const ArcadeButtonsRow: React.FC = () => {
   return (
-    <div className="arcade-lights">
-      {lights.map((light, idx) => {
-        const style: React.CSSProperties = {
-          '--delay': `${light.delay}s`,
-        } as React.CSSProperties;
-        
-        if (light.position === 'top' || light.position === 'bottom') {
-          style.left = `${light.offset}px`;
-        } else {
-          style.top = `${light.offset}px`;
-        }
-        
-        return (
-          <div
-            key={idx}
-            className={`arcade-light ${light.position} ${light.color}`}
-            style={style}
-          />
-        );
-      })}
+    <div className="arcade-buttons">
+      {ARCADE_BUTTON_COLORS.map((color) => (
+        <div key={color} className={`arcade-button ${color}`} />
+      ))}
     </div>
   );
 };
@@ -361,140 +319,113 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   return (
     <Card className="hover:scale-[1.01] transition-transform relative overflow-visible border-0 bg-transparent col-span-full lg:col-span-3">
       <CardContent className="p-0">
-        {/* Slots Cabinet */}
+        {/* Slots Cabinet with starfield background */}
         <div className={`slots-cabinet ${showWin ? 'winning' : ''}`}>
-          {/* Arcade Lights */}
-          <ArcadeLights isWinning={showWin} />
-          
-          {/* Header */}
-          <div className="text-center mb-6 relative z-20">
-            <div className="inline-flex items-center gap-3 bg-black/60 px-6 py-3 rounded-full border border-neon-cyan/30">
-              <Zap className="w-7 h-7 text-neon-cyan animate-pulse" />
-              <h3 className="font-display text-3xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent">
-                CYBER SLOTS
-              </h3>
-              <Zap className="w-7 h-7 text-neon-pink animate-pulse" />
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">Match 3 chests to win CCC + unlock that chest!</p>
+          {/* UFO Decorations */}
+          <div className="ufo-decoration left" />
+          <div className="ufo-decoration right" />
+
+          {/* Neon Pink Title */}
+          <div className="slots-title-container">
+            <h3 className="slots-title">Cyber Slots</h3>
           </div>
 
-          {/* Slot Machine Display */}
-          <div className="slots-display relative">
-            {/* Win Overlay */}
-            {showWin && winInfo && (
-              <div className="jackpot-overlay absolute inset-0 bg-black/95 z-30 flex items-center justify-center rounded-xl animate-fade-in">
-                <div className="text-center space-y-4">
-                  {isDemoWin && (
-                    <Badge className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 text-sm px-4 py-1.5">
-                      ✨ DEMO PREVIEW ✨
-                    </Badge>
-                  )}
-                  <div className="flex items-center justify-center gap-4">
-                    <Trophy className="w-14 h-14 text-yellow-400 animate-bounce" />
-                    <span className="jackpot-text text-5xl font-bold text-yellow-400">JACKPOT!</span>
-                    <Trophy className="w-14 h-14 text-yellow-400 animate-bounce" />
+          {/* Chrome Frame */}
+          <div className="slots-frame">
+            <div className="slots-inner">
+              {/* Slot Machine Display */}
+              <div className="slots-display relative">
+                {/* Win Overlay */}
+                {showWin && winInfo && (
+                  <div className="jackpot-overlay absolute inset-0 bg-black/95 z-30 flex items-center justify-center rounded-xl animate-fade-in">
+                    <div className="text-center space-y-4">
+                      {isDemoWin && (
+                        <Badge className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 text-sm px-4 py-1.5">
+                          ✨ DEMO PREVIEW ✨
+                        </Badge>
+                      )}
+                      <div className="flex items-center justify-center gap-4">
+                        <Trophy className="w-14 h-14 text-yellow-400 animate-bounce" />
+                        <span className="jackpot-text text-5xl font-bold text-yellow-400">JACKPOT!</span>
+                        <Trophy className="w-14 h-14 text-yellow-400 animate-bounce" />
+                      </div>
+                      <Badge className={`bg-gradient-to-r ${getRarityColor(winInfo.rarity)} text-white text-2xl px-8 py-3`}>
+                        {winInfo.rarity.toUpperCase()} CHEST UNLOCKED!
+                      </Badge>
+                      <p className="text-neon-green font-bold text-4xl">+{winInfo.tokens} CCC</p>
+                      <Button 
+                        size="lg" 
+                        onClick={() => { setShowWin(false); setIsDemoWin(false); }}
+                        className="cyber-button mt-4 text-lg px-8 py-6"
+                      >
+                        {isDemoWin ? (
+                          <>
+                            <Star className="w-6 h-6 mr-2" />
+                            Try Your Luck!
+                          </>
+                        ) : (
+                          <>
+                            <Gift className="w-6 h-6 mr-2" />
+                            Claim Rewards
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  <Badge className={`bg-gradient-to-r ${getRarityColor(winInfo.rarity)} text-white text-2xl px-8 py-3`}>
-                    {winInfo.rarity.toUpperCase()} CHEST UNLOCKED!
-                  </Badge>
-                  <p className="text-neon-green font-bold text-4xl">+{winInfo.tokens} CCC</p>
-                  <Button 
-                    size="lg" 
-                    onClick={() => { setShowWin(false); setIsDemoWin(false); }}
-                    className="cyber-button mt-4 text-lg px-8 py-6"
-                  >
-                    {isDemoWin ? (
-                      <>
-                        <Star className="w-6 h-6 mr-2" />
-                        Try Your Luck!
-                      </>
-                    ) : (
-                      <>
-                        <Gift className="w-6 h-6 mr-2" />
-                        Claim Rewards
-                      </>
-                    )}
-                  </Button>
+                )}
+
+                {/* Reels Container */}
+                <div className="flex justify-center gap-3 md:gap-5 py-4">
+                  {[0, 1, 2].map((index) => (
+                    <SlotReel
+                      key={index}
+                      symbols={SLOT_SYMBOLS}
+                      finalSymbol={finalReels[index]}
+                      isSpinning={reelSpinning[index]}
+                      spinDuration={REEL_SPIN_DURATION[index]}
+                      onStop={() => handleReelStop(index)}
+                      getRarityColor={getRarityColor}
+                      showWin={showWin}
+                      winRarity={winInfo?.rarity}
+                    />
+                  ))}
                 </div>
-              </div>
-            )}
 
-            {/* Reels Container */}
-            <div className="flex justify-center gap-4 md:gap-6 mb-6">
-              {[0, 1, 2].map((index) => (
-                <SlotReel
-                  key={index}
-                  symbols={SLOT_SYMBOLS}
-                  finalSymbol={finalReels[index]}
-                  isSpinning={reelSpinning[index]}
-                  spinDuration={REEL_SPIN_DURATION[index]}
-                  onStop={() => handleReelStop(index)}
-                  getRarityColor={getRarityColor}
-                  showWin={showWin}
-                  winRarity={winInfo?.rarity}
-                />
-              ))}
-            </div>
+                {/* Arcade Buttons Row */}
+                <ArcadeButtonsRow />
 
-            {/* Coin Slot Decoration */}
-            <div className="coin-slot mb-4" />
+                {/* Spin Counter Lights */}
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  {[...Array(MAX_DAILY_SPINS)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`spin-counter-light ${i < remainingSpins ? 'active' : 'inactive'}`}
+                    />
+                  ))}
+                  <span className="text-xs text-muted-foreground ml-3 font-medium">
+                    {remainingSpins}/{MAX_DAILY_SPINS} SPINS
+                  </span>
+                </div>
 
-            {/* Spin Counter & Button Row */}
-            <div className="flex flex-col items-center gap-4">
-              {/* Spin Counter */}
-              <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-full">
-                {[...Array(MAX_DAILY_SPINS)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-5 h-5 rounded-full transition-all ${
-                      i < remainingSpins 
-                        ? 'bg-neon-green shadow-lg shadow-neon-green/60 animate-pulse' 
-                        : 'bg-muted-foreground/30'
-                    }`}
-                  />
-                ))}
-                <span className="text-sm text-muted-foreground ml-2 font-medium">
-                  {remainingSpins}/{MAX_DAILY_SPINS} spins left
-                </span>
-              </div>
-
-              {/* Spin Button */}
-              <div className="spin-button-container">
-                <div className="spin-button-glow" />
-                <Button
-                  onClick={spin}
-                  disabled={isSpinning || remainingSpins <= 0 || !isWalletConnected}
-                  size="lg"
-                  className={`
-                    relative z-10 cyber-button text-2xl font-bold px-12 py-6 h-auto
-                    ${isSpinning ? 'animate-pulse' : ''}
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                  `}
-                >
-                  {isSpinning ? (
-                    <>
-                      <Sparkles className="w-7 h-7 mr-3 animate-spin" />
-                      SPINNING...
-                    </>
-                  ) : remainingSpins <= 0 ? (
-                    'NO SPINS LEFT'
-                  ) : !isWalletConnected ? (
-                    'CONNECT WALLET'
-                  ) : (
-                    <>
-                      <Star className="w-7 h-7 mr-3" />
-                      FREE SPIN
-                    </>
-                  )}
-                </Button>
+                {/* Hexagonal Spin Button */}
+                <div className="spin-button-container flex justify-center">
+                  <div className="spin-button-glow" />
+                  <button
+                    onClick={spin}
+                    disabled={isSpinning || remainingSpins <= 0 || !isWalletConnected}
+                    className="spin-button-hex"
+                  >
+                    {isSpinning ? 'SPINNING...' : remainingSpins <= 0 ? 'NO SPINS' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Rules & Rewards Section */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
             {/* How to Play */}
-            <div className="bg-gradient-to-br from-neon-purple/15 to-neon-cyan/15 rounded-xl p-5 border border-neon-purple/30">
+            <div className="rules-card">
               <h4 className="font-bold text-neon-pink mb-3 flex items-center gap-2">
                 <Zap className="w-5 h-5" />
                 How to Play
@@ -520,7 +451,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
             </div>
 
             {/* Rewards Table */}
-            <div className="bg-gradient-to-br from-neon-cyan/15 to-neon-green/15 rounded-xl p-5 border border-neon-cyan/30">
+            <div className="rules-card">
               <h4 className="font-bold text-neon-green mb-3 flex items-center gap-2">
                 <Gift className="w-5 h-5" />
                 Match 3 Rewards

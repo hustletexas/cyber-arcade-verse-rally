@@ -1,28 +1,78 @@
-/* Cyber Slots Machine Styles */
+/* Cyber Slots Machine - Arcade Cabinet Style */
 
-/* ======= CABINET FRAME ======= */
+/* ======= STARFIELD BACKGROUND ======= */
 .slots-cabinet {
-  --cabinet-border: 8px;
-  --light-size: 12px;
+  --cabinet-border: 6px;
   position: relative;
-  background: linear-gradient(180deg, 
-    hsl(240 20% 12%) 0%, 
-    hsl(260 30% 8%) 50%,
-    hsl(240 20% 6%) 100%
-  );
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 
-    0 0 0 4px hsl(var(--neon-purple) / 0.3),
-    0 0 40px hsl(var(--neon-purple) / 0.2),
-    inset 0 2px 20px rgba(255,255,255,0.05);
+  padding: 32px;
+  background: 
+    radial-gradient(ellipse at 50% 0%, hsl(280 60% 20% / 0.4) 0%, transparent 50%),
+    linear-gradient(180deg, 
+      hsl(260 40% 8%) 0%, 
+      hsl(240 30% 4%) 50%,
+      hsl(260 30% 6%) 100%
+    );
+  border-radius: 16px;
+  overflow: hidden;
 }
 
+/* Starfield effect */
 .slots-cabinet::before {
   content: '';
   position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 40px 70px, hsl(var(--neon-cyan) / 0.8) 0%, transparent 100%),
+    radial-gradient(2px 2px at 50px 160px, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 90px 40px, hsl(var(--neon-pink) / 0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 130px 80px, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 160px 120px, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 200px 50px, hsl(var(--neon-cyan) / 0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 240px 130px, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 280px 90px, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 320px 40px, hsl(var(--neon-pink) / 0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 360px 170px, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 400px 60px, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 440px 100px, hsl(var(--neon-cyan) / 0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 480px 150px, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 520px 30px, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 560px 80px, hsl(var(--neon-purple) / 0.7) 0%, transparent 100%);
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 0;
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ======= CHROME ANGULAR FRAME ======= */
+.slots-frame {
+  position: relative;
+  background: linear-gradient(180deg, 
+    hsl(220 10% 35%) 0%,
+    hsl(220 15% 20%) 30%,
+    hsl(220 20% 15%) 70%,
+    hsl(220 15% 25%) 100%
+  );
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 
+    0 0 0 2px hsl(var(--neon-cyan) / 0.4),
+    0 0 30px hsl(var(--neon-purple) / 0.3),
+    inset 0 1px 0 hsl(0 0% 100% / 0.2),
+    inset 0 -2px 10px hsl(0 0% 0% / 0.5);
+}
+
+/* Outer neon border glow */
+.slots-frame::before {
+  content: '';
+  position: absolute;
   inset: -4px;
-  border-radius: 28px;
+  border-radius: 16px;
   background: linear-gradient(
     135deg,
     hsl(var(--neon-cyan)) 0%,
@@ -32,145 +82,143 @@
     hsl(var(--neon-cyan)) 100%
   );
   z-index: -1;
-  opacity: 0.6;
+  opacity: 0.7;
+  filter: blur(3px);
+  animation: frame-glow 3s ease-in-out infinite alternate;
 }
 
-/* ======= ARCADE LIGHTS ======= */
-.arcade-lights {
+@keyframes frame-glow {
+  0% { opacity: 0.5; filter: blur(2px); }
+  100% { opacity: 0.9; filter: blur(4px); }
+}
+
+/* Angular corner accents */
+.slots-frame::after {
+  content: '';
   position: absolute;
-  inset: -16px;
+  inset: 8px;
+  border: 2px solid hsl(var(--neon-cyan) / 0.5);
+  border-radius: 8px;
   pointer-events: none;
-  z-index: 10;
-}
-
-.arcade-light {
-  position: absolute;
-  width: var(--light-size);
-  height: var(--light-size);
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, 
-    rgba(255,255,255,0.9) 0%, 
-    var(--light-color) 40%, 
-    var(--light-color-dark) 100%
+  clip-path: polygon(
+    0 15%, 5% 0, 95% 0, 100% 15%,
+    100% 85%, 95% 100%, 5% 100%, 0 85%
   );
-  box-shadow: 
-    0 0 10px var(--light-color),
-    0 0 20px var(--light-color),
-    inset 0 -2px 4px rgba(0,0,0,0.3);
-  animation: light-idle 2s ease-in-out infinite;
-  animation-delay: var(--delay);
 }
 
-.arcade-light.top { top: 0; }
-.arcade-light.bottom { bottom: 0; }
-.arcade-light.left { left: 0; }
-.arcade-light.right { right: 0; }
-
-/* Light colors */
-.arcade-light.cyan { 
-  --light-color: hsl(var(--neon-cyan)); 
-  --light-color-dark: hsl(var(--neon-cyan) / 0.6);
-}
-.arcade-light.pink { 
-  --light-color: hsl(var(--neon-pink)); 
-  --light-color-dark: hsl(var(--neon-pink) / 0.6);
-}
-.arcade-light.green { 
-  --light-color: hsl(142 70% 50%); 
-  --light-color-dark: hsl(142 70% 30%);
-}
-.arcade-light.yellow { 
-  --light-color: hsl(45 100% 50%); 
-  --light-color-dark: hsl(45 100% 30%);
-}
-.arcade-light.purple { 
-  --light-color: hsl(var(--neon-purple)); 
-  --light-color-dark: hsl(var(--neon-purple) / 0.6);
+/* Inner machine body */
+.slots-inner {
+  background: linear-gradient(180deg,
+    hsl(240 40% 8%) 0%,
+    hsl(260 50% 5%) 100%
+  );
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
 }
 
-@keyframes light-idle {
-  0%, 100% { opacity: 0.4; transform: scale(0.9); }
-  50% { opacity: 0.7; transform: scale(1); }
+/* ======= NEON PINK TITLE ======= */
+.slots-title {
+  font-family: 'Brush Script MT', 'Segoe Script', cursive, sans-serif;
+  font-size: 3.5rem;
+  font-weight: bold;
+  background: linear-gradient(180deg, 
+    hsl(330 100% 80%) 0%,
+    hsl(var(--neon-pink)) 50%,
+    hsl(330 80% 50%) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 
+    0 0 10px hsl(var(--neon-pink) / 0.8),
+    0 0 20px hsl(var(--neon-pink) / 0.6),
+    0 0 40px hsl(var(--neon-pink) / 0.4);
+  filter: drop-shadow(0 0 15px hsl(var(--neon-pink) / 0.8));
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 20;
 }
 
-/* ======= WIN ANIMATION ======= */
-.slots-cabinet.winning .arcade-light {
-  animation: light-flash 0.15s ease-in-out infinite alternate;
+/* Title glow animation */
+.slots-title-container {
+  position: relative;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-@keyframes light-flash {
-  0% { 
-    opacity: 0.3; 
-    transform: scale(0.8);
-    box-shadow: 0 0 5px var(--light-color);
-  }
-  100% { 
-    opacity: 1; 
-    transform: scale(1.3);
-    box-shadow: 
-      0 0 15px var(--light-color),
-      0 0 30px var(--light-color),
-      0 0 45px var(--light-color);
-  }
+.slots-title-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, hsl(var(--neon-pink) / 0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(20px);
+  animation: title-glow-pulse 2s ease-in-out infinite;
+  z-index: 0;
 }
 
-.slots-cabinet.winning {
-  animation: cabinet-shake 0.1s ease-in-out;
+@keyframes title-glow-pulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.2); }
 }
 
-@keyframes cabinet-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-2px); }
-  75% { transform: translateX(2px); }
-}
-
-/* ======= REELS DISPLAY ======= */
+/* ======= REELS DISPLAY FRAME ======= */
 .slots-display {
   background: linear-gradient(180deg,
-    hsl(240 40% 5%) 0%,
-    hsl(260 50% 3%) 100%
+    hsl(220 20% 18%) 0%,
+    hsl(220 25% 12%) 10%,
+    hsl(240 30% 6%) 50%,
+    hsl(220 25% 12%) 90%,
+    hsl(220 20% 18%) 100%
   );
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 16px;
   position: relative;
   box-shadow: 
     inset 0 4px 20px rgba(0,0,0,0.8),
     inset 0 0 40px rgba(0,0,0,0.5),
-    0 0 0 3px hsl(var(--neon-purple) / 0.3);
+    0 0 0 4px hsl(220 15% 25%),
+    0 0 0 6px hsl(var(--neon-cyan) / 0.3);
+  border: 3px solid hsl(120 100% 40% / 0.8);
 }
 
+/* Green accent bar at top of display */
 .slots-display::before {
-  content: 'CYBER SLOTS';
+  content: '';
   position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(90deg, 
-    hsl(var(--neon-cyan)), 
-    hsl(var(--neon-pink)),
-    hsl(var(--neon-cyan))
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 6px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    hsl(120 100% 45%) 20%,
+    hsl(120 100% 55%) 50%,
+    hsl(120 100% 45%) 80%,
+    transparent 100%
   );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 14px;
-  font-weight: bold;
-  letter-spacing: 4px;
-  animation: text-shimmer 3s linear infinite;
-  text-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.5);
-}
-
-@keyframes text-shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 0 15px hsl(120 100% 50% / 0.8);
 }
 
 /* ======= REEL CONTAINER ======= */
 .slot-reel-container {
   perspective: 1000px;
   transform-style: preserve-3d;
-  min-height: 280px;
+  min-height: 320px;
+  background: linear-gradient(180deg,
+    hsl(240 30% 12%) 0%,
+    hsl(260 40% 8%) 50%,
+    hsl(240 30% 12%) 100%
+  );
+  box-shadow: 
+    inset 0 0 30px rgba(0,0,0,0.7),
+    0 0 0 3px hsl(220 15% 30%);
 }
 
 .slot-reel-strip {
@@ -184,38 +232,25 @@
   backface-visibility: hidden;
 }
 
-/* Slot machine frame glow effect */
+/* Reel frame glow */
 .slot-reel-container::before {
   content: '';
   position: absolute;
-  inset: -3px;
+  inset: -2px;
   background: linear-gradient(
-    45deg,
-    hsl(var(--neon-cyan)) 0%,
-    hsl(var(--neon-purple)) 50%,
-    hsl(var(--neon-pink)) 100%
+    180deg,
+    hsl(var(--neon-cyan) / 0.5) 0%,
+    hsl(var(--neon-purple) / 0.3) 50%,
+    hsl(var(--neon-cyan) / 0.5) 100%
   );
   border-radius: inherit;
   z-index: -1;
-  opacity: 0.6;
-  filter: blur(6px);
-  animation: slot-glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes slot-glow {
-  0% {
-    opacity: 0.4;
-    filter: blur(4px);
-  }
-  100% {
-    opacity: 0.8;
-    filter: blur(8px);
-  }
+  filter: blur(4px);
 }
 
 /* Spinning blur effect */
 .slot-reel-container.spinning .slot-symbol img {
-  filter: blur(2px);
+  filter: blur(3px);
 }
 
 /* Win celebration pulse */
@@ -232,19 +267,7 @@
   animation: win-pulse 0.4s ease-in-out infinite;
 }
 
-/* Reel stop bounce effect */
-@keyframes reel-stop {
-  0% { transform: translateY(0); }
-  30% { transform: translateY(-5%); }
-  60% { transform: translateY(2%); }
-  100% { transform: translateY(0); }
-}
-
-.slot-reel-strip.stopped {
-  animation: reel-stop 0.3s ease-out;
-}
-
-/* Scan line effect for retro feel */
+/* Scan line effect */
 .slot-reel-container::after {
   content: '';
   position: absolute;
@@ -252,50 +275,142 @@
   background: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 3px,
-    rgba(0, 0, 0, 0.15) 3px,
-    rgba(0, 0, 0, 0.15) 6px
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
   );
   pointer-events: none;
   z-index: 15;
   border-radius: inherit;
 }
 
-/* Symbol reflection effect */
-.slot-symbol::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%,
-    rgba(0, 0, 0, 0.3) 100%
-  );
-  pointer-events: none;
+/* ======= ARCADE BUTTON ROW ======= */
+.arcade-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0 8px;
 }
 
-/* ======= PULL LEVER ======= */
+.arcade-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid hsl(0 0% 30%);
+  box-shadow: 
+    inset 0 2px 4px rgba(255,255,255,0.3),
+    inset 0 -2px 4px rgba(0,0,0,0.3),
+    0 2px 4px rgba(0,0,0,0.5);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.arcade-button:hover {
+  transform: scale(1.1);
+}
+
+.arcade-button.red { background: linear-gradient(180deg, hsl(0 70% 50%) 0%, hsl(0 80% 35%) 100%); }
+.arcade-button.yellow { background: linear-gradient(180deg, hsl(45 100% 55%) 0%, hsl(40 90% 40%) 100%); }
+.arcade-button.green { background: linear-gradient(180deg, hsl(120 70% 45%) 0%, hsl(120 80% 30%) 100%); }
+.arcade-button.cyan { background: linear-gradient(180deg, hsl(180 70% 50%) 0%, hsl(180 80% 35%) 100%); }
+.arcade-button.blue { background: linear-gradient(180deg, hsl(220 70% 55%) 0%, hsl(220 80% 40%) 100%); }
+
+/* ======= HEXAGONAL SPIN BUTTON ======= */
 .spin-button-container {
   position: relative;
+  margin-top: 16px;
 }
 
+.spin-button-hex {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 60px;
+  font-size: 1.75rem;
+  font-weight: 900;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 4px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  background: linear-gradient(180deg, 
+    hsl(120 80% 50%) 0%,
+    hsl(120 90% 40%) 50%,
+    hsl(120 80% 35%) 100%
+  );
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+  box-shadow: 
+    0 4px 0 hsl(120 80% 25%),
+    0 6px 20px hsl(120 100% 30% / 0.5);
+  transition: all 0.15s ease;
+}
+
+.spin-button-hex:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 hsl(120 80% 25%),
+    0 10px 30px hsl(120 100% 40% / 0.6);
+  background: linear-gradient(180deg, 
+    hsl(120 80% 55%) 0%,
+    hsl(120 90% 45%) 50%,
+    hsl(120 80% 40%) 100%
+  );
+}
+
+.spin-button-hex:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 0 hsl(120 80% 25%),
+    0 4px 15px hsl(120 100% 30% / 0.4);
+}
+
+.spin-button-hex:disabled {
+  background: linear-gradient(180deg, 
+    hsl(0 0% 40%) 0%,
+    hsl(0 0% 30%) 100%
+  );
+  color: hsl(0 0% 60%);
+  cursor: not-allowed;
+  box-shadow: 0 2px 0 hsl(0 0% 20%);
+}
+
+/* Glow effect behind button */
 .spin-button-glow {
   position: absolute;
-  inset: -4px;
-  background: linear-gradient(135deg, 
-    hsl(var(--neon-cyan)), 
-    hsl(var(--neon-pink))
-  );
-  border-radius: 16px;
-  filter: blur(10px);
-  opacity: 0.5;
-  animation: button-glow 2s ease-in-out infinite alternate;
+  inset: -10px;
+  background: radial-gradient(ellipse, hsl(120 100% 50% / 0.4) 0%, transparent 70%);
+  filter: blur(15px);
+  z-index: -1;
+  animation: spin-glow 2s ease-in-out infinite alternate;
 }
 
-@keyframes button-glow {
-  0% { opacity: 0.3; filter: blur(8px); }
-  100% { opacity: 0.7; filter: blur(12px); }
+@keyframes spin-glow {
+  0% { opacity: 0.4; }
+  100% { opacity: 0.8; }
+}
+
+/* ======= REFLECTION EFFECT ======= */
+.slots-reflection {
+  position: relative;
+  height: 80px;
+  margin-top: 16px;
+  overflow: hidden;
+  opacity: 0.3;
+  transform: scaleY(-1);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
+}
+
+/* ======= WIN ANIMATION ======= */
+.slots-cabinet.winning {
+  animation: cabinet-pulse 0.3s ease-in-out;
+}
+
+@keyframes cabinet-pulse {
+  0%, 100% { box-shadow: 0 0 30px hsl(var(--neon-purple) / 0.3); }
+  50% { box-shadow: 0 0 60px hsl(45 100% 50% / 0.6), 0 0 100px hsl(45 100% 50% / 0.3); }
 }
 
 /* ======= JACKPOT OVERLAY ======= */
@@ -321,29 +436,67 @@
   }
 }
 
-/* ======= COIN SLOT ======= */
-.coin-slot {
-  width: 60px;
-  height: 8px;
+/* ======= DECORATIVE UFOs ======= */
+.ufo-decoration {
+  position: absolute;
+  width: 30px;
+  height: 12px;
   background: linear-gradient(180deg, 
-    hsl(240 20% 15%) 0%,
-    hsl(240 20% 8%) 50%,
-    hsl(240 20% 15%) 100%
+    hsl(var(--neon-cyan) / 0.8) 0%,
+    hsl(var(--neon-purple) / 0.6) 100%
   );
-  border-radius: 4px;
-  margin: 0 auto;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-  position: relative;
+  border-radius: 50% 50% 20% 20%;
+  box-shadow: 0 0 10px hsl(var(--neon-cyan) / 0.5);
+  animation: ufo-float 4s ease-in-out infinite;
 }
 
-.coin-slot::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 4px;
-  background: hsl(240 30% 3%);
-  border-radius: 2px;
+.ufo-decoration.left {
+  top: 30%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.ufo-decoration.right {
+  top: 25%;
+  right: 5%;
+  animation-delay: 2s;
+}
+
+@keyframes ufo-float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+/* ======= SPIN COUNTER LIGHTS ======= */
+.spin-counter-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid hsl(0 0% 25%);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+}
+
+.spin-counter-light.active {
+  background: linear-gradient(180deg, hsl(120 100% 55%) 0%, hsl(120 100% 40%) 100%);
+  box-shadow: 
+    0 0 8px hsl(120 100% 50%),
+    0 0 16px hsl(120 100% 50% / 0.5),
+    inset 0 1px 2px rgba(255,255,255,0.4);
+}
+
+.spin-counter-light.inactive {
+  background: linear-gradient(180deg, hsl(0 0% 25%) 0%, hsl(0 0% 15%) 100%);
+}
+
+/* ======= RULES CARDS ======= */
+.rules-card {
+  background: linear-gradient(135deg,
+    hsl(var(--neon-purple) / 0.15) 0%,
+    hsl(var(--neon-cyan) / 0.1) 100%
+  );
+  border: 1px solid hsl(var(--neon-purple) / 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  backdrop-filter: blur(4px);
 }
