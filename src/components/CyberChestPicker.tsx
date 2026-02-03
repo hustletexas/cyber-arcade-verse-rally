@@ -175,19 +175,17 @@ export const CyberChestPicker: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-3">
-          <Gift className="w-6 h-6 text-neon-pink" />
-          <h3 className="font-display text-2xl font-bold tracking-wider uppercase"
-              style={{
-                background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 30%, #FF8C00 60%, #B8860B 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 0 20px rgba(255, 165, 0, 0.5), 0 0 40px rgba(255, 140, 0, 0.3)',
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
-              }}>
-            CYBER CHEST
-          </h3>
-        </div>
+        <h3 className="font-display text-3xl font-black tracking-widest uppercase"
+            style={{
+              background: 'linear-gradient(180deg, #00FFFF 0%, #FF00FF 50%, #00FFFF 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(255, 0, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.4)',
+              filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))',
+              letterSpacing: '0.2em',
+            }}>
+          CYBER CHEST
+        </h3>
         <div className="flex items-center gap-2">
           {ownedPassTier && (
             <Badge className={getTierStyles(ownedPassTier).badge}>
