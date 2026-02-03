@@ -68,7 +68,7 @@ export const Marketplace = () => {
   const { createOrLoginWithWallet } = useWalletAuth();
   const { balance } = useUserBalance();
   const { addToCart, getTotalItems, getTotalPrice, setIsOpen } = useCart();
-  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'xlm' | 'usdc' | 'pyusd'>('cctr');
+  const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'xlm' | 'usdc' | 'pyusd'>('usdc');
   const [filter, setFilter] = useState('all');
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   
