@@ -184,22 +184,44 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   const [stoppedReels, setStoppedReels] = useState(0);
   const [isDemo, setIsDemo] = useState(false);
   const [isDemoWin, setIsDemoWin] = useState(false);
-  const demoPlayedRef = useRef(false);
+  const [isContinuousDemo, setIsContinuousDemo] = useState(true);
+  const demoIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Start continuous demo on mount
   useEffect(() => {
-    if (demoPlayedRef.current) return;
-    demoPlayedRef.current = true;
+    if (isContinuousDemo && !isSpinning) {
+      startDemoSpin();
+    }
     
-    const demoTimer = setTimeout(() => {
-      playDemoJackpot();
-    }, 1000);
-    
-    return () => clearTimeout(demoTimer);
+    return () => {
+      if (demoIntervalRef.current) {
+        clearInterval(demoIntervalRef.current);
+      }
+    };
   }, []);
 
-  const playDemoJackpot = useCallback(() => {
-    const legendarySymbol = SLOT_SYMBOLS[3];
-    setFinalReels([legendarySymbol, legendarySymbol, legendarySymbol]);
+  // Restart demo spin when previous one finishes (only if still in demo mode)
+  useEffect(() => {
+    if (isContinuousDemo && !isSpinning && !showWin) {
+      const restartTimer = setTimeout(() => {
+        if (isContinuousDemo) {
+          startDemoSpin();
+        }
+      }, 500);
+      return () => clearTimeout(restartTimer);
+    }
+  }, [isSpinning, isContinuousDemo, showWin]);
+
+  const startDemoSpin = useCallback(() => {
+    if (!isContinuousDemo) return;
+    
+    // Random symbols for demo
+    const demoResults = [
+      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+    ];
+    setFinalReels(demoResults);
     
     setIsDemo(true);
     setIsSpinning(true);
@@ -207,6 +229,14 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     setWinInfo(null);
     setStoppedReels(0);
     setReelSpinning([true, true, true]);
+  }, [isContinuousDemo]);
+
+  const stopDemoAndPlay = useCallback(() => {
+    setIsContinuousDemo(false);
+    setIsDemo(false);
+    if (demoIntervalRef.current) {
+      clearInterval(demoIntervalRef.current);
+    }
   }, []);
 
   const getRarityColor = (rarity: string) => {
@@ -260,7 +290,11 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
         setIsDemoWin(isDemo);
         
         if (isDemo) {
-          // Demo mode - just show the win animation
+          // Demo mode - brief pause then continue spinning
+          setTimeout(() => {
+            setShowWin(false);
+            setWinInfo(null);
+          }, 1500);
         } else {
           toast.success(`🎰 JACKPOT! 3x ${winRarity.toUpperCase()} - You win ${tokens} CCC + ${winRarity} Chest!`);
           onWin?.(winRarity, tokens);
@@ -269,7 +303,9 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
         toast.info('No match this time. Try again!');
       }
       
-      setIsDemo(false);
+      if (!isDemo) {
+        setIsDemo(false);
+      }
     }
   }, [stoppedReels, isSpinning, finalReels, onWin, isDemo]);
 
@@ -284,7 +320,10 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       return;
     }
 
-    if (isSpinning) return;
+    if (isSpinning && !isContinuousDemo) return;
+
+    // Stop demo mode when player spins
+    stopDemoAndPlay();
 
     // Deduct spin cost (in a real app, this would be a database transaction)
     toast.info(`-${SPIN_COST} CCC`);
@@ -297,7 +336,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     setWinInfo(null);
     setStoppedReels(0);
     setReelSpinning([true, true, true]);
-  }, [isWalletConnected, isSpinning, balance]);
+  }, [isWalletConnected, isSpinning, balance, isContinuousDemo, stopDemoAndPlay]);
 
   const hasEnoughBalance = (balance?.cctr_balance || 0) >= SPIN_COST;
 
