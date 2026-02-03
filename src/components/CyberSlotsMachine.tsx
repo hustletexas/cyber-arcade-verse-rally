@@ -17,11 +17,10 @@ interface SlotSymbol {
 }
 
 const SLOT_SYMBOLS: SlotSymbol[] = [
-  { id: 'common', name: 'Cyber Chest', rarity: 'common', image: '/lovable-uploads/common-cyber-chest.png', tokenReward: 50 },
-  { id: 'rare', name: 'Rare Cyber Chest', rarity: 'rare', image: '/lovable-uploads/rare-cyber-chest.png', tokenReward: 150 },
-  { id: 'epic', name: 'Epic Cyber Chest', rarity: 'epic', image: '/lovable-uploads/epic-cyber-chest.png', tokenReward: 500 },
-  { id: 'legendary', name: 'Legendary Cyber Chest', rarity: 'legendary', image: '/lovable-uploads/legendary-cyber-chest.png', tokenReward: 2000 },
-  { id: 'standard', name: 'Standard Cyber Chest', rarity: 'rare', image: '/lovable-uploads/standard-cyber-chest.png', tokenReward: 100 },
+  { id: 'common', name: 'Common Arcade Pass', rarity: 'common', image: '/lovable-uploads/common-arcade-pass-slot.png', tokenReward: 50 },
+  { id: 'rare', name: 'Rare Arcade Pass', rarity: 'rare', image: '/lovable-uploads/rare-arcade-pass-slot.png', tokenReward: 150 },
+  { id: 'epic', name: 'OG Arcade Pass', rarity: 'epic', image: '/lovable-uploads/og-arcade-pass.png', tokenReward: 500 },
+  { id: 'legendary', name: 'Legendary Arcade Pass', rarity: 'legendary', image: '/lovable-uploads/legendary-arcade-pass-slot.png', tokenReward: 2000 },
 ];
 
 const SPIN_COST = 10; // CCC per spin
@@ -221,7 +220,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   };
 
   const getRandomSymbol = (): SlotSymbol => {
-    const weights = [40, 25, 20, 10, 5];
+    const weights = [40, 30, 20, 10]; // common, rare, epic, legendary
     const totalWeight = weights.reduce((a, b) => a + b, 0);
     let random = Math.random() * totalWeight;
     
