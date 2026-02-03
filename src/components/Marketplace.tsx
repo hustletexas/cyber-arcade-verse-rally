@@ -255,20 +255,6 @@ export const Marketplace = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-neon-cyan font-bold">Pay with:</span>
-              <Select value={selectedCurrency} onValueChange={(value: 'cctr' | 'xlm' | 'usdc' | 'pyusd') => setSelectedCurrency(value)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="xlm">⭐ XLM</SelectItem>
-                  <SelectItem value="usdc">💵 USDC</SelectItem>
-                  <SelectItem value="pyusd">💰 PYUSD</SelectItem>
-                  <SelectItem value="cctr">💎 $CCTR</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           {/* NFT Carousel */}
