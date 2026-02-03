@@ -318,7 +318,7 @@ export const Marketplace = () => {
                             <img 
                               src={nft.image} 
                               alt={nft.name}
-                              className="w-full h-full object-cover scale-105"
+                              className="max-w-full max-h-full object-contain"
                             />
                           </div>
                           <div className="p-4 space-y-2 flex-1">
