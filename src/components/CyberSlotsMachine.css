@@ -376,6 +376,41 @@
   box-shadow: 0 2px 0 hsl(0 0% 20%);
 }
 
+/* Demo mode - keep button active and glowing */
+.spin-button-hex.demo-active {
+  background: linear-gradient(180deg, 
+    hsl(280 80% 55%) 0%,
+    hsl(300 90% 45%) 50%,
+    hsl(280 80% 40%) 100%
+  );
+  box-shadow: 
+    0 4px 0 hsl(280 80% 30%),
+    0 6px 20px hsl(280 100% 40% / 0.6);
+  animation: demo-pulse 1s ease-in-out infinite;
+  cursor: pointer !important;
+}
+
+.spin-button-hex.demo-active:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 hsl(280 80% 30%),
+    0 10px 30px hsl(280 100% 50% / 0.7);
+}
+
+@keyframes demo-pulse {
+  0%, 100% { 
+    box-shadow: 
+      0 4px 0 hsl(280 80% 30%),
+      0 6px 20px hsl(280 100% 40% / 0.6);
+  }
+  50% { 
+    box-shadow: 
+      0 4px 0 hsl(280 80% 30%),
+      0 8px 30px hsl(280 100% 50% / 0.8),
+      0 0 40px hsl(var(--neon-pink) / 0.4);
+  }
+}
+
 /* Glow effect behind button */
 .spin-button-glow {
   position: absolute;

@@ -442,8 +442,8 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                   <div className="spin-button-glow" />
                   <button
                     onClick={spin}
-                    disabled={isSpinning && !isContinuousDemo}
-                    className="spin-button-hex"
+                    disabled={!isContinuousDemo && isSpinning}
+                    className={`spin-button-hex ${isContinuousDemo ? 'demo-active' : ''}`}
                   >
                     {isContinuousDemo ? 'FREE SPIN' : isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
                   </button>
