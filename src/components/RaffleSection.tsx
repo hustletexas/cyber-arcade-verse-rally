@@ -14,8 +14,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles, Award, Star } from 'lucide-react';
 import { ChestOpeningAnimation } from './ChestOpeningAnimation';
-import { CyberSlotsMachine } from './CyberSlotsMachine';
-import { CyberChestPicker } from './CyberChestPicker';
 interface Raffle {
   id: string;
   title: string;
