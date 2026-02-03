@@ -78,22 +78,9 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({
                   </h4>
                   <p className="text-xs text-neon-purple truncate">{track.artist}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-xs text-neon-green">
-                    <Clock size={12} />
-                    {formatDuration(track.duration)}
-                  </div>
-                  <Button 
-                    size="sm" 
-                    className="h-6 px-2 text-xs bg-neon-cyan text-black hover:bg-neon-cyan/80"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Purchase with 100 CCTR
-                    }}
-                  >
-                    <Coins size={10} className="mr-1" />
-                    100 CCTR
-                  </Button>
+                <div className="flex items-center gap-1 text-xs text-neon-green">
+                  <Clock size={12} />
+                  {formatDuration(track.duration)}
                 </div>
               </div>
             </div>
