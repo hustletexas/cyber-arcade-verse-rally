@@ -78,7 +78,7 @@ export const RaffleSection = () => {
     image: '/lovable-uploads/3fc5f3c0-2b28-4cff-acdc-7c3896ee635b.png',
     totalTickets: 1000,
     soldTickets: 750,
-    ticketPrice: 100,
+    ticketPrice: 10000,
     prizeValue: '$3,500',
     endDate: new Date('2024-12-31'),
     status: 'active'
@@ -89,7 +89,7 @@ export const RaffleSection = () => {
     image: '/lovable-uploads/8820a165-f5a8-4d8a-b9d4-8dca31666e27.png',
     totalTickets: 500,
     soldTickets: 320,
-    ticketPrice: 50,
+    ticketPrice: 5000,
     prizeValue: '$800',
     endDate: new Date('2024-12-25'),
     status: 'active'
@@ -100,7 +100,7 @@ export const RaffleSection = () => {
     image: '/lovable-uploads/4933f71b-6c27-40c9-b87f-b2d11c68045b.png',
     totalTickets: 300,
     soldTickets: 180,
-    ticketPrice: 75,
+    ticketPrice: 7500,
     prizeValue: '$650',
     endDate: new Date('2024-12-28'),
     status: 'active'
@@ -111,7 +111,7 @@ export const RaffleSection = () => {
     image: '/lovable-uploads/91d31922-bcdc-45bb-b3b6-4df169a8cfce.png',
     totalTickets: 400,
     soldTickets: 220,
-    ticketPrice: 60,
+    ticketPrice: 6000,
     prizeValue: '$550',
     endDate: new Date('2024-12-30'),
     status: 'active'
