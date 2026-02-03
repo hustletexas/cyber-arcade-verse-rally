@@ -62,7 +62,7 @@ export const CyberGamesSection: React.FC = () => {
           </span>
         </h2>
         <p className="text-gray-400 text-sm sm:text-base">
-          Play to earn CCTR tokens and compete on the leaderboards
+          Play to earn CCC tokens and compete on the leaderboards
         </p>
       </div>
 
