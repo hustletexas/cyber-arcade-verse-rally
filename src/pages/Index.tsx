@@ -23,6 +23,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
 import { CyberChestPicker } from '@/components/CyberChestPicker';
+import { CyberSlotsMachine } from '@/components/CyberSlotsMachine';
 const Index = () => {
   const {
     toast
@@ -187,6 +188,15 @@ const Index = () => {
           <section className="px-2 sm:px-4">
             <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-cyan/30 rounded-xl p-6">
               <CyberChestPicker />
+            </div>
+          </section>
+
+          {/* Cyber Slots Section - Standalone Transparent */}
+          <section className="px-2 sm:px-4">
+            <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-purple/30 rounded-xl p-6">
+              <CyberSlotsMachine onWin={(rarity, tokens) => {
+                console.log(`Won ${tokens} CCC and ${rarity} chest!`);
+              }} />
             </div>
           </section>
 
