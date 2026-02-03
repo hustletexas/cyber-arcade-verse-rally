@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
 import { useCyberSequence } from '@/hooks/useCyberSequence';
-import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import {
   CyberSequenceGrid,
@@ -33,7 +33,7 @@ const CyberSequence: React.FC = () => {
     { rank: 3, displayName: '0x5c1a...f3e9', score: 3200, max_sequence: 11, best_streak: 8 },
   ]);
   
-  const { primaryWallet } = useMultiChainWallet();
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { balance, deductBalance, refetch: refreshBalance } = useUserBalance();
   const cctrBalance = balance.cctr_balance;
   
