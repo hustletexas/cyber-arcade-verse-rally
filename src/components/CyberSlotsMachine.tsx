@@ -24,7 +24,7 @@ const SLOT_SYMBOLS: SlotSymbol[] = [
   { id: 'standard', name: 'Standard Cyber Chest', rarity: 'rare', image: '/lovable-uploads/standard-cyber-chest.png', tokenReward: 100 },
 ];
 
-const MAX_DAILY_SPINS = 3;
+const SPIN_COST = 10; // CCC per spin
 const REEL_SPIN_DURATION = [1200, 1600, 2000];
 
 interface CyberSlotsMachineProps {
@@ -180,27 +180,12 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   const [finalReels, setFinalReels] = useState<SlotSymbol[]>([SLOT_SYMBOLS[0], SLOT_SYMBOLS[1], SLOT_SYMBOLS[2]]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [reelSpinning, setReelSpinning] = useState([false, false, false]);
-  const [spinCount, setSpinCount] = useState(0);
   const [showWin, setShowWin] = useState(false);
   const [winInfo, setWinInfo] = useState<{ rarity: string; tokens: number } | null>(null);
   const [stoppedReels, setStoppedReels] = useState(0);
   const [isDemo, setIsDemo] = useState(false);
   const [isDemoWin, setIsDemoWin] = useState(false);
   const demoPlayedRef = useRef(false);
-
-  useEffect(() => {
-    const today = new Date().toDateString();
-    const storedDate = localStorage.getItem('cyber_slots_date');
-    const storedSpins = localStorage.getItem('cyber_slots_spins');
-
-    if (storedDate !== today) {
-      localStorage.setItem('cyber_slots_date', today);
-      localStorage.setItem('cyber_slots_spins', '0');
-      setSpinCount(0);
-    } else {
-      setSpinCount(parseInt(storedSpins || '0'));
-    }
-  }, []);
 
   useEffect(() => {
     if (demoPlayedRef.current) return;
@@ -266,12 +251,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     if (stoppedReels === 3 && isSpinning) {
       setIsSpinning(false);
       setStoppedReels(0);
-      
-      if (!isDemo) {
-        const newCount = spinCount + 1;
-        setSpinCount(newCount);
-        localStorage.setItem('cyber_slots_spins', newCount.toString());
-      }
 
       if (checkWin(finalReels)) {
         const winRarity = finalReels[0].rarity;
@@ -293,7 +272,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       
       setIsDemo(false);
     }
-  }, [stoppedReels, isSpinning, finalReels, spinCount, onWin, isDemo]);
+  }, [stoppedReels, isSpinning, finalReels, onWin, isDemo]);
 
   const spin = useCallback(() => {
     if (!isWalletConnected) {
@@ -301,12 +280,15 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       return;
     }
 
-    if (spinCount >= MAX_DAILY_SPINS) {
-      toast.error('No spins remaining today! Come back tomorrow.');
+    if ((balance?.cctr_balance || 0) < SPIN_COST) {
+      toast.error(`Not enough CCC! You need ${SPIN_COST} CCC to spin.`);
       return;
     }
 
     if (isSpinning) return;
+
+    // Deduct spin cost (in a real app, this would be a database transaction)
+    toast.info(`-${SPIN_COST} CCC`);
 
     const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
     setFinalReels(results);
@@ -316,9 +298,9 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     setWinInfo(null);
     setStoppedReels(0);
     setReelSpinning([true, true, true]);
-  }, [isWalletConnected, spinCount, isSpinning]);
+  }, [isWalletConnected, isSpinning, balance]);
 
-  const remainingSpins = MAX_DAILY_SPINS - spinCount;
+  const hasEnoughBalance = (balance?.cctr_balance || 0) >= SPIN_COST;
 
   return (
     <Card className="hover:scale-[1.01] transition-transform relative overflow-visible border-0 bg-transparent col-span-full lg:col-span-3">
@@ -398,17 +380,12 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                 {/* Arcade Buttons Row */}
                 <ArcadeButtonsRow />
 
-                {/* Spin Counter Lights */}
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  {[...Array(MAX_DAILY_SPINS)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={`spin-counter-light ${i < remainingSpins ? 'active' : 'inactive'}`}
-                    />
-                  ))}
-                  <span className="text-xs text-muted-foreground ml-3 font-medium">
-                    {remainingSpins}/{MAX_DAILY_SPINS} SPINS
-                  </span>
+                {/* Spin Cost Display */}
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Badge className="bg-neon-purple/30 text-neon-pink border border-neon-purple/50 px-4 py-1.5">
+                    <Zap className="w-4 h-4 mr-1 inline" />
+                    {SPIN_COST} CCC per spin
+                  </Badge>
                 </div>
 
                 {/* Hexagonal Spin Button */}
@@ -416,10 +393,10 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                   <div className="spin-button-glow" />
                   <button
                     onClick={spin}
-                    disabled={isSpinning || remainingSpins <= 0 || !isWalletConnected}
+                    disabled={isSpinning || !hasEnoughBalance || !isWalletConnected}
                     className="spin-button-hex"
                   >
-                    {isSpinning ? 'SPINNING...' : remainingSpins <= 0 ? 'NO SPINS' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
+                    {isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : !hasEnoughBalance ? 'LOW CCC' : 'SPIN'}
                   </button>
                 </div>
               </div>
@@ -437,7 +414,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-3">
                   <Star className="w-4 h-4 text-neon-cyan flex-shrink-0" />
-                  Get 3 free spins every day
+                  Each spin costs {SPIN_COST} CCC
                 </li>
                 <li className="flex items-center gap-3">
                   <Star className="w-4 h-4 text-neon-cyan flex-shrink-0" />
