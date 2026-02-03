@@ -11,7 +11,7 @@ interface PurchaseResult {
   error?: string;
 }
 
-const SEASON_PASS_PRICE_USD = 29.99;
+const SEASON_PASS_PRICE_USD = 199.99;
 
 export const useSeasonPassPurchase = () => {
   const { toast } = useToast();
