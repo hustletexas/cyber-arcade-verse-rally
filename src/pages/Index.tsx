@@ -202,7 +202,7 @@ const Index = () => {
         </div>
       </main>
       {/* Professional Footer */}
-      <footer className="border-t border-neon-cyan/30 mt-8 sm:mt-12 md:mt-20 py-6 sm:py-8 md:py-12 bg-black/50">
+      <footer className="relative z-10 border-t border-neon-cyan/30 mt-8 sm:mt-12 md:mt-20 py-6 sm:py-8 md:py-12 bg-black/80">
         <div className="container mx-auto px-3 sm:px-4">
           {/* Main Footer Content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
