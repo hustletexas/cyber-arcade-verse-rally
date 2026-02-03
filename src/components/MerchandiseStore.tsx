@@ -113,7 +113,7 @@ export const MerchandiseStore = () => {
   };
 
   return (
-    <Card className="arcade-frame">
+    <Card className="arcade-frame bg-transparent border-neon-cyan/30">
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-green flex items-center gap-3">
           🎮 CYBER CITY ARCADE OFFICIAL STORE
