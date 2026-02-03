@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GameCard } from './GameCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const featuredGames = [
   {
@@ -120,6 +121,124 @@ const featuredGames = [
   }
 ];
 
+const ps5Games = [
+  {
+    id: 'gta6',
+    name: 'GTA 6',
+    category: 'Open World Action',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/cyber-city-arcade-nft.png',
+    description: 'The highly anticipated next chapter in the legendary Grand Theft Auto series',
+    playUrl: null,
+    downloadUrl: 'https://www.rockstargames.com/VI',
+    isWebBased: false,
+    rewards: ['In-Game Currency', 'Exclusive Items'],
+    players: 'Coming 2025',
+    rating: 5.0
+  },
+  {
+    id: 'spider-man-2',
+    name: "Marvel's Spider-Man 2",
+    category: 'Action Adventure',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/virtual-reality.png',
+    description: 'Swing through NYC as both Peter Parker and Miles Morales in this epic sequel',
+    playUrl: null,
+    downloadUrl: 'https://www.playstation.com/games/marvels-spider-man-2/',
+    isWebBased: false,
+    rewards: ['Trophies', 'Suits', 'Upgrades'],
+    players: '10M+',
+    rating: 4.9
+  },
+  {
+    id: 'ff7-rebirth',
+    name: 'Final Fantasy VII Rebirth',
+    category: 'RPG',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/digital-horizon.png',
+    description: 'Continue the epic journey in this stunning remake of the legendary JRPG',
+    playUrl: null,
+    downloadUrl: 'https://www.playstation.com/games/final-fantasy-vii-rebirth/',
+    isWebBased: false,
+    rewards: ['Trophies', 'Materia', 'Summons'],
+    players: '5M+',
+    rating: 4.8
+  },
+  {
+    id: 'hogwarts-legacy',
+    name: 'Hogwarts Legacy',
+    category: 'Action RPG',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/neon-matrix.png',
+    description: 'Live your wizarding world fantasy in this immersive open-world RPG',
+    playUrl: null,
+    downloadUrl: 'https://www.hogwartslegacy.com/',
+    isWebBased: false,
+    rewards: ['Spells', 'Gear', 'Trophies'],
+    players: '22M+',
+    rating: 4.7
+  }
+];
+
+const mobileGames = [
+  {
+    id: 'clash-royale',
+    name: 'Clash Royale',
+    category: 'Strategy',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/neon-pulse.png',
+    description: 'Real-time multiplayer battle game combining cards, strategy, and tower defense',
+    playUrl: 'https://supercell.com/en/games/clashroyale/',
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.supercell.clashroyale',
+    isWebBased: false,
+    rewards: ['Gems', 'Cards', 'Chests'],
+    players: '500M+',
+    rating: 4.5
+  },
+  {
+    id: 'genshin-impact',
+    name: 'Genshin Impact',
+    category: 'Action RPG',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/quantum-waves.png',
+    description: 'Open-world action RPG with stunning anime visuals and gacha mechanics',
+    playUrl: 'https://genshin.hoyoverse.com/',
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.miHoYo.GenshinImpact',
+    isWebBased: false,
+    rewards: ['Primogems', 'Characters', 'Weapons'],
+    players: '65M+',
+    rating: 4.6
+  },
+  {
+    id: 'pubg-mobile',
+    name: 'PUBG Mobile',
+    category: 'Battle Royale',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/data-stream.png',
+    description: 'The original battle royale experience optimized for mobile gaming',
+    playUrl: null,
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.tencent.ig',
+    isWebBased: false,
+    rewards: ['UC', 'Skins', 'Crates'],
+    players: '1B+',
+    rating: 4.3
+  },
+  {
+    id: 'cod-mobile',
+    name: 'Call of Duty: Mobile',
+    category: 'FPS',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/electric-midnight.png',
+    description: 'Console-quality FPS action with multiplayer, battle royale, and zombies',
+    playUrl: null,
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.activision.callofduty.shooter',
+    isWebBased: false,
+    rewards: ['CP', 'Camos', 'Operators'],
+    players: '650M+',
+    rating: 4.4
+  }
+];
+
 export const FeaturedGames = () => {
   return (
     <div className="space-y-6">
@@ -167,15 +286,56 @@ export const FeaturedGames = () => {
         </CardContent>
       </Card>
 
-      {/* Featured Games Grid */}
-      <div>
-        <h3 className="text-2xl font-bold text-neon-purple mb-6">🎯 TOP WEB3 GAMES</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredGames.map((game) => (
-            <GameCard key={game.id} game={game} />
-          ))}
-        </div>
-      </div>
+      {/* Games Tabs */}
+      <Tabs defaultValue="web3" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 bg-black/50 border border-neon-purple/30 mb-6">
+          <TabsTrigger 
+            value="web3" 
+            className="data-[state=active]:bg-neon-purple data-[state=active]:text-white font-bold"
+          >
+            🎯 WEB3 GAMES
+          </TabsTrigger>
+          <TabsTrigger 
+            value="ps5" 
+            className="data-[state=active]:bg-neon-cyan data-[state=active]:text-black font-bold"
+          >
+            🎮 PS5 GAMES
+          </TabsTrigger>
+          <TabsTrigger 
+            value="mobile" 
+            className="data-[state=active]:bg-neon-pink data-[state=active]:text-white font-bold"
+          >
+            📱 MOBILE GAMES
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="web3">
+          <h3 className="text-2xl font-bold text-neon-purple mb-6">🎯 TOP WEB3 GAMES</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredGames.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="ps5">
+          <h3 className="text-2xl font-bold text-neon-cyan mb-6">🎮 TOP PS5 GAMES</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {ps5Games.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="mobile">
+          <h3 className="text-2xl font-bold text-neon-pink mb-6">📱 TOP MOBILE GAMES</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {mobileGames.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
 
     </div>
   );
