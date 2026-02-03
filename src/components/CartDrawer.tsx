@@ -6,12 +6,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Minus, Plus, Trash2, CreditCard } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2, CreditCard, Wallet } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const CartDrawer = () => {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalItems, getTotalPrice, isOpen, setIsOpen } = useCart();
   const { toast } = useToast();
-  const [selectedPayment, setSelectedPayment] = useState<'USDC' | 'PYUSD'>('USDC');
+  const [selectedPayment, setSelectedPayment] = useState<'card' | 'USDC' | 'PYUSD'>('card');
   const [processing, setProcessing] = useState(false);
 
   // Mock exchange rates - in production, fetch from a price API
@@ -20,21 +21,56 @@ export const CartDrawer = () => {
     PYUSD: 1.0 // 1 USD = 1 PYUSD
   };
 
-  const getTotalInCrypto = () => {
-    const totalUSD = getTotalPrice();
-    return (totalUSD * exchangeRates[selectedPayment]).toFixed(2);
+  const getTotalWithShipping = () => {
+    return getTotalPrice() + (getTotalPrice() >= 75 ? 0 : 5.99);
   };
 
-  const handleCheckout = async () => {
-    if (items.length === 0) {
+  const getTotalInCrypto = () => {
+    const totalUSD = getTotalWithShipping();
+    return (totalUSD * exchangeRates[selectedPayment as 'USDC' | 'PYUSD']).toFixed(2);
+  };
+
+  const handleStripeCheckout = async () => {
+    setProcessing(true);
+    
+    try {
+      const totalCents = Math.round(getTotalWithShipping() * 100);
+      const itemNames = items.map(i => `${i.name} x${i.quantity}`).join(', ');
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          name: `Cyber City Arcade: ${itemNames}`,
+          price: totalCents,
+          type: 'merchandise',
+          quantity: 1,
+        },
+      });
+
+      if (error) throw error;
+      
+      if (data?.url) {
+        // Open Stripe checkout in new tab
+        window.open(data.url, '_blank');
+        toast({
+          title: "Redirecting to Stripe",
+          description: "Complete your payment in the new tab",
+        });
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Stripe checkout error:', error);
       toast({
-        title: "Cart Empty",
-        description: "Add items to your cart before checkout",
+        title: "Checkout Failed",
+        description: "There was an error creating your checkout session. Please try again.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setProcessing(false);
     }
+  };
 
+  const handleCryptoCheckout = async () => {
     setProcessing(true);
 
     try {
@@ -51,17 +87,10 @@ export const CartDrawer = () => {
 
       const totalAmount = parseFloat(getTotalInCrypto());
       
-      // Simulate payment processing
       toast({
         title: "Processing Payment",
         description: `Processing ${totalAmount} ${selectedPayment} payment...`,
       });
-
-      // In a real implementation, you would:
-      // 1. Create a transaction with the Stellar SDK
-      // 2. Handle token transfers for USDC/PYUSD
-      // 3. Send XLM for native payments
-      // 4. Confirm transaction on blockchain
 
       // Mock payment delay
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -71,7 +100,6 @@ export const CartDrawer = () => {
         description: `Your order has been confirmed. Transaction completed with ${totalAmount} ${selectedPayment}`,
       });
 
-      // Clear cart and close drawer
       clearCart();
       setIsOpen(false);
 
@@ -84,6 +112,23 @@ export const CartDrawer = () => {
       });
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (items.length === 0) {
+      toast({
+        title: "Cart Empty",
+        description: "Add items to your cart before checkout",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedPayment === 'card') {
+      await handleStripeCheckout();
+    } else {
+      await handleCryptoCheckout();
     }
   };
 
@@ -185,6 +230,22 @@ export const CartDrawer = () => {
               {/* Payment Method Selection */}
               <div className="space-y-3">
                 <h4 className="font-bold text-neon-purple">Select Payment Method</h4>
+                
+                {/* Card Payment Option */}
+                <Button
+                  variant={selectedPayment === 'card' ? "default" : "outline"}
+                  onClick={() => setSelectedPayment('card')}
+                  className={`w-full justify-start ${selectedPayment === 'card' 
+                    ? "bg-gradient-to-r from-neon-pink to-neon-purple text-white border-neon-pink" 
+                    : "border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                  }`}
+                >
+                  <CreditCard size={18} className="mr-2" />
+                  Credit / Debit Card
+                  <Badge className="ml-auto bg-neon-green/20 text-neon-green text-xs">Stripe</Badge>
+                </Button>
+                
+                {/* Crypto Payment Options */}
                 <div className="grid grid-cols-2 gap-2">
                   {(['USDC', 'PYUSD'] as const).map((method) => (
                     <Button
@@ -197,6 +258,7 @@ export const CartDrawer = () => {
                         : "border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
                       }
                     >
+                      <Wallet size={14} className="mr-1" />
                       {method}
                     </Button>
                   ))}
@@ -222,11 +284,13 @@ export const CartDrawer = () => {
                   <span className="font-bold text-neon-cyan">Total:</span>
                   <div className="text-right">
                     <div className="text-neon-green font-bold">
-                      ${(getTotalPrice() + (getTotalPrice() >= 75 ? 0 : 5.99)).toFixed(2)}
+                      ${getTotalWithShipping().toFixed(2)}
                     </div>
-                    <div className="text-sm text-neon-purple">
-                      {getTotalInCrypto()} {selectedPayment}
-                    </div>
+                    {selectedPayment !== 'card' && (
+                      <div className="text-sm text-neon-purple">
+                        {getTotalInCrypto()} {selectedPayment}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -236,10 +300,23 @@ export const CartDrawer = () => {
                 <Button 
                   onClick={handleCheckout}
                   disabled={processing}
-                  className="w-full cyber-button text-lg py-3"
+                  className={`w-full text-lg py-3 ${
+                    selectedPayment === 'card' 
+                      ? 'bg-gradient-to-r from-neon-pink to-neon-purple hover:from-neon-purple hover:to-neon-pink text-white'
+                      : 'cyber-button'
+                  }`}
                 >
-                  <CreditCard size={20} className="mr-2" />
-                  {processing ? 'Processing...' : `Pay ${getTotalInCrypto()} ${selectedPayment}`}
+                  {selectedPayment === 'card' ? (
+                    <>
+                      <CreditCard size={20} className="mr-2" />
+                      {processing ? 'Processing...' : `Pay $${getTotalWithShipping().toFixed(2)} with Card`}
+                    </>
+                  ) : (
+                    <>
+                      <Wallet size={20} className="mr-2" />
+                      {processing ? 'Processing...' : `Pay ${getTotalInCrypto()} ${selectedPayment}`}
+                    </>
+                  )}
                 </Button>
                 
                 <div className="flex gap-2">
@@ -261,12 +338,19 @@ export const CartDrawer = () => {
               </div>
 
               {/* Payment Info */}
-              <Card className="bg-neon-cyan/10 border-neon-cyan/30">
+              <Card className={`${selectedPayment === 'card' ? 'bg-neon-pink/10 border-neon-pink/30' : 'bg-neon-cyan/10 border-neon-cyan/30'}`}>
                 <CardContent className="p-3">
-                  <p className="text-xs text-neon-cyan">
-                    💡 <strong>Secure Payments:</strong> All transactions are processed on the Stellar blockchain. 
-                    Make sure your wallet has sufficient {selectedPayment} tokens.
-                  </p>
+                  {selectedPayment === 'card' ? (
+                    <p className="text-xs text-neon-pink">
+                      💳 <strong>Secure Checkout:</strong> Powered by Stripe. 
+                      Accepts Visa, Mastercard, American Express, and more. Apple Pay & Google Pay supported.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-neon-cyan">
+                      💡 <strong>Crypto Payments:</strong> All transactions are processed on the Stellar blockchain. 
+                      Make sure your wallet has sufficient {selectedPayment} tokens.
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </>
