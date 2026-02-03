@@ -190,7 +190,7 @@ export const Marketplace = () => {
     <Card className="arcade-frame">
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
-          🛒 NFT MARKETPLACE
+          🛒 NFT MEMBERSHIP
           <Badge className="bg-neon-cyan text-black">STELLAR POWERED</Badge>
           {getTotalItems() > 0 && (
             <Button
