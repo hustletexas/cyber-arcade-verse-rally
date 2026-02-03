@@ -201,46 +201,84 @@ const Index = () => {
 
         </div>
       </main>
-      {/* Mobile-Enhanced Footer */}
-      <footer className="border-t border-neon-cyan/30 mt-8 sm:mt-12 md:mt-20 py-4 sm:py-6 md:py-8">
+      {/* Professional Footer */}
+      <footer className="border-t border-neon-cyan/30 mt-8 sm:mt-12 md:mt-20 py-6 sm:py-8 md:py-12 bg-black/50">
         <div className="container mx-auto px-3 sm:px-4">
-          {/* Mobile-Optimized Footer Links */}
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
-            <Link to="/privacy" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
-              Privacy
-            </Link>
-            <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <a href="mailto:cybercityarcade@gmail.com" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
-              Support
-            </a>
-            <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <Link to="/terms" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
-              Terms
-            </Link>
-            <span className="text-neon-purple text-xs sm:text-sm md:text-base">•</span>
-            <button onClick={() => window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          })} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm md:text-base underline touch-manipulation py-2">
-              About
-            </button>
+          {/* Main Footer Content */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
+            {/* Brand Column */}
+            <div className="text-center md:text-left">
+              <h3 className="font-display text-xl sm:text-2xl text-neon-cyan mb-2">CYBER CITY ARCADE</h3>
+              <p className="text-muted-foreground text-xs sm:text-sm mb-3">The Ultimate Web3 Gaming Experience</p>
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <img src="/lovable-uploads/stellar.png" alt="Stellar" className="w-5 h-5 opacity-80" onError={(e) => e.currentTarget.style.display = 'none'} />
+                <span className="text-neon-purple text-xs sm:text-sm font-mono">Powered by Stellar Blockchain</span>
+              </div>
+            </div>
+            
+            {/* Quick Links Column */}
+            <div className="text-center">
+              <h4 className="text-neon-pink font-semibold mb-3 text-sm sm:text-base">Quick Links</h4>
+              <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+                <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
+                  About
+                </button>
+                <a href="mailto:cybercityarcade@gmail.com" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
+                  Support
+                </a>
+                <Link to="/terms" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
+                  Terms
+                </Link>
+                <Link to="/privacy" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
+                  Privacy
+                </Link>
+              </div>
+            </div>
+            
+            {/* Social Column */}
+            <div className="text-center md:text-right">
+              <h4 className="text-neon-pink font-semibold mb-3 text-sm sm:text-base">Connect With Us</h4>
+              <div className="flex justify-center md:justify-end gap-4">
+                <a href="https://x.com/stellarhustle_" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-neon-cyan transition-colors" title="X (Twitter)">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://discord.gg/83vpV7NBUU" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-neon-purple transition-colors" title="Discord">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@Stellarhustle" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-red-500 transition-colors" title="YouTube">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="mailto:cybercityarcade@gmail.com" className="text-muted-foreground hover:text-neon-green transition-colors" title="Email">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </a>
+              </div>
+            </div>
           </div>
           
-          <div className="text-center">
-            <p className="text-neon-purple font-mono text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed">
-              © 2024 Cyber City Arcade LLC • Powered by Stellar
-            </p>
-            <div className="flex flex-wrap justify-center gap-1 sm:gap-2 md:gap-6 text-xs md:text-sm text-muted-foreground">
-              <span>Stellar</span>
+          {/* Partners Row */}
+          <div className="border-t border-neon-purple/20 pt-4 mb-4">
+            <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 text-xs text-muted-foreground">
+              <span className="text-neon-purple/60">Partners:</span>
+              <span className="hover:text-neon-cyan transition-colors">Stellar</span>
               <span>•</span>
-              <button onClick={() => window.open('https://aqua.network/', '_blank')} className="hover:text-neon-cyan transition-colors cursor-pointer touch-manipulation py-1">
+              <button onClick={() => window.open('https://aqua.network/', '_blank')} className="hover:text-neon-cyan transition-colors cursor-pointer">
                 Aqua Network
               </button>
               <span>•</span>
-              <span>LOBSTR</span>
+              <span className="hover:text-neon-cyan transition-colors">LOBSTR</span>
               <span>•</span>
-              <span>Freighter</span>
+              <span className="hover:text-neon-cyan transition-colors">Freighter</span>
             </div>
+          </div>
+          
+          {/* Copyright */}
+          <div className="text-center border-t border-neon-purple/20 pt-4">
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              © {new Date().getFullYear()} <span className="text-neon-cyan">Cyber City Arcade LLC</span> • All Rights Reserved
+            </p>
+            <p className="text-muted-foreground/60 text-xs mt-1">
+              Built on the Stellar Blockchain • Play responsibly
+            </p>
           </div>
         </div>
       </footer>
