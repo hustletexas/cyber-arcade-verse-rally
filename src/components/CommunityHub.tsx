@@ -138,7 +138,7 @@ export const CommunityHub = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-black via-purple-900/20 to-black p-6">
+    <div className="p-6">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-6">
@@ -152,10 +152,8 @@ export const CommunityHub = () => {
 
         {/* HQ UPDATES SECTION - Full Width */}
         <Card 
-          className="mb-6 relative"
+          className="mb-6 relative bg-black/30 backdrop-blur-md border-2 border-neon-cyan/50"
           style={{ 
-            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%)',
-            border: '2px solid #00ffcc',
             boxShadow: `
               0 0 20px #00ffcc30,
               0 0 40px #ff00ff20,
@@ -224,10 +222,8 @@ export const CommunityHub = () => {
 
         {/* LIVE CHAT SECTION - Full Width Below HQ */}
         <Card 
-          className="relative"
+          className="relative bg-black/30 backdrop-blur-md border-2 border-neon-pink/50"
           style={{ 
-            background: '#0f0f0f',
-            border: '2px solid #ff00ff',
             boxShadow: `
               0 0 20px #ff00ff30,
               0 0 40px #00ffcc20,
