@@ -57,20 +57,18 @@
   body {
     @apply bg-background text-foreground font-mono;
     background: 
-      /* Intense hot pink/magenta center glow */
-      radial-gradient(ellipse 100% 80% at 50% 10%, hsl(320 100% 50% / 0.6) 0%, transparent 50%),
-      /* Purple atmospheric mid layer */
-      radial-gradient(ellipse 140% 70% at 50% 30%, hsl(285 90% 35% / 0.5) 0%, transparent 60%),
-      /* Cyan accent corners */
-      radial-gradient(ellipse 50% 60% at 0% 100%, hsl(185 100% 45% / 0.35) 0%, transparent 45%),
-      radial-gradient(ellipse 50% 60% at 100% 100%, hsl(185 100% 45% / 0.35) 0%, transparent 45%),
-      /* Rich deep purple-black base */
+      /* Galaxy nebula core - pink/magenta */
+      radial-gradient(ellipse 80% 50% at 50% 30%, hsl(330 80% 25% / 0.8) 0%, transparent 50%),
+      /* Purple nebula clouds */
+      radial-gradient(ellipse 60% 40% at 30% 50%, hsl(270 70% 20% / 0.6) 0%, transparent 45%),
+      radial-gradient(ellipse 50% 45% at 70% 60%, hsl(290 60% 18% / 0.5) 0%, transparent 40%),
+      /* Deep space blue undertones */
+      radial-gradient(ellipse 100% 80% at 50% 100%, hsl(220 60% 12% / 0.7) 0%, transparent 60%),
+      /* Base deep space black with purple tint */
       linear-gradient(180deg, 
-        hsl(310 70% 12%) 0%, 
-        hsl(290 65% 8%) 20%,
-        hsl(275 55% 5%) 50%,
-        hsl(260 45% 3%) 80%,
-        hsl(250 35% 2%) 100%);
+        hsl(280 40% 4%) 0%, 
+        hsl(260 35% 3%) 50%,
+        hsl(240 30% 2%) 100%);
     min-height: 100vh;
   }
 

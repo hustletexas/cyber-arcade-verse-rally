@@ -59,25 +59,43 @@ const Index = () => {
     }
   };
   return <div className="min-h-screen bg-transparent relative">
-      {/* Cyber City Arcade Immersive Background - Matches NFT */}
+      {/* Galaxy Space Background - Matches NFT */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Bright hot pink/magenta radiance from top center */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-[60%] bg-gradient-to-b from-fuchsia-500/50 via-pink-600/30 to-transparent" />
+        {/* Star field layer */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            radial-gradient(1px 1px at 20% 30%, white 1px, transparent 0),
+            radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.8) 1px, transparent 0),
+            radial-gradient(1px 1px at 50% 20%, rgba(255,255,255,0.6) 1px, transparent 0),
+            radial-gradient(1px 1px at 60% 50%, white 1px, transparent 0),
+            radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.7) 1px, transparent 0),
+            radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.9) 1px, transparent 0),
+            radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.5) 1px, transparent 0),
+            radial-gradient(1px 1px at 30% 90%, white 1px, transparent 0),
+            radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.8) 1px, transparent 0),
+            radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.6) 1px, transparent 0),
+            radial-gradient(2px 2px at 25% 15%, rgba(255,200,255,0.9) 1px, transparent 0),
+            radial-gradient(2px 2px at 75% 65%, rgba(200,220,255,0.8) 1px, transparent 0),
+            radial-gradient(1.5px 1.5px at 85% 25%, rgba(255,180,255,0.7) 1px, transparent 0),
+            radial-gradient(1.5px 1.5px at 45% 85%, rgba(180,200,255,0.8) 1px, transparent 0)
+          `,
+          backgroundSize: '200px 200px'
+        }} />
         
-        {/* Pulsing magenta core glow */}
-        <div className="absolute top-[5%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-pink-500/40 rounded-full blur-[150px] animate-pulse" />
-        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-fuchsia-400/30 rounded-full blur-[100px]" />
+        {/* Pink/magenta nebula cloud - center */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/4 w-[900px] h-[600px] bg-gradient-radial from-pink-600/40 via-fuchsia-800/20 to-transparent rounded-full blur-[100px]" />
         
-        {/* Purple atmosphere layer */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/40 to-purple-950/70" />
+        {/* Purple nebula wisps */}
+        <div className="absolute top-1/3 left-1/4 w-[500px] h-[400px] bg-gradient-radial from-purple-600/30 via-violet-900/15 to-transparent rounded-full blur-[80px] rotate-12" />
+        <div className="absolute top-1/2 right-1/4 w-[400px] h-[350px] bg-gradient-radial from-indigo-600/25 via-purple-900/10 to-transparent rounded-full blur-[70px] -rotate-12" />
         
-        {/* Cyan neon accent line at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" />
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-cyan-500/30 to-transparent blur-md" />
+        {/* Deep blue cosmic undertone */}
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-blue-950/50 via-indigo-950/30 to-transparent" />
         
-        {/* Side ambient bleeds */}
-        <div className="absolute top-0 left-0 w-1/4 h-full bg-gradient-to-r from-purple-800/30 to-transparent" />
-        <div className="absolute top-0 right-0 w-1/4 h-full bg-gradient-to-l from-purple-800/30 to-transparent" />
+        {/* Subtle starlight shimmer */}
+        <div className="absolute top-[20%] left-[30%] w-2 h-2 bg-white rounded-full animate-pulse opacity-60" style={{ animationDuration: '2s' }} />
+        <div className="absolute top-[40%] right-[25%] w-1.5 h-1.5 bg-pink-200 rounded-full animate-pulse opacity-70" style={{ animationDuration: '3s' }} />
+        <div className="absolute top-[60%] left-[60%] w-1 h-1 bg-cyan-200 rounded-full animate-pulse opacity-50" style={{ animationDuration: '2.5s' }} />
       </div>
 
       <TopBar />
