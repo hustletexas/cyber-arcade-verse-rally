@@ -17,7 +17,7 @@ export const SolanaTournamentSystem = () => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-400 text-center py-4">
-            Vote on proposals that shape the future of Cyber City Arcade using CCTR tokens
+            Vote on proposals that shape the future of Cyber City Arcade using CCC credits
           </p>
         </CardContent>
       </Card>

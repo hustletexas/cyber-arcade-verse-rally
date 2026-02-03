@@ -19,7 +19,7 @@ export const AIGamingCoach = () => {
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const QUESTION_COST = 1; // 1 CCTR per question
+  const QUESTION_COST = 1; // 1 CCC per question
 
   const handleAskQuestion = async () => {
     if (!isWalletConnected || !primaryWallet) {
@@ -53,7 +53,7 @@ export const AIGamingCoach = () => {
     if (balance.cctr_balance < QUESTION_COST) {
       toast({
         title: "Insufficient Balance",
-        description: `You need ${QUESTION_COST} CCTR for AI coaching. Current balance: ${balance.cctr_balance}`,
+        description: `You need ${QUESTION_COST} CCC for AI coaching. Current balance: ${balance.cctr_balance}`,
         variant: "destructive",
       });
       return;
@@ -99,7 +99,7 @@ export const AIGamingCoach = () => {
 
       toast({
         title: "Question Processed!",
-        description: `Charged ${data.cost || QUESTION_COST} CCTR for AI coaching`,
+        description: `Charged ${data.cost || QUESTION_COST} CCC for AI coaching`,
       });
 
     } catch (error) {
@@ -129,7 +129,7 @@ export const AIGamingCoach = () => {
           AI GAMING COACH
           <Badge className="bg-neon-purple text-white">
             <Zap size={12} className="mr-1" />
-            {QUESTION_COST} CCTR per question
+            {QUESTION_COST} CCC per question
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -141,7 +141,7 @@ export const AIGamingCoach = () => {
         <div className="space-y-4">
           {isWalletConnected && (
             <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-              💰 Balance: {balance.cctr_balance} CCTR
+              💰 Balance: {balance.cctr_balance} CCC
             </Badge>
           )}
           

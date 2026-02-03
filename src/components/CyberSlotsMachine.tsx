@@ -282,7 +282,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
         if (isDemo) {
           // Demo mode - just show the win animation
         } else {
-          toast.success(`🎰 JACKPOT! 3x ${winRarity.toUpperCase()} - You win ${tokens} CCTR + ${winRarity} Chest!`);
+          toast.success(`🎰 JACKPOT! 3x ${winRarity.toUpperCase()} - You win ${tokens} CCC + ${winRarity} Chest!`);
           onWin?.(winRarity, tokens);
         }
       } else if (!isDemo) {
@@ -351,7 +351,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                 <Badge className={`bg-gradient-to-r ${getRarityColor(winInfo.rarity)} text-white text-xl px-6 py-2`}>
                   {winInfo.rarity.toUpperCase()} CHEST UNLOCKED!
                 </Badge>
-                <p className="text-neon-green font-bold text-2xl">+{winInfo.tokens} CCTR</p>
+                <p className="text-neon-green font-bold text-2xl">+{winInfo.tokens} CCC</p>
                 <Button 
                   size="lg" 
                   onClick={() => { setShowWin(false); setIsDemoWin(false); }}
@@ -458,7 +458,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
               </li>
               <li className="flex items-center gap-2">
                 <Star className="w-3 h-3 text-neon-cyan flex-shrink-0" />
-                Win CCTR tokens + unlock that chest
+                Win CCC credits + unlock that chest
               </li>
               <li className="flex items-center gap-2">
                 <Trophy className="w-3 h-3 text-yellow-400 flex-shrink-0" />
@@ -476,19 +476,19 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
                 <Badge className="bg-green-500 text-white text-[10px] px-1.5">COMMON</Badge>
-                <span className="text-muted-foreground">150 CCTR + Chest</span>
+                <span className="text-muted-foreground">150 CCC + Chest</span>
               </div>
               <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
                 <Badge className="bg-blue-500 text-white text-[10px] px-1.5">RARE</Badge>
-                <span className="text-muted-foreground">450 CCTR + Chest</span>
+                <span className="text-muted-foreground">450 CCC + Chest</span>
               </div>
               <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
                 <Badge className="bg-purple-500 text-white text-[10px] px-1.5">EPIC</Badge>
-                <span className="text-muted-foreground">1500 CCTR + Chest</span>
+                <span className="text-muted-foreground">1500 CCC + Chest</span>
               </div>
               <div className="flex items-center gap-2 bg-black/30 rounded p-1.5">
                 <Badge className="bg-yellow-500 text-white text-[10px] px-1.5">LEGEND</Badge>
-                <span className="text-muted-foreground">6000 CCTR + Chest</span>
+                <span className="text-muted-foreground">6000 CCC + Chest</span>
               </div>
             </div>
           </div>
