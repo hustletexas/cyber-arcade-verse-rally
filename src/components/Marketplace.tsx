@@ -314,7 +314,7 @@ export const Marketplace = () => {
                       {/* Front of Card */}
                       <Card className="vending-machine overflow-hidden [backface-visibility:hidden] absolute inset-0">
                         <CardContent className="p-0 h-full flex flex-col">
-                          <div className="h-[440px] bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
+                          <div className="h-[440px] bg-black flex items-center justify-center overflow-hidden">
                             <img 
                               src={nft.image} 
                               alt={nft.name}
