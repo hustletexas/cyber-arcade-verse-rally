@@ -81,9 +81,14 @@ const Index = () => {
         <div className="text-center mb-6 sm:mb-8 md:mb-12">
           {/* Mobile-Optimized Main Logo */}
           <div className="flex justify-center mb-4 sm:mb-6">
-            <img src="/lovable-uploads/e69784e2-74e3-4705-8685-3738058bf5e2.png" alt="Cyber City Arcade" className="w-64 h-80 sm:w-80 sm:h-96 md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" style={{
-            filter: 'drop-shadow(0 0 20px rgba(0, 255, 255, 0.3))'
-          }} />
+            <img 
+              src="/lovable-uploads/cyber-city-arcade-nft.png" 
+              alt="Cyber City Arcade" 
+              className="w-64 h-80 sm:w-80 sm:h-96 md:w-[8in] md:h-[10in] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation mix-blend-screen" 
+              style={{
+                filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
+              }} 
+            />
           </div>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
