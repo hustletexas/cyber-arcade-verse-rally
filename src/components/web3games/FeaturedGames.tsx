@@ -151,18 +151,18 @@ const ps5Games = [
     rating: 4.7
   },
   {
-    id: 'ff7-rebirth',
-    name: 'Final Fantasy VII Rebirth',
-    category: 'RPG',
+    id: 'tekken-8',
+    name: 'Tekken 8',
+    category: 'Fighting',
     blockchain: 'N/A',
-    image: '/lovable-uploads/digital-horizon.png',
-    description: 'Continue the epic journey in this stunning remake of the legendary JRPG',
+    image: '/images/games/tekken-8.webp',
+    description: 'The legendary fighting game returns with next-gen graphics and intense combat',
     playUrl: null,
-    downloadUrl: 'https://www.playstation.com/games/final-fantasy-vii-rebirth/',
+    downloadUrl: 'https://www.bandainamcoent.com/games/tekken-8',
     isWebBased: false,
-    rewards: ['Trophies', 'Materia', 'Summons'],
-    players: '5M+',
-    rating: 4.8
+    rewards: ['Character Unlocks', 'Customization', 'Ranked Rewards'],
+    players: '10M+',
+    rating: 4.9
   },
   {
     id: 'hogwarts-legacy',
