@@ -162,6 +162,11 @@ const Index = () => {
             <TournamentHub />
           </section>
 
+          {/* Cyber Arcade Games Section */}
+          <section className="px-2 sm:px-4">
+            <CyberGamesSection />
+          </section>
+
           {/* Web3 Gaming Section - Mobile Optimized */}
           <section className="px-2 sm:px-4">
             <Web3Gaming />
@@ -172,16 +177,9 @@ const Index = () => {
             <AIGamingCoach />
           </section>
 
-
           {/* Merchandise Store Section - Touch Friendly */}
           <section className="px-2 sm:px-4">
             <MerchandiseStore />
-          </section>
-
-
-          {/* Cyber Arcade Games Section */}
-          <section className="px-2 sm:px-4">
-            <CyberGamesSection />
           </section>
 
           {/* Raffles Section - Mobile Friendly */}
