@@ -117,25 +117,39 @@ export const RaffleSection = () => {
   }]);
   const treasureChests: TreasureChest[] = [{
     id: 'epic-chest',
-    name: 'Epic Treasure Vault',
+    name: 'Epic Cyber Chest',
     rarity: 'epic',
-    image: '/lovable-uploads/93444d7b-5751-4c96-af43-5bae0bbf920b.png',
+    image: '/lovable-uploads/epic-cyber-chest.png',
     description: 'Epic rewards for skilled winners!',
     rewards: ['500-1000 CCTR', 'Epic NFT', 'Tournament Pass']
   }, {
     id: 'rare-chest',
-    name: 'Rare Treasure Vault',
+    name: 'Rare Cyber Chest',
     rarity: 'rare',
-    image: '/lovable-uploads/rare-chest.png',
+    image: '/lovable-uploads/rare-cyber-chest.png',
     description: 'Rare rewards with golden treasures!',
     rewards: ['250-500 CCTR', 'Rare NFT', 'Game Credits']
   }, {
     id: 'legendary-chest',
-    name: 'Legendary Treasure Vault',
+    name: 'Legendary Cyber Chest',
     rarity: 'legendary',
-    image: '/lovable-uploads/legendary-chest.png',
+    image: '/lovable-uploads/legendary-cyber-chest.png',
     description: 'Ultimate rewards for champions!',
     rewards: ['2000-5000 CCTR', 'Legendary NFT', 'Premium Access']
+  }, {
+    id: 'common-chest',
+    name: 'Cyber Chest',
+    rarity: 'common',
+    image: '/lovable-uploads/common-cyber-chest.png',
+    description: 'Standard rewards for all players!',
+    rewards: ['100-250 CCTR', 'Common NFT', 'Bonus Credits']
+  }, {
+    id: 'standard-chest',
+    name: 'Standard Cyber Chest',
+    rarity: 'rare',
+    image: '/lovable-uploads/standard-cyber-chest.png',
+    description: 'Quality rewards for dedicated players!',
+    rewards: ['250-500 CCTR', 'Rare NFT', 'Game Pass']
   }];
   const currentChest = treasureChests[currentChestIndex];
 
