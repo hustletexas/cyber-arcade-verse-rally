@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles, Award, Star } from 'lucide-react';
 import { ChestOpeningAnimation } from './ChestOpeningAnimation';
+import { CyberSlotsMachine } from './CyberSlotsMachine';
 interface Raffle {
   id: string;
   title: string;
@@ -236,49 +237,22 @@ export const RaffleSection = () => {
         </CardHeader>
 
         <CardContent className="p-6 space-y-8">
-          {/* Winner's Treasure Section */}
+          {/* Winner's Treasure Section - Slots Machine */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Trophy className="w-6 h-6 text-neon-green" />
-              <h3 className="font-display text-xl text-neon-green">WINNER'S TREASURE VAULT</h3>
-              <Badge className="bg-neon-green text-black animate-pulse text-xs">FREE FOR WINNERS</Badge>
+              <h3 className="font-display text-xl text-neon-green">CYBER SLOTS VAULT</h3>
+              <Badge className="bg-neon-green text-black animate-pulse text-xs">3 FREE SPINS DAILY</Badge>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Chest Display - Rotating Carousel */}
-              <Card className="vending-machine hover:scale-[1.02] transition-transform relative overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="h-44 bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 overflow-hidden relative group">
-                    <img src={currentChest.image} alt={currentChest.name} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 animate-fade-in" key={currentChest.id} />
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                      <Sparkles className="absolute top-2 left-3 w-4 h-4 text-yellow-300 animate-pulse opacity-80" />
-                      <Sparkles className="absolute top-4 right-4 w-3 h-3 text-white animate-ping opacity-60" style={{
-                      animationDuration: '2s'
-                    }} />
-                      <Sparkles className="absolute bottom-3 right-6 w-4 h-4 text-neon-pink animate-ping opacity-50" style={{
-                      animationDuration: '3s',
-                      animationDelay: '1s'
-                    }} />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                  </div>
-                  <div className="p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Badge className={`text-white text-xs ${currentChest.rarity === 'legendary' ? 'bg-yellow-500' : currentChest.rarity === 'rare' ? 'bg-orange-500' : 'bg-purple-500'}`}>
-                        {currentChest.rarity.toUpperCase()}
-                      </Badge>
-                      <span className="text-xl font-bold text-neon-green">🎁 FREE</span>
-                    </div>
-                    <h4 className="font-bold text-neon-cyan text-sm">{currentChest.name}</h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{currentChest.description}</p>
-                    
-                    {/* Carousel Dots */}
-                    <div className="flex justify-center gap-1.5 pt-1">
-                      {treasureChests.map((_, idx) => <button key={idx} onClick={() => setCurrentChestIndex(idx)} className={`w-2 h-2 rounded-full transition-all ${idx === currentChestIndex ? 'bg-neon-cyan w-4' : 'bg-muted-foreground/40 hover:bg-muted-foreground'}`} />)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Cyber Slots Machine */}
+              <CyberSlotsMachine 
+                onWin={(rarity, tokens) => {
+                  // Handle win - could open chest animation or award tokens
+                  console.log(`Won ${tokens} CCTR and ${rarity} chest!`);
+                }}
+              />
 
               {/* How to Earn - Compact */}
               <Card className="holographic p-4 flex flex-col justify-center">
