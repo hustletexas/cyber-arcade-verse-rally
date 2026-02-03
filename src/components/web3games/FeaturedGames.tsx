@@ -272,6 +272,23 @@ export const FeaturedGames = () => {
                 >
                   📖 Learn More
                 </Button>
+                <Button 
+                  variant="outline"
+                  className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: 'CyberBrawl.io',
+                        text: 'Check out CyberBrawl.io - an action-packed Web3 gaming experience!',
+                        url: 'https://cyberbrawl.io',
+                      });
+                    } else {
+                      navigator.clipboard.writeText('https://cyberbrawl.io');
+                    }
+                  }}
+                >
+                  📤 Share
+                </Button>
               </div>
             </div>
             <div className="relative">
