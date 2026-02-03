@@ -15,6 +15,7 @@ import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Gift, Trophy, Ticket, Users, Clock, Wallet, Sparkles, Award, Star } from 'lucide-react';
 import { ChestOpeningAnimation } from './ChestOpeningAnimation';
 import { CyberSlotsMachine } from './CyberSlotsMachine';
+import { CyberChestPicker } from './CyberChestPicker';
 interface Raffle {
   id: string;
   title: string;
@@ -221,19 +222,16 @@ export const RaffleSection = () => {
 
       {/* Unified Treasure & Raffle Section */}
       <Card className="arcade-frame border-2 border-neon-purple/30 overflow-hidden">
-        {/* Section Header */}
-        <CardHeader className="bg-gradient-to-r from-neon-purple/20 via-neon-cyan/10 to-neon-pink/20 border-b border-neon-cyan/20">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <CardTitle className="font-display text-3xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent">
-                 CYBER CHEST   
-              </CardTitle>
-              <p className="text-muted-foreground mt-1">
-                Win games for FREE chests or Enter raffles for epic prizes and Earn CCC
-              </p>
-            </div>
+        {/* Section Header with Wallet Status */}
+        <CardHeader className="bg-gradient-to-r from-neon-purple/20 via-neon-cyan/10 to-neon-pink/20 border-b border-neon-cyan/20 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <CardTitle className="font-display text-3xl bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-green bg-clip-text text-transparent">
+              CYBER ARCADE
+            </CardTitle>
             <WalletStatusBar />
           </div>
+          {/* Mystery Letter Chest Game */}
+          <CyberChestPicker />
         </CardHeader>
 
         <CardContent className="p-6 space-y-8">
