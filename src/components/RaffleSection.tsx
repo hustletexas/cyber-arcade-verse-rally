@@ -240,7 +240,7 @@ export const RaffleSection = () => {
             <div className="flex items-center gap-3">
               <Trophy className="w-6 h-6 text-neon-green" />
               <h3 className="font-display text-xl text-neon-green">CYBER SLOTS VAULT</h3>
-              <Badge className="bg-neon-green text-black animate-pulse text-xs">3 FREE SPINS DAILY</Badge>
+              <Badge className="bg-neon-green text-black animate-pulse text-xs">1 FREE DAILY SPIN</Badge>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
