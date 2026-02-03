@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Gift, Sparkles, Lock, ChevronRight, Trophy } from 'lucide-react';
+import { Gift, Sparkles, Lock, ChevronRight, Trophy, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWinnerChests } from '@/hooks/useWinnerChests';
 
 interface CyberChest {
   id: string;
@@ -101,32 +102,16 @@ const getTierStyles = (tier: string) => {
 
 export const CyberChestPicker: React.FC = () => {
   const { isWalletConnected } = useMultiWallet();
+  const { eligibleChests, hasUnclaimedChests, unclaimedCount, claimChest, isLoading } = useWinnerChests();
   const [selectedChest, setSelectedChest] = useState<CyberChest | null>(null);
   const [isOpening, setIsOpening] = useState(false);
   const [openedReward, setOpenedReward] = useState<{ ccc: number; bonus: string } | null>(null);
-  const [dailyOpensLeft, setDailyOpensLeft] = useState(1);
   
   // Simulated owned pass - in production this would come from wallet/database
   const [ownedPassTier] = useState<'common' | 'rare' | 'epic' | 'legendary' | null>('rare');
 
-  // Check daily opens on mount
-  useEffect(() => {
-    const today = new Date().toDateString();
-    const storedDate = localStorage.getItem('cyber_chest_date');
-    const storedOpens = localStorage.getItem('cyber_chest_opens');
-
-    if (storedDate !== today) {
-      localStorage.setItem('cyber_chest_date', today);
-      localStorage.setItem('cyber_chest_opens', '0');
-      setDailyOpensLeft(1);
-    } else {
-      const opens = parseInt(storedOpens || '0');
-      setDailyOpensLeft(Math.max(0, 1 - opens));
-    }
-  }, []);
-
   const canOpenChest = (chest: CyberChest): boolean => {
-    if (!ownedPassTier) return false;
+    if (!ownedPassTier || !hasUnclaimedChests) return false;
     const tierOrder = ['common', 'rare', 'epic', 'legendary'];
     const ownedIndex = tierOrder.indexOf(ownedPassTier);
     const chestIndex = tierOrder.indexOf(chest.tier);
@@ -138,7 +123,7 @@ export const CyberChestPicker: React.FC = () => {
     return CYBER_CHESTS.find(c => c.tier === ownedPassTier) || null;
   };
 
-  const handleOpenChest = useCallback((chest: CyberChest) => {
+  const handleOpenChest = useCallback(async (chest: CyberChest) => {
     if (!isWalletConnected) {
       toast.error('Connect wallet to open chest!');
       return;
@@ -149,8 +134,8 @@ export const CyberChestPicker: React.FC = () => {
       return;
     }
 
-    if (dailyOpensLeft <= 0) {
-      toast.error('No opens left today! Come back tomorrow.');
+    if (!hasUnclaimedChests || eligibleChests.length === 0) {
+      toast.error('No chests available! Win a game or tournament to earn chests.');
       return;
     }
 
@@ -161,22 +146,23 @@ export const CyberChestPicker: React.FC = () => {
     setOpenedReward(null);
 
     // Simulate opening animation
-    setTimeout(() => {
+    setTimeout(async () => {
       const { minCCC, maxCCC, bonuses } = chest.rewards;
       const earnedCCC = Math.floor(Math.random() * (maxCCC - minCCC + 1)) + minCCC;
       const earnedBonus = bonuses[Math.floor(Math.random() * bonuses.length)];
 
+      // Claim the first available chest
+      const chestToClaim = eligibleChests[0];
+      if (chestToClaim) {
+        await claimChest(chestToClaim.id, 'ccc', earnedCCC.toString());
+      }
+
       setOpenedReward({ ccc: earnedCCC, bonus: earnedBonus });
       setIsOpening(false);
 
-      // Update daily opens
-      const opens = parseInt(localStorage.getItem('cyber_chest_opens') || '0') + 1;
-      localStorage.setItem('cyber_chest_opens', opens.toString());
-      setDailyOpensLeft(Math.max(0, 1 - opens));
-
       toast.success(`🎉 You earned ${earnedCCC} CCC + ${earnedBonus}!`);
     }, 2000);
-  }, [isWalletConnected, dailyOpensLeft, isOpening]);
+  }, [isWalletConnected, hasUnclaimedChests, eligibleChests, isOpening, claimChest]);
 
   const handleReset = () => {
     setSelectedChest(null);
@@ -186,7 +172,7 @@ export const CyberChestPicker: React.FC = () => {
   const eligibleChest = getEligibleChest();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
@@ -203,107 +189,137 @@ export const CyberChestPicker: React.FC = () => {
             </Badge>
           )}
           <Badge 
-            className={`${dailyOpensLeft > 0 ? 'bg-neon-green/20 text-neon-green border-neon-green' : 'bg-red-500/20 text-red-400 border-red-500'}`}
+            className={`${hasUnclaimedChests ? 'bg-neon-green/20 text-neon-green border-neon-green' : 'bg-muted/20 text-muted-foreground border-muted'}`}
           >
-            {dailyOpensLeft > 0 ? `${dailyOpensLeft} DAILY OPEN` : 'OPENED TODAY'}
+            {isLoading ? 'Loading...' : hasUnclaimedChests ? `${unclaimedCount} CHEST${unclaimedCount > 1 ? 'S' : ''} AVAILABLE` : 'NO CHESTS'}
           </Badge>
         </div>
       </div>
 
       {/* Instructions */}
-      <p className="text-sm text-muted-foreground text-center">
-        {!ownedPassTier 
-          ? '🔒 Purchase an Arcade Pass to unlock Cyber Chests!' 
-          : openedReward
-            ? '✨ Chest opened! Come back tomorrow for another.'
-            : `🎁 Open your ${eligibleChest?.name} - 1 free daily open!`}
-      </p>
+      <div className="text-center space-y-2">
+        {!hasUnclaimedChests ? (
+          <div className="bg-card/50 rounded-lg p-4 border border-muted/30">
+            <p className="text-sm text-muted-foreground mb-3">
+              🎮 Earn Cyber Chests by winning games or tournaments!
+            </p>
+            <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Gamepad2 className="w-4 h-4 text-neon-cyan" />
+                Win Games
+              </span>
+              <span className="flex items-center gap-1">
+                <Trophy className="w-4 h-4 text-yellow-400" />
+                Win Tournaments
+              </span>
+              <span className="flex items-center gap-1">
+                <ShoppingCart className="w-4 h-4 text-neon-pink" />
+                Purchase Passes
+              </span>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {openedReward
+              ? '✨ Chest opened! Win more games to earn additional chests.'
+              : `🎁 You have ${unclaimedCount} chest${unclaimedCount > 1 ? 's' : ''} to open!`}
+          </p>
+        )}
+      </div>
 
       {/* Opened Reward Display */}
       {openedReward && selectedChest && (
-        <div className="relative rounded-xl overflow-hidden border-2 border-yellow-500/60 bg-gradient-to-br from-yellow-900/30 to-black/60 p-6 text-center animate-scale-in">
-          <Sparkles className="absolute top-2 right-2 w-6 h-6 text-yellow-400 animate-pulse" />
-          <Sparkles className="absolute top-2 left-2 w-6 h-6 text-yellow-400 animate-pulse" />
+        <div className="relative rounded-xl overflow-hidden border-2 border-yellow-500/60 bg-gradient-to-br from-yellow-900/30 to-black/60 p-8 text-center animate-scale-in">
+          <Sparkles className="absolute top-4 right-4 w-8 h-8 text-yellow-400 animate-pulse" />
+          <Sparkles className="absolute top-4 left-4 w-8 h-8 text-yellow-400 animate-pulse" />
           
           <img 
             src={selectedChest.image} 
             alt={selectedChest.name}
-            className="w-32 h-32 object-contain mx-auto mb-4"
+            className="w-56 h-56 object-contain mx-auto mb-6"
           />
           
-          <h4 className="font-display text-2xl text-yellow-400 mb-2">CHEST OPENED!</h4>
-          <div className="space-y-2">
-            <p className="text-3xl font-bold text-neon-green">+{openedReward.ccc} CCC</p>
-            <Badge className="bg-neon-purple/30 text-neon-pink border-neon-purple/50">
+          <h4 className="font-display text-3xl text-yellow-400 mb-3">CHEST OPENED!</h4>
+          <div className="space-y-3">
+            <p className="text-4xl font-bold text-neon-green">+{openedReward.ccc} CCC</p>
+            <Badge className="bg-neon-purple/30 text-neon-pink border-neon-purple/50 text-sm px-4 py-1">
               {openedReward.bonus}
             </Badge>
           </div>
           
           <Button 
             onClick={handleReset}
-            className="mt-4 cyber-button"
+            className="mt-6 cyber-button"
           >
             View Chests
           </Button>
         </div>
       )}
 
-      {/* Chest Cards Grid */}
+      {/* Chest Cards Grid - Larger images */}
       {!openedReward && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {CYBER_CHESTS.map((chest) => {
             const styles = getTierStyles(chest.tier);
             const canOpen = canOpenChest(chest);
-            const isEligible = chest.tier === ownedPassTier;
+            const isEligible = chest.tier === ownedPassTier && hasUnclaimedChests;
             const isCurrentlyOpening = isOpening && selectedChest?.id === chest.id;
 
             return (
               <Card
                 key={chest.id}
-                onClick={() => canOpen && dailyOpensLeft > 0 && !isOpening && handleOpenChest(chest)}
+                onClick={() => canOpen && hasUnclaimedChests && !isOpening && handleOpenChest(chest)}
                 className={`
                   relative overflow-hidden transition-all duration-300
                   bg-gradient-to-br ${styles.bg}
                   border-2 ${isEligible ? styles.border : 'border-muted/30'}
-                  ${canOpen && dailyOpensLeft > 0 ? `cursor-pointer hover:scale-105 hover:shadow-lg ${styles.glow}` : 'opacity-60 cursor-not-allowed'}
+                  ${canOpen && hasUnclaimedChests ? `cursor-pointer hover:scale-105 hover:shadow-xl ${styles.glow}` : 'opacity-60 cursor-not-allowed'}
                   ${isCurrentlyOpening ? 'animate-pulse scale-105' : ''}
                 `}
               >
-                <CardContent className="p-3 flex flex-col items-center text-center">
+                <CardContent className="p-4 flex flex-col items-center text-center">
                   {/* Lock overlay for unavailable chests */}
-                  {!canOpen && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-                      <div className="text-center">
-                        <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-1" />
-                        <p className="text-xs text-muted-foreground">Requires</p>
-                        <p className="text-xs text-muted-foreground">{chest.passName}</p>
+                  {(!canOpenChest(chest) || !hasUnclaimedChests) && (
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
+                      <div className="text-center p-2">
+                        <Lock className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                        {!ownedPassTier || !canOpenChest(chest) ? (
+                          <>
+                            <p className="text-xs text-muted-foreground">Requires</p>
+                            <p className="text-xs text-muted-foreground font-medium">{chest.passName}</p>
+                          </>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">Win to earn chests</p>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {/* Chest Image */}
-                  <img 
-                    src={chest.image} 
-                    alt={chest.name}
-                    className="w-full h-28 object-contain mb-2"
-                  />
+                  {/* Chest Image - MUCH LARGER */}
+                  <div className="w-full aspect-square flex items-center justify-center mb-3">
+                    <img 
+                      src={chest.image} 
+                      alt={chest.name}
+                      className="w-full h-full object-contain max-h-48"
+                    />
+                  </div>
 
                   {/* Chest Name */}
-                  <h4 className={`font-display text-sm ${styles.text} mb-1`}>
+                  <h4 className={`font-display text-base ${styles.text} mb-1`}>
                     {chest.name}
                   </h4>
 
                   {/* Rewards Preview */}
-                  <div className="text-xs text-muted-foreground mb-2">
-                    {chest.rewards.minCCC} - {chest.rewards.maxCCC} CCC
+                  <div className="text-sm text-muted-foreground mb-3">
+                    {chest.rewards.minCCC.toLocaleString()} - {chest.rewards.maxCCC.toLocaleString()} CCC
                   </div>
 
                   {/* Open Button for eligible chest */}
-                  {isEligible && dailyOpensLeft > 0 && (
+                  {isEligible && (
                     <Button
                       size="sm"
                       disabled={isOpening}
-                      className={`w-full text-xs bg-gradient-to-r ${
+                      className={`w-full bg-gradient-to-r ${
                         chest.tier === 'legendary' ? 'from-yellow-500 to-orange-500' :
                         chest.tier === 'epic' ? 'from-purple-500 to-pink-500' :
                         chest.tier === 'rare' ? 'from-blue-500 to-cyan-500' :
@@ -312,20 +328,20 @@ export const CyberChestPicker: React.FC = () => {
                     >
                       {isCurrentlyOpening ? (
                         <>
-                          <Sparkles className="w-3 h-3 mr-1 animate-spin" />
+                          <Sparkles className="w-4 h-4 mr-1 animate-spin" />
                           Opening...
                         </>
                       ) : (
                         <>
                           Open Chest
-                          <ChevronRight className="w-3 h-3 ml-1" />
+                          <ChevronRight className="w-4 h-4 ml-1" />
                         </>
                       )}
                     </Button>
                   )}
 
                   {/* Tier Badge */}
-                  <Badge className={`mt-2 text-[10px] uppercase ${styles.badge}`}>
+                  <Badge className={`mt-3 text-xs uppercase ${styles.badge}`}>
                     {chest.tier}
                   </Badge>
                 </CardContent>
