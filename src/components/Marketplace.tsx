@@ -309,16 +309,16 @@ export const Marketplace = () => {
               <div className="flex gap-4">
                 {(filter === 'all' ? mockNFTs : mockNFTs.filter(nft => nft.rarity.toLowerCase() === filter.toLowerCase()))
                   .map((nft) => (
-                  <div key={nft.id} className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-0 first:pl-0 [perspective:1000px] h-[480px]">
+                  <div key={nft.id} className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-0 first:pl-0 [perspective:1000px] h-[580px]">
                     <div className="relative mx-2 h-full [transform-style:preserve-3d] transition-transform duration-700 hover:[transform:rotateY(180deg)] cursor-pointer">
                       {/* Front of Card */}
                       <Card className="vending-machine overflow-hidden [backface-visibility:hidden] absolute inset-0">
                         <CardContent className="p-0 h-full flex flex-col">
-                          <div className="aspect-square bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden">
+                          <div className="h-[420px] bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center overflow-hidden p-4">
                             <img 
                               src={nft.image} 
                               alt={nft.name}
-                              className="w-full h-full object-cover object-center"
+                              className="w-full h-full object-contain"
                             />
                           </div>
                           <div className="p-4 space-y-2 flex-1">
