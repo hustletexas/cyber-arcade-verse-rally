@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,7 @@ import { Sparkles, Gift, Zap, Trophy, Star } from 'lucide-react';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { toast } from 'sonner';
+import './CyberSlotsMachine.css';
 
 interface SlotSymbol {
   id: string;
@@ -24,23 +25,156 @@ const SLOT_SYMBOLS: SlotSymbol[] = [
 ];
 
 const MAX_DAILY_SPINS = 3;
-const SPIN_DURATION = 2000;
+const REEL_SPIN_DURATION = [1200, 1600, 2000]; // Staggered stop times
 
 interface CyberSlotsMachineProps {
   onWin?: (rarity: string, tokens: number) => void;
 }
 
+// Single Reel Component with vertical spinning
+const SlotReel: React.FC<{
+  symbols: SlotSymbol[];
+  finalSymbol: SlotSymbol;
+  isSpinning: boolean;
+  spinDuration: number;
+  onStop: () => void;
+  getRarityColor: (rarity: string) => string;
+  showWin: boolean;
+  winRarity?: string;
+}> = ({ symbols, finalSymbol, isSpinning, spinDuration, onStop, getRarityColor, showWin, winRarity }) => {
+  const [currentOffset, setCurrentOffset] = useState(0);
+  const [displaySymbols, setDisplaySymbols] = useState<SlotSymbol[]>([]);
+  const animationRef = useRef<number>();
+  const startTimeRef = useRef<number>(0);
+
+  // Generate a strip of symbols for spinning
+  useEffect(() => {
+    const strip: SlotSymbol[] = [];
+    // Add random symbols for the spin animation
+    for (let i = 0; i < 20; i++) {
+      strip.push(symbols[Math.floor(Math.random() * symbols.length)]);
+    }
+    // Add the final symbol at the end
+    strip.push(finalSymbol);
+    setDisplaySymbols(strip);
+  }, [finalSymbol, symbols]);
+
+  useEffect(() => {
+    if (isSpinning) {
+      startTimeRef.current = performance.now();
+      
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTimeRef.current;
+        const progress = Math.min(elapsed / spinDuration, 1);
+        
+        // Easing function for realistic slot machine feel
+        const easeOut = (t: number) => {
+          // Start fast, slow down at the end
+          return 1 - Math.pow(1 - t, 3);
+        };
+        
+        const easedProgress = easeOut(progress);
+        const totalDistance = (displaySymbols.length - 1) * 100; // percentage
+        const newOffset = easedProgress * totalDistance;
+        
+        setCurrentOffset(newOffset);
+        
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(animate);
+        } else {
+          onStop();
+        }
+      };
+      
+      animationRef.current = requestAnimationFrame(animate);
+      
+      return () => {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+      };
+    } else {
+      // Reset to show final symbol
+      setCurrentOffset((displaySymbols.length - 1) * 100);
+    }
+  }, [isSpinning, spinDuration, displaySymbols.length, onStop]);
+
+  const getRarityGlow = (rarity: string) => {
+    switch (rarity) {
+      case 'common': return 'shadow-green-500/60';
+      case 'rare': return 'shadow-blue-500/60';
+      case 'epic': return 'shadow-purple-500/60';
+      case 'legendary': return 'shadow-yellow-500/60';
+      default: return 'shadow-gray-500/60';
+    }
+  };
+
+  return (
+    <div 
+      className={`
+        slot-reel-container relative flex-1 max-w-[180px] aspect-[3/4] rounded-xl overflow-hidden
+        bg-gradient-to-b from-neon-purple/30 to-black/60
+        border-3 border-neon-cyan/50
+        ${showWin && winRarity ? `shadow-xl ${getRarityGlow(winRarity)}` : 'shadow-lg shadow-neon-purple/30'}
+        transition-shadow duration-300
+      `}
+    >
+      {/* Reel Strip */}
+      <div 
+        className="slot-reel-strip absolute inset-0"
+        style={{
+          transform: `translateY(-${currentOffset}%)`,
+          transition: isSpinning ? 'none' : 'transform 0.1s ease-out'
+        }}
+      >
+        {displaySymbols.map((symbol, idx) => (
+          <div 
+            key={idx} 
+            className="slot-symbol w-full h-full relative flex items-center justify-center"
+            style={{ height: '100%' }}
+          >
+            <img
+              src={symbol.image}
+              alt={symbol.name}
+              className="w-full h-full object-cover"
+            />
+            {/* Rarity badge on each symbol */}
+            <Badge 
+              className={`absolute top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-[10px] px-2 opacity-90`}
+            >
+              {symbol.rarity.toUpperCase()}
+            </Badge>
+          </div>
+        ))}
+      </div>
+
+      {/* Gradient overlays for depth */}
+      <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10" />
+      
+      {/* Center line indicator */}
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-neon-cyan/50 pointer-events-none z-10 shadow-lg shadow-neon-cyan/50" />
+      
+      {/* Shine effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
+      
+      {/* Rarity indicator bar */}
+      <div className={`absolute bottom-0 inset-x-0 h-2 bg-gradient-to-r ${getRarityColor(finalSymbol.rarity)} z-20`} />
+    </div>
+  );
+};
+
 export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) => {
-  const { isWalletConnected, primaryWallet } = useMultiWallet();
+  const { isWalletConnected } = useMultiWallet();
   const { balance } = useUserBalance();
   
-  const [reels, setReels] = useState<SlotSymbol[]>([SLOT_SYMBOLS[0], SLOT_SYMBOLS[1], SLOT_SYMBOLS[2]]);
+  const [finalReels, setFinalReels] = useState<SlotSymbol[]>([SLOT_SYMBOLS[0], SLOT_SYMBOLS[1], SLOT_SYMBOLS[2]]);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [reelSpinning, setReelSpinning] = useState([false, false, false]);
   const [spinCount, setSpinCount] = useState(0);
-  const [lastSpinDate, setLastSpinDate] = useState<string | null>(null);
   const [showWin, setShowWin] = useState(false);
   const [winInfo, setWinInfo] = useState<{ rarity: string; tokens: number } | null>(null);
-  const [reelAnimations, setReelAnimations] = useState([false, false, false]);
+  const [stoppedReels, setStoppedReels] = useState(0);
 
   // Check/reset daily spins
   useEffect(() => {
@@ -52,10 +186,8 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       localStorage.setItem('cyber_slots_date', today);
       localStorage.setItem('cyber_slots_spins', '0');
       setSpinCount(0);
-      setLastSpinDate(today);
     } else {
       setSpinCount(parseInt(storedSpins || '0'));
-      setLastSpinDate(storedDate);
     }
   }, []);
 
@@ -69,19 +201,8 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     }
   };
 
-  const getRarityGlow = (rarity: string) => {
-    switch (rarity) {
-      case 'common': return 'shadow-green-500/50';
-      case 'rare': return 'shadow-blue-500/50';
-      case 'epic': return 'shadow-purple-500/50';
-      case 'legendary': return 'shadow-yellow-500/50';
-      default: return 'shadow-gray-500/50';
-    }
-  };
-
   const getRandomSymbol = (): SlotSymbol => {
-    // Weighted randomness - common more likely than legendary
-    const weights = [40, 25, 20, 10, 5]; // common, rare, epic, legendary, standard (as rare)
+    const weights = [40, 25, 20, 10, 5];
     const totalWeight = weights.reduce((a, b) => a + b, 0);
     let random = Math.random() * totalWeight;
     
@@ -95,11 +216,46 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   };
 
   const checkWin = (results: SlotSymbol[]): boolean => {
-    // Win if all 3 match by rarity
     return results[0].rarity === results[1].rarity && results[1].rarity === results[2].rarity;
   };
 
-  const spin = useCallback(async () => {
+  const handleReelStop = useCallback((reelIndex: number) => {
+    setReelSpinning(prev => {
+      const newState = [...prev];
+      newState[reelIndex] = false;
+      return newState;
+    });
+    setStoppedReels(prev => prev + 1);
+  }, []);
+
+  // Check for win when all reels stop
+  useEffect(() => {
+    if (stoppedReels === 3 && isSpinning) {
+      setIsSpinning(false);
+      setStoppedReels(0);
+      
+      // Update spin count
+      const newCount = spinCount + 1;
+      setSpinCount(newCount);
+      localStorage.setItem('cyber_slots_spins', newCount.toString());
+
+      // Check for win
+      if (checkWin(finalReels)) {
+        const winRarity = finalReels[0].rarity;
+        const tokens = finalReels[0].tokenReward * 3;
+        
+        setWinInfo({ rarity: winRarity, tokens });
+        setShowWin(true);
+        
+        toast.success(`🎰 JACKPOT! 3x ${winRarity.toUpperCase()} - You win ${tokens} CCTR + ${winRarity} Chest!`);
+        onWin?.(winRarity, tokens);
+      } else {
+        toast.info('No match this time. Try again!');
+      }
+    }
+  }, [stoppedReels, isSpinning, finalReels, spinCount, onWin]);
+
+  const spin = useCallback(() => {
     if (!isWalletConnected) {
       toast.error('Connect wallet to spin!');
       return;
@@ -112,61 +268,16 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
 
     if (isSpinning) return;
 
+    // Generate final results
+    const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+    setFinalReels(results);
+    
     setIsSpinning(true);
     setShowWin(false);
     setWinInfo(null);
-
-    // Start reel animations with staggered timing
-    setReelAnimations([true, true, true]);
-
-    // Simulate spinning with rapid symbol changes
-    const spinInterval = setInterval(() => {
-      setReels([getRandomSymbol(), getRandomSymbol(), getRandomSymbol()]);
-    }, 100);
-
-    // Stop each reel one at a time
-    const finalResults: SlotSymbol[] = [];
-    
-    setTimeout(() => {
-      finalResults[0] = getRandomSymbol();
-      setReels(prev => [finalResults[0], prev[1], prev[2]]);
-      setReelAnimations([false, true, true]);
-    }, SPIN_DURATION * 0.4);
-
-    setTimeout(() => {
-      finalResults[1] = getRandomSymbol();
-      setReels(prev => [prev[0], finalResults[1], prev[2]]);
-      setReelAnimations([false, false, true]);
-    }, SPIN_DURATION * 0.7);
-
-    setTimeout(() => {
-      clearInterval(spinInterval);
-      finalResults[2] = getRandomSymbol();
-      setReels([finalResults[0], finalResults[1], finalResults[2]]);
-      setReelAnimations([false, false, false]);
-      setIsSpinning(false);
-
-      // Update spin count
-      const newCount = spinCount + 1;
-      setSpinCount(newCount);
-      localStorage.setItem('cyber_slots_spins', newCount.toString());
-
-      // Check for win
-      if (checkWin(finalResults)) {
-        const winRarity = finalResults[0].rarity;
-        const tokens = finalResults[0].tokenReward * 3; // Triple for matching 3!
-        
-        setWinInfo({ rarity: winRarity, tokens });
-        setShowWin(true);
-        
-        toast.success(`🎰 JACKPOT! 3x ${winRarity.toUpperCase()} - You win ${tokens} CCTR + ${winRarity} Chest!`);
-        onWin?.(winRarity, tokens);
-      } else {
-        toast.info('No match this time. Try again!');
-      }
-    }, SPIN_DURATION);
-
-  }, [isWalletConnected, spinCount, isSpinning, onWin]);
+    setStoppedReels(0);
+    setReelSpinning([true, true, true]);
+  }, [isWalletConnected, spinCount, isSpinning]);
 
   const remainingSpins = MAX_DAILY_SPINS - spinCount;
 
@@ -187,7 +298,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
         <div className="bg-gradient-to-b from-black/80 to-neon-purple/20 rounded-xl p-4 border border-neon-purple/30 relative">
           {/* Win Overlay */}
           {showWin && winInfo && (
-            <div className="absolute inset-0 bg-black/90 z-10 flex items-center justify-center rounded-xl animate-fade-in">
+            <div className="absolute inset-0 bg-black/90 z-20 flex items-center justify-center rounded-xl animate-fade-in">
               <div className="text-center space-y-3">
                 <div className="flex items-center justify-center gap-3">
                   <Trophy className="w-10 h-10 text-yellow-400 animate-bounce" />
@@ -210,40 +321,20 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
             </div>
           )}
 
-          {/* Reels Container - Full Width */}
+          {/* Reels Container */}
           <div className="flex justify-center gap-3 md:gap-6 mb-4">
-            {reels.map((symbol, index) => (
-              <div
+            {[0, 1, 2].map((index) => (
+              <SlotReel
                 key={index}
-                className={`
-                  relative flex-1 max-w-[180px] aspect-[3/4] rounded-xl overflow-hidden
-                  bg-gradient-to-b from-neon-purple/30 to-black/60
-                  border-3 border-neon-cyan/50
-                  ${reelAnimations[index] ? 'animate-pulse' : ''}
-                  ${showWin && winInfo ? `shadow-xl ${getRarityGlow(winInfo.rarity)}` : 'shadow-lg shadow-neon-purple/30'}
-                  transition-all duration-300
-                `}
-              >
-                <img
-                  src={symbol.image}
-                  alt={symbol.name}
-                  className={`
-                    w-full h-full object-cover
-                    ${reelAnimations[index] ? 'blur-sm scale-110' : ''}
-                    transition-all duration-200
-                  `}
-                />
-                {/* Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer" 
-                  style={{ animationDuration: '2s', animationIterationCount: 'infinite' }} 
-                />
-                {/* Rarity indicator */}
-                <div className={`absolute bottom-0 inset-x-0 h-2 bg-gradient-to-r ${getRarityColor(symbol.rarity)}`} />
-                {/* Rarity label */}
-                <Badge className={`absolute top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-[10px] px-2`}>
-                  {symbol.rarity.toUpperCase()}
-                </Badge>
-              </div>
+                symbols={SLOT_SYMBOLS}
+                finalSymbol={finalReels[index]}
+                isSpinning={reelSpinning[index]}
+                spinDuration={REEL_SPIN_DURATION[index]}
+                onStop={() => handleReelStop(index)}
+                getRarityColor={getRarityColor}
+                showWin={showWin}
+                winRarity={winInfo?.rarity}
+              />
             ))}
           </div>
 

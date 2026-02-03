@@ -1,0 +1,116 @@
+/* Cyber Slots Machine Styles */
+
+.slot-reel-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.slot-reel-strip {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.slot-symbol {
+  flex-shrink: 0;
+  backface-visibility: hidden;
+}
+
+/* Slot machine frame glow effect */
+.slot-reel-container::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    45deg,
+    hsl(var(--neon-cyan)) 0%,
+    hsl(var(--neon-purple)) 50%,
+    hsl(var(--neon-pink)) 100%
+  );
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.5;
+  filter: blur(4px);
+  animation: slot-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes slot-glow {
+  0% {
+    opacity: 0.3;
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 0.6;
+    filter: blur(6px);
+  }
+}
+
+/* Spinning blur effect */
+.slot-reel-container.spinning .slot-symbol img {
+  filter: blur(2px);
+}
+
+/* Win celebration pulse */
+@keyframes win-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
+  }
+}
+
+.slot-reel-container.winner {
+  animation: win-pulse 0.5s ease-in-out infinite;
+}
+
+/* Reel stop bounce effect */
+@keyframes reel-stop {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-5%);
+  }
+  60% {
+    transform: translateY(2%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.slot-reel-strip.stopped {
+  animation: reel-stop 0.3s ease-out;
+}
+
+/* Scan line effect for retro feel */
+.slot-reel-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+  z-index: 15;
+  border-radius: inherit;
+}
+
+/* Symbol reflection effect */
+.slot-symbol::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  pointer-events: none;
+}
