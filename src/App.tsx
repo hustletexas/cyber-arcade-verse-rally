@@ -14,6 +14,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CyberMatch from "./pages/CyberMatch";
 import CyberSequence from "./pages/CyberSequence";
 import CyberTrivia from "./pages/CyberTrivia";
+import Success from "./pages/Success";
+import Cancel from "./pages/Cancel";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,8 @@ const App = () => (
                 <Route path="/games/cyber-match" element={<CyberMatch />} />
                 <Route path="/games/cyber-sequence" element={<CyberSequence />} />
                 <Route path="/games/cyber-trivia" element={<CyberTrivia />} />
+                <Route path="/success" element={<Success />} />
+                <Route path="/cancel" element={<Cancel />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
