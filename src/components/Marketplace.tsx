@@ -15,98 +15,49 @@ import { ShoppingCart, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-rea
 import useEmblaCarousel from 'embla-carousel-react';
 
 const mockNFTs = [
-  // Legendary NFTs
+  // Legendary NFT
   {
     id: 1,
-    name: "Retro Future Ride",
-    price: { cctr: 1000, xlm: 1250, usdc: 157, pyusd: 157 },
-    image: "/lovable-uploads/1131ab8a-f1c5-43a1-bc8a-bbbe7f2f9fd1.png",
+    name: "Legendary Arcade Pass",
+    price: { cctr: 1000, xlm: 1500, usdc: 199, pyusd: 199 },
+    image: "/lovable-uploads/legendary-arcade-pass.png",
     rarity: "Legendary",
-    seller: "CyberMotors",
-    description: "Ultra-rare cyberpunk DeLorean in neon cityscape - the ultimate collector's ride",
+    seller: "CyberCityArcade",
+    description: "The ultimate Cyber City Arcade Pass with gold frame - unlocks all premium features, exclusive tournaments, and legendary rewards",
     supply: { total: 100, remaining: 87 }
   },
+  // Epic NFT
   {
     id: 2,
-    name: "Cyber City Console",
-    price: { cctr: 1000, xlm: 1500, usdc: 189, pyusd: 189 },
-    image: "/lovable-uploads/adc51b6f-7d82-44cc-86b5-e984bc74d2d3.png",
-    rarity: "Legendary",
-    seller: "ArcadeMaster",
-    description: "Ultimate cyberpunk arcade console with holographic city display - grants access to all premium games",
-    supply: { total: 100, remaining: 94 }
-  },
-  {
-    id: 3,
-    name: "Cyber City Arcade",
-    price: { cctr: 1000, xlm: 1800, usdc: 225, pyusd: 225 },
-    image: "/lovable-uploads/25b4f405-8edd-4c52-9b77-0d270d1b6c90.png",
-    rarity: "Legendary",
-    seller: "RetroMaster",
-    description: "Iconic Cyber City arcade building with neon signage - the heart of the digital gaming universe",
-    supply: { total: 100, remaining: 76 }
-  },
-  // Epic NFTs
-  {
-    id: 4,
-    name: "Stellar Arcade Champion",
-    price: { cctr: 500, xlm: 1000, usdc: 126, pyusd: 126 },
-    image: "/lovable-uploads/ad465959-8a2b-40c4-bb3d-512e3b2246dc.png",
+    name: "Epic Arcade Pass",
+    price: { cctr: 500, xlm: 1000, usdc: 99, pyusd: 99 },
+    image: "/lovable-uploads/epic-arcade-pass.png",
     rarity: "Epic",
-    seller: "StellarGaming",
-    description: "Elite cyberpunk gamer with VR headset exploring the neon-lit Stellar blockchain arcade district",
+    seller: "CyberCityArcade",
+    description: "Epic tier Cyber City Arcade Pass with purple neon frame - grants access to exclusive games and epic tournament rewards",
     supply: { total: 500, remaining: 432 }
   },
+  // Rare NFT
   {
-    id: 5,
-    name: "Neon Arcade Portal",
-    price: { cctr: 500, xlm: 1150, usdc: 144, pyusd: 144 },
-    image: "/lovable-uploads/f7fdd876-ef2a-4140-9a9e-961af057b14c.png",
-    rarity: "Epic",
-    seller: "PortalMaster",
-    description: "Mystical arcade portal gateway to the digital realm - witness the birth of virtual reality gaming",
-    supply: { total: 500, remaining: 378 }
-  },
-  {
-    id: 6,
-    name: "Cyber City Genesis #001",
-    price: { cctr: 500, xlm: 1440, usdc: 180, pyusd: 180 },
-    image: "/lovable-uploads/e0346804-3303-4132-accf-7a80c53b7b8c.png",
-    rarity: "Epic",
-    seller: "GenesisCollection",
-    description: "Genesis edition arcade cabinet from the original Cyber City collection - limited first edition piece",
-    supply: { total: 500, remaining: 445 }
-  },
-  // Rare NFTs
-  {
-    id: 7,
-    name: "Cyber City Mobile Gamer",
-    price: { cctr: 100, xlm: 650, usdc: 81, pyusd: 81 },
-    image: "/lovable-uploads/fa16ab59-6385-4247-ac77-1ef0cf685f60.png",
+    id: 3,
+    name: "Rare Arcade Pass",
+    price: { cctr: 100, xlm: 500, usdc: 49, pyusd: 49 },
+    image: "/lovable-uploads/rare-arcade-pass.png",
     rarity: "Rare",
-    seller: "MobileGamingCorp",
-    description: "Cyberpunk mobile gamer with alien tech device - the future of portable gaming in neon cityscapes",
+    seller: "CyberCityArcade",
+    description: "Rare tier Cyber City Arcade Pass with blue neon frame - unlocks special game modes and rare collectible rewards",
     supply: { total: 1000, remaining: 756 }
   },
+  // Common NFT
   {
-    id: 8,
-    name: "VR Racing Champion",
-    price: { cctr: 100, xlm: 790, usdc: 99, pyusd: 99 },
-    image: "/lovable-uploads/7aefc14a-b1ec-4889-8990-4f12e95eec7d.png",
-    rarity: "Rare",
-    seller: "VRRacingLeague",
-    description: "Professional VR racing simulator setup with cyberpunk aesthetic - experience the ultimate driving simulation",
-    supply: { total: 1000, remaining: 823 }
-  },
-  {
-    id: 9,
-    name: "Cyber City Arcade Gamer",
-    price: { cctr: 100, xlm: 720, usdc: 90, pyusd: 90 },
-    image: "/lovable-uploads/499520d8-632b-415d-9e5a-5599ef4eca14.png",
-    rarity: "Rare",
-    seller: "CyberCityElite",
-    description: "Elite cyberpunk gamer with advanced neural interface - master of the Cyber City Arcade realm",
-    supply: { total: 1000, remaining: 667 }
+    id: 4,
+    name: "Cyber City NFT",
+    price: { cctr: 50, xlm: 250, usdc: 25, pyusd: 25 },
+    image: "/lovable-uploads/common-arcade-nft.png",
+    rarity: "Common",
+    seller: "CyberCityArcade",
+    description: "Standard Cyber City Arcade NFT - your entry ticket to the neon-lit world of retro gaming",
+    supply: { total: 5000, remaining: 4200 }
   }
 ];
 
@@ -260,7 +211,7 @@ export const Marketplace = () => {
           {/* Filters and Currency Selection */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-4 items-center">
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   size="sm"
                   variant={filter === 'all' ? 'default' : 'outline'}
@@ -292,6 +243,14 @@ export const Marketplace = () => {
                   className={filter === 'rare' ? 'cyber-button' : 'border-neon-green text-neon-green'}
                 >
                   Rare
+                </Button>
+                <Button
+                  size="sm"
+                  variant={filter === 'common' ? 'default' : 'outline'}
+                  onClick={() => setFilter('common')}
+                  className={filter === 'common' ? 'cyber-button' : 'border-gray-400 text-gray-400'}
+                >
+                  Common
                 </Button>
               </div>
             </div>
@@ -368,7 +327,8 @@ export const Marketplace = () => {
                               <Badge className={`text-xs ${
                                 nft.rarity === 'Legendary' ? 'bg-neon-purple text-white' :
                                 nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
-                                'bg-neon-green text-black'
+                                nft.rarity === 'Rare' ? 'bg-neon-green text-black' :
+                                'bg-gray-500 text-white'
                               }`}>
                                 {nft.rarity}
                               </Badge>
@@ -390,7 +350,8 @@ export const Marketplace = () => {
                               <Badge className={`${
                                 nft.rarity === 'Legendary' ? 'bg-neon-purple text-white animate-pulse' :
                                 nft.rarity === 'Epic' ? 'bg-neon-pink text-black' :
-                                'bg-neon-green text-black'
+                                nft.rarity === 'Rare' ? 'bg-neon-green text-black' :
+                                'bg-gray-500 text-white'
                               }`}>
                                 {nft.rarity}
                               </Badge>
