@@ -175,6 +175,9 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   const [showWin, setShowWin] = useState(false);
   const [winInfo, setWinInfo] = useState<{ rarity: string; tokens: number } | null>(null);
   const [stoppedReels, setStoppedReels] = useState(0);
+  const [isDemo, setIsDemo] = useState(false);
+  const [isDemoWin, setIsDemoWin] = useState(false);
+  const demoPlayedRef = useRef(false);
 
   // Check/reset daily spins
   useEffect(() => {
@@ -189,6 +192,32 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     } else {
       setSpinCount(parseInt(storedSpins || '0'));
     }
+  }, []);
+
+  // Play demo jackpot on first load
+  useEffect(() => {
+    if (demoPlayedRef.current) return;
+    demoPlayedRef.current = true;
+    
+    // Start demo after a short delay
+    const demoTimer = setTimeout(() => {
+      playDemoJackpot();
+    }, 1000);
+    
+    return () => clearTimeout(demoTimer);
+  }, []);
+
+  const playDemoJackpot = useCallback(() => {
+    // Set legendary symbols for jackpot
+    const legendarySymbol = SLOT_SYMBOLS[3]; // legendary
+    setFinalReels([legendarySymbol, legendarySymbol, legendarySymbol]);
+    
+    setIsDemo(true);
+    setIsSpinning(true);
+    setShowWin(false);
+    setWinInfo(null);
+    setStoppedReels(0);
+    setReelSpinning([true, true, true]);
   }, []);
 
   const getRarityColor = (rarity: string) => {
@@ -234,10 +263,12 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       setIsSpinning(false);
       setStoppedReels(0);
       
-      // Update spin count
-      const newCount = spinCount + 1;
-      setSpinCount(newCount);
-      localStorage.setItem('cyber_slots_spins', newCount.toString());
+      // Don't count demo spins
+      if (!isDemo) {
+        const newCount = spinCount + 1;
+        setSpinCount(newCount);
+        localStorage.setItem('cyber_slots_spins', newCount.toString());
+      }
 
       // Check for win
       if (checkWin(finalReels)) {
@@ -246,14 +277,21 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
         
         setWinInfo({ rarity: winRarity, tokens });
         setShowWin(true);
+        setIsDemoWin(isDemo);
         
-        toast.success(`🎰 JACKPOT! 3x ${winRarity.toUpperCase()} - You win ${tokens} CCTR + ${winRarity} Chest!`);
-        onWin?.(winRarity, tokens);
-      } else {
+        if (isDemo) {
+          // Demo mode - just show the win animation
+        } else {
+          toast.success(`🎰 JACKPOT! 3x ${winRarity.toUpperCase()} - You win ${tokens} CCTR + ${winRarity} Chest!`);
+          onWin?.(winRarity, tokens);
+        }
+      } else if (!isDemo) {
         toast.info('No match this time. Try again!');
       }
+      
+      setIsDemo(false);
     }
-  }, [stoppedReels, isSpinning, finalReels, spinCount, onWin]);
+  }, [stoppedReels, isSpinning, finalReels, spinCount, onWin, isDemo]);
 
   const spin = useCallback(() => {
     if (!isWalletConnected) {
@@ -300,6 +338,11 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
           {showWin && winInfo && (
             <div className="absolute inset-0 bg-black/90 z-20 flex items-center justify-center rounded-xl animate-fade-in">
               <div className="text-center space-y-3">
+                {isDemoWin && (
+                  <Badge className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 text-xs px-3 py-1 mb-2">
+                    ✨ DEMO PREVIEW ✨
+                  </Badge>
+                )}
                 <div className="flex items-center justify-center gap-3">
                   <Trophy className="w-10 h-10 text-yellow-400 animate-bounce" />
                   <span className="text-3xl font-bold text-yellow-400">JACKPOT!</span>
@@ -311,11 +354,20 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                 <p className="text-neon-green font-bold text-2xl">+{winInfo.tokens} CCTR</p>
                 <Button 
                   size="lg" 
-                  onClick={() => setShowWin(false)}
+                  onClick={() => { setShowWin(false); setIsDemoWin(false); }}
                   className="cyber-button mt-3"
                 >
-                  <Gift className="w-5 h-5 mr-2" />
-                  Claim Rewards
+                  {isDemoWin ? (
+                    <>
+                      <Star className="w-5 h-5 mr-2" />
+                      Try Your Luck!
+                    </>
+                  ) : (
+                    <>
+                      <Gift className="w-5 h-5 mr-2" />
+                      Claim Rewards
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
