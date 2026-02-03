@@ -208,10 +208,13 @@ export const BracketPreview: React.FC<BracketPreviewProps> = ({
                 <div className="cya-finalist-seed">Seed {demoBracket.finals.teamA.seed}</div>
               </div>
               
-              {/* Big Trophy */}
+              {/* Big Trophy Image */}
               <div className="cya-big-trophy">
-                <div className="cya-trophy-glow"></div>
-                <div className="cya-trophy-icon">🏆</div>
+                <img 
+                  src="/lovable-uploads/cyber-finals-trophy.png" 
+                  alt="Cyber Finals Trophy" 
+                  className="w-32 h-auto object-contain drop-shadow-[0_0_30px_rgba(255,165,0,0.8)]"
+                />
                 <div className="cya-vs">VS</div>
               </div>
               
