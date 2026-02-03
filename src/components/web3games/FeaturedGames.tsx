@@ -137,18 +137,18 @@ const ps5Games = [
     rating: 5.0
   },
   {
-    id: 'spider-man-2',
-    name: "Marvel's Spider-Man 2",
-    category: 'Action Adventure',
+    id: 'undisputed-boxing',
+    name: 'Undisputed Boxing',
+    category: 'Sports / Fighting',
     blockchain: 'N/A',
-    image: '/lovable-uploads/virtual-reality.png',
-    description: 'Swing through NYC as both Peter Parker and Miles Morales in this epic sequel',
+    image: '/images/games/undisputed-boxing.webp',
+    description: 'Step into the ring and become the undisputed champion in this realistic boxing simulation',
     playUrl: null,
-    downloadUrl: 'https://www.playstation.com/games/marvels-spider-man-2/',
+    downloadUrl: 'https://store.steampowered.com/app/1424350/Undisputed/',
     isWebBased: false,
-    rewards: ['Trophies', 'Suits', 'Upgrades'],
-    players: '10M+',
-    rating: 4.9
+    rewards: ['Championship Belts', 'Fighter Unlocks', 'Career Mode'],
+    players: '2M+',
+    rating: 4.7
   },
   {
     id: 'ff7-rebirth',
