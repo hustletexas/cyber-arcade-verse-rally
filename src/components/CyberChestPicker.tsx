@@ -271,79 +271,78 @@ export const CyberChestPicker: React.FC = () => {
                 onClick={() => canOpen && hasUnclaimedChests && !isOpening && handleOpenChest(chest)}
                 className={`
                   relative overflow-hidden transition-all duration-300
-                  bg-gradient-to-br ${styles.bg}
                   border-2 ${isEligible ? styles.border : 'border-muted/30'}
-                  ${canOpen && hasUnclaimedChests ? `cursor-pointer hover:scale-105 hover:shadow-xl ${styles.glow}` : 'opacity-60 cursor-not-allowed'}
+                  ${canOpen && hasUnclaimedChests ? `cursor-pointer hover:scale-105 hover:shadow-xl ${styles.glow}` : 'cursor-not-allowed'}
                   ${isCurrentlyOpening ? 'animate-pulse scale-105' : ''}
+                  bg-black/40
                 `}
               >
-                <CardContent className="p-4 flex flex-col items-center text-center">
-                  {/* Lock overlay for unavailable chests */}
-                  {(!canOpenChest(chest) || !hasUnclaimedChests) && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
-                      <div className="text-center p-2">
-                        <Lock className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                        {!ownedPassTier || !canOpenChest(chest) ? (
-                          <>
-                            <p className="text-xs text-muted-foreground">Requires</p>
-                            <p className="text-xs text-muted-foreground font-medium">{chest.passName}</p>
-                          </>
-                        ) : (
-                          <p className="text-xs text-muted-foreground">Win to earn chests</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Chest Image - MUCH LARGER */}
-                  <div className="w-full aspect-square flex items-center justify-center mb-3">
+                <CardContent className="p-0 flex flex-col items-center text-center relative">
+                  {/* Chest Image - Full card coverage */}
+                  <div className="w-full aspect-[3/4] relative">
                     <img 
                       src={chest.image} 
                       alt={chest.name}
-                      className="w-full h-full object-contain max-h-48"
+                      className="w-full h-full object-cover"
                     />
+                    
+                    {/* Gradient overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                    
+                    {/* Lock indicator - bottom left corner, transparent */}
+                    {(!canOpenChest(chest) || !hasUnclaimedChests) && (
+                      <div className="absolute bottom-2 left-2 z-10 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-md px-2 py-1">
+                        <Lock className="w-4 h-4 text-white/70" />
+                        <span className="text-[10px] text-white/70">
+                          {!ownedPassTier || !canOpenChest(chest) ? 'Locked' : 'Earn to unlock'}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Chest Name */}
-                  <h4 className={`font-display text-base ${styles.text} mb-1`}>
-                    {chest.name}
-                  </h4>
+                  {/* Content overlay at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
+                    {/* Chest Name */}
+                    <h4 className={`font-display text-sm ${styles.text} mb-0.5`}>
+                      {chest.name}
+                    </h4>
 
-                  {/* Rewards Preview */}
-                  <div className="text-sm text-muted-foreground mb-3">
-                    {chest.rewards.minCCC.toLocaleString()} - {chest.rewards.maxCCC.toLocaleString()} CCC
+                    {/* Rewards Preview */}
+                    <div className="text-xs text-white/80 mb-2">
+                      {chest.rewards.minCCC.toLocaleString()} - {chest.rewards.maxCCC.toLocaleString()} CCC
+                    </div>
+
+                    {/* Open Button for eligible chest */}
+                    {isEligible && (
+                      <Button
+                        size="sm"
+                        disabled={isOpening}
+                        className={`w-full bg-gradient-to-r ${
+                          chest.tier === 'legendary' ? 'from-yellow-500 to-orange-500' :
+                          chest.tier === 'epic' ? 'from-purple-500 to-pink-500' :
+                          chest.tier === 'rare' ? 'from-blue-500 to-cyan-500' :
+                          'from-green-500 to-emerald-500'
+                        } text-white hover:opacity-90`}
+                      >
+                        {isCurrentlyOpening ? (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-1 animate-spin" />
+                            Opening...
+                          </>
+                        ) : (
+                          <>
+                            Open Chest
+                            <ChevronRight className="w-4 h-4 ml-1" />
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {/* Tier Badge */}
+                    <Badge className={`mt-2 text-xs uppercase ${styles.badge}`}>
+                      {chest.tier}
+                    </Badge>
                   </div>
-
-                  {/* Open Button for eligible chest */}
-                  {isEligible && (
-                    <Button
-                      size="sm"
-                      disabled={isOpening}
-                      className={`w-full bg-gradient-to-r ${
-                        chest.tier === 'legendary' ? 'from-yellow-500 to-orange-500' :
-                        chest.tier === 'epic' ? 'from-purple-500 to-pink-500' :
-                        chest.tier === 'rare' ? 'from-blue-500 to-cyan-500' :
-                        'from-green-500 to-emerald-500'
-                      } text-white hover:opacity-90`}
-                    >
-                      {isCurrentlyOpening ? (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-1 animate-spin" />
-                          Opening...
-                        </>
-                      ) : (
-                        <>
-                          Open Chest
-                          <ChevronRight className="w-4 h-4 ml-1" />
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {/* Tier Badge */}
-                  <Badge className={`mt-3 text-xs uppercase ${styles.badge}`}>
-                    {chest.tier}
-                  </Badge>
                 </CardContent>
               </Card>
             );
