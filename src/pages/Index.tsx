@@ -105,7 +105,7 @@ const Index = () => {
           {/* Mobile-Optimized Main Logo */}
           <div className="flex justify-center mb-4 sm:mb-6">
             <img 
-              src="/lovable-uploads/cyber-city-arcade-nft.png" 
+              src="/lovable-uploads/cyber-city-arcade-hero.png" 
               alt="Cyber City Arcade NFT" 
               className="w-80 h-auto sm:w-[500px] md:w-[700px] lg:w-[900px] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" 
               style={{
