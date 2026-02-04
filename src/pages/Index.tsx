@@ -160,7 +160,7 @@ const Index = () => {
           </section>
 
           {/* Tournament Hub Section */}
-          <section className="px-2 sm:px-4">
+          <section className="px-2 sm:px-4 -mt-6 sm:-mt-10 md:-mt-14">
             <TournamentHub />
           </section>
 
