@@ -55,16 +55,13 @@ const GameCard: React.FC<GameCardProps> = ({
 export const CyberGamesSection: React.FC = () => {
   const navigate = useNavigate();
   return <div className="space-y-6">
-      {/* Section Header */}
-      <div className="text-center">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
-          <span className="bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink bg-clip-text text-transparent">
-            CYBER CITY ARCADE GAMES
-          </span>
-        </h2>
-        <p className="text-gray-400 text-sm sm:text-base">
-          Play to earn CCC tokens and compete on the leaderboards
-        </p>
+      {/* Section Banner */}
+      <div className="max-w-5xl mx-auto">
+        <img 
+          src="/images/games/arcade-games-banner.png" 
+          alt="Cyber City Arcade Games" 
+          className="w-full h-auto rounded-lg"
+        />
       </div>
 
       {/* Games Grid */}
