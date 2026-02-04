@@ -7,6 +7,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { toast } from 'sonner';
+import cyberSlotsLogo from '@/assets/cyber-slots-logo.png';
 import './CyberSlotsMachine.css';
 
 interface SlotSymbol {
@@ -371,7 +372,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
 
           {/* Neon Pink Title */}
           <div className="slots-title-container">
-            <h3 className="slots-title">Cyber Slots</h3>
+            <img src={cyberSlotsLogo} alt="Cyber Slots" className="slots-title-logo" />
           </div>
 
           {/* Chrome Frame */}
