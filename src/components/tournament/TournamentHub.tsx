@@ -34,15 +34,15 @@ export const TournamentHub: React.FC = () => {
   }, [activeTournaments, selectedTournamentId]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Banner */}
-      <div className="w-full">
+      <div className="w-full -mb-2">
         <img 
           src="/images/tournament-hub-banner.png" 
           alt="Tournament Hub" 
           className="w-full h-auto object-contain"
         />
-        <div className="flex items-center justify-end gap-2 mt-4">
+        <div className="flex items-center justify-end gap-2 mt-2">
           <Badge className="bg-neon-cyan text-black">
             {upcomingTournaments.length} Upcoming
           </Badge>
