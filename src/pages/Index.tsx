@@ -159,14 +159,14 @@ const Index = () => {
             <Marketplace />
           </section>
 
-          {/* Tournament Hub Section */}
-          <section className="px-2 sm:px-4 -mt-6 sm:-mt-10 md:-mt-14">
-            <TournamentHub />
-          </section>
-
           {/* Cyber Arcade Games Section */}
           <section className="px-2 sm:px-4">
             <CyberGamesSection />
+          </section>
+
+          {/* Tournament Hub Section */}
+          <section className="px-2 sm:px-4 -mt-6 sm:-mt-10 md:-mt-14">
+            <TournamentHub />
           </section>
 
           {/* Web3 Gaming Section - Mobile Optimized */}
