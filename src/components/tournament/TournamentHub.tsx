@@ -40,7 +40,7 @@ export const TournamentHub: React.FC = () => {
         <img 
           src="/images/tournament-hub-banner.png" 
           alt="Tournament Hub" 
-          className="w-full h-auto max-h-80 object-cover rounded-lg"
+          className="w-full h-auto object-contain"
         />
         <div className="flex items-center justify-end gap-2 mt-4">
           <Badge className="bg-neon-cyan text-black">
