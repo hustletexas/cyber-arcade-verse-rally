@@ -35,16 +35,14 @@ export const TournamentHub: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Trophy className="w-8 h-8 text-neon-pink" />
-          <div>
-            <h1 className="font-display text-3xl text-neon-pink">TOURNAMENT HUB</h1>
-            <p className="text-muted-foreground">Compete, win, and earn rewards</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+      {/* Banner */}
+      <div className="w-full">
+        <img 
+          src="/images/tournament-hub-banner.png" 
+          alt="Tournament Hub" 
+          className="w-full h-auto max-h-80 object-cover rounded-lg"
+        />
+        <div className="flex items-center justify-end gap-2 mt-4">
           <Badge className="bg-neon-cyan text-black">
             {upcomingTournaments.length} Upcoming
           </Badge>
