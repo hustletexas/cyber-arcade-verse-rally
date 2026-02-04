@@ -36,7 +36,7 @@ export const TournamentHub: React.FC = () => {
   return (
     <div>
       {/* Banner */}
-      <div className="w-full">
+      <div className="w-full mt-16 sm:mt-20 md:mt-24">
         <img 
           src="/images/tournament-hub-banner.png" 
           alt="Tournament Hub" 
