@@ -217,7 +217,7 @@ export const MerchandiseStore = () => {
                     className="flex-1 cyber-button flex items-center gap-2"
                   >
                     <ShoppingCart size={16} />
-                    ADD TO CART
+                    PRE-ORDER
                   </Button>
                   <Button 
                     onClick={() => setSelectedItem(item)}
@@ -329,7 +329,7 @@ export const MerchandiseStore = () => {
                         className="w-full cyber-button flex items-center gap-2 text-lg py-3"
                       >
                         <ShoppingCart size={20} />
-                        ADD TO CART - ${selectedItem.price}
+                        PRE-ORDER - ${selectedItem.price}
                       </Button>
                     </div>
                   </div>
