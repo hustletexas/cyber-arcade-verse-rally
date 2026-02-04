@@ -37,7 +37,7 @@ export const TournamentHub: React.FC = () => {
   return <div>
       {/* Banner */}
       <div className="w-full mt-16 sm:mt-20 md:mt-24">
-        <img alt="Tournament Hub" className="w-full h-auto object-contain" src="/lovable-uploads/2b165002-a658-4414-b85f-bebd4ffca542.png" />
+        <img alt="Tournament Hub" className="w-full h-auto object-contain" src="/lovable-uploads/257e83f9-7eb8-4485-b196-5f22a2212406.png" />
       </div>
 
       {/* Badges */}
