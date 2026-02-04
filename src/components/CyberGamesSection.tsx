@@ -111,7 +111,26 @@ export const CyberGamesSection: React.FC = () => {
           </div>
         </Card>
         
-        <GameCard title="Cyber Trivia" description="Test your gaming knowledge! Answer questions, build streaks, win prizes!" icon={<Zap className="w-8 h-8 text-neon-pink" />} gradient="bg-gradient-to-br from-pink-900/40 via-gray-900/60 to-gray-900/40 border border-neon-pink/20" route="/games/cyber-trivia" badge="HOT" badgeColor="bg-neon-pink" />
+        {/* Cyber Trivia - Image Card */}
+        <Card 
+          className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30"
+          onClick={() => navigate('/games/cyber-trivia')}
+        >
+          <img 
+            src="/images/games/cyber-trivia-card.png" 
+            alt="Cyber Trivia" 
+            className="w-full h-full object-cover"
+          />
+          <Badge className="absolute top-3 right-3 bg-neon-pink text-black font-bold text-xs">
+            HOT
+          </Badge>
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
+            <div className="flex items-center text-neon-pink text-sm font-medium">
+              Play Now
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Features */}
