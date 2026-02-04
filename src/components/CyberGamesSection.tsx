@@ -60,7 +60,7 @@ export const CyberGamesSection: React.FC = () => {
         <img 
           src="/images/games/arcade-games-banner.png" 
           alt="Cyber City Arcade Games" 
-          className="w-full h-auto rounded-lg opacity-70"
+          className="w-full h-auto rounded-lg"
         />
       </div>
 
