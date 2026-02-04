@@ -145,6 +145,18 @@
   position: relative;
   text-align: center;
   margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slots-title-logo {
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 20px hsl(var(--neon-pink) / 0.6)) drop-shadow(0 0 40px hsl(var(--neon-purple) / 0.4));
 }
 
 .slots-title-container::after {
@@ -153,11 +165,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120px;
+  width: 200px;
   height: 120px;
-  background: radial-gradient(circle, hsl(var(--neon-pink) / 0.4) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(var(--neon-pink) / 0.3) 0%, transparent 70%);
   border-radius: 50%;
-  filter: blur(20px);
+  filter: blur(30px);
   animation: title-glow-pulse 2s ease-in-out infinite;
   z-index: 0;
 }
