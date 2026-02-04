@@ -53,6 +53,7 @@ const GameCard: React.FC<GameCardProps> = ({
     </Card>;
 };
 export const CyberGamesSection: React.FC = () => {
+  const navigate = useNavigate();
   return <div className="space-y-6">
       {/* Section Header */}
       <div className="text-center">
