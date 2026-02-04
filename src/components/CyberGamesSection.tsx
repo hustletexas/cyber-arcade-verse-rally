@@ -68,7 +68,26 @@ export const CyberGamesSection: React.FC = () => {
 
       {/* Games Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-        <GameCard title="Cyber Match" description="Memory card matching game. Find pairs, build combos, earn rewards!" icon={<Gamepad2 className="w-8 h-8 text-neon-cyan" />} gradient="bg-gradient-to-br from-cyan-900/40 via-gray-900/60 to-gray-900/40 border border-neon-cyan/20" route="/games/cyber-match" badge="POPULAR" badgeColor="bg-neon-cyan" />
+        {/* Cyber Match - Image Card */}
+        <Card 
+          className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30"
+          onClick={() => navigate('/games/cyber-match')}
+        >
+          <img 
+            src="/images/games/cyber-match-card.png" 
+            alt="Cyber Match" 
+            className="w-full h-full object-cover"
+          />
+          <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
+            POPULAR
+          </Badge>
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
+            <div className="flex items-center text-neon-cyan text-sm font-medium">
+              Play Now
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Card>
         
         <GameCard title="Cyber Sequence" description="Simon-style memory game. Watch, remember, repeat the sequence!" icon={<Brain className="w-8 h-8 text-neon-purple" />} gradient="bg-gradient-to-br from-purple-900/40 via-gray-900/60 to-gray-900/40 border border-neon-purple/20" route="/games/cyber-sequence" badge="NEW" badgeColor="bg-neon-purple" />
         
