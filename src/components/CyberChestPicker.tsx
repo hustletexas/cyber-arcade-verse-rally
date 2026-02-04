@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWinnerChests } from '@/hooks/useWinnerChests';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
+import cyberChestLogo from '@/assets/cyber-chest-logo.png';
 
 interface CyberChest {
   id: string;
@@ -180,31 +181,25 @@ export const CyberChestPicker: React.FC = () => {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="font-display text-3xl font-black tracking-widest uppercase"
-            style={{
-              background: 'linear-gradient(180deg, #00FFFF 0%, #FF00FF 50%, #00FFFF 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(255, 0, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.4)',
-              filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.8))',
-              letterSpacing: '0.2em',
-            }}>
-          CYBER CHEST
-        </h3>
-        <div className="flex items-center gap-2">
-          {ownedPassTier && (
-            <Badge className={getTierStyles(ownedPassTier).badge}>
-              <Trophy className="w-3 h-3 mr-1" />
-              {ownedPassTier.charAt(0).toUpperCase() + ownedPassTier.slice(1)} Pass
-            </Badge>
-          )}
-          <Badge 
-            className={`${hasUnclaimedChests ? 'bg-neon-green/20 text-neon-green border-neon-green' : 'bg-muted/20 text-muted-foreground border-muted'}`}
-          >
-            {isLoading ? 'Loading...' : hasUnclaimedChests ? `${unclaimedCount} CHEST${unclaimedCount > 1 ? 'S' : ''} AVAILABLE` : 'NO CHESTS'}
+      <div className="flex flex-col items-center justify-center w-full">
+        <img 
+          src={cyberChestLogo} 
+          alt="Cyber Chest" 
+          className="w-full max-w-lg h-auto filter drop-shadow-[0_0_20px_rgba(255,0,255,0.6)]"
+        />
+      </div>
+      <div className="flex items-center justify-center gap-2 mt-2">
+        {ownedPassTier && (
+          <Badge className={getTierStyles(ownedPassTier).badge}>
+            <Trophy className="w-3 h-3 mr-1" />
+            {ownedPassTier.charAt(0).toUpperCase() + ownedPassTier.slice(1)} Pass
           </Badge>
-        </div>
+        )}
+        <Badge 
+          className={`${hasUnclaimedChests ? 'bg-neon-green/20 text-neon-green border-neon-green' : 'bg-muted/20 text-muted-foreground border-muted'}`}
+        >
+          {isLoading ? 'Loading...' : hasUnclaimedChests ? `${unclaimedCount} CHEST${unclaimedCount > 1 ? 'S' : ''} AVAILABLE` : 'NO CHESTS'}
+        </Badge>
       </div>
 
       {/* Instructions */}
