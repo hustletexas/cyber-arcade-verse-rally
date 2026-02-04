@@ -34,15 +34,15 @@ export const TournamentHub: React.FC = () => {
   }, [activeTournaments, selectedTournamentId]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {/* Banner */}
-      <div className="w-full -mb-8">
+      <div className="w-full">
         <img 
           src="/images/tournament-hub-banner.png" 
           alt="Tournament Hub" 
           className="w-full h-auto object-contain"
         />
-        <div className="flex items-center justify-end gap-2 mt-2">
+        <div className="flex items-center justify-end gap-2 -mt-4">
           <Badge className="bg-neon-cyan text-black">
             {upcomingTournaments.length} Upcoming
           </Badge>
@@ -53,7 +53,7 @@ export const TournamentHub: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full -mt-4">
         <TabsList className="grid w-full grid-cols-5 bg-background/50 border border-border">
           <TabsTrigger value="browse" className="flex items-center gap-2">
             <Gamepad2 className="w-4 h-4" />
