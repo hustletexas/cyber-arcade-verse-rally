@@ -39,19 +39,24 @@
  
        <TopBar />
        
-       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
-         {/* Back Button */}
-         <Link to="/">
-           <Button variant="ghost" className="mb-6 text-neon-cyan hover:bg-neon-cyan/10">
-             <ArrowLeft className="w-4 h-4 mr-2" />
-             Back to Arcade
-           </Button>
-         </Link>
- 
-         {/* Cyber Chest Picker */}
-         <div className="max-w-5xl mx-auto">
-           <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-cyan/30 rounded-xl p-6">
-             <CyberChestPicker />
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 relative z-10 min-h-[calc(100vh-4rem)] flex flex-col">
+        {/* Header with Back Button */}
+        <div className="flex items-center justify-between mb-8">
+          <Link to="/">
+            <Button variant="ghost" className="text-neon-cyan hover:bg-neon-cyan/10 border border-neon-cyan/30">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Arcade
+            </Button>
+          </Link>
+        </div>
+
+        {/* Main Content - Centered */}
+        <div className="flex-1 flex items-start justify-center">
+          <div className="w-full max-w-6xl">
+            {/* Transparent glassmorphic container */}
+            <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-8 border border-neon-cyan/20">
+              <CyberChestPicker />
+            </div>
            </div>
          </div>
        </main>
