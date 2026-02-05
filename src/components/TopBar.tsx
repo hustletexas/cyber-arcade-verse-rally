@@ -60,7 +60,14 @@ export const TopBar = () => {
         <div className="flex items-center justify-between h-12">
           {/* Network indicator */}
           <div className="flex-1 flex items-center gap-2">
-            {!STELLAR_NETWORK.isMainnet && (
+            {STELLAR_NETWORK.isMainnet ? (
+              <Badge 
+                variant="outline" 
+                className="bg-neon-green/20 border-neon-green/50 text-neon-green text-xs font-medium"
+              >
+                ✓ {STELLAR_NETWORK.networkName} • Live
+              </Badge>
+            ) : (
               <Badge 
                 variant="outline" 
                 className="bg-amber-500/20 border-amber-500/50 text-amber-400 text-xs font-medium animate-pulse"
