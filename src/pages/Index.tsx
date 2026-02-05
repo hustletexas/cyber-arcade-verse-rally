@@ -5,14 +5,12 @@ import { TopBar } from '@/components/TopBar';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
-import { MerchandiseStore } from '@/components/MerchandiseStore';
 import { RaffleSection } from '@/components/RaffleSection';
 import { CreditsRewardsShowcase } from '@/components/CreditsRewardsShowcase';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
-import { TournamentHub } from '@/components/tournament/TournamentHub';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
@@ -22,8 +20,6 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
-import { CyberChestPicker } from '@/components/CyberChestPicker';
-import { CyberSlotsMachine } from '@/components/CyberSlotsMachine';
 const Index = () => {
   const {
     toast
@@ -159,11 +155,6 @@ const Index = () => {
             <CyberGamesSection />
           </section>
 
-          {/* Tournament Hub Section */}
-         <section id="tournament-hub" className="px-2 sm:px-4 -mt-6 sm:-mt-10 md:-mt-14">
-            <TournamentHub />
-          </section>
-
           {/* Community Hub Section */}
          <section id="community-hub" className="px-2 sm:px-4">
             <CommunityHub />
@@ -177,27 +168,6 @@ const Index = () => {
           {/* AI Gaming Coach Section - Mobile Optimized */}
          <section id="ai-coach" className="px-2 sm:px-4">
             <AIGamingCoach />
-          </section>
-
-          {/* Merchandise Store Section - Touch Friendly */}
-         <section id="merchandise" className="px-2 sm:px-4">
-            <MerchandiseStore />
-          </section>
-
-          {/* Cyber Chest Section - Standalone Transparent */}
-         <section id="cyber-chest" className="px-2 sm:px-4">
-            <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-cyan/30 rounded-xl p-6">
-              <CyberChestPicker />
-            </div>
-          </section>
-
-          {/* Cyber Slots Section - Standalone Transparent */}
-         <section id="cyber-slots" className="px-2 sm:px-4">
-            <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-purple/30 rounded-xl p-6">
-              <CyberSlotsMachine onWin={(rarity, tokens) => {
-                console.log(`Won ${tokens} CCC and ${rarity} chest!`);
-              }} />
-            </div>
           </section>
 
           {/* Raffles Section - Mobile Friendly */}
