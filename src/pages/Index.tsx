@@ -144,14 +144,14 @@ const Index = () => {
             </div>
           </section>
 
-          {/* NFT Marketplace Section - Mobile Optimized */}
-         <section id="marketplace" className="px-2 sm:px-4">
-            <Marketplace />
-          </section>
-
           {/* Cyber Arcade Games Section */}
          <section id="arcade-hub" className="px-2 sm:px-4">
             <CyberGamesSection />
+          </section>
+
+          {/* NFT Marketplace Section - Mobile Optimized */}
+         <section id="marketplace" className="px-2 sm:px-4">
+            <Marketplace />
           </section>
 
           {/* Web3 Gaming Section - Mobile Optimized */}
