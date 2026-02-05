@@ -5,7 +5,6 @@ import { TopBar } from '@/components/TopBar';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
-import { RaffleSection } from '@/components/RaffleSection';
 import { CreditsRewardsShowcase } from '@/components/CreditsRewardsShowcase';
 import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
 import { CommunityHub } from '@/components/CommunityHub';
@@ -168,11 +167,6 @@ const Index = () => {
           {/* Community Hub Section */}
          <section id="community-hub" className="px-2 sm:px-4">
             <CommunityHub />
-          </section>
-
-          {/* Raffles Section - Mobile Friendly */}
-         <section id="raffle" className="px-2 sm:px-4">
-            <RaffleSection />
           </section>
 
           {/* Voting Section - Touch Optimized */}

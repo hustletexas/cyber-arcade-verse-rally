@@ -20,12 +20,12 @@ const scrollSections = [
   { id: 'community-hub', label: 'Community HQ', icon: Users },
   { id: 'web3-gaming', label: 'Web3 Gaming', icon: Coins },
   { id: 'ai-coach', label: 'AI Coach', icon: Bot },
-  { id: 'raffle', label: 'Raffles', icon: Ticket },
 ];
 
 // Sections that navigate to dedicated pages
 const pageSections = [
   { path: '/tournaments', label: 'Live Bracket', icon: Trophy },
+  { path: '/raffles', label: 'Raffles', icon: Ticket },
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
   { path: '/cyber-chest', label: 'Cyber Chest', icon: Gift },
   { path: '/cyber-slots', label: 'Cyber Slots', icon: Gamepad2 },
