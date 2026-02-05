@@ -11,30 +11,48 @@ import { Badge } from '@/components/ui/badge';
 import { UnifiedWalletDropdown } from './UnifiedWalletDropdown';
 import { useCart } from '@/contexts/CartContext';
 import { STELLAR_NETWORK } from '@/config/stellar';
+import { useNavigate } from 'react-router-dom';
 
- const sections = [
-   { id: 'marketplace', label: 'Season Pass', icon: Sparkles },
-   { id: 'arcade-hub', label: 'Arcade Hub', icon: Gamepad2 },
-   { id: 'tournament-hub', label: 'Live Bracket', icon: Trophy },
-   { id: 'community-hub', label: 'Community HQ', icon: Users },
-   { id: 'web3-gaming', label: 'Web3 Gaming', icon: Coins },
-   { id: 'ai-coach', label: 'AI Coach', icon: Bot },
-   { id: 'merchandise', label: 'Merch Store', icon: ShoppingBag },
-   { id: 'cyber-chest', label: 'Cyber Chest', icon: Gift },
-   { id: 'cyber-slots', label: 'Cyber Slots', icon: Gamepad2 },
-   { id: 'raffle', label: 'Raffles', icon: Ticket },
- ];
- 
- const scrollToSection = (id: string) => {
-   const element = document.getElementById(id);
-   if (element) {
-     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-   }
- };
- 
+// Sections that scroll on homepage
+const scrollSections = [
+  { id: 'marketplace', label: 'Season Pass', icon: Sparkles },
+  { id: 'arcade-hub', label: 'Arcade Hub', icon: Gamepad2 },
+  { id: 'community-hub', label: 'Community HQ', icon: Users },
+  { id: 'web3-gaming', label: 'Web3 Gaming', icon: Coins },
+  { id: 'ai-coach', label: 'AI Coach', icon: Bot },
+  { id: 'raffle', label: 'Raffles', icon: Ticket },
+];
+
+// Sections that navigate to dedicated pages
+const pageSections = [
+  { path: '/tournaments', label: 'Live Bracket', icon: Trophy },
+  { path: '/store', label: 'Merch Store', icon: ShoppingBag },
+  { path: '/cyber-chest', label: 'Cyber Chest', icon: Gift },
+  { path: '/cyber-slots', label: 'Cyber Slots', icon: Gamepad2 },
+];
+
 export const TopBar = () => {
   const { setIsOpen, items } = useCart();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const navigate = useNavigate();
+
+  const scrollToSection = (id: string) => {
+    // If not on homepage, navigate first
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
 
   return (
     <header className="border-b border-neon-cyan/20 bg-card/30 backdrop-blur-md sticky top-0 z-50">
@@ -69,16 +87,27 @@ export const TopBar = () => {
                align="end" 
                className="w-48 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100]"
              >
-               {sections.map((section) => (
-                 <DropdownMenuItem
-                   key={section.id}
-                   onClick={() => scrollToSection(section.id)}
-                   className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
-                 >
-                   <section.icon className="h-4 w-4 mr-2 text-neon-cyan" />
-                   {section.label}
-                 </DropdownMenuItem>
-               ))}
+            {scrollSections.map((section) => (
+              <DropdownMenuItem
+                key={section.id}
+                onClick={() => scrollToSection(section.id)}
+                className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+              >
+                <section.icon className="h-4 w-4 mr-2 text-neon-cyan" />
+                {section.label}
+              </DropdownMenuItem>
+            ))}
+            <div className="my-1 border-t border-neon-cyan/20" />
+            {pageSections.map((section) => (
+              <DropdownMenuItem
+                key={section.path}
+                onClick={() => navigate(section.path)}
+                className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+              >
+                <section.icon className="h-4 w-4 mr-2 text-neon-pink" />
+                {section.label}
+              </DropdownMenuItem>
+            ))}
              </DropdownMenuContent>
            </DropdownMenu>
  
