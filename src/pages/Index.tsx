@@ -254,7 +254,7 @@ const Index = () => {
           {/* Copyright */}
           <div className="text-center border-t border-neon-purple/20 pt-4">
             <p className="text-muted-foreground text-xs sm:text-sm">
-              © {new Date().getFullYear()} <span className="text-neon-cyan">Cyber City Arcade LLC</span> • All Rights Reserved
+              © 2024 <span className="text-neon-cyan">Cyber City Arcade LLC</span> • All Rights Reserved
             </p>
             <p className="text-muted-foreground/60 text-xs mt-1">
               Built on the Stellar Blockchain • Play responsibly
