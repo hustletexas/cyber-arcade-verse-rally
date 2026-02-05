@@ -138,8 +138,8 @@ export const CommunityHub = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="container mx-auto max-w-6xl">
+    <div className="space-y-6">
+      <div className="w-full">
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan mb-2">
