@@ -150,49 +150,49 @@ const Index = () => {
           </section>
 
           {/* NFT Marketplace Section - Mobile Optimized */}
-          <section className="px-2 sm:px-4">
+         <section id="marketplace" className="px-2 sm:px-4">
             <Marketplace />
           </section>
 
           {/* Cyber Arcade Games Section */}
-          <section className="px-2 sm:px-4">
+         <section id="arcade-hub" className="px-2 sm:px-4">
             <CyberGamesSection />
           </section>
 
           {/* Tournament Hub Section */}
-          <section className="px-2 sm:px-4 -mt-6 sm:-mt-10 md:-mt-14">
+         <section id="tournament-hub" className="px-2 sm:px-4 -mt-6 sm:-mt-10 md:-mt-14">
             <TournamentHub />
           </section>
 
           {/* Community Hub Section */}
-          <section className="px-2 sm:px-4">
+         <section id="community-hub" className="px-2 sm:px-4">
             <CommunityHub />
           </section>
 
           {/* Web3 Gaming Section - Mobile Optimized */}
-          <section className="px-2 sm:px-4">
+         <section id="web3-gaming" className="px-2 sm:px-4">
             <Web3Gaming />
           </section>
 
           {/* AI Gaming Coach Section - Mobile Optimized */}
-          <section className="px-2 sm:px-4">
+         <section id="ai-coach" className="px-2 sm:px-4">
             <AIGamingCoach />
           </section>
 
           {/* Merchandise Store Section - Touch Friendly */}
-          <section className="px-2 sm:px-4">
+         <section id="merchandise" className="px-2 sm:px-4">
             <MerchandiseStore />
           </section>
 
           {/* Cyber Chest Section - Standalone Transparent */}
-          <section className="px-2 sm:px-4">
+         <section id="cyber-chest" className="px-2 sm:px-4">
             <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-cyan/30 rounded-xl p-6">
               <CyberChestPicker />
             </div>
           </section>
 
           {/* Cyber Slots Section - Standalone Transparent */}
-          <section className="px-2 sm:px-4">
+         <section id="cyber-slots" className="px-2 sm:px-4">
             <div className="arcade-frame bg-black/30 backdrop-blur-md border border-neon-purple/30 rounded-xl p-6">
               <CyberSlotsMachine onWin={(rarity, tokens) => {
                 console.log(`Won ${tokens} CCC and ${rarity} chest!`);
@@ -201,7 +201,7 @@ const Index = () => {
           </section>
 
           {/* Raffles Section - Mobile Friendly */}
-          <section className="px-2 sm:px-4">
+         <section id="raffle" className="px-2 sm:px-4">
             <RaffleSection />
           </section>
 
