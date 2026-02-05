@@ -1,37 +1,37 @@
 // Stellar Network Configuration
-// Currently on TESTNET - Mainnet coming soon!
+// LIVE ON MAINNET
 
 export const STELLAR_NETWORK = {
   // Set to true for mainnet, false for testnet
-  isMainnet: false,
+  isMainnet: true,
   
   // Network identifiers
-  networkPassphrase: 'Test SDF Network ; September 2015',
+  networkPassphrase: 'Public Global Stellar Network ; September 2015',
   
   // Horizon API endpoints
-  horizonUrl: 'https://horizon-testnet.stellar.org',
+  horizonUrl: 'https://horizon.stellar.org',
   
   // Soroban RPC endpoint
-  sorobanRpcUrl: 'https://soroban-testnet.stellar.org',
+  sorobanRpcUrl: 'https://soroban.stellar.org',
   
   // Display name
-  networkName: 'Testnet',
+  networkName: 'Mainnet',
   
   // Explorer URLs
-  explorerUrl: 'https://stellar.expert/explorer/testnet',
+  explorerUrl: 'https://stellar.expert/explorer/public',
   
-  // Asset configurations for Testnet
+  // Asset configurations for Mainnet
   assets: {
     USDC: {
       code: 'USDC',
-      // Testnet USDC issuer (Circle's testnet issuer)
-      issuer: 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+      // Circle's official USDC issuer on Stellar Mainnet
+      issuer: 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
       decimals: 7,
     },
     PYUSD: {
       code: 'PYUSD',
-      // Testnet PYUSD placeholder
-      issuer: 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+      // PayPal's official PYUSD issuer on Stellar Mainnet
+      issuer: 'GDGTVWSM4MGS4T7Z6W4RPWOCHE2I6RDFCIFZGS3DOA63LWQTRNZNTTFF',
       decimals: 7,
     },
   },
