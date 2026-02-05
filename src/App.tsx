@@ -20,6 +20,7 @@ import CyberSlotsPage from "./pages/CyberSlotsPage";
 import CyberChestPage from "./pages/CyberChestPage";
 import StorePage from "./pages/StorePage";
 import TournamentsPage from "./pages/TournamentsPage";
+import RafflesPage from "./pages/RafflesPage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/cyber-chest" element={<CyberChestPage />} />
                 <Route path="/store" element={<StorePage />} />
                 <Route path="/tournaments" element={<TournamentsPage />} />
+                <Route path="/raffles" element={<RafflesPage />} />
                 <Route path="/success" element={<Success />} />
                 <Route path="/cancel" element={<Cancel />} />
                 <Route path="*" element={<NotFound />} />
