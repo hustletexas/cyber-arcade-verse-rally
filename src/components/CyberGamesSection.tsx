@@ -54,9 +54,10 @@ const GameCard: React.FC<GameCardProps> = ({
 };
 export const CyberGamesSection: React.FC = () => {
   const navigate = useNavigate();
-  return <div className="space-y-6">
+  return <Card className="arcade-frame">
+      <CardContent className="p-6 space-y-6">
       {/* Section Banner */}
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
         <img 
           src="/images/games/arcade-games-banner.png" 
           alt="Cyber City Arcade Games" 
@@ -65,7 +66,7 @@ export const CyberGamesSection: React.FC = () => {
       </div>
 
       {/* Games Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Cyber Match - Image Card */}
         <Card 
           className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30"
@@ -145,6 +146,7 @@ export const CyberGamesSection: React.FC = () => {
           <span>Earn Tickets & Rewards</span>
         </div>
       </div>
-    </div>;
+      </CardContent>
+    </Card>;
 };
 export default CyberGamesSection;
