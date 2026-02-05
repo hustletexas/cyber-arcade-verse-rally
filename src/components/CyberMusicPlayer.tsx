@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 import { useAchievements } from '@/hooks/useAchievements';
-import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Move, List, X } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, List, X, Minimize2, Maximize2 } from 'lucide-react';
 import { Track, Playlist } from '@/types/music';
 import { cyberDreamsPlaylist } from '@/data/musicPlaylist';
 import { TrackActions } from '@/components/music/TrackActions';
@@ -19,6 +19,7 @@ export const CyberMusicPlayer = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [playlist] = useState<Playlist>(cyberDreamsPlaylist);
   const [tracks, setTracks] = useState<Track[]>(cyberDreamsPlaylist.tracks);
@@ -255,32 +256,119 @@ export const CyberMusicPlayer = () => {
       <CardContent className="p-4 relative">
         <FloatingNotes />
 
-        {/* Header with Title and Playlist Toggle */}
+        {/* Header with Title, Minimize and Playlist Toggle */}
         <div className="flex items-center justify-between mb-4">
           <h2 
-            className="text-xl font-bold text-neon-pink"
+            className={`font-bold text-neon-pink transition-all duration-300 ${isMinimized ? 'text-sm' : 'text-xl'}`}
             style={{
               fontFamily: 'Orbitron, monospace',
               textShadow: '0 0 10px #ff00ff, 0 0 20px #ff00ff',
               filter: 'drop-shadow(0 0 8px #ff00ff)'
             }}
           >
-            🎶 CYBER CITY RADIO
+            🎶 {isMinimized ? 'RADIO' : 'CYBER CITY RADIO'}
           </h2>
           
-          <Button
-            onClick={() => setShowPlaylist(!showPlaylist)}
-            size="sm"
-            variant="ghost"
-            className={`h-8 w-8 p-0 transition-all duration-300 ${
-              showPlaylist 
-                ? 'text-neon-pink bg-neon-pink/20' 
-                : 'text-neon-cyan hover:text-neon-pink'
-            }`}
-          >
-            {showPlaylist ? <X size={16} /> : <List size={16} />}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              onClick={() => setIsMinimized(!isMinimized)}
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 text-neon-cyan hover:text-neon-pink hover:bg-neon-pink/10 transition-all duration-300"
+              title={isMinimized ? 'Expand player' : 'Minimize player'}
+            >
+              {isMinimized ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+            </Button>
+            
+            {!isMinimized && (
+              <Button
+                onClick={() => setShowPlaylist(!showPlaylist)}
+                size="sm"
+                variant="ghost"
+                className={`h-8 w-8 p-0 transition-all duration-300 ${
+                  showPlaylist 
+                    ? 'text-neon-pink bg-neon-pink/20' 
+                    : 'text-neon-cyan hover:text-neon-pink'
+                }`}
+              >
+                {showPlaylist ? <X size={16} /> : <List size={16} />}
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Minimized View */}
+        {isMinimized ? (
+          <div className="flex items-center gap-3">
+            {/* Mini Track Artwork */}
+            <img 
+              src={track.artwork || '/lovable-uploads/cyber-dreams-1.png'} 
+              alt={`${track.title} artwork`}
+              className="w-10 h-10 rounded-lg object-cover border border-neon-cyan/50"
+            />
+            
+            {/* Track Info */}
+            <div className="flex-1 min-w-0">
+              <p className="text-neon-cyan font-bold text-xs truncate">{track.title}</p>
+              <p className="text-neon-purple text-xs truncate">{track.artist}</p>
+            </div>
+            
+            {/* Mini Controls */}
+            <div className="flex items-center gap-1">
+              <Button
+                onClick={handlePrevious}
+                size="sm"
+                className="h-8 w-8 p-0"
+                style={{
+                  background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                  border: '1px solid #00ffcc',
+                  borderRadius: '6px',
+                }}
+              >
+                <SkipBack size={12} />
+              </Button>
+              
+              <Button
+                onClick={handlePlayPause}
+                size="sm"
+                className="h-8 w-8 p-0"
+                style={{
+                  background: isPlaying 
+                    ? 'linear-gradient(45deg, #ff00ff, #aa0088)' 
+                    : 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                  border: `1px solid ${isPlaying ? '#ff00ff' : '#00ffcc'}`,
+                  borderRadius: '6px',
+                }}
+              >
+                {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+              </Button>
+              
+              <Button
+                onClick={handleNext}
+                size="sm"
+                className="h-8 w-8 p-0"
+                style={{
+                  background: 'linear-gradient(45deg, #00ffcc, #0088aa)',
+                  border: '1px solid #00ffcc',
+                  borderRadius: '6px',
+                }}
+              >
+                <SkipForward size={12} />
+              </Button>
+            </div>
+            
+            {/* Mini Volume */}
+            <Button
+              onClick={() => setIsMuted(!isMuted)}
+              size="sm"
+              variant="ghost"
+              className="text-neon-cyan hover:text-neon-pink p-1 h-8 w-8"
+            >
+              {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            </Button>
+          </div>
+        ) : (
+          <>
 
         {/* Track Info */}
         <div 
@@ -448,6 +536,8 @@ export const CyberMusicPlayer = () => {
             onTrackSelect={handleTrackSelect}
             onPlayPause={handlePlayPause}
           />
+        )}
+        </>
         )}
 
         {/* Hidden Audio Element */}
