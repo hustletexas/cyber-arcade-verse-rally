@@ -146,10 +146,7 @@ const CyberMatch: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <CyberMatchPlayerStats />
                 <div ref={leaderboardRef}>
-                  <CyberMatchLeaderboard
-                    todayLeaderboard={todayLeaderboard}
-                    allTimeLeaderboard={allTimeLeaderboard}
-                  />
+                  <CyberMatchLeaderboard />
                 </div>
               </div>
             </motion.div>
