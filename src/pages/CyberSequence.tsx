@@ -133,7 +133,7 @@ const CyberSequence: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto p-4 md:p-8">
+      <div className="relative z-10 w-full px-4 md:px-8 py-4 md:py-8">
         {phase === 'menu' && (
           <>
             <CyberSequenceModeSelect
