@@ -23,14 +23,14 @@ export const CyberMatchGrid: React.FC<CyberMatchGridProps> = ({
   return (
     <div 
       className={cn(
-        "w-full max-w-[800px] mx-auto p-4 sm:p-6 transition-transform duration-75",
+        "w-full p-4 sm:p-6 transition-transform duration-75",
         screenShake && "animate-shake"
       )}
     >
       <div 
         className="grid gap-3 sm:gap-4 md:gap-5"
         style={{
-          gridTemplateColumns: `repeat(${config.columns}, minmax(80px, 120px))`,
+          gridTemplateColumns: `repeat(${config.columns}, minmax(100px, 160px))`,
           justifyContent: 'center',
         }}
       >
