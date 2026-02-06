@@ -137,7 +137,7 @@ export const CyberMatchGame: React.FC = () => {
 
               {/* Stats & Leaderboard Preview */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-6">
-                <CyberMatchPlayerStats stats={playerStats} />
+                <CyberMatchPlayerStats />
                 <div ref={leaderboardRef}>
                   <CyberMatchLeaderboard todayLeaderboard={todayLeaderboard} allTimeLeaderboard={allTimeLeaderboard} />
                 </div>
