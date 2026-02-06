@@ -63,8 +63,8 @@ const TermsOfService = () => {
                 acknowledge and accept these risks when using our Platform.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">4.2 CCTR Tokens:</strong> CCTR tokens are utility tokens for use within the 
-                Platform ecosystem. They are not securities, investments, or currency. CCTR tokens have no guaranteed value 
+                <strong className="text-neon-cyan">4.2 CCC Tokens:</strong> CCC tokens are utility tokens for use within the 
+                Platform ecosystem. They are not securities, investments, or currency. CCC tokens have no guaranteed value 
                 outside the Platform.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-3">

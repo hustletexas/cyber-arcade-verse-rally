@@ -22,8 +22,8 @@ export const TokenMetadataGenerator = () => {
   
   const [metadata, setMetadata] = useState<TokenMetadataJSON>({
     name: 'Cyber City Token',
-    symbol: 'CCTR',
-    description: 'The official CCTR utility token for the Cyber City gaming ecosystem. Use CCTR to participate in tournaments, purchase in-game items, and earn rewards.',
+    symbol: 'CCC',
+    description: 'The official CCC utility token for the Cyber City gaming ecosystem. Use CCC to participate in tournaments, purchase in-game items, and earn rewards.',
     image: '',
     external_url: '',
     attributes: [],
@@ -111,7 +111,7 @@ export const TokenMetadataGenerator = () => {
               value={metadata.symbol}
               onChange={(e) => setMetadata({ ...metadata, symbol: e.target.value })}
               className="bg-background/50"
-              placeholder="CCTR"
+              placeholder="CCC"
             />
           </div>
         </div>

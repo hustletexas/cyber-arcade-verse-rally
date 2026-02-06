@@ -42,21 +42,21 @@ export const CyberMatchGame: React.FC = () => {
     isWalletConnected
   } = useMultiWallet();
   const {
-    getCCTRBalance
+    getCCCBalance
   } = useSorobanContracts();
-  const [walletCctrBalance, setWalletCctrBalance] = React.useState<string>('0.00');
+  const [walletCccBalance, setWalletCccBalance] = React.useState<string>('0.00');
   const leaderboardRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const loadBalance = async () => {
       if (isWalletConnected && primaryWallet?.address) {
-        const balance = await getCCTRBalance(primaryWallet.address);
+        const balance = await getCCCBalance(primaryWallet.address);
         if (balance) {
-          setWalletCctrBalance(balance.formatted);
+          setWalletCccBalance(balance.formatted);
         }
       }
     };
     loadBalance();
-  }, [isWalletConnected, primaryWallet?.address, getCCTRBalance]);
+  }, [isWalletConnected, primaryWallet?.address, getCCCBalance]);
   const scrollToLeaderboard = () => {
     setShowEndModal(false);
     setTimeout(() => {
@@ -80,8 +80,8 @@ export const CyberMatchGame: React.FC = () => {
             
             {isWalletConnected && primaryWallet ? <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-400">CCTR:</span>
-                  <span className="text-sm font-bold text-yellow-400">{walletCctrBalance}</span>
+                  <span className="text-xs text-muted-foreground">CCC:</span>
+                  <span className="text-sm font-bold text-accent">{walletCccBalance}</span>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30">
                   <Wallet className="w-3 h-3 text-neon-cyan" />

@@ -18,7 +18,7 @@ import { useMultiWallet } from './useMultiWallet';
 import { toast } from 'sonner';
 import type {
   NodeTier,
-  CCTRBalance,
+  CCCBalance,
   NodeInfo,
   PoolInfo,
   TournamentInfo,
@@ -38,7 +38,7 @@ import type {
 
 // Contract addresses - these should be updated after deployment
 const CONTRACT_ADDRESSES = {
-  cctrToken: import.meta.env.VITE_CCTR_TOKEN_CONTRACT || '',
+  cccToken: import.meta.env.VITE_CCC_TOKEN_CONTRACT || '',
   nodeSystem: import.meta.env.VITE_NODE_SYSTEM_CONTRACT || '',
   liquidityPool: import.meta.env.VITE_LIQUIDITY_POOL_CONTRACT || '',
   tournamentRaffle: import.meta.env.VITE_TOURNAMENT_RAFFLE_CONTRACT || '',
@@ -264,10 +264,10 @@ export const useSorobanContracts = () => {
   }, [getStellarAddress, getConnectedWalletType, buildContractTransaction, signWithFreighter, signWithLobstr, submitTransaction]);
 
   // ============================================
-  // CCTR TOKEN METHODS
+  // CCC TOKEN METHODS
   // ============================================
 
-  const getCCTRBalance = useCallback(async (address?: string): Promise<CCTRBalance | null> => {
+  const getCCCBalance = useCallback(async (address?: string): Promise<CCCBalance | null> => {
     setIsLoading(true);
     setError(null);
     try {
@@ -276,7 +276,7 @@ export const useSorobanContracts = () => {
         throw new Error('No address provided');
       }
 
-      if (!CONTRACT_ADDRESSES.cctrToken) {
+      if (!CONTRACT_ADDRESSES.cccToken) {
         // Return mock data if contract not deployed
         return {
           balance: BigInt(1000_0000000),
@@ -285,7 +285,7 @@ export const useSorobanContracts = () => {
       }
 
       const balance = await invokeContractRead(
-        CONTRACT_ADDRESSES.cctrToken,
+        CONTRACT_ADDRESSES.cccToken,
         'balance',
         [nativeToScVal(targetAddress, { type: 'address' })]
       ) as bigint | null;
@@ -299,7 +299,7 @@ export const useSorobanContracts = () => {
         formatted: formattedBalance,
       };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get CCTR balance';
+      const message = err instanceof Error ? err.message : 'Failed to get CCC balance';
       setError(message);
       return null;
     } finally {
@@ -307,7 +307,7 @@ export const useSorobanContracts = () => {
     }
   }, [getStellarAddress, invokeContractRead]);
 
-  const transferCCTR = useCallback(async (
+  const transferCCC = useCallback(async (
     to: string,
     amount: bigint
   ): Promise<string | null> => {
@@ -320,7 +320,7 @@ export const useSorobanContracts = () => {
       }
 
       const txHash = await signAndSubmitTransaction(
-        CONTRACT_ADDRESSES.cctrToken,
+        CONTRACT_ADDRESSES.cccToken,
         'transfer',
         [
           nativeToScVal(from, { type: 'address' }),
@@ -329,10 +329,10 @@ export const useSorobanContracts = () => {
         ]
       );
 
-      toast.success('CCTR transferred successfully');
+      toast.success('CCC transferred successfully');
       return txHash;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to transfer CCTR';
+      const message = err instanceof Error ? err.message : 'Failed to transfer CCC';
       setError(message);
       toast.error(message);
       return null;
@@ -341,7 +341,7 @@ export const useSorobanContracts = () => {
     }
   }, [getStellarAddress, signAndSubmitTransaction]);
 
-  const approveCCTR = useCallback(async (
+  const approveCCC = useCallback(async (
     spender: string,
     amount: bigint,
     expirationLedger: number
@@ -355,7 +355,7 @@ export const useSorobanContracts = () => {
       }
 
       const txHash = await signAndSubmitTransaction(
-        CONTRACT_ADDRESSES.cctrToken,
+        CONTRACT_ADDRESSES.cccToken,
         'approve',
         [
           nativeToScVal(from, { type: 'address' }),
@@ -365,10 +365,10 @@ export const useSorobanContracts = () => {
         ]
       );
 
-      toast.success('CCTR approval granted');
+      toast.success('CCC approval granted');
       return txHash;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to approve CCTR';
+      const message = err instanceof Error ? err.message : 'Failed to approve CCC';
       setError(message);
       toast.error(message);
       return null;
@@ -1046,7 +1046,7 @@ export const useSorobanContracts = () => {
           nativeToScVal(isSoulbound, { type: 'bool' }),
           nativeToScVal(expiresAt, { type: 'u64' }),
           nativeToScVal(metadataUri, { type: 'string' }),
-          nativeToScVal(CONTRACT_ADDRESSES.cctrToken, { type: 'address' }),
+          nativeToScVal(CONTRACT_ADDRESSES.cccToken, { type: 'address' }),
         ]
       );
 
@@ -1450,10 +1450,10 @@ export const useSorobanContracts = () => {
     contractAddresses: CONTRACT_ADDRESSES,
     stellarAddress: getStellarAddress(),
 
-    // CCTR Token
-    getCCTRBalance,
-    transferCCTR,
-    approveCCTR,
+    // CCC Token
+    getCCCBalance,
+    transferCCC,
+    approveCCC,
 
     // Node System
     purchaseNode,

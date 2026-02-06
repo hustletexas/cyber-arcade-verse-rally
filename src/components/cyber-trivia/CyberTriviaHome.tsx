@@ -94,7 +94,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                       <span className="font-bold">FREE</span>
                     </Button>
                     <Button onClick={() => handleCategorySelect('Gaming', 'prize')} disabled={loading} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5">
-                      🏆 WIN CCTR
+                      🏆 WIN CCC
                     </Button>
                   </div>
                 </div>
@@ -126,7 +126,7 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                       <span className="font-bold">FREE</span>
                     </Button>
                     <Button onClick={() => handleCategorySelect('Entertainment', 'prize')} disabled={loading} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5">
-                      🏆 WIN CCTR
+                      🏆 WIN CCC
                     </Button>
                   </div>
                 </div>

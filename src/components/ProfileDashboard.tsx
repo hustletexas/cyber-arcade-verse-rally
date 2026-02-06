@@ -99,7 +99,7 @@ export const ProfileDashboard = () => {
     },
     { 
       name: 'Token Collector', 
-      description: 'Accumulate 1,000 CCTR', 
+      description: 'Accumulate 1,000 CCC', 
       earned: balance.cctr_balance >= 1000 
     },
     { 
@@ -109,12 +109,12 @@ export const ProfileDashboard = () => {
     },
     {
       name: 'Wallet Connected',
-      description: 'Connect a Solana wallet',
+      description: 'Connect a Stellar wallet',
       earned: isWalletConnected
     },
     {
       name: 'High Roller',
-      description: 'Accumulate 10,000 CCTR',
+      description: 'Accumulate 10,000 CCC',
       earned: balance.cctr_balance >= 10000
     },
     {
@@ -228,7 +228,7 @@ export const ProfileDashboard = () => {
               <div className="text-3xl font-black text-neon-green">
                 {balance.cctr_balance.toLocaleString()}
               </div>
-              <p className="text-sm text-muted-foreground">$CCTR Balance</p>
+              <p className="text-sm text-muted-foreground">CCC Balance</p>
               {balance.claimable_rewards > 0 && (
                 <Badge className="bg-neon-pink text-black mt-1">
                   {balance.claimable_rewards} Claimable
@@ -439,7 +439,7 @@ export const ProfileDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Balance Changes</p>
-                  <p className="text-sm text-muted-foreground">Get notified of CCTR balance updates</p>
+                  <p className="text-sm text-muted-foreground">Get notified of CCC balance updates</p>
                 </div>
                 <Switch
                   checked={notificationSettings.balanceChanges}
@@ -483,7 +483,7 @@ export const ProfileDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Show Balance</p>
-                  <p className="text-sm text-muted-foreground">Display your CCTR balance publicly</p>
+                  <p className="text-sm text-muted-foreground">Display your CCC balance publicly</p>
                 </div>
                 <Switch
                   checked={privacySettings.showBalance}
@@ -638,7 +638,7 @@ export const ProfileDashboard = () => {
                         </p>
                       </div>
                       <div className={`font-bold ${activity.amount > 0 ? 'text-neon-green' : 'text-neon-pink'}`}>
-                        {activity.amount > 0 ? '+' : ''}{activity.amount} $CCTR
+                        {activity.amount > 0 ? '+' : ''}{activity.amount} CCC
                       </div>
                     </div>
                   ))}
