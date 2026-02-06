@@ -21,15 +21,6 @@ const CyberTrivia = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-gray-400 hover:text-white hover:bg-white/10"
-          >
-            <Home className="w-4 h-4 mr-2" />
-            Home
-          </Button>
         </div>
       </div>
 
