@@ -7,6 +7,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { CartProvider } from "./contexts/CartContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
+import { ScrollToTop } from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound";
 import TokenCreator from "./pages/TokenCreator";
 import TermsOfService from "./pages/TermsOfService";
@@ -33,6 +34,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/token-creator" element={<TokenCreator />} />
