@@ -121,32 +121,5 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
           </p>
         </div>}
 
-      {/* How to play */}
-      <div className="mt-8 sequence-glass-panel p-6">
-        <h3 className="text-lg font-bold text-white mb-4">How to Play</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">👁️</span>
-            <div>
-              <p className="font-medium text-white">Watch</p>
-              <p>Observe the sequence of lit buttons</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">🧠</span>
-            <div>
-              <p className="font-medium text-white">Remember</p>
-              <p>Memorize the order of colors</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">🎮</span>
-            <div>
-              <p className="font-medium text-white">Repeat</p>
-              <p>Tap buttons in the same order</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>;
 };
