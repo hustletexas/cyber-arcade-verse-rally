@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useCyberSequence } from '@/hooks/useCyberSequence';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
@@ -116,20 +116,11 @@ const CyberSequence: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/')}
             className="text-neon-cyan hover:text-neon-cyan/80 hover:bg-neon-cyan/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-gray-400 hover:text-white hover:bg-white/10"
-          >
-            <Home className="w-4 h-4 mr-2" />
-            Home
           </Button>
         </div>
       </div>
