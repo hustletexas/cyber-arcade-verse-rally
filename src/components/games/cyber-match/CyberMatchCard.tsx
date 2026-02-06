@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CARD_ICONS, SPRITE_CONFIG } from '@/types/cyber-match';
 import { cn } from '@/lib/utils';
+import cardBackImage from '@/assets/cyber-match-card-back.png';
 
 interface CyberMatchCardProps {
   card: Card;
@@ -40,40 +41,22 @@ export const CyberMatchCard: React.FC<CyberMatchCardProps> = ({
           transform: card.isFlipped || card.isMatched ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* Card Back (face down) */}
+        {/* Card Back (face down) - Cyber City Arcade Image */}
         <div
           className={cn(
-            "absolute inset-0 w-full h-full rounded-xl flex items-center justify-center",
-            "bg-gradient-to-br from-[#0a0a1a] via-[#1a0a25] to-[#0a1a2a]",
+            "absolute inset-0 w-full h-full rounded-xl overflow-hidden",
             "border-2 transition-all duration-300",
-            !card.isMatched && "border-neon-cyan/40 shadow-[0_0_20px_rgba(6,182,212,0.25),inset_0_0_15px_rgba(6,182,212,0.1)]",
-            !card.isMatched && "hover:border-neon-pink/60 hover:shadow-[0_0_30px_rgba(236,72,153,0.4),inset_0_0_20px_rgba(236,72,153,0.15)]",
+            !card.isMatched && "border-neon-cyan/40 shadow-[0_0_20px_rgba(6,182,212,0.25)]",
+            !card.isMatched && "hover:border-neon-pink/60 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)]",
             "hover:scale-105"
           )}
           style={{ backfaceVisibility: 'hidden' }}
         >
-          {/* Cyber grid pattern */}
-          <div 
-            className="absolute inset-0 opacity-20 rounded-xl"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(6, 182, 212, 0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(236, 72, 153, 0.2) 1px, transparent 1px)
-              `,
-              backgroundSize: '8px 8px',
-            }}
+          <img 
+            src={cardBackImage} 
+            alt="Card Back" 
+            className="w-full h-full object-cover"
           />
-          
-          {/* Question mark */}
-          <div className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-br from-neon-cyan via-neon-pink to-neon-purple bg-clip-text text-transparent animate-pulse">
-            ?
-          </div>
-          
-          {/* Corner accents */}
-          <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-neon-cyan/60 rounded-tl" />
-          <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-neon-cyan/60 rounded-tr" />
-          <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-neon-pink/60 rounded-bl" />
-          <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-neon-pink/60 rounded-br" />
         </div>
 
         {/* Card Front (face up) - NFT Image */}
