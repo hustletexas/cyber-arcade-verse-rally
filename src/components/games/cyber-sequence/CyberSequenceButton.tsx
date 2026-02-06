@@ -49,10 +49,18 @@ export const CyberSequenceButton: React.FC<CyberSequenceButtonProps> = ({
         isActive && 'sequence-button--active',
         isCorrect && 'sequence-button--correct',
         showBurst && 'burst',
+        showRipple && 'lightning-strike',
         disabled && 'opacity-60 cursor-not-allowed'
       )}
       aria-label={`${BUTTON_CONFIG[color].label} button`}
     >
+      {/* Lightning bolt overlays */}
+      <div className="lightning-container">
+        <div className="lightning-bolt lightning-bolt-1" />
+        <div className="lightning-bolt lightning-bolt-2" />
+        <div className="lightning-bolt lightning-bolt-3" />
+      </div>
+
       {/* Particle burst effect */}
       <span className="fx">
         <span className="p"></span><span className="p"></span><span className="p"></span>
@@ -62,15 +70,15 @@ export const CyberSequenceButton: React.FC<CyberSequenceButtonProps> = ({
         <span className="spark"></span><span className="spark"></span><span className="spark"></span>
       </span>
 
-      {/* Inner glow effect */}
-      <div className="absolute inset-4 rounded-lg bg-white/10 backdrop-blur-sm" />
+      {/* Neon glow core */}
+      <div className="absolute inset-2 rounded-lg neon-core" />
       
       {/* Center highlight */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div 
           className={cn(
-            'w-8 h-8 rounded-full transition-all duration-200',
-            isActive ? 'bg-white/40 scale-150' : 'bg-white/10'
+            'w-10 h-10 rounded-full transition-all duration-200 neon-center',
+            isActive ? 'bg-white/60 scale-150 shadow-[0_0_30px_rgba(255,255,255,0.8)]' : 'bg-white/20'
           )} 
         />
       </div>
