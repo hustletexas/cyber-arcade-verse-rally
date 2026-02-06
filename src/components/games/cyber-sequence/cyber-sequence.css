@@ -53,12 +53,12 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Button grid container */
+/* Button grid container - 8 tiles in 4x2 grid */
 .sequence-button-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  max-width: 320px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 500px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -66,8 +66,8 @@
 /* Arcade button base */
 .sequence-button {
   aspect-ratio: 1;
-  min-height: 120px;
-  border-radius: 16px;
+  min-height: 80px;
+  border-radius: 12px;
   position: relative;
   cursor: pointer;
   transition: transform 0.1s ease, box-shadow 0.2s ease;
@@ -148,6 +148,63 @@
     inset 0 -4px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* New button colors for 8-tile grid */
+.sequence-button--orange {
+  background: linear-gradient(
+    145deg,
+    rgba(249, 115, 22, 0.4) 0%,
+    rgba(220, 100, 20, 0.2) 50%,
+    rgba(190, 85, 18, 0.3) 100%
+  );
+  border: 2px solid rgba(249, 115, 22, 0.5);
+  box-shadow: 
+    0 4px 20px rgba(249, 115, 22, 0.3),
+    inset 0 2px 10px rgba(249, 115, 22, 0.2),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sequence-button--pink {
+  background: linear-gradient(
+    145deg,
+    rgba(236, 72, 153, 0.4) 0%,
+    rgba(210, 60, 135, 0.2) 50%,
+    rgba(185, 50, 120, 0.3) 100%
+  );
+  border: 2px solid rgba(236, 72, 153, 0.5);
+  box-shadow: 
+    0 4px 20px rgba(236, 72, 153, 0.3),
+    inset 0 2px 10px rgba(236, 72, 153, 0.2),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sequence-button--yellow {
+  background: linear-gradient(
+    145deg,
+    rgba(234, 179, 8, 0.4) 0%,
+    rgba(200, 150, 8, 0.2) 50%,
+    rgba(170, 130, 8, 0.3) 100%
+  );
+  border: 2px solid rgba(234, 179, 8, 0.5);
+  box-shadow: 
+    0 4px 20px rgba(234, 179, 8, 0.3),
+    inset 0 2px 10px rgba(234, 179, 8, 0.2),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sequence-button--blue {
+  background: linear-gradient(
+    145deg,
+    rgba(59, 130, 246, 0.4) 0%,
+    rgba(50, 110, 210, 0.2) 50%,
+    rgba(42, 95, 180, 0.3) 100%
+  );
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  box-shadow: 
+    0 4px 20px rgba(59, 130, 246, 0.3),
+    inset 0 2px 10px rgba(59, 130, 246, 0.2),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
 /* Active/lit state */
 .sequence-button--active {
   transform: scale(1.05);
@@ -202,6 +259,58 @@
   box-shadow: 
     0 0 40px rgba(239, 68, 68, 0.8),
     0 0 80px rgba(239, 68, 68, 0.4),
+    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+}
+
+.sequence-button--active.sequence-button--orange {
+  background: linear-gradient(
+    145deg,
+    rgba(249, 115, 22, 0.9) 0%,
+    rgba(230, 100, 20, 0.7) 50%,
+    rgba(210, 85, 18, 0.8) 100%
+  );
+  box-shadow: 
+    0 0 40px rgba(249, 115, 22, 0.8),
+    0 0 80px rgba(249, 115, 22, 0.4),
+    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+}
+
+.sequence-button--active.sequence-button--pink {
+  background: linear-gradient(
+    145deg,
+    rgba(236, 72, 153, 0.9) 0%,
+    rgba(215, 65, 140, 0.7) 50%,
+    rgba(195, 55, 125, 0.8) 100%
+  );
+  box-shadow: 
+    0 0 40px rgba(236, 72, 153, 0.8),
+    0 0 80px rgba(236, 72, 153, 0.4),
+    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+}
+
+.sequence-button--active.sequence-button--yellow {
+  background: linear-gradient(
+    145deg,
+    rgba(234, 179, 8, 0.9) 0%,
+    rgba(215, 165, 8, 0.7) 50%,
+    rgba(195, 150, 8, 0.8) 100%
+  );
+  box-shadow: 
+    0 0 40px rgba(234, 179, 8, 0.8),
+    0 0 80px rgba(234, 179, 8, 0.4),
+    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+}
+
+.sequence-button--active.sequence-button--blue {
+  background: linear-gradient(
+    145deg,
+    rgba(59, 130, 246, 0.9) 0%,
+    rgba(52, 120, 225, 0.7) 50%,
+    rgba(45, 105, 200, 0.8) 100%
+  );
+  box-shadow: 
+    0 0 40px rgba(59, 130, 246, 0.8),
+    0 0 80px rgba(59, 130, 246, 0.4),
     inset 0 2px 20px rgba(255, 255, 255, 0.4);
 }
 
@@ -260,6 +369,10 @@
 .sequence-button--purple { --c: #9333ea; }
 .sequence-button--green { --c: #22c55e; }
 .sequence-button--red { --c: #ef4444; }
+.sequence-button--orange { --c: #f97316; }
+.sequence-button--pink { --c: #ec4899; }
+.sequence-button--yellow { --c: #eab308; }
+.sequence-button--blue { --c: #3b82f6; }
 
 /* Container for particles */
 .sequence-button .fx {
