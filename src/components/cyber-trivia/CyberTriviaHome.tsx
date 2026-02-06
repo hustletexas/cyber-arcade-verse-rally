@@ -228,29 +228,62 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
               <Card className="cyber-glass p-5">
                 <h3 className="text-lg font-bold text-neon-cyan mb-4 flex items-center gap-2">
                   <Target className="w-5 h-5" /> Your Stats
+                  {isWalletConnected && (
+                    <span className="ml-auto text-xs text-neon-green flex items-center gap-1">
+                      <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+                      Live
+                    </span>
+                  )}
                 </h3>
-                {isWalletConnected && userStats ? <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 rounded-lg bg-black/30">
-                      <div className="text-2xl font-bold text-white">{userStats.best_streak}</div>
-                      <div className="text-xs text-gray-500">Best Streak</div>
-                    </div>
-                    <div className="text-center p-3 rounded-lg bg-black/30">
-                      <div className="text-2xl font-bold text-neon-green">{userStats.accuracy.toFixed(1)}%</div>
-                      <div className="text-xs text-gray-500">Accuracy</div>
-                    </div>
-                    <div className="text-center p-3 rounded-lg bg-black/30">
-                      <div className="text-2xl font-bold text-purple-400">{userStats.total_runs}</div>
-                      <div className="text-xs text-gray-500">Total Runs</div>
-                    </div>
-                    <div className="text-center p-3 rounded-lg bg-black/30">
-                      <div className="text-2xl font-bold text-yellow-400 flex items-center justify-center gap-1">
-                        <Ticket className="w-4 h-4" /> {userStats.tickets_balance}
+                {isWalletConnected ? (
+                  userStats ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-white">{userStats.best_streak}</div>
+                        <div className="text-xs text-gray-500">Best Streak</div>
                       </div>
-                      <div className="text-xs text-gray-500">Tickets</div>
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-neon-green">{userStats.accuracy.toFixed(1)}%</div>
+                        <div className="text-xs text-gray-500">Accuracy</div>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-purple-400">{userStats.total_runs}</div>
+                        <div className="text-xs text-gray-500">Total Runs</div>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-yellow-400 flex items-center justify-center gap-1">
+                          <Ticket className="w-4 h-4" /> {userStats.tickets_balance}
+                        </div>
+                        <div className="text-xs text-gray-500">Tickets</div>
+                      </div>
                     </div>
-                  </div> : <div className="text-center py-8 text-gray-500">
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-white">0</div>
+                        <div className="text-xs text-gray-500">Best Streak</div>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-neon-green">0%</div>
+                        <div className="text-xs text-gray-500">Accuracy</div>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-purple-400">0</div>
+                        <div className="text-xs text-gray-500">Total Runs</div>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-black/30">
+                        <div className="text-2xl font-bold text-yellow-400 flex items-center justify-center gap-1">
+                          <Ticket className="w-4 h-4" /> 0
+                        </div>
+                        <div className="text-xs text-gray-500">Tickets</div>
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
                     <p>Connect wallet to track stats</p>
-                  </div>}
+                  </div>
+                )}
               </Card>
 
               {/* Daily Leaderboard Preview */}
