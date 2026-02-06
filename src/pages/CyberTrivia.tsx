@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CyberTriviaChallenge } from '@/components/cyber-trivia';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Home } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const CyberTrivia = () => {
   const navigate = useNavigate();
@@ -15,20 +15,11 @@ const CyberTrivia = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/')}
             className="text-neon-cyan hover:text-neon-cyan/80 hover:bg-neon-cyan/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-gray-400 hover:text-white hover:bg-white/10"
-          >
-            <Home className="w-4 h-4 mr-2" />
-            Home
           </Button>
         </div>
       </div>
