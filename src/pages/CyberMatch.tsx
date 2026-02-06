@@ -10,7 +10,7 @@ import {
 } from '@/components/games/cyber-match';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -75,20 +75,11 @@ const CyberMatch: React.FC = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/')}
               className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/')}
-              className="text-gray-400 hover:text-white hover:bg-white/10"
-            >
-              <Home className="w-4 h-4 mr-1" />
-              Home
             </Button>
           </div>
           <CCCBalanceBar />
