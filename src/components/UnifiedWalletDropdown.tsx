@@ -10,7 +10,7 @@ import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useWalletBalances, formatBalance, StellarAsset } from '@/hooks/useWalletBalances';
 import { useTransactionHistory, formatTxHash, getExplorerUrl, Transaction } from '@/hooks/useTransactionHistory';
-import { Wallet, LogOut, ChevronDown, ArrowUpRight, ArrowDownLeft, CreditCard, Copy, Settings, QrCode, Gift, Headphones, User, Sparkles, ExternalLink, ArrowLeftRight, RefreshCw, Loader2, Clock, CheckCircle2, XCircle, History } from 'lucide-react';
+import { Wallet, LogOut, ChevronDown, ChevronUp, ArrowUpRight, ArrowDownLeft, CreditCard, Copy, Settings, QrCode, Gift, Headphones, User, Sparkles, ExternalLink, ArrowLeftRight, RefreshCw, Loader2, Clock, CheckCircle2, XCircle, History } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { WalletConnectionModal } from './WalletConnectionModal';
@@ -66,6 +66,7 @@ export const UnifiedWalletDropdown = () => {
   const [sendAmount, setSendAmount] = useState('');
   const [sendAddress, setSendAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+  const [tokensMinimized, setTokensMinimized] = useState(false);
   const handleSignOut = async () => {
     try {
       if (isWalletConnected) {
@@ -257,17 +258,29 @@ export const UnifiedWalletDropdown = () => {
                 const stellarAssets = getStellarAssets(primaryWallet.address);
                 if (stellarAssets.length > 0) {
                   return <div className="pt-3 border-t border-neon-cyan/10">
-                        <p className="text-xs text-muted-foreground mb-2">Stellar Tokens</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {stellarAssets.map((asset, idx) => <div key={`${asset.code}-${asset.issuer || 'native'}-${idx}`} className="flex items-center justify-between p-2 bg-black/30 rounded-lg border border-white/5">
-                              <span className="text-xs font-medium text-neon-cyan">
-                                {asset.code === 'XLM' ? '✦' : '◆'} {asset.code}
-                              </span>
-                              <span className="text-xs font-bold text-white">
-                                {formatBalance(asset.balance, asset.code === 'XLM' ? 2 : 4)}
-                              </span>
-                            </div>)}
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-muted-foreground">Stellar Tokens</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setTokensMinimized(!tokensMinimized)}
+                            className="h-5 w-5 p-0 text-muted-foreground hover:text-white hover:bg-white/10"
+                          >
+                            {tokensMinimized ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                          </Button>
                         </div>
+                        {!tokensMinimized && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {stellarAssets.map((asset, idx) => <div key={`${asset.code}-${asset.issuer || 'native'}-${idx}`} className="flex items-center justify-between p-2 bg-black/30 rounded-lg border border-white/5">
+                                <span className="text-xs font-medium text-neon-cyan">
+                                  {asset.code === 'XLM' ? '✦' : '◆'} {asset.code}
+                                </span>
+                                <span className="text-xs font-bold text-white">
+                                  {formatBalance(asset.balance, asset.code === 'XLM' ? 2 : 4)}
+                                </span>
+                              </div>)}
+                          </div>
+                        )}
                       </div>;
                 }
                 return null;
