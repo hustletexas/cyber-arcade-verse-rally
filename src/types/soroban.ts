@@ -150,7 +150,10 @@ export interface PayoutClaim {
 }
 
 // === Existing Types ===
-export interface CCTRBalance {
+/** @deprecated Use CCCBalance instead */
+export type CCTRBalance = CCCBalance;
+
+export interface CCCBalance {
   balance: bigint;
   formatted: string;
 }
@@ -227,7 +230,7 @@ export interface RaffleTicket {
 
 // Contract addresses configuration
 export interface SorobanContractAddresses {
-  cctrToken: string;
+  cccToken: string;
   nodeSystem: string;
   liquidityPool: string;
   tournamentRaffle: string;
@@ -258,20 +261,20 @@ export const SUPPORTED_TOKENS: Record<string, TokenAsset> = {
   },
   USDC: {
     code: 'USDC',
-    issuer: 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN', // Circle USDC on Testnet
+    issuer: 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
     decimals: 7,
     name: 'USD Coin',
   },
-  CCTR: {
-    code: 'CCTR',
+  CCC: {
+    code: 'CCC',
     issuer: '', // Will be set after deployment
     contractId: '', // Soroban contract ID
     decimals: 7,
-    name: 'Cyber City Token',
+    name: 'Cyber City Credits',
   },
   PYUSD: {
     code: 'PYUSD',
-    issuer: '', // PayPal USD issuer
+    issuer: '',
     decimals: 7,
     name: 'PayPal USD',
   },
@@ -280,20 +283,20 @@ export const SUPPORTED_TOKENS: Record<string, TokenAsset> = {
 // Node tier pricing and rewards
 export const NODE_TIERS: Record<NodeTier, NodeTierConfig> = {
   basic: {
-    price: BigInt(1_000_0000000), // 1,000 CCTR
-    dailyReward: BigInt(5_0000000), // 5 CCTR/day
+    price: BigInt(1_000_0000000), // 1,000 CCC
+    dailyReward: BigInt(5_0000000), // 5 CCC/day
     maxSupply: 5000,
     currentSupply: 0,
   },
   premium: {
-    price: BigInt(10_000_0000000), // 10,000 CCTR
-    dailyReward: BigInt(60_0000000), // 60 CCTR/day
+    price: BigInt(10_000_0000000), // 10,000 CCC
+    dailyReward: BigInt(60_0000000), // 60 CCC/day
     maxSupply: 2000,
     currentSupply: 0,
   },
   legendary: {
-    price: BigInt(100_000_0000000), // 100,000 CCTR
-    dailyReward: BigInt(700_0000000), // 700 CCTR/day
+    price: BigInt(100_000_0000000), // 100,000 CCC
+    dailyReward: BigInt(700_0000000), // 700 CCC/day
     maxSupply: 100,
     currentSupply: 0,
   },
@@ -312,9 +315,9 @@ export const POOL_PAIRS: PoolPair[] = [
   { tokenA: 'USDC', tokenB: 'XLM', name: 'USDC/XLM' },
   { tokenA: 'PYUSD', tokenB: 'XLM', name: 'PYUSD/XLM' },
   { tokenA: 'PYUSD', tokenB: 'USDC', name: 'PYUSD/USDC' },
-  { tokenA: 'XLM', tokenB: 'CCTR', name: 'XLM/CCTR' },
-  { tokenA: 'CCTR', tokenB: 'USDC', name: 'CCTR/USDC' },
-  { tokenA: 'PYUSD', tokenB: 'CCTR', name: 'PYUSD/CCTR' },
+  { tokenA: 'XLM', tokenB: 'CCC', name: 'XLM/CCC' },
+  { tokenA: 'CCC', tokenB: 'USDC', name: 'CCC/USDC' },
+  { tokenA: 'PYUSD', tokenB: 'CCC', name: 'PYUSD/CCC' },
 ];
 
 // Staking lock periods and APY
@@ -325,17 +328,23 @@ export const STAKING_PERIODS = [
 ];
 
 // Helper functions
-export const formatCCTR = (amount: bigint): string => {
+export const formatCCC = (amount: bigint): string => {
   return (Number(amount) / 10_000_000).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 };
 
-export const parseCCTR = (amount: string | number): bigint => {
+/** @deprecated Use formatCCC instead */
+export const formatCCTR = formatCCC;
+
+export const parseCCC = (amount: string | number): bigint => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
   return BigInt(Math.floor(numAmount * 10_000_000));
 };
+
+/** @deprecated Use parseCCC instead */
+export const parseCCTR = parseCCC;
 
 export const formatUSDC = (amount: bigint): string => {
   return (Number(amount) / 10_000_000).toLocaleString('en-US', {

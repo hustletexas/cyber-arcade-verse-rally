@@ -156,7 +156,7 @@ export const NeonMatchEndModal: React.FC<NeonMatchEndModalProps> = ({
 
           {!canPlayAgain && !isFreeMode && (
             <p className="text-center text-sm text-yellow-400/80">
-              Daily limit reached or insufficient CCTR. Come back tomorrow!
+              Daily limit reached or insufficient CCC. Come back tomorrow!
             </p>
           )}
         </div>

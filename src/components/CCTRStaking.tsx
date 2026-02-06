@@ -64,7 +64,7 @@ export const CCTRStaking = () => {
   const [unstakeAmount, setUnstakeAmount] = useState('');
   const [isStaking, setIsStaking] = useState(false);
   const [isUnstaking, setIsUnstaking] = useState(false);
-  const [userBalance, setUserBalance] = useState(5000); // Mock CCTR balance
+  const [userBalance, setUserBalance] = useState(5000); // Mock CCC balance
   const [totalRewards, setTotalRewards] = useState(0);
   const { toast } = useToast();
   const { isWalletConnected } = useMultiWallet();
@@ -99,7 +99,7 @@ export const CCTRStaking = () => {
     if (!isWalletConnected) {
       toast({
         title: "Wallet Not Connected",
-        description: "Please connect your Stellar wallet to stake CCTR tokens",
+        description: "Please connect your Stellar wallet to stake CCC tokens",
         variant: "destructive"
       });
       return;
@@ -117,7 +117,7 @@ export const CCTRStaking = () => {
     if (parseFloat(stakeAmount) > userBalance) {
       toast({
         title: "Insufficient Balance",
-        description: "You don't have enough CCTR tokens to stake",
+        description: "You don't have enough CCC tokens to stake",
         variant: "destructive"
       });
       return;
@@ -126,7 +126,7 @@ export const CCTRStaking = () => {
     if (currentPool && parseFloat(stakeAmount) < currentPool.minStake) {
       toast({
         title: "Minimum Stake Required",
-        description: `Minimum stake for this pool is ${currentPool.minStake} CCTR`,
+        description: `Minimum stake for this pool is ${currentPool.minStake} CCC`,
         variant: "destructive"
       });
       return;
@@ -153,7 +153,7 @@ export const CCTRStaking = () => {
 
       toast({
         title: "Staking Successful! 🎉",
-        description: `Successfully staked ${amount} CCTR tokens`,
+        description: `Successfully staked ${amount} CCC tokens`,
       });
 
     } catch (error) {
@@ -245,7 +245,7 @@ export const CCTRStaking = () => {
 
       toast({
         title: "Rewards Claimed! 🎉",
-        description: `Successfully claimed ${totalRewards.toFixed(6)} CCTR tokens`,
+        description: `Successfully claimed ${totalRewards.toFixed(6)} CCC tokens`,
       });
 
     } catch (error) {
@@ -269,7 +269,7 @@ export const CCTRStaking = () => {
       <CardHeader className="pb-4">
         <CardTitle className="font-display text-xl text-neon-green flex items-center gap-3">
           <Coins className="h-5 w-5" />
-          CCTR STAKING POOLS
+          CCC STAKING POOLS
           <Badge className="bg-neon-cyan text-black text-xs">LIVE REWARDS</Badge>
         </CardTitle>
       </CardHeader>
@@ -282,17 +282,17 @@ export const CCTRStaking = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-3 rounded-lg border border-neon-cyan/30 bg-neon-cyan/5">
             <div className="text-xs text-muted-foreground">Balance</div>
-            <div className="font-bold text-neon-cyan">{formatNumber(userBalance)} CCTR</div>
+            <div className="font-bold text-neon-cyan">{formatNumber(userBalance)} CCC</div>
           </div>
           <div className="text-center p-3 rounded-lg border border-neon-purple/30 bg-neon-purple/5">
             <div className="text-xs text-muted-foreground">Total Staked</div>
             <div className="font-bold text-neon-purple">
-              {formatNumber(pools.reduce((sum, pool) => sum + pool.userStaked, 0))} CCTR
+              {formatNumber(pools.reduce((sum, pool) => sum + pool.userStaked, 0))} CCC
             </div>
           </div>
           <div className="text-center p-3 rounded-lg border border-neon-green/30 bg-neon-green/5">
             <div className="text-xs text-muted-foreground">Pending Rewards</div>
-            <div className="font-bold text-neon-green">{totalRewards.toFixed(6)} CCTR</div>
+            <div className="font-bold text-neon-green">{totalRewards.toFixed(6)} CCC</div>
           </div>
           <div className="text-center p-3 rounded-lg border border-neon-yellow/30 bg-neon-yellow/5">
             <Button 
@@ -333,15 +333,15 @@ export const CCTRStaking = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Min Stake:</span>
-                    <span className="text-neon-yellow">{pool.minStake} CCTR</span>
+                    <span className="text-neon-yellow">{pool.minStake} CCC</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Your Stake:</span>
-                    <span className="text-neon-green">{formatNumber(pool.userStaked)} CCTR</span>
+                    <span className="text-neon-green">{formatNumber(pool.userStaked)} CCC</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Total Staked:</span>
-                    <span className="text-neon-cyan">{formatNumber(pool.totalStaked)} CCTR</span>
+                    <span className="text-neon-cyan">{formatNumber(pool.totalStaked)} CCC</span>
                   </div>
                 </div>
               </div>
@@ -356,12 +356,12 @@ export const CCTRStaking = () => {
             <div className="space-y-4">
               <h3 className="font-bold text-neon-green text-sm flex items-center gap-2">
                 <Lock className="h-4 w-4" />
-                STAKE CCTR
+                STAKE CCC
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between text-xs">
-                  <span>Available: {formatNumber(userBalance)} CCTR</span>
-                  <span>Min: {currentPool.minStake} CCTR</span>
+                  <span>Available: {formatNumber(userBalance)} CCC</span>
+                  <span>Min: {currentPool.minStake} CCC</span>
                 </div>
                 <div className="flex gap-2">
                   <Input
@@ -386,7 +386,7 @@ export const CCTRStaking = () => {
                   disabled={!stakeAmount || parseFloat(stakeAmount) <= 0 || isStaking || !isWalletConnected}
                   className="cyber-button w-full"
                 >
-                  {!isWalletConnected ? '🔗 CONNECT WALLET' : isStaking ? '⏳ STAKING...' : '🔒 STAKE CCTR'}
+                  {!isWalletConnected ? '🔗 CONNECT WALLET' : isStaking ? '⏳ STAKING...' : '🔒 STAKE CCC'}
                 </Button>
               </div>
             </div>
@@ -395,11 +395,11 @@ export const CCTRStaking = () => {
             <div className="space-y-4">
               <h3 className="font-bold text-neon-pink text-sm flex items-center gap-2">
                 <Unlock className="h-4 w-4" />
-                UNSTAKE CCTR
+                UNSTAKE CCC
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between text-xs">
-                  <span>Staked: {formatNumber(currentPool.userStaked)} CCTR</span>
+                  <span>Staked: {formatNumber(currentPool.userStaked)} CCC</span>
                   <span>Lock: {currentPool.lockPeriod} days</span>
                 </div>
                 <div className="flex gap-2">
@@ -425,7 +425,7 @@ export const CCTRStaking = () => {
                   disabled={!unstakeAmount || parseFloat(unstakeAmount) <= 0 || isUnstaking || currentPool.userStaked <= 0 || !isWalletConnected}
                   className="cyber-button w-full"
                 >
-                  {!isWalletConnected ? '🔗 CONNECT WALLET' : isUnstaking ? '⏳ UNSTAKING...' : '🔓 UNSTAKE CCTR'}
+                  {!isWalletConnected ? '🔗 CONNECT WALLET' : isUnstaking ? '⏳ UNSTAKING...' : '🔓 UNSTAKE CCC'}
                 </Button>
               </div>
             </div>
@@ -448,7 +448,7 @@ export const CCTRStaking = () => {
             <div>
               <div className="text-muted-foreground">Daily Rewards</div>
               <div className="font-bold text-neon-green">
-                {formatNumber(pools.reduce((sum, pool) => sum + (pool.totalStaked * pool.apy / 365 / 100), 0))} CCTR
+                {formatNumber(pools.reduce((sum, pool) => sum + (pool.totalStaked * pool.apy / 365 / 100), 0))} CCC
               </div>
             </div>
             <div>
