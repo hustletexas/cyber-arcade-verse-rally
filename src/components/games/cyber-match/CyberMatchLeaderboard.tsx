@@ -1,19 +1,86 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Clock, Move, Crown, Flame, Calendar } from 'lucide-react';
-import { LeaderboardEntry } from '@/types/cyber-match';
+import { Trophy, Clock, Move, Crown, Flame, Calendar, Loader2 } from 'lucide-react';
+import { LeaderboardEntry, Difficulty } from '@/types/cyber-match';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
-interface CyberMatchLeaderboardProps {
-  todayLeaderboard: LeaderboardEntry[];
-  allTimeLeaderboard: LeaderboardEntry[];
-}
+export const CyberMatchLeaderboard: React.FC = () => {
+  const [todayLeaderboard, setTodayLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-export const CyberMatchLeaderboard: React.FC<CyberMatchLeaderboardProps> = ({
-  todayLeaderboard,
-  allTimeLeaderboard,
-}) => {
+  const formatLeaderboard = (data: unknown[]): LeaderboardEntry[] => {
+    return (data || []).map((entry: any, index) => ({
+      rank: index + 1,
+      displayName: `Player #${entry.user_id?.slice(0, 6) || 'Anon'}`,
+      score: entry.score,
+      time_seconds: entry.time_seconds,
+      moves: entry.moves,
+      difficulty: 'normal' as Difficulty,
+      best_streak: 0,
+    }));
+  };
+
+  const fetchLeaderboards = useCallback(async () => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString();
+
+      const [todayResult, allTimeResult] = await Promise.all([
+        supabase
+          .from('match_scores')
+          .select('user_id, score, time_seconds, moves, created_at')
+          .gte('created_at', todayStr)
+          .order('score', { ascending: false })
+          .order('time_seconds', { ascending: true })
+          .limit(20),
+        supabase
+          .from('match_scores')
+          .select('user_id, score, time_seconds, moves, created_at')
+          .order('score', { ascending: false })
+          .order('time_seconds', { ascending: true })
+          .limit(20)
+      ]);
+
+      setTodayLeaderboard(formatLeaderboard(todayResult.data || []));
+      setAllTimeLeaderboard(formatLeaderboard(allTimeResult.data || []));
+    } catch (err) {
+      console.error('Error fetching leaderboards:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchLeaderboards();
+  }, [fetchLeaderboards]);
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('match_scores_leaderboard')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'match_scores',
+        },
+        () => {
+          fetchLeaderboards();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchLeaderboards]);
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -91,32 +158,42 @@ export const CyberMatchLeaderboard: React.FC<CyberMatchLeaderboardProps> = ({
     <Card className="cyber-glass-pink p-5">
       <h3 className="text-lg font-bold text-neon-pink mb-4 flex items-center gap-2">
         <Trophy className="w-5 h-5" /> Daily Leaderboard
+        <span className="ml-auto text-xs text-neon-green flex items-center gap-1">
+          <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+          Live
+        </span>
       </h3>
       
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-black/30 mb-4">
-          <TabsTrigger 
-            value="today"
-            className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink"
-          >
-            <Calendar className="w-4 h-4 mr-1" />
-            Today
-          </TabsTrigger>
-          <TabsTrigger 
-            value="alltime"
-            className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink"
-          >
-            <Crown className="w-4 h-4 mr-1" />
-            All Time
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="today">
-          <LeaderboardList entries={todayLeaderboard} />
-        </TabsContent>
-        <TabsContent value="alltime">
-          <LeaderboardList entries={allTimeLeaderboard} />
-        </TabsContent>
-      </Tabs>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-neon-pink" />
+        </div>
+      ) : (
+        <Tabs defaultValue="today" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-black/30 mb-4">
+            <TabsTrigger 
+              value="today"
+              className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink"
+            >
+              <Calendar className="w-4 h-4 mr-1" />
+              Today
+            </TabsTrigger>
+            <TabsTrigger 
+              value="alltime"
+              className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink"
+            >
+              <Crown className="w-4 h-4 mr-1" />
+              All Time
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="today">
+            <LeaderboardList entries={todayLeaderboard} />
+          </TabsContent>
+          <TabsContent value="alltime">
+            <LeaderboardList entries={allTimeLeaderboard} />
+          </TabsContent>
+        </Tabs>
+      )}
     </Card>
   );
 };
