@@ -25,7 +25,7 @@ export const CyberMatchCard: React.FC<CyberMatchCardProps> = ({
   return (
     <div
       className={cn(
-        "relative w-full aspect-square cursor-pointer",
+        "relative w-full aspect-[3/4] cursor-pointer",
         disabled && "pointer-events-none"
       )}
       onClick={onClick}
