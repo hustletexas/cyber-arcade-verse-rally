@@ -10,12 +10,12 @@ import {
 } from '@/components/games/cyber-match';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCcw, Wallet, Zap, Home } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { useSorobanContracts } from '@/hooks/useSorobanContracts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 
 import '@/components/games/cyber-match/cyber-match.css';
 
@@ -49,23 +49,8 @@ const CyberMatch: React.FC = () => {
     comboPulse,
   } = useCyberMatch();
 
-  const { primaryWallet, isWalletConnected } = useMultiWallet();
-  const { getCCTRBalance } = useSorobanContracts();
-  const [walletCctrBalance, setWalletCctrBalance] = React.useState<string>('0.00');
+  const { isWalletConnected } = useMultiWallet();
   const leaderboardRef = useRef<HTMLDivElement>(null);
-
-  // Load CCTR balance when wallet is connected
-  useEffect(() => {
-    const loadBalance = async () => {
-      if (isWalletConnected && primaryWallet?.address) {
-        const balance = await getCCTRBalance(primaryWallet.address);
-        if (balance) {
-          setWalletCctrBalance(balance.formatted);
-        }
-      }
-    };
-    loadBalance();
-  }, [isWalletConnected, primaryWallet?.address, getCCTRBalance]);
 
   const scrollToLeaderboard = () => {
     setShowEndModal(false);
@@ -84,58 +69,29 @@ const CyberMatch: React.FC = () => {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-4xl">
-        {/* Wallet Status Bar - Soroban Integration */}
+        {/* Navigation + CCC Balance Bar */}
         <div className="relative z-20 mb-6">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate(-1)}
-                className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10"
-              >
-                <ArrowLeft className="w-4 h-4 mr-1" />
-                Back
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate('/')}
-                className="text-gray-400 hover:text-white hover:bg-white/10"
-              >
-                <Home className="w-4 h-4 mr-1" />
-                Home
-              </Button>
-              <Badge 
-                variant="outline" 
-                className="border-neon-cyan/50 text-neon-cyan flex items-center gap-1.5 px-3 py-1"
-              >
-                <Zap className="w-3 h-3" />
-                <span className="text-xs font-medium">Stellar Powered</span>
-              </Badge>
-            </div>
-            
-            {isWalletConnected && primaryWallet ? (
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400">CCTR:</span>
-                  <span className="text-sm font-bold text-yellow-400">{walletCctrBalance}</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30">
-                  <Wallet className="w-4 h-4 text-neon-cyan" />
-                  <span className="text-sm text-neon-cyan font-mono">
-                    {primaryWallet.address.slice(0, 4)}...{primaryWallet.address.slice(-4)}
-                  </span>
-                  <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse" />
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/30">
-                <Wallet className="w-4 h-4 text-orange-400" />
-                <span className="text-sm text-orange-400">Connect Wallet to Play</span>
-              </div>
-            )}
+          <div className="flex items-center gap-3 mb-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate(-1)}
+              className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/')}
+              className="text-gray-400 hover:text-white hover:bg-white/10"
+            >
+              <Home className="w-4 h-4 mr-1" />
+              Home
+            </Button>
           </div>
+          <CCCBalanceBar />
         </div>
 
         <AnimatePresence mode="wait">
