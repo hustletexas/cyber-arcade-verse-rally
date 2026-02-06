@@ -461,13 +461,6 @@ export const UnifiedWalletDropdown = () => {
               <span className="text-sm font-medium">Account Settings</span>
             </DropdownMenuItem>
             
-            <DropdownMenuItem onClick={() => setShowWalletManager(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-purple/10 cursor-pointer transition-all hover:scale-[1.02] group">
-              <div className="w-8 h-8 rounded-lg bg-neon-purple/20 flex items-center justify-center group-hover:bg-neon-purple/30 transition-all group-hover:scale-110">
-                <Wallet size={16} className="text-neon-purple" />
-              </div>
-              <span className="text-sm font-medium">Manage Wallets</span>
-            </DropdownMenuItem>
-            
             <DropdownMenuItem onClick={handleSupport} className="flex items-center gap-3 p-3 rounded-xl hover:bg-yellow-500/10 cursor-pointer transition-all hover:scale-[1.02] group">
               <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center group-hover:bg-yellow-500/30 transition-all group-hover:scale-110">
                 <Headphones size={16} className="text-yellow-500" />
