@@ -528,13 +528,25 @@ export const UnifiedWalletDropdown = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* CCC Balance */}
-            <div className="p-4 bg-gradient-to-br from-neon-pink/20 via-neon-purple/10 to-neon-cyan/20 rounded-2xl border border-neon-pink/30 text-center">
-              <p className="text-sm text-muted-foreground mb-1">CCC Balance</p>
-              <p className="text-3xl font-bold bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan bg-clip-text text-transparent">
-                {balance.cctr_balance.toLocaleString()}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">Cyber City Credits</p>
+            {/* Token Balances */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* CCC Balance */}
+              <div className="p-4 bg-gradient-to-br from-neon-pink/20 via-neon-purple/10 to-neon-cyan/20 rounded-xl border border-neon-pink/30 text-center">
+                <p className="text-xs text-muted-foreground mb-1">CCC Balance</p>
+                <p className="text-2xl font-bold bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan bg-clip-text text-transparent">
+                  {balance.cctr_balance.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">Cyber City Credits</p>
+              </div>
+              
+              {/* Claimable Rewards */}
+              <div className="p-4 bg-gradient-to-br from-neon-green/20 via-neon-cyan/10 to-neon-green/20 rounded-xl border border-neon-green/30 text-center">
+                <p className="text-xs text-muted-foreground mb-1">Claimable</p>
+                <p className="text-2xl font-bold text-neon-green">
+                  +{balance.claimable_rewards.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">CCC Rewards</p>
+              </div>
             </div>
 
             {/* Winner Chests Section */}
