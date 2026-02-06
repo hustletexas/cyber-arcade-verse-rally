@@ -117,7 +117,7 @@ export const CARD_ICONS: Record<string, { col: number; row: number; name: string
   headphones: { col: 3, row: 0, name: 'VIP Headphones' },
   trophy: { col: 4, row: 0, name: 'Winner Trophy' },
   diamond: { col: 0, row: 1, name: 'Diamond' },
-  coins: { col: 1, row: 1, name: 'CCTR Coins' },
+  coins: { col: 1, row: 1, name: 'CCC Coins' },
   skull: { col: 2, row: 1, name: 'Cyber Skull' },
   heart: { col: 3, row: 1, name: 'Pixel Heart' },
   lightning: { col: 4, row: 1, name: 'Lightning Bolt' },
@@ -126,7 +126,7 @@ export const CARD_ICONS: Record<string, { col: number; row: number; name: string
   crown: { col: 2, row: 2, name: 'Royal Crown' },
   shield: { col: 3, row: 2, name: 'Shield' },
   portal: { col: 4, row: 2, name: 'Portal Ring' },
-  cctr: { col: 0, row: 3, name: 'CCTR Token' },
+  cctr: { col: 0, row: 3, name: 'CCC Token' },
   mystery: { col: 1, row: 3, name: 'Mystery Box' },
   chip: { col: 2, row: 3, name: 'Casino Chip' },
 };

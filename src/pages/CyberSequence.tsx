@@ -14,6 +14,7 @@ import {
 } from '@/components/games/cyber-sequence';
 import { GameMode, GAME_ENTRY_FEE, LeaderboardEntry, SCORING } from '@/types/cyber-sequence';
 import { toast } from 'sonner';
+import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 import './cyber-sequence.css';
 import '@/components/games/cyber-sequence/cyber-sequence.css';
 
@@ -61,7 +62,7 @@ const CyberSequence: React.FC = () => {
         toast.error('Failed to deduct entry fee');
         return;
       }
-      toast.success(`${GAME_ENTRY_FEE} CCTR entry fee deducted`);
+      toast.success(`${GAME_ENTRY_FEE} CCC entry fee deducted`);
     }
     
     setPhase('playing');
@@ -91,7 +92,7 @@ const CyberSequence: React.FC = () => {
         resetGame();
         return;
       }
-      toast.success(`${GAME_ENTRY_FEE} CCTR entry fee deducted`);
+      toast.success(`${GAME_ENTRY_FEE} CCC entry fee deducted`);
     }
     
     setPhase('playing');
@@ -133,7 +134,9 @@ const CyberSequence: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative z-10 w-full px-4 md:px-8 py-4 md:py-8">
+      {/* CCC Balance Bar */}
+      <div className="container mx-auto px-4 py-4">
+        <CCCBalanceBar />
         {phase === 'menu' && (
           <>
             <CyberSequenceModeSelect

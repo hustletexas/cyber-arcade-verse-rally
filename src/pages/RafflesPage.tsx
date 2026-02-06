@@ -5,6 +5,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 
 const RafflesPage = () => {
   return (
@@ -50,13 +51,18 @@ const RafflesPage = () => {
       
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 relative z-10 min-h-[calc(100vh-4rem)] flex flex-col">
         {/* Header with Back Button */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <Link to="/">
             <Button variant="ghost" className="text-neon-green hover:bg-neon-green/10 border border-neon-green/30">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Arcade
             </Button>
           </Link>
+        </div>
+
+        {/* CCC Balance Bar */}
+        <div className="mb-6">
+          <CCCBalanceBar />
         </div>
 
         {/* Main Content */}

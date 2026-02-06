@@ -14,6 +14,7 @@ export const useUserBalance = () => {
   const { user } = useAuth();
   const [balance, setBalance] = useState<UserBalance>({ cctr_balance: 0, claimable_rewards: 0 });
   const [loading, setLoading] = useState(true);
+  const [dailyBonusAwarded, setDailyBonusAwarded] = useState<number>(0);
 
   const fetchBalance = useCallback(async () => {
     if (!primaryWallet?.address) {
@@ -41,12 +42,41 @@ export const useUserBalance = () => {
           cctr_balance: data.cctr_balance || 0,
           claimable_rewards: data.claimable_rewards || 0
         });
+        
+        // Still call initialize to check for daily bonus
+        interface InitBalanceResponse {
+          success: boolean;
+          ccc_balance?: number;
+          claimable_rewards?: number;
+          daily_bonus_awarded?: number;
+          error?: string;
+          created?: boolean;
+        }
+        
+        const { data: initData } = await supabase
+          .rpc('initialize_wallet_balance', {
+            p_wallet_address: primaryWallet.address
+          });
+
+        const initResult = initData as unknown as InitBalanceResponse | null;
+        
+        if (initResult?.success) {
+          // Update balance if daily bonus was awarded
+          if (initResult.daily_bonus_awarded && initResult.daily_bonus_awarded > 0) {
+            setDailyBonusAwarded(initResult.daily_bonus_awarded);
+            setBalance({
+              cctr_balance: initResult.ccc_balance || data.cctr_balance || 0,
+              claimable_rewards: initResult.claimable_rewards || data.claimable_rewards || 0
+            });
+          }
+        }
       } else {
         // No balance record exists - use secure server-side function to initialize
         interface InitBalanceResponse {
           success: boolean;
-          cctr_balance?: number;
+          ccc_balance?: number;
           claimable_rewards?: number;
+          daily_bonus_awarded?: number;
           error?: string;
           created?: boolean;
         }
@@ -63,9 +93,12 @@ export const useUserBalance = () => {
           setBalance({ cctr_balance: 0, claimable_rewards: 0 });
         } else if (initResult?.success) {
           setBalance({
-            cctr_balance: initResult.cctr_balance || 0,
+            cctr_balance: initResult.ccc_balance || 0,
             claimable_rewards: initResult.claimable_rewards || 0
           });
+          if (initResult.daily_bonus_awarded && initResult.daily_bonus_awarded > 0) {
+            setDailyBonusAwarded(initResult.daily_bonus_awarded);
+          }
         } else {
           console.error('Balance init failed:', initResult?.error);
           setBalance({ cctr_balance: 0, claimable_rewards: 0 });
@@ -229,6 +262,7 @@ export const useUserBalance = () => {
   return {
     balance,
     loading,
+    dailyBonusAwarded,
     claimRewards,
     deductBalance,
     addBalance,
