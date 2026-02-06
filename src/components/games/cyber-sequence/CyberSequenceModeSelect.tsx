@@ -114,12 +114,6 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
         </div>
       </div>
 
-      {/* Balance display */}
-      {walletConnected && <div className="mt-6 text-center">
-          <p className="text-gray-400">
-        <span className="text-cyan-400 font-bold">{cctrBalance} CCTR</span>
-          </p>
-        </div>}
 
     </div>;
 };
