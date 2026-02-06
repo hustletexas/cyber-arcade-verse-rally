@@ -55,6 +55,38 @@ export const CyberMatchHUD: React.FC<CyberMatchHUDProps> = ({
             </div>
           </div>
 
+          {/* Streak Meter - moved next to Time */}
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center relative transition-all duration-300",
+              streak === 0 && "bg-gray-500/10",
+              streak >= 1 && streak < 3 && "bg-orange-500/10",
+              streak >= 3 && "bg-red-500/10"
+            )}>
+              <Flame className={cn(
+                "w-5 h-5 transition-all duration-300",
+                streak === 0 && "text-gray-500",
+                streak === 1 && "text-orange-400",
+                streak === 2 && "text-orange-500",
+                streak >= 3 && "text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"
+              )} />
+              {streak >= 3 && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping" />
+              )}
+            </div>
+            <div>
+              <span className={cn(
+                "font-mono text-xl font-bold transition-colors",
+                streak === 0 && "text-gray-500",
+                streak >= 1 && streak < 3 && "text-orange-400",
+                streak >= 3 && "text-red-400"
+              )}>
+                {streak}x
+              </span>
+              <div className="text-xs text-gray-500">Streak</div>
+            </div>
+          </div>
+
           {/* Score */}
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
@@ -101,48 +133,14 @@ export const CyberMatchHUD: React.FC<CyberMatchHUDProps> = ({
         </div>
       </Card>
 
-      {/* Streak & Combo Bar */}
+      {/* Combo & Moves Bar */}
       <Card className={cn(
         "p-3 transition-all duration-300",
-        streak > 0 
+        comboMultiplier > 1 
           ? "cyber-glass-pink" 
           : "cyber-glass"
       )}>
         <div className="flex items-center justify-center gap-6">
-          {/* Streak Meter with Flame */}
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              "relative transition-all duration-300",
-              streak >= 3 && "flame-icon"
-            )}>
-              <Flame className={cn(
-                "w-8 h-8 transition-all duration-300",
-                streak === 0 && "text-gray-500",
-                streak === 1 && "text-orange-400",
-                streak === 2 && "text-orange-500",
-                streak >= 3 && "text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"
-              )} />
-              {streak >= 3 && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping" />
-              )}
-            </div>
-            <div>
-              <div className={cn(
-                "font-bold text-lg transition-colors",
-                streak === 0 && "text-gray-500",
-                streak >= 1 && streak < 3 && "text-orange-400",
-                streak >= 3 && "text-red-400"
-              )}>
-                {streak}x STREAK
-              </div>
-              <div className="text-xs text-gray-500">
-                Consecutive matches
-              </div>
-            </div>
-          </div>
-
-          <div className="w-px h-10 bg-gradient-to-b from-transparent via-gray-600 to-transparent" />
-
           {/* Combo Multiplier */}
           <div className={cn(
             "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300",
