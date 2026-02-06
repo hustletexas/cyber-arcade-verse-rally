@@ -132,48 +132,6 @@ export const CyberMatchHUD: React.FC<CyberMatchHUDProps> = ({
           )}
         </div>
       </Card>
-
-      {/* Combo & Moves Bar */}
-      <Card className={cn(
-        "p-3 transition-all duration-300",
-        comboMultiplier > 1 
-          ? "cyber-glass-pink" 
-          : "cyber-glass"
-      )}>
-        <div className="flex items-center justify-center gap-6">
-          {/* Combo Multiplier */}
-          <div className={cn(
-            "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300",
-            comboMultiplier > 1 
-              ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/50" 
-              : "bg-black/30"
-          )}>
-            <div>
-              <span className={cn(
-                "font-mono font-bold text-2xl",
-                comboMultiplier === 1 && "text-gray-400",
-                comboMultiplier > 1 && comboMultiplier < 2 && "text-purple-400",
-                comboMultiplier >= 2 && comboMultiplier < 3 && "text-pink-400",
-                comboMultiplier >= 3 && "text-yellow-400 combo-glow"
-              )}>
-                {comboMultiplier.toFixed(2)}x
-              </span>
-              <div className="text-xs text-gray-500">Combo</div>
-            </div>
-          </div>
-
-          <div className="w-px h-10 bg-gradient-to-b from-transparent via-gray-600 to-transparent" />
-
-          {/* Moves counter */}
-          <div className="flex items-center gap-2">
-            <Move className="w-5 h-5 text-gray-400" />
-            <div>
-              <span className="font-mono text-lg text-gray-300">{moves}</span>
-              <div className="text-xs text-gray-500">Moves</div>
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };
