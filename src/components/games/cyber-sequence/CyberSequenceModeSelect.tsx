@@ -3,32 +3,24 @@ import { GameMode, GAME_ENTRY_FEE, MAX_DAILY_PLAYS } from '@/types/cyber-sequenc
 import { Button } from '@/components/ui/button';
 import { Gamepad2, Trophy, Zap, Heart, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 interface CyberSequenceModeSelectProps {
   onSelectMode: (mode: GameMode) => void;
   cctrBalance: number;
   dailyPlaysRemaining?: number;
   walletConnected: boolean;
 }
-
 export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = ({
   onSelectMode,
   cctrBalance,
   dailyPlaysRemaining = MAX_DAILY_PLAYS,
-  walletConnected,
+  walletConnected
 }) => {
   const navigate = useNavigate();
   const canPlayDaily = walletConnected && cctrBalance >= GAME_ENTRY_FEE && dailyPlaysRemaining > 0;
-
-  return (
-    <div className="max-w-2xl mx-auto">
+  return <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="absolute top-4 left-4 text-gray-400 hover:text-white"
-        >
+        <Button variant="ghost" onClick={() => navigate('/')} className="absolute top-4 left-4 text-gray-400 hover:text-white">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
@@ -44,10 +36,7 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
       {/* Mode cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Free Play */}
-        <div
-          onClick={() => onSelectMode('free')}
-          className="sequence-mode-card sequence-mode-free sequence-glass-panel cursor-pointer"
-        >
+        <div onClick={() => onSelectMode('free')} className="sequence-mode-card sequence-mode-free sequence-glass-panel cursor-pointer">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-green-500/20 border border-green-500/30">
               <Gamepad2 className="w-6 h-6 text-green-400" />
@@ -73,22 +62,16 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
             </li>
           </ul>
 
-          <Button 
-            className="w-full bg-green-600 hover:bg-green-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectMode('free');
-            }}
-          >
+          <Button className="w-full bg-green-600 hover:bg-green-700" onClick={e => {
+          e.stopPropagation();
+          onSelectMode('free');
+        }}>
             Start Free Play
           </Button>
         </div>
 
         {/* Daily Run */}
-        <div
-          onClick={() => canPlayDaily && onSelectMode('daily')}
-          className={`sequence-mode-card sequence-mode-daily sequence-glass-panel ${!canPlayDaily ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-        >
+        <div onClick={() => canPlayDaily && onSelectMode('daily')} className={`sequence-mode-card sequence-mode-daily sequence-glass-panel ${!canPlayDaily ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-purple-500/20 border border-purple-500/30">
               <Trophy className="w-6 h-6 text-purple-400" />
@@ -114,41 +97,29 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
             </li>
           </ul>
 
-          {!walletConnected ? (
-            <p className="text-center text-sm text-yellow-400 mb-2">
+          {!walletConnected ? <p className="text-center text-sm text-yellow-400 mb-2">
               Connect wallet to play
-            </p>
-          ) : cctrBalance < GAME_ENTRY_FEE ? (
-            <p className="text-center text-sm text-red-400 mb-2">
+            </p> : cctrBalance < GAME_ENTRY_FEE ? <p className="text-center text-sm text-red-400 mb-2">
               Insufficient CCTR balance
-            </p>
-          ) : dailyPlaysRemaining <= 0 ? (
-            <p className="text-center text-sm text-yellow-400 mb-2">
+            </p> : dailyPlaysRemaining <= 0 ? <p className="text-center text-sm text-yellow-400 mb-2">
               Daily plays exhausted
-            </p>
-          ) : null}
+            </p> : null}
 
-          <Button 
-            className="w-full bg-purple-600 hover:bg-purple-700"
-            disabled={!canPlayDaily}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (canPlayDaily) onSelectMode('daily');
-            }}
-          >
+          <Button className="w-full bg-purple-600 hover:bg-purple-700" disabled={!canPlayDaily} onClick={e => {
+          e.stopPropagation();
+          if (canPlayDaily) onSelectMode('daily');
+        }}>
             {walletConnected ? `Play (${dailyPlaysRemaining}/${MAX_DAILY_PLAYS} remaining)` : 'Connect Wallet'}
           </Button>
         </div>
       </div>
 
       {/* Balance display */}
-      {walletConnected && (
-        <div className="mt-6 text-center">
+      {walletConnected && <div className="mt-6 text-center">
           <p className="text-gray-400">
-            Balance: <span className="text-cyan-400 font-bold">{cctrBalance} CCTR</span>
+        <span className="text-cyan-400 font-bold">{cctrBalance} CCTR</span>
           </p>
-        </div>
-      )}
+        </div>}
 
       {/* How to play */}
       <div className="mt-8 sequence-glass-panel p-6">
@@ -177,6 +148,5 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
