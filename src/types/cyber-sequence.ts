@@ -1,5 +1,5 @@
 export type GameMode = 'free' | 'daily';
-export type ButtonColor = 'cyan' | 'purple' | 'green' | 'red';
+export type ButtonColor = 'cyan' | 'purple' | 'green' | 'red' | 'orange' | 'pink' | 'yellow' | 'blue';
 
 export interface SequenceButton {
   id: ButtonColor;
@@ -11,9 +11,13 @@ export const BUTTON_CONFIG: Record<ButtonColor, { hue: number; label: string }> 
   purple: { hue: 280, label: 'Purple' },
   green: { hue: 120, label: 'Green' },
   red: { hue: 0, label: 'Red' },
+  orange: { hue: 30, label: 'Orange' },
+  pink: { hue: 330, label: 'Pink' },
+  yellow: { hue: 50, label: 'Yellow' },
+  blue: { hue: 220, label: 'Blue' },
 };
 
-export const BUTTON_ORDER: ButtonColor[] = ['cyan', 'purple', 'green', 'red'];
+export const BUTTON_ORDER: ButtonColor[] = ['cyan', 'purple', 'green', 'red', 'orange', 'pink', 'yellow', 'blue'];
 
 export interface GameState {
   sequence: ButtonColor[];
