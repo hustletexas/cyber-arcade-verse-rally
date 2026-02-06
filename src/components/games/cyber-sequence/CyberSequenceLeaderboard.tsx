@@ -79,9 +79,9 @@ export const CyberSequenceLeaderboard: React.FC<CyberSequenceLeaderboardProps> =
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Player Stats Section */}
-      <div className="sequence-glass-panel p-4">
+      <div className="sequence-glass-panel p-5">
         <h3 className="text-lg font-bold text-neon-cyan mb-3 flex items-center gap-2">
           <Zap className="w-5 h-5" /> Your Stats
           {isWalletConnected && (
@@ -147,7 +147,7 @@ export const CyberSequenceLeaderboard: React.FC<CyberSequenceLeaderboardProps> =
       </div>
 
       {/* Leaderboard Section */}
-      <div className="sequence-glass-panel p-4">
+      <div className="sequence-glass-panel p-5">
         <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
           <Trophy className="w-5 h-5 text-yellow-400" />
           Daily Leaderboard
