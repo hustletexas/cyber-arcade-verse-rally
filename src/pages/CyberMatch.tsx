@@ -219,9 +219,6 @@ const CyberMatch: React.FC = () => {
             >
               {/* Game Header */}
               <div className="text-center mb-4">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-purple bg-clip-text text-transparent">
-                  {gameMode === 'daily' ? '🏆 DAILY RUN' : '🎮 FREE MATCH'}
-                </h2>
                 <Badge 
                   variant="outline" 
                   className={cn(
