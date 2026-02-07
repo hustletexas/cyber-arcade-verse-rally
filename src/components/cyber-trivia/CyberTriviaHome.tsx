@@ -168,27 +168,27 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
             {/* Mode Selection CTAs */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {/* Free Play Card */}
-              <Card className="cyber-glass p-6 hover:border-neon-cyan/50 transition-all duration-300">
+              <Card className="cyber-glass p-6 hover:border-blue-500/50 transition-all duration-300 border-blue-500/30 bg-blue-950/20">
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-neon-cyan/10 flex items-center justify-center">
-                    <Flame className="w-8 h-8 text-neon-cyan" />
+                  <div className="w-16 h-16 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center">
+                    <Flame className="w-8 h-8 text-blue-400" />
                   </div>
                   <h2 className="text-2xl font-bold text-white">FREE PLAY</h2>
                   <p className="text-gray-400 text-sm">
                     Endless questions • Build your streak • Practice mode
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
-                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan">
+                    <Badge variant="outline" className="border-blue-400/50 text-blue-400">
                       🔥 Streak Meter
                     </Badge>
-                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan">
+                    <Badge variant="outline" className="border-blue-400/50 text-blue-400">
                       ⚡ Combo Multiplier
                     </Badge>
-                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan">
+                    <Badge variant="outline" className="border-blue-400/50 text-blue-400">
                       🎫 Earn Tickets
                     </Badge>
                   </div>
-                  <Button variant="outline" onClick={handleFreePlayClick} disabled={loading} className="w-full py-6 text-lg font-bold text-neon-cyan border-neon-cyan/50 bg-transparent hover:bg-neon-cyan/10">
+                  <Button variant="outline" onClick={handleFreePlayClick} disabled={loading} className="w-full py-6 text-lg font-bold text-blue-400 border-blue-400/50 bg-transparent hover:bg-blue-400/10">
                     {loading ? 'Loading...' : ' PLAY NOW'}
                   </Button>
                 </div>
