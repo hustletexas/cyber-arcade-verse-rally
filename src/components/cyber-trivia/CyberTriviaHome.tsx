@@ -195,27 +195,27 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
               </Card>
 
               {/* Daily Run Card */}
-              <Card className="cyber-glass-purple p-6 hover:border-purple-500/50 transition-all duration-300">
+              <Card className="cyber-glass-purple p-6 hover:border-red-500/50 transition-all duration-300 border-red-500/30 bg-red-950/20">
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center">
-                    <Trophy className="w-8 h-8 text-purple-400" />
+                  <div className="w-16 h-16 mx-auto rounded-full bg-red-500/10 flex items-center justify-center">
+                    <Trophy className="w-8 h-8 text-red-400" />
                   </div>
                   <h2 className="text-2xl font-bold text-white">DAILY RUN</h2>
                   <p className="text-gray-400 text-sm">
                     10 questions • 2 lives • Ranked leaderboard
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
-                    <Badge variant="outline" className="border-purple-400/50 text-purple-400">
+                    <Badge variant="outline" className="border-red-400/50 text-red-400">
                       🏆 Compete Daily
                     </Badge>
-                    <Badge variant="outline" className="border-purple-400/50 text-purple-400">
+                    <Badge variant="outline" className="border-red-400/50 text-red-400">
                       ❤️ 2 Lives
                     </Badge>
-                    <Badge variant="outline" className="border-purple-400/50 text-purple-400">
+                    <Badge variant="outline" className="border-red-400/50 text-red-400">
                       📊 Top 100
                     </Badge>
                   </div>
-                  <Button variant="outline" onClick={onStartDailyRun} disabled={loading} className="w-full py-6 text-lg font-bold text-purple-400 border-purple-400/50 bg-transparent hover:bg-purple-400/10">
+                  <Button variant="outline" onClick={onStartDailyRun} disabled={loading} className="w-full py-6 text-lg font-bold text-red-400 border-red-400/50 bg-transparent hover:bg-red-400/10">
                     {loading ? 'Loading...' : ' START DAILY RUN'}
                   </Button>
                 </div>
