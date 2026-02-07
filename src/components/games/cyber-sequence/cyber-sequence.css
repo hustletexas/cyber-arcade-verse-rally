@@ -768,6 +768,70 @@
   50% { opacity: 0.5; }
 }
 
+/* Hero title glitch effect */
+.cyber-title {
+  position: relative;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 255, 0.5),
+    0 0 40px rgba(0, 255, 255, 0.2);
+}
+
+.cyber-title::before,
+.cyber-title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  clip-path: inset(0);
+}
+
+.cyber-title::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff0066;
+  animation: glitch-1 3s infinite linear alternate-reverse;
+}
+
+.cyber-title::after {
+  left: -2px;
+  text-shadow: 2px 0 #00ffff;
+  animation: glitch-2 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-1 {
+  0%, 90% { clip-path: inset(0 0 100% 0); }
+  92% { clip-path: inset(20% 0 60% 0); }
+  94% { clip-path: inset(60% 0 10% 0); }
+  96% { clip-path: inset(40% 0 30% 0); }
+  98% { clip-path: inset(80% 0 5% 0); }
+  100% { clip-path: inset(10% 0 70% 0); }
+}
+
+@keyframes glitch-2 {
+  0%, 88% { clip-path: inset(100% 0 0 0); }
+  90% { clip-path: inset(30% 0 50% 0); }
+  93% { clip-path: inset(70% 0 15% 0); }
+  96% { clip-path: inset(15% 0 65% 0); }
+  100% { clip-path: inset(50% 0 30% 0); }
+}
+
+/* Activity ticker */
+.activity-ticker {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.activity-ticker-content {
+  display: inline-block;
+  animation: ticker-scroll 30s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
 /* Mobile optimizations */
 @media (max-width: 480px) {
   .sequence-button-grid {
