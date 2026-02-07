@@ -57,10 +57,10 @@ const CyberSlotsPage = () => {
        </div>
 
        {/* Main Content - Centered */}
-       <div className="flex-1 flex items-start justify-center">
-         <div className="w-full max-w-5xl">
-           {/* Transparent glassmorphic container */}
-           <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-8 border border-neon-purple/20">
+        <div className="flex-1 flex items-start justify-center">
+          <div className="w-full">
+            {/* Transparent glassmorphic container */}
+            <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-8 border border-neon-purple/20">
              <CyberSlotsMachine onWin={(rarity, tokens) => {
                console.log(`Won ${tokens} CCC and ${rarity} chest!`);
              }} />
