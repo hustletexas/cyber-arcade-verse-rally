@@ -40,7 +40,7 @@ const roadmapItems = [
     items: [
       'Launch Cyber City Arcade platform',
       'Deploy Cyber Match, Sequence & Trivia games',
-      'Integrate multi-chain wallet support',
+      'Integrate digital wallet support',
       'Build community hub & live chat',
     ],
   },
