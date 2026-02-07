@@ -391,7 +391,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({
                   </div>}
 
                 {/* Reels Container */}
-                <div className="flex justify-center gap-3 md:gap-5 py-4">
+                <div className="flex justify-center gap-3 md:gap-5 py-1">
                   {[0, 1, 2].map(index => <SlotReel key={index} symbols={SLOT_SYMBOLS} finalSymbol={finalReels[index]} isSpinning={reelSpinning[index]} spinDuration={REEL_SPIN_DURATION[index]} onStop={() => handleReelStop(index)} getRarityColor={getRarityColor} showWin={showWin} winRarity={winInfo?.rarity} />)}
                 </div>
 
