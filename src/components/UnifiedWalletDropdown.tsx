@@ -76,7 +76,7 @@ export const UnifiedWalletDropdown = () => {
   const [sendAmount, setSendAmount] = useState('');
   const [sendAddress, setSendAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
-  const [tokensMinimized, setTokensMinimized] = useState(false);
+  const [tokensMinimized, setTokensMinimized] = useState(true);
   const handleSignOut = async () => {
     try {
       if (isWalletConnected) {
