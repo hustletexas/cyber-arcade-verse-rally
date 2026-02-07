@@ -370,10 +370,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
           <div className="ufo-decoration left" />
           <div className="ufo-decoration right" />
 
-          {/* Neon Pink Title */}
-          <div className="slots-title-container">
-            <img src={cyberSlotsLogo} alt="Cyber Slots" className="slots-title-logo" />
-          </div>
 
           {/* Chrome Frame */}
           <div className="slots-frame">
