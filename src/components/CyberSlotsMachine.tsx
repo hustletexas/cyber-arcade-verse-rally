@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Gift, Zap, Trophy, Star } from 'lucide-react';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
-import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { toast } from 'sonner';
 import cyberSlotsLogo from '@/assets/cyber-slots-logo.png';
 import './CyberSlotsMachine.css';
@@ -359,11 +358,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
   return (
     <Card className="hover:scale-[1.01] transition-transform relative overflow-visible border-0 bg-transparent col-span-full lg:col-span-3">
       <CardContent className="p-0">
-        {/* Wallet Status */}
-        <div className="flex justify-end mb-4">
-          <WalletStatusBar compact />
-        </div>
-
         {/* Slots Cabinet with starfield background */}
         <div className={`slots-cabinet ${showWin ? 'winning' : ''}`}>
           {/* UFO Decorations */}
