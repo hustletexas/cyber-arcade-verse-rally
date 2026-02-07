@@ -670,7 +670,10 @@ export const UnifiedWalletDropdown = () => {
                 <p className="font-bold text-lg">{user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'}</p>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
               </div>
-              <Button variant="outline" size="sm" className="border-neon-cyan/30 hover:border-neon-cyan hover:bg-neon-cyan/10">
+              <Button variant="outline" size="sm" className="border-neon-cyan/30 hover:border-neon-cyan hover:bg-neon-cyan/10" onClick={() => {
+                const input = document.querySelector<HTMLInputElement>('input[placeholder="Enter display name"]');
+                if (input) { input.focus(); input.select(); }
+              }}>
                 <User size={14} className="mr-1" /> Edit
               </Button>
             </div>
