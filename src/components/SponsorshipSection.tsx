@@ -66,8 +66,7 @@ export const SponsorshipSection = () => {
           </h2>
         </div>
         <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-          Cyber City Arcade offers sponsorship and brand partnership opportunities for companies
-          and creators aligned with gaming, technology, and digital culture.
+          ​Our mission is to use gaming and technology to bring people together, promote digital literacy, and provide inclusive opportunities for youth and communities to learn, compete, and grow in safe environments.                   
         </p>
       </div>
 
