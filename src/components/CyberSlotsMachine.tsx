@@ -9,7 +9,6 @@ import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { toast } from 'sonner';
 import cyberSlotsLogo from '@/assets/cyber-slots-logo.png';
 import './CyberSlotsMachine.css';
-
 interface SlotSymbol {
   id: string;
   name: string;
@@ -17,17 +16,33 @@ interface SlotSymbol {
   image: string;
   tokenReward: number;
 }
-
-const SLOT_SYMBOLS: SlotSymbol[] = [
-  { id: 'common', name: 'Common Arcade Pass', rarity: 'common', image: '/lovable-uploads/common-arcade-pass-slot.png', tokenReward: 50 },
-  { id: 'rare', name: 'Rare Arcade Pass', rarity: 'rare', image: '/lovable-uploads/rare-arcade-pass-slot.png', tokenReward: 150 },
-  { id: 'epic', name: 'OG Arcade Pass', rarity: 'epic', image: '/lovable-uploads/og-arcade-pass.png', tokenReward: 500 },
-  { id: 'legendary', name: 'Legendary Arcade Pass', rarity: 'legendary', image: '/lovable-uploads/legendary-arcade-pass-slot.png', tokenReward: 2000 },
-];
-
+const SLOT_SYMBOLS: SlotSymbol[] = [{
+  id: 'common',
+  name: 'Common Arcade Pass',
+  rarity: 'common',
+  image: '/lovable-uploads/common-arcade-pass-slot.png',
+  tokenReward: 50
+}, {
+  id: 'rare',
+  name: 'Rare Arcade Pass',
+  rarity: 'rare',
+  image: '/lovable-uploads/rare-arcade-pass-slot.png',
+  tokenReward: 150
+}, {
+  id: 'epic',
+  name: 'OG Arcade Pass',
+  rarity: 'epic',
+  image: '/lovable-uploads/og-arcade-pass.png',
+  tokenReward: 500
+}, {
+  id: 'legendary',
+  name: 'Legendary Arcade Pass',
+  rarity: 'legendary',
+  image: '/lovable-uploads/legendary-arcade-pass-slot.png',
+  tokenReward: 2000
+}];
 const SPIN_COST = 10; // CCC per spin
 const REEL_SPIN_DURATION = [1200, 1600, 2000];
-
 interface CyberSlotsMachineProps {
   onWin?: (rarity: string, tokens: number) => void;
 }
@@ -45,12 +60,20 @@ const SlotReel: React.FC<{
   getRarityColor: (rarity: string) => string;
   showWin: boolean;
   winRarity?: string;
-}> = ({ symbols, finalSymbol, isSpinning, spinDuration, onStop, getRarityColor, showWin, winRarity }) => {
+}> = ({
+  symbols,
+  finalSymbol,
+  isSpinning,
+  spinDuration,
+  onStop,
+  getRarityColor,
+  showWin,
+  winRarity
+}) => {
   const [currentOffset, setCurrentOffset] = useState(0);
   const [displaySymbols, setDisplaySymbols] = useState<SlotSymbol[]>([]);
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number>(0);
-
   useEffect(() => {
     const strip: SlotSymbol[] = [];
     for (let i = 0; i < 20; i++) {
@@ -59,32 +82,24 @@ const SlotReel: React.FC<{
     strip.push(finalSymbol);
     setDisplaySymbols(strip);
   }, [finalSymbol, symbols]);
-
   useEffect(() => {
     if (isSpinning) {
       startTimeRef.current = performance.now();
-      
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTimeRef.current;
         const progress = Math.min(elapsed / spinDuration, 1);
-        
         const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-        
         const easedProgress = easeOut(progress);
         const totalDistance = (displaySymbols.length - 1) * 100;
         const newOffset = easedProgress * totalDistance;
-        
         setCurrentOffset(newOffset);
-        
         if (progress < 1) {
           animationRef.current = requestAnimationFrame(animate);
         } else {
           onStop();
         }
       };
-      
       animationRef.current = requestAnimationFrame(animate);
-      
       return () => {
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current);
@@ -94,53 +109,40 @@ const SlotReel: React.FC<{
       setCurrentOffset((displaySymbols.length - 1) * 100);
     }
   }, [isSpinning, spinDuration, displaySymbols.length, onStop]);
-
   const getRarityGlow = (rarity: string) => {
     switch (rarity) {
-      case 'common': return 'shadow-green-500/60';
-      case 'rare': return 'shadow-blue-500/60';
-      case 'epic': return 'shadow-purple-500/60';
-      case 'legendary': return 'shadow-yellow-500/60';
-      default: return 'shadow-gray-500/60';
+      case 'common':
+        return 'shadow-green-500/60';
+      case 'rare':
+        return 'shadow-blue-500/60';
+      case 'epic':
+        return 'shadow-purple-500/60';
+      case 'legendary':
+        return 'shadow-yellow-500/60';
+      default:
+        return 'shadow-gray-500/60';
     }
   };
-
-  return (
-    <div 
-      className={`
+  return <div className={`
         slot-reel-container relative flex-1 w-full rounded-xl overflow-hidden
         bg-gradient-to-b from-neon-purple/30 to-black/80
         border-4 border-neon-cyan/60
         ${showWin && winRarity ? `shadow-2xl ${getRarityGlow(winRarity)} winner` : 'shadow-lg shadow-neon-purple/40'}
         transition-shadow duration-300
-      `}
-    >
+      `}>
       {/* Reel Strip */}
-      <div 
-        className="slot-reel-strip absolute inset-0"
-        style={{
-          transform: `translateY(-${currentOffset}%)`,
-          transition: isSpinning ? 'none' : 'transform 0.1s ease-out'
-        }}
-      >
-        {displaySymbols.map((symbol, idx) => (
-          <div 
-            key={idx} 
-            className="slot-symbol w-full h-full relative flex items-center justify-center"
-            style={{ height: '100%' }}
-          >
-            <img
-              src={symbol.image}
-              alt={symbol.name}
-              className="w-full h-full object-contain"
-            />
-            <Badge 
-              className={`absolute top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-xs px-3 py-1 opacity-95 shadow-lg`}
-            >
+      <div className="slot-reel-strip absolute inset-0" style={{
+      transform: `translateY(-${currentOffset}%)`,
+      transition: isSpinning ? 'none' : 'transform 0.1s ease-out'
+    }}>
+        {displaySymbols.map((symbol, idx) => <div key={idx} className="slot-symbol w-full h-full relative flex items-center justify-center" style={{
+        height: '100%'
+      }}>
+            <img src={symbol.image} alt={symbol.name} className="w-full h-full object-contain" />
+            <Badge className={`absolute top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-xs px-3 py-1 opacity-95 shadow-lg`}>
               {symbol.rarity.toUpperCase()}
             </Badge>
-          </div>
-        ))}
+          </div>)}
       </div>
 
       {/* Top and bottom tabs instead of center line */}
@@ -159,30 +161,32 @@ const SlotReel: React.FC<{
       
       {/* Shine effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
-    </div>
-  );
+    </div>;
 };
 
 // Arcade Buttons Decoration Component
 const ArcadeButtonsRow: React.FC = () => {
-  return (
-    <div className="arcade-buttons">
-      {ARCADE_BUTTON_COLORS.map((color) => (
-        <div key={color} className={`arcade-button ${color}`} />
-      ))}
-    </div>
-  );
+  return <div className="arcade-buttons">
+      {ARCADE_BUTTON_COLORS.map(color => <div key={color} className={`arcade-button ${color}`} />)}
+    </div>;
 };
-
-export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) => {
-  const { isWalletConnected } = useMultiWallet();
-  const { balance } = useUserBalance();
-  
+export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({
+  onWin
+}) => {
+  const {
+    isWalletConnected
+  } = useMultiWallet();
+  const {
+    balance
+  } = useUserBalance();
   const [finalReels, setFinalReels] = useState<SlotSymbol[]>([SLOT_SYMBOLS[0], SLOT_SYMBOLS[1], SLOT_SYMBOLS[2]]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [reelSpinning, setReelSpinning] = useState([false, false, false]);
   const [showWin, setShowWin] = useState(false);
-  const [winInfo, setWinInfo] = useState<{ rarity: string; tokens: number } | null>(null);
+  const [winInfo, setWinInfo] = useState<{
+    rarity: string;
+    tokens: number;
+  } | null>(null);
   const [stoppedReels, setStoppedReels] = useState(0);
   const [isDemo, setIsDemo] = useState(false);
   const [isDemoWin, setIsDemoWin] = useState(false);
@@ -194,7 +198,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     if (isContinuousDemo && !isSpinning) {
       startDemoSpin();
     }
-    
     return () => {
       if (demoIntervalRef.current) {
         clearInterval(demoIntervalRef.current);
@@ -213,18 +216,12 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       return () => clearTimeout(restartTimer);
     }
   }, [isSpinning, isContinuousDemo, showWin]);
-
   const startDemoSpin = useCallback(() => {
     if (!isContinuousDemo) return;
-    
+
     // Random symbols for demo
-    const demoResults = [
-      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
-      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
-      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
-    ];
+    const demoResults = [SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)], SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)], SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)]];
     setFinalReels(demoResults);
-    
     setIsDemo(true);
     setIsSpinning(true);
     setShowWin(false);
@@ -232,7 +229,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     setStoppedReels(0);
     setReelSpinning([true, true, true]);
   }, [isContinuousDemo]);
-
   const stopDemoAndPlay = useCallback(() => {
     setIsContinuousDemo(false);
     setIsDemo(false);
@@ -240,22 +236,24 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       clearInterval(demoIntervalRef.current);
     }
   }, []);
-
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'common': return 'from-green-500 to-green-700';
-      case 'rare': return 'from-blue-500 to-blue-700';
-      case 'epic': return 'from-purple-500 to-purple-700';
-      case 'legendary': return 'from-yellow-500 to-orange-600';
-      default: return 'from-gray-500 to-gray-700';
+      case 'common':
+        return 'from-green-500 to-green-700';
+      case 'rare':
+        return 'from-blue-500 to-blue-700';
+      case 'epic':
+        return 'from-purple-500 to-purple-700';
+      case 'legendary':
+        return 'from-yellow-500 to-orange-600';
+      default:
+        return 'from-gray-500 to-gray-700';
     }
   };
-
   const getRandomSymbol = (): SlotSymbol => {
     const weights = [40, 30, 20, 10]; // common, rare, epic, legendary
     const totalWeight = weights.reduce((a, b) => a + b, 0);
     let random = Math.random() * totalWeight;
-    
     for (let i = 0; i < weights.length; i++) {
       random -= weights[i];
       if (random <= 0) {
@@ -264,11 +262,9 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     }
     return SLOT_SYMBOLS[0];
   };
-
   const checkWin = (results: SlotSymbol[]): boolean => {
     return results[0].rarity === results[1].rarity && results[1].rarity === results[2].rarity;
   };
-
   const handleReelStop = useCallback((reelIndex: number) => {
     setReelSpinning(prev => {
       const newState = [...prev];
@@ -277,20 +273,19 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
     });
     setStoppedReels(prev => prev + 1);
   }, []);
-
   useEffect(() => {
     if (stoppedReels === 3 && isSpinning) {
       setIsSpinning(false);
       setStoppedReels(0);
-
       if (checkWin(finalReels)) {
         const winRarity = finalReels[0].rarity;
         const tokens = finalReels[0].tokenReward * 3;
-        
-        setWinInfo({ rarity: winRarity, tokens });
+        setWinInfo({
+          rarity: winRarity,
+          tokens
+        });
         setShowWin(true);
         setIsDemoWin(isDemo);
-        
         if (isDemo) {
           // Demo mode - brief pause then continue spinning
           setTimeout(() => {
@@ -304,60 +299,47 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
       } else if (!isDemo) {
         toast.info('No match this time. Try again!');
       }
-      
       if (!isDemo) {
         setIsDemo(false);
       }
     }
   }, [stoppedReels, isSpinning, finalReels, onWin, isDemo]);
-
   const spin = useCallback(() => {
     // During demo mode, give a free spin (no wallet/balance required)
     if (isContinuousDemo) {
       stopDemoAndPlay();
-      
       const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
       setFinalReels(results);
-      
       setIsSpinning(true);
       setShowWin(false);
       setWinInfo(null);
       setStoppedReels(0);
       setReelSpinning([true, true, true]);
-      
       toast.success('🎰 Free spin activated!');
       return;
     }
-
     if (!isWalletConnected) {
       toast.error('Connect wallet to spin!');
       return;
     }
-
     if ((balance?.cctr_balance || 0) < SPIN_COST) {
       toast.error(`Not enough CCC! You need ${SPIN_COST} CCC to spin.`);
       return;
     }
-
     if (isSpinning) return;
 
     // Deduct spin cost (in a real app, this would be a database transaction)
     toast.info(`-${SPIN_COST} CCC`);
-
     const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
     setFinalReels(results);
-    
     setIsSpinning(true);
     setShowWin(false);
     setWinInfo(null);
     setStoppedReels(0);
     setReelSpinning([true, true, true]);
   }, [isWalletConnected, isSpinning, balance, isContinuousDemo, stopDemoAndPlay]);
-
   const hasEnoughBalance = (balance?.cctr_balance || 0) >= SPIN_COST;
-
-  return (
-    <Card className="hover:scale-[1.01] transition-transform relative overflow-visible border-0 bg-transparent col-span-full lg:col-span-3">
+  return <Card className="hover:scale-[1.01] transition-transform relative overflow-visible border-0 bg-transparent col-span-full lg:col-span-3">
       <CardContent className="p-0">
 
 
@@ -370,7 +352,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
 
           {/* Neon Pink Title */}
           <div className="slots-title-container">
-            <img src={cyberSlotsLogo} alt="Cyber Slots" className="slots-title-logo" />
+            <img alt="Cyber Slots" className="slots-title-logo" src="/lovable-uploads/a4edd8b3-26df-4bd1-84be-7cbf06982993.png" />
           </div>
 
           {/* Chrome Frame */}
@@ -379,14 +361,11 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
               {/* Slot Machine Display */}
               <div className="slots-display relative">
                 {/* Win Overlay */}
-                {showWin && winInfo && (
-                  <div className="jackpot-overlay absolute inset-0 bg-black/95 z-30 flex items-center justify-center rounded-xl animate-fade-in">
+                {showWin && winInfo && <div className="jackpot-overlay absolute inset-0 bg-black/95 z-30 flex items-center justify-center rounded-xl animate-fade-in">
                     <div className="text-center space-y-4">
-                      {isDemoWin && (
-                        <Badge className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 text-sm px-4 py-1.5">
+                      {isDemoWin && <Badge className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 text-sm px-4 py-1.5">
                           ✨ DEMO PREVIEW ✨
-                        </Badge>
-                      )}
+                        </Badge>}
                       <div className="flex items-center justify-center gap-4">
                         <Trophy className="w-14 h-14 text-yellow-400 animate-bounce" />
                         <span className="jackpot-text text-5xl font-bold text-yellow-400">JACKPOT!</span>
@@ -396,42 +375,24 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                         {winInfo.rarity.toUpperCase()} CHEST UNLOCKED!
                       </Badge>
                       <p className="text-neon-green font-bold text-4xl">+{winInfo.tokens} CCC</p>
-                      <Button 
-                        size="lg" 
-                        onClick={() => { setShowWin(false); setIsDemoWin(false); }}
-                        className="cyber-button mt-4 text-lg px-8 py-6"
-                      >
-                        {isDemoWin ? (
-                          <>
+                      <Button size="lg" onClick={() => {
+                    setShowWin(false);
+                    setIsDemoWin(false);
+                  }} className="cyber-button mt-4 text-lg px-8 py-6">
+                        {isDemoWin ? <>
                             <Star className="w-6 h-6 mr-2" />
                             Try Your Luck!
-                          </>
-                        ) : (
-                          <>
+                          </> : <>
                             <Gift className="w-6 h-6 mr-2" />
                             Claim Rewards
-                          </>
-                        )}
+                          </>}
                       </Button>
                     </div>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Reels Container */}
                 <div className="flex justify-center gap-3 md:gap-5 py-4">
-                  {[0, 1, 2].map((index) => (
-                    <SlotReel
-                      key={index}
-                      symbols={SLOT_SYMBOLS}
-                      finalSymbol={finalReels[index]}
-                      isSpinning={reelSpinning[index]}
-                      spinDuration={REEL_SPIN_DURATION[index]}
-                      onStop={() => handleReelStop(index)}
-                      getRarityColor={getRarityColor}
-                      showWin={showWin}
-                      winRarity={winInfo?.rarity}
-                    />
-                  ))}
+                  {[0, 1, 2].map(index => <SlotReel key={index} symbols={SLOT_SYMBOLS} finalSymbol={finalReels[index]} isSpinning={reelSpinning[index]} spinDuration={REEL_SPIN_DURATION[index]} onStop={() => handleReelStop(index)} getRarityColor={getRarityColor} showWin={showWin} winRarity={winInfo?.rarity} />)}
                 </div>
 
                 {/* Spin Cost Display */}
@@ -445,10 +406,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                 {/* Buttons Row */}
                 <div className="flex justify-center items-center gap-4">
                   {/* Reward Button */}
-                  <button
-                    onClick={stopDemoAndPlay}
-                    className="reward-button-hex"
-                  >
+                  <button onClick={stopDemoAndPlay} className="reward-button-hex">
                     <Gift className="w-5 h-5 mr-2" />
                     REWARDS
                   </button>
@@ -456,11 +414,7 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
                   {/* Hexagonal Spin Button */}
                   <div className="spin-button-container">
                     <div className="spin-button-glow" />
-                    <button
-                      onClick={spin}
-                      disabled={!isContinuousDemo && isSpinning}
-                      className={`spin-button-hex ${isContinuousDemo ? 'demo-active' : ''}`}
-                    >
+                    <button onClick={spin} disabled={!isContinuousDemo && isSpinning} className={`spin-button-hex ${isContinuousDemo ? 'demo-active' : ''}`}>
                       {isContinuousDemo ? 'FREE SPIN' : isSpinning ? 'SPINNING...' : !isWalletConnected ? 'CONNECT' : 'SPIN'}
                     </button>
                   </div>
@@ -525,8 +479,6 @@ export const CyberSlotsMachine: React.FC<CyberSlotsMachineProps> = ({ onWin }) =
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default CyberSlotsMachine;
