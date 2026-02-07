@@ -132,7 +132,7 @@ const SlotReel: React.FC<{
             <img
               src={symbol.image}
               alt={symbol.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
             <Badge 
               className={`absolute top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${getRarityColor(symbol.rarity)} text-white text-xs px-3 py-1 opacity-95 shadow-lg`}

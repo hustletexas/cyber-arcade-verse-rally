@@ -168,7 +168,7 @@
 .slot-reel-container {
   perspective: 1000px;
   transform-style: preserve-3d;
-  min-height: 320px;
+  min-height: 520px;
   background: linear-gradient(180deg,
     hsl(240 30% 12%) 0%,
     hsl(260 40% 8%) 50%,
