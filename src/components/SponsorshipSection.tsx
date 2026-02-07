@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Handshake, Mail, Monitor, Trophy, Users, Crown, Megaphone, Star } from 'lucide-react';
+import { Handshake, Mail, Monitor, Trophy, Users, Crown, Megaphone, Star, GraduationCap, Heart } from 'lucide-react';
 
 const sponsorshipIncludes = [
   { icon: Monitor, text: 'Brand placement during events or streams' },
@@ -16,6 +16,8 @@ const sponsorTiers = [
   { label: 'Event Sponsor', icon: Star, color: 'text-neon-green', border: 'border-neon-green/30', glow: 'shadow-[0_0_15px_hsl(var(--neon-green)/0.15)]' },
   { label: 'Tournament Sponsor', icon: Trophy, color: 'text-neon-purple', border: 'border-neon-purple/30', glow: 'shadow-[0_0_15px_hsl(var(--neon-purple)/0.15)]' },
   { label: 'Title Sponsor', icon: Crown, color: 'text-neon-pink', border: 'border-neon-pink/30', glow: 'shadow-[0_0_15px_hsl(var(--neon-pink)/0.15)]' },
+  { label: 'Education Program', icon: GraduationCap, color: 'text-yellow-400', border: 'border-yellow-400/30', glow: 'shadow-[0_0_15px_hsl(50_100%_50%/0.15)]', description: 'Schools, universities & academic orgs' },
+  { label: 'Youth Development', icon: Heart, color: 'text-emerald-400', border: 'border-emerald-400/30', glow: 'shadow-[0_0_15px_hsl(160_100%_50%/0.15)]', description: 'Nonprofits, city programs & youth orgs' },
 ];
 
 export const SponsorshipSection = () => {
@@ -64,7 +66,7 @@ export const SponsorshipSection = () => {
           <h3 className="font-display text-lg sm:text-xl text-neon-purple mb-4 text-center tracking-wide">
             SPONSORSHIP TIERS
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {sponsorTiers.map((tier) => (
               <Card
                 key={tier.label}
@@ -75,9 +77,13 @@ export const SponsorshipSection = () => {
                   <span className={`font-display text-xs sm:text-sm ${tier.color} tracking-wide`}>
                     {tier.label}
                   </span>
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 mt-1">
-                    Branding + Exposure
-                  </Badge>
+                  {'description' in tier && tier.description ? (
+                    <p className="text-muted-foreground text-[10px] sm:text-xs leading-snug">{tier.description}</p>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 mt-1">
+                      Branding + Exposure
+                    </Badge>
+                  )}
                 </CardContent>
               </Card>
             ))}
