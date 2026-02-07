@@ -715,6 +715,39 @@ export type Database = {
           },
         ]
       }
+      sequence_scores: {
+        Row: {
+          best_streak: number
+          created_at: string
+          id: string
+          level: number
+          mistakes: number
+          mode: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number
+          created_at?: string
+          id?: string
+          level?: number
+          mistakes?: number
+          mode?: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          best_streak?: number
+          created_at?: string
+          id?: string
+          level?: number
+          mistakes?: number
+          mode?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       solana_tournament_entries: {
         Row: {
           created_at: string
@@ -1822,6 +1855,48 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_reward_distributions: {
+        Row: {
+          ccc_awarded: number
+          chest_awarded: boolean
+          created_at: string
+          distributed_at: string
+          id: string
+          placement: number
+          raffle_ticket_awarded: boolean
+          total_score: number
+          wallet_address: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          ccc_awarded?: number
+          chest_awarded?: boolean
+          created_at?: string
+          distributed_at?: string
+          id?: string
+          placement: number
+          raffle_ticket_awarded?: boolean
+          total_score?: number
+          wallet_address: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          ccc_awarded?: number
+          chest_awarded?: boolean
+          created_at?: string
+          distributed_at?: string
+          id?: string
+          placement?: number
+          raffle_ticket_awarded?: boolean
+          total_score?: number
+          wallet_address?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       winner_chest_claims: {
         Row: {
           claimed_at: string
@@ -2611,7 +2686,29 @@ export type Database = {
         Args: { category_param: string }
         Returns: Json
       }
+      distribute_weekly_rewards: {
+        Args: {
+          p_ccc_amount: number
+          p_placement: number
+          p_total_score: number
+          p_wallet: string
+          p_week_end: string
+          p_week_start: string
+        }
+        Returns: boolean
+      }
       draw_raffle_winner: { Args: { raffle_id_param: string }; Returns: string }
+      get_combined_weekly_leaderboard: {
+        Args: { p_week_end?: string; p_week_start?: string }
+        Returns: {
+          match_best_score: number
+          rank: number
+          sequence_best_score: number
+          total_score: number
+          trivia_best_score: number
+          wallet_address: string
+        }[]
+      }
       get_own_wallet_address: {
         Args: { record_id: string; table_name: string }
         Returns: string

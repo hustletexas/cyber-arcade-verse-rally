@@ -15,6 +15,7 @@ import {
 import { GameMode, GAME_ENTRY_FEE, LeaderboardEntry, SCORING } from '@/types/cyber-sequence';
 import { toast } from 'sonner';
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
+import { supabase } from '@/integrations/supabase/client';
 import './cyber-sequence.css';
 import '@/components/games/cyber-sequence/cyber-sequence.css';
 
@@ -69,7 +70,7 @@ const CyberSequence: React.FC = () => {
     setTimeout(() => startGame(), 300);
   }, [deductBalance, startGame]);
 
-  // Watch for game end
+  // Watch for game end & save score
   useEffect(() => {
     if (gameState.isFinished && phase === 'playing') {
       // Check for personal best
@@ -80,8 +81,27 @@ const CyberSequence: React.FC = () => {
         setIsNewPersonalBest(false);
       }
       setPhase('finished');
+
+      // Save score to DB if wallet connected
+      const walletAddr = primaryWallet?.address;
+      if (walletAddr && gameState.score > 0) {
+        supabase.from('sequence_scores').insert({
+          user_id: walletAddr,
+          score: gameState.score,
+          level: gameState.level,
+          best_streak: gameState.bestStreak,
+          mistakes: gameState.mistakes,
+          mode: mode,
+        }).then(({ error }) => {
+          if (error) {
+            console.error('Failed to save sequence score:', error);
+          } else {
+            console.log('Sequence score saved:', gameState.score);
+          }
+        });
+      }
     }
-  }, [gameState.isFinished, gameState.score, personalBest, phase]);
+  }, [gameState.isFinished, gameState.score, personalBest, phase, primaryWallet?.address, mode, gameState.level, gameState.bestStreak, gameState.mistakes]);
 
   const handlePlayAgain = useCallback(async () => {
     if (mode === 'daily') {
