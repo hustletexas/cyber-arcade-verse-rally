@@ -748,9 +748,9 @@ export const UnifiedWalletDropdown = () => {
               />
               <div className="relative group cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
                 <Avatar className="w-16 h-16 border-2 border-neon-cyan/50 group-hover:border-neon-cyan transition-colors">
-                  <AvatarImage src={avatarUrl || user?.user_metadata?.avatar_url} />
+                  <AvatarImage src={avatarUrl || undefined} />
                   <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-white text-xl font-bold">
-                    {user?.email?.charAt(0) || 'U'}
+                    {primaryWallet?.address?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -762,8 +762,8 @@ export const UnifiedWalletDropdown = () => {
                 </div>
               </div>
               <div className="flex-1">
-                <p className="font-bold text-lg">{user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'}</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <p className="font-bold text-lg">{primaryWallet?.address ? `${primaryWallet.address.slice(0, 6)}...${primaryWallet.address.slice(-4)}` : 'User'}</p>
+                <p className="text-sm text-muted-foreground">{primaryWallet?.type || 'No wallet'}</p>
               </div>
               <Button variant="outline" size="sm" className="border-neon-cyan/30 hover:border-neon-cyan hover:bg-neon-cyan/10" onClick={() => avatarInputRef.current?.click()} disabled={uploadingAvatar}>
                 {uploadingAvatar ? <Loader2 size={14} className="mr-1 animate-spin" /> : <User size={14} className="mr-1" />}
