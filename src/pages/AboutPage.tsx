@@ -121,7 +121,7 @@ const AboutPage = () => {
               <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Our Mission</h2>
             </div>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              We believe gaming can be more than entertainment — it can be a tool for learning, teamwork, and positive youth development when guided responsibly.
+              We believe gaming can be more than entertainment — it can be a tool for learning, teamwork, creativity, and positive youth development when guided responsibly.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               {[
