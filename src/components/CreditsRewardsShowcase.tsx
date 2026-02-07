@@ -96,7 +96,7 @@ export const CreditsRewardsShowcase = () => {
         <CardHeader>
           <CardTitle className="font-display text-2xl text-neon-cyan flex items-center gap-3">
             <Coins className="w-8 h-8" />
-            CYBER CITY CREDITS
+            CYBER CITY COINS
             <Badge className="bg-gradient-to-r from-neon-cyan to-neon-purple text-white">
               CCC
             </Badge>
