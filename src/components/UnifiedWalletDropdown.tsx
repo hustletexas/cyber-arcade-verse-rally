@@ -136,15 +136,29 @@ export const UnifiedWalletDropdown = () => {
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-      // Save avatar URL to profiles table
-      await supabase
+      // Try to update existing profile, or insert a new one
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .upsert({
-          wallet_address: walletAddr,
-          avatar_url: newUrl,
-          email: walletAddr, // required field fallback
-          id: crypto.randomUUID(),
-        }, { onConflict: 'wallet_address' });
+        .select('id')
+        .eq('wallet_address', walletAddr)
+        .maybeSingle();
+
+      if (existingProfile) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: newUrl, updated_at: new Date().toISOString() })
+          .eq('id', existingProfile.id);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: crypto.randomUUID(),
+            wallet_address: walletAddr,
+            avatar_url: newUrl,
+          });
+        if (insertError) throw insertError;
+      }
 
       setAvatarUrl(newUrl);
       toast({ title: 'Avatar updated!', description: 'Your profile picture has been changed.' });
