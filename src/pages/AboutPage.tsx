@@ -81,7 +81,6 @@ const roadmapItems = [
 
 const partners = [
   { name: 'Stellar Network', description: 'Blockchain infrastructure & payments' },
-  { name: 'Solana', description: 'High-speed NFT minting & tournaments' },
   { name: 'Discord', description: 'Community engagement & voice chat' },
 ];
 
