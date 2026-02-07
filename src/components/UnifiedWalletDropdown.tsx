@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
@@ -77,13 +78,36 @@ export const UnifiedWalletDropdown = () => {
   const [sendAddress, setSendAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
   const [tokensMinimized, setTokensMinimized] = useState(true);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
+  // Load avatar from profiles table on wallet connect
+  React.useEffect(() => {
+    const loadAvatar = async () => {
+      if (!primaryWallet?.address) return;
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('wallet_address', primaryWallet.address)
+          .maybeSingle();
+        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+      } catch (err) {
+        console.error('Failed to load avatar:', err);
+      }
+    };
+    loadAvatar();
+  }, [primaryWallet?.address]);
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !primaryWallet?.address) {
+      if (!primaryWallet?.address) {
+        toast({ title: 'Wallet required', description: 'Please connect your wallet first.', variant: 'destructive' });
+      }
+      return;
+    }
 
     if (!file.type.startsWith('image/')) {
       toast({ title: 'Invalid file', description: 'Please select an image file.', variant: 'destructive' });
@@ -96,13 +120,13 @@ export const UnifiedWalletDropdown = () => {
 
     setUploadingAvatar(true);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
+      const walletAddr = primaryWallet.address;
       const ext = file.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${ext}`;
+      // Use a hash of wallet address for the folder to keep it clean
+      const folderName = walletAddr.slice(0, 16);
+      const filePath = `${folderName}/avatar.${ext}`;
 
-      // Remove old avatar if exists
-      await supabase.storage.from('avatars').remove([filePath]);
-
+      // Upload with upsert to replace existing
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
@@ -112,9 +136,17 @@ export const UnifiedWalletDropdown = () => {
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-      await supabase.auth.updateUser({ data: { avatar_url: newUrl } });
-      setAvatarUrl(newUrl);
+      // Save avatar URL to profiles table
+      await supabase
+        .from('profiles')
+        .upsert({
+          wallet_address: walletAddr,
+          avatar_url: newUrl,
+          email: walletAddr, // required field fallback
+          id: crypto.randomUUID(),
+        }, { onConflict: 'wallet_address' });
 
+      setAvatarUrl(newUrl);
       toast({ title: 'Avatar updated!', description: 'Your profile picture has been changed.' });
     } catch (err: any) {
       console.error('Avatar upload error:', err);
