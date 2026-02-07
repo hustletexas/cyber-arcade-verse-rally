@@ -139,11 +139,6 @@ export const AIGamingCoach = () => {
 
         {/* Question Input */}
         <div className="space-y-4">
-          {isWalletConnected && (
-            <Badge className="bg-neon-green/20 text-neon-green border-neon-green">
-              💰 Balance: {balance.cctr_balance} CCC
-            </Badge>
-          )}
           
           <div className="flex gap-3">
             <Input
