@@ -97,6 +97,7 @@
 }
 
 .slots-title-logo {
+  max-width: 480px;
   width: 100%;
   height: auto;
   position: relative;
@@ -167,7 +168,7 @@
 .slot-reel-container {
   perspective: 1000px;
   transform-style: preserve-3d;
-  min-height: 520px;
+  min-height: 320px;
   background: linear-gradient(180deg,
     hsl(240 30% 12%) 0%,
     hsl(260 40% 8%) 50%,
