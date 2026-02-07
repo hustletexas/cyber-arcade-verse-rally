@@ -291,7 +291,7 @@ export const Marketplace = () => {
                           <div className="p-4 space-y-2 flex-1">
                             <div className="flex justify-between items-start">
                               <h3 className="font-bold text-neon-cyan text-sm">{nft.name}</h3>
-                              <Badge className={`text-xs ${nft.rarity === 'Legendary' ? 'bg-neon-purple text-white' : nft.rarity === 'Epic' ? 'bg-neon-pink text-black' : nft.rarity === 'Rare' ? 'bg-neon-green text-black' : 'bg-gray-500 text-white'}`}>
+                              <Badge className={`text-xs ${nft.rarity === 'Legendary' ? 'bg-yellow-500 text-black' : nft.rarity === 'Epic' ? 'bg-neon-pink text-black' : nft.rarity === 'Rare' ? 'bg-blue-500 text-white' : 'bg-gray-500 text-white'}`}>
                                 {nft.rarity}
                               </Badge>
                             </div>
