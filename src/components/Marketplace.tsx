@@ -223,7 +223,7 @@ export const Marketplace = () => {
       <CardHeader>
         <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3">
           🛒 CYBER CITY SEASON PASS
-          <Badge className="bg-neon-cyan text-black">STELLAR POWERED</Badge>
+          
           {getTotalItems() > 0 && <Button onClick={() => setIsOpen(true)} className="bg-neon-cyan text-black ml-auto hover:bg-neon-cyan/80 flex items-center gap-2">
               <ShoppingCart size={16} />
               {getTotalItems()} items - ${getTotalPrice().toFixed(2)}
