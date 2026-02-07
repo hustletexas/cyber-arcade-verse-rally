@@ -180,7 +180,7 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
                     <Button variant="outline" className="w-full py-5 border-neon-pink/50 text-neon-pink" disabled>
                       ⏰ COME BACK TOMORROW
                     </Button>
-                  </div> : <Button className="cyber-cta-secondary w-full py-6 text-lg font-bold text-neon-pink">
+                  </div> : <Button className="w-full py-6 text-lg font-bold text-neon-pink bg-transparent border border-neon-pink/30 hover:bg-neon-pink/10 backdrop-blur-sm">
                     🏆 START DAILY RUN
                     <span className="ml-2 text-sm opacity-70">({playsRemaining} left)</span>
                   </Button>}
