@@ -125,9 +125,9 @@ const SlotReel: React.FC<{
   };
   return <div className={`
         slot-reel-container relative flex-1 w-full rounded-xl overflow-hidden
-        bg-gradient-to-b from-neon-purple/30 to-black/80
-        border-4 border-neon-cyan/60
-        ${showWin && winRarity ? `shadow-2xl ${getRarityGlow(winRarity)} winner` : 'shadow-lg shadow-neon-purple/40'}
+        bg-transparent
+        border border-neon-purple/20
+        ${showWin && winRarity ? `shadow-2xl ${getRarityGlow(winRarity)} winner` : 'shadow-lg shadow-neon-purple/20'}
         transition-shadow duration-300
       `}>
       {/* Reel Strip */}
@@ -155,9 +155,9 @@ const SlotReel: React.FC<{
         <div className="w-3 h-full bg-gradient-to-t from-neon-pink to-transparent rounded-tl" />
       </div>
       
-      {/* Gradient overlays for depth */}
-      <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10" />
+      {/* Gradient overlays - transparent */}
+      <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-black/20 to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-black/20 to-transparent pointer-events-none z-10" />
       
       {/* Shine effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
