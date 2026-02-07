@@ -61,7 +61,7 @@ const roadmapItems = [
     status: 'upcoming' as const,
     items: [
       'Mobile-first gaming experience',
-      'Cross-chain tournament payouts',
+      'Create esports team',
       'Youth program partnerships',
       'Regional arcade hub events',
     ],
