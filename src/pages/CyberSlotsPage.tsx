@@ -40,9 +40,9 @@ const CyberSlotsPage = () => {
 
       <TopBar />
       
-     <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 relative z-10 min-h-[calc(100vh-4rem)] flex flex-col">
+     <main className="container mx-auto px-3 sm:px-4 py-2 relative z-10 min-h-[calc(100vh-4rem)] flex flex-col">
        {/* Header with Back Button */}
-       <div className="flex items-center justify-between mb-4">
+       <div className="flex items-center justify-between mb-2">
          <Link to="/">
            <Button variant="ghost" className="text-neon-purple hover:bg-neon-purple/10 border border-neon-purple/30">
              <ArrowLeft className="w-4 h-4 mr-2" />
@@ -52,7 +52,7 @@ const CyberSlotsPage = () => {
        </div>
 
        {/* CCC Balance Bar */}
-       <div className="mb-6">
+       <div className="mb-2">
          <CCCBalanceBar />
        </div>
 
@@ -60,7 +60,7 @@ const CyberSlotsPage = () => {
         <div className="flex-1 flex items-start justify-center">
           <div className="w-full">
             {/* Transparent glassmorphic container */}
-            <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-8 border border-neon-purple/20">
+            <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-2 sm:p-4 border border-neon-purple/20">
              <CyberSlotsMachine onWin={(rarity, tokens) => {
                console.log(`Won ${tokens} CCC and ${rarity} chest!`);
              }} />
