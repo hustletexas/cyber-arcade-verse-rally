@@ -54,23 +54,23 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
       </Card>
 
       {/* Daily Run Card */}
-      <Card className={`cyber-glass p-6 hover:border-red-500/50 transition-all duration-300 border-red-500/30 bg-red-950/20 ${!canPlayDaily ? 'opacity-60' : ''}`}>
+      <Card className={`cyber-glass p-6 hover:border-green-500/50 transition-all duration-300 border-green-500/30 bg-green-950/20 ${!canPlayDaily ? 'opacity-60' : ''}`}>
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-full bg-red-500/10 flex items-center justify-center">
-            <Trophy className="w-8 h-8 text-red-400" />
+          <div className="w-16 h-16 mx-auto rounded-full bg-green-500/10 flex items-center justify-center">
+            <Trophy className="w-8 h-8 text-green-400" />
           </div>
           <h2 className="text-2xl font-bold text-white">DAILY RUN</h2>
           <p className="text-gray-400 text-sm">
             {GAME_ENTRY_FEE} CCC entry • 3 lives • Ranked leaderboard
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            <Badge variant="outline" className="border-red-400/50 text-red-400">
+            <Badge variant="outline" className="border-green-400/50 text-green-400">
               <Trophy className="w-3 h-3 mr-1" /> Compete Daily
             </Badge>
-            <Badge variant="outline" className="border-red-400/50 text-red-400">
+            <Badge variant="outline" className="border-green-400/50 text-green-400">
               <Heart className="w-3 h-3 mr-1" /> 3 Lives
             </Badge>
-            <Badge variant="outline" className="border-red-400/50 text-red-400">
+            <Badge variant="outline" className="border-green-400/50 text-green-400">
               <Zap className="w-3 h-3 mr-1" /> Rewards
             </Badge>
           </div>
@@ -87,7 +87,7 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
             variant="outline"
             disabled={!canPlayDaily}
             onClick={() => { if (canPlayDaily) onSelectMode('daily'); }}
-            className="w-full py-6 text-lg font-bold text-red-400 border-red-400/50 bg-transparent hover:bg-red-400/10"
+            className="w-full py-6 text-lg font-bold text-green-400 border-green-400/50 bg-transparent hover:bg-green-400/10"
           >
             {walletConnected ? `START DAILY RUN` : 'CONNECT WALLET'}
           </Button>
