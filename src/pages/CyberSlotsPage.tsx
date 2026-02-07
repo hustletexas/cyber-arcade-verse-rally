@@ -40,27 +40,32 @@ const CyberSlotsPage = () => {
 
       <TopBar />
       
-     <main className="container mx-auto px-2 sm:px-3 pt-0 pb-2 relative z-10 flex flex-col">
+     <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 relative z-10 min-h-[calc(100vh-4rem)] flex flex-col">
        {/* Header with Back Button */}
-       <div className="flex items-center justify-between mb-1">
+       <div className="flex items-center justify-between mb-4">
          <Link to="/">
-           <Button variant="ghost" className="text-neon-purple hover:bg-neon-purple/10 border border-neon-purple/30 h-8 text-xs px-3">
-             <ArrowLeft className="w-3 h-3 mr-1" />
+           <Button variant="ghost" className="text-neon-purple hover:bg-neon-purple/10 border border-neon-purple/30">
+             <ArrowLeft className="w-4 h-4 mr-2" />
              Back to Arcade
            </Button>
          </Link>
        </div>
 
        {/* CCC Balance Bar */}
-       <div className="mb-1">
+       <div className="mb-6">
          <CCCBalanceBar />
        </div>
 
-       {/* Main Content */}
-        <div className="w-full">
-          <CyberSlotsMachine onWin={(rarity, tokens) => {
-            console.log(`Won ${tokens} CCC and ${rarity} chest!`);
-          }} />
+       {/* Main Content - Centered */}
+        <div className="flex-1 flex items-start justify-center">
+          <div className="w-full">
+            {/* Transparent glassmorphic container */}
+            <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-8 border border-neon-purple/20">
+             <CyberSlotsMachine onWin={(rarity, tokens) => {
+               console.log(`Won ${tokens} CCC and ${rarity} chest!`);
+             }} />
+           </div>
+          </div>
         </div>
       </main>
 
