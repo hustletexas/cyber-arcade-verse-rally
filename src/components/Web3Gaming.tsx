@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,11 +10,12 @@ import { PlayerProgress } from './web3games/PlayerProgress';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { toast } from 'sonner';
-
 export const Web3Gaming = () => {
-  const { isWalletConnected, primaryWallet } = useMultiWallet();
+  const {
+    isWalletConnected,
+    primaryWallet
+  } = useMultiWallet();
   const [activeCategory, setActiveCategory] = useState('all');
-
   const connectWallet = async () => {
     // Use Freighter for Stellar wallet connection
     if (window.freighter) {
@@ -31,15 +31,11 @@ export const Web3Gaming = () => {
       window.open('https://freighter.app/', '_blank');
     }
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Header */}
       <Card className="arcade-frame">
         <CardHeader>
-          <CardTitle className="font-display text-3xl text-neon-cyan text-center flex items-center justify-center gap-3">
-            🎮 WEB3 GAMING PORTAL
-            <Badge className="bg-neon-purple text-white">BLOCKCHAIN POWERED</Badge>
+          <CardTitle className="font-display text-3xl text-neon-cyan text-center flex items-center justify-center gap-3"> GAMING PORTAL <Badge className="bg-neon-purple text-white">BLOCKCHAIN POWERED</Badge>
           </CardTitle>
           <p className="text-center text-muted-foreground">
             Play, earn, and own your gaming experience • NFT rewards • Decentralized gaming
@@ -60,10 +56,7 @@ export const Web3Gaming = () => {
 
 
         <TabsContent value="progress" className="mt-6">
-          {isWalletConnected ? (
-            <PlayerProgress />
-          ) : (
-            <Card className="arcade-frame border-neon-pink/30">
+          {isWalletConnected ? <PlayerProgress /> : <Card className="arcade-frame border-neon-pink/30">
               <CardContent className="text-center py-8">
                 <div className="text-4xl mb-4">🔐</div>
                 <h3 className="text-xl font-bold text-neon-pink mb-2">Connect Wallet Required</h3>
@@ -74,10 +67,8 @@ export const Web3Gaming = () => {
                   🚀 Connect Wallet
                 </Button>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
