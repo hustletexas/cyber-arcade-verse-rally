@@ -81,7 +81,6 @@ const roadmapItems = [
 
 const partners = [
   { name: 'Stellar Network', description: 'Blockchain infrastructure & payments' },
-  { name: 'Discord', description: 'Community engagement & voice chat' },
 ];
 
 const AboutPage = () => {
