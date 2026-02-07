@@ -1,218 +1,181 @@
-import React, { useEffect, useState } from 'react';
-import { LeaderboardEntry, PlayerStats } from '@/types/cyber-sequence';
-import { Trophy, Target, Flame, Zap, Award, Ticket } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Trophy, Target, Flame, Calendar, Crown, Loader2 } from 'lucide-react';
+import { LeaderboardEntry } from '@/types/cyber-sequence';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
-interface CyberSequenceLeaderboardProps {
-  entries: LeaderboardEntry[];
-  currentPlayerRank?: number;
-  isLoading?: boolean;
-}
+export const CyberSequenceLeaderboard: React.FC = () => {
+  const { primaryWallet } = useMultiWallet();
+  const walletAddress = primaryWallet?.address;
 
-export const CyberSequenceLeaderboard: React.FC<CyberSequenceLeaderboardProps> = ({
-  entries,
-  currentPlayerRank,
-  isLoading = false,
-}) => {
-  const { isWalletConnected, primaryWallet } = useMultiWallet();
-  const stellarAddress = primaryWallet?.address;
-  const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
-  const [statsLoading, setStatsLoading] = useState(false);
+  const [todayLeaderboard, setTodayLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const formatEntries = (data: any[]): LeaderboardEntry[] => {
+    return (data || []).map((entry, index) => ({
+      rank: index + 1,
+      displayName: entry.user_id
+        ? `${entry.user_id.slice(0, 6)}...${entry.user_id.slice(-4)}`
+        : 'Anon',
+      score: entry.score,
+      max_sequence: entry.level || 0,
+      best_streak: entry.best_streak || 0,
+    }));
+  };
+
+  const fetchLeaderboards = useCallback(async () => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString();
+
+      const [todayResult, allTimeResult] = await Promise.all([
+        supabase
+          .from('sequence_scores')
+          .select('user_id, score, level, best_streak, created_at')
+          .gte('created_at', todayStr)
+          .order('score', { ascending: false })
+          .limit(20),
+        supabase
+          .from('sequence_scores')
+          .select('user_id, score, level, best_streak, created_at')
+          .order('score', { ascending: false })
+          .limit(20),
+      ]);
+
+      setTodayLeaderboard(formatEntries(todayResult.data || []));
+      setAllTimeLeaderboard(formatEntries(allTimeResult.data || []));
+    } catch (err) {
+      console.error('Error fetching sequence leaderboards:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (isWalletConnected && stellarAddress) {
-      fetchPlayerStats();
-    } else {
-      setPlayerStats(null);
-    }
-  }, [isWalletConnected, stellarAddress]);
+    fetchLeaderboards();
+  }, [fetchLeaderboards]);
 
-  const fetchPlayerStats = async () => {
-    if (!stellarAddress) return;
-    setStatsLoading(true);
-    try {
-      // Fetch from daily_limits or create default stats
-      const { data } = await supabase
-        .from('daily_limits')
-        .select('*')
-        .eq('user_id', stellarAddress)
-        .single();
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('sequence_scores_leaderboard')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'sequence_scores' },
+        () => fetchLeaderboards()
+      )
+      .subscribe();
 
-      // For now, show default stats - can be enhanced with a dedicated stats table
-      setPlayerStats({
-        bestScore: 0,
-        bestSequence: 0,
-        bestStreak: 0,
-        totalRuns: data?.plays_today || 0,
-        perfectRuns: 0,
-        ticketsEarned: 0,
-      });
-    } catch (error) {
-      setPlayerStats({
-        bestScore: 0,
-        bestSequence: 0,
-        bestStreak: 0,
-        totalRuns: 0,
-        perfectRuns: 0,
-        ticketsEarned: 0,
-      });
-    } finally {
-      setStatsLoading(false);
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchLeaderboards]);
+
+  const getRankStyle = (rank: number) => {
+    switch (rank) {
+      case 1: return "bg-gradient-to-r from-yellow-500/10 to-transparent border-l-2 border-l-yellow-400";
+      case 2: return "bg-gradient-to-r from-gray-400/10 to-transparent border-l-2 border-l-gray-400";
+      case 3: return "bg-gradient-to-r from-orange-500/10 to-transparent border-l-2 border-l-orange-400";
+      default: return "bg-black/20";
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="sequence-glass-panel p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-400" />
-          Daily Leaderboard
-        </h3>
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-12 bg-gray-800/50 rounded-lg animate-pulse" />
-          ))}
+  const LeaderboardList = ({ entries }: { entries: LeaderboardEntry[] }) => (
+    <div className="space-y-2">
+      {entries.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <Trophy className="w-10 h-10 mx-auto mb-2 opacity-30" />
+          <p>No scores yet. Be the first!</p>
         </div>
-      </div>
-    );
-  }
+      ) : (
+        entries.slice(0, 5).map((entry) => {
+          const isYou = walletAddress && entry.displayName.includes(walletAddress.slice(0, 6));
+          return (
+            <div
+              key={`${entry.rank}-${entry.displayName}`}
+              className={cn(
+                "flex items-center justify-between p-3 rounded-lg transition-all hover:bg-black/30",
+                getRankStyle(entry.rank),
+                isYou && "ring-1 ring-neon-cyan/50"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <span className={cn(
+                  "font-bold text-lg w-6",
+                  entry.rank === 1 ? "text-yellow-400" :
+                  entry.rank === 2 ? "text-gray-300" :
+                  entry.rank === 3 ? "text-orange-400" : "text-gray-500"
+                )}>
+                  #{entry.rank}
+                </span>
+                <div>
+                  <span className="text-sm text-gray-300">
+                    {entry.displayName}
+                    {isYou && <span className="ml-2 text-neon-cyan">(You)</span>}
+                  </span>
+                  <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Target className="w-3 h-3" />
+                      Lvl {entry.max_sequence}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Flame className="w-3 h-3" />
+                      {entry.best_streak}x
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <span className="text-neon-cyan font-bold">{entry.score.toLocaleString()}</span>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Player Stats Section */}
-      <div className="sequence-glass-panel p-5">
-        <h3 className="text-lg font-bold text-neon-cyan mb-3 flex items-center gap-2">
-          <Zap className="w-5 h-5" /> Your Stats
-          {isWalletConnected && (
-            <span className="ml-auto text-xs text-neon-green flex items-center gap-1">
-              <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
-              Live
-            </span>
-          )}
-        </h3>
-        
-        {isWalletConnected ? (
-          statsLoading ? (
-            <div className="grid grid-cols-2 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-16 bg-gray-800/50 rounded-lg animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-800/50 rounded-lg p-3 border border-neon-cyan/20">
-                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
-                  <Trophy className="w-3 h-3 text-yellow-400" />
-                  Best Score
-                </div>
-                <div className="text-xl font-bold text-white">
-                  {playerStats?.bestScore?.toLocaleString() || 0}
-                </div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3 border border-purple-500/20">
-                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
-                  <Target className="w-3 h-3 text-purple-400" />
-                  Best Sequence
-                </div>
-                <div className="text-xl font-bold text-white">
-                  {playerStats?.bestSequence || 0}
-                </div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3 border border-orange-500/20">
-                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
-                  <Flame className="w-3 h-3 text-orange-400" />
-                  Best Streak
-                </div>
-                <div className="text-xl font-bold text-white">
-                  {playerStats?.bestStreak || 0}
-                </div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3 border border-neon-green/20">
-                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
-                  <Award className="w-3 h-3 text-neon-green" />
-                  Total Runs
-                </div>
-                <div className="text-xl font-bold text-white">
-                  {playerStats?.totalRuns || 0}
-                </div>
-              </div>
-            </div>
-          )
-        ) : (
-          <p className="text-gray-400 text-sm text-center py-3">
-            Connect wallet to see your stats
-          </p>
-        )}
-      </div>
+    <Card className="cyber-glass p-5">
+      <h3 className="text-lg font-bold text-neon-cyan mb-4 flex items-center gap-2">
+        <Trophy className="w-5 h-5" /> Leaderboard
+        <span className="ml-auto text-xs text-neon-green flex items-center gap-1">
+          <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+          Live
+        </span>
+      </h3>
 
-      {/* Leaderboard Section */}
-      <div className="sequence-glass-panel p-5">
-        <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-400" />
-          Daily Leaderboard
-        </h3>
-        
-        {entries.length === 0 ? (
-          <p className="text-gray-400 text-center py-4">
-            No scores yet today. Be the first!
-          </p>
-        ) : (
-          <>
-            {/* Header */}
-            <div className="grid grid-cols-12 gap-2 text-xs text-gray-500 uppercase mb-2 px-3">
-              <span className="col-span-1">#</span>
-              <span className="col-span-5">Player</span>
-              <span className="col-span-2 text-right">Score</span>
-              <span className="col-span-2 text-right">Seq</span>
-              <span className="col-span-2 text-right">Streak</span>
-            </div>
-
-            <div className="sequence-leaderboard">
-              {entries.map((entry, idx) => {
-                const isCurrentPlayer = currentPlayerRank === entry.rank;
-                
-                return (
-                  <div
-                    key={entry.rank}
-                    className={`sequence-leaderboard-entry ${isCurrentPlayer ? 'ring-2 ring-cyan-400' : ''}`}
-                  >
-                    <div className="grid grid-cols-12 gap-2 items-center w-full">
-                      <span className={`col-span-1 font-bold ${
-                        idx === 0 ? 'text-yellow-400' :
-                        idx === 1 ? 'text-gray-300' :
-                        idx === 2 ? 'text-orange-400' :
-                        'text-gray-500'
-                      }`}>
-                        {entry.rank}
-                      </span>
-                      
-                      <span className="col-span-5 text-sm text-gray-300 truncate">
-                        {entry.displayName}
-                        {isCurrentPlayer && <span className="ml-2 text-cyan-400">(You)</span>}
-                      </span>
-                      
-                      <span className="col-span-2 text-right text-sm text-white font-medium">
-                        {entry.score.toLocaleString()}
-                      </span>
-                      
-                      <span className="col-span-2 text-right text-sm text-purple-400 flex items-center justify-end gap-1">
-                        <Target className="w-3 h-3" />
-                        {entry.max_sequence}
-                      </span>
-                      
-                      <span className="col-span-2 text-right text-sm text-orange-400 flex items-center justify-end gap-1">
-                        <Flame className="w-3 h-3" />
-                        {entry.best_streak}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-neon-cyan" />
+        </div>
+      ) : (
+        <Tabs defaultValue="today" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-black/30 mb-4">
+            <TabsTrigger
+              value="today"
+              className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan"
+            >
+              <Calendar className="w-4 h-4 mr-1" />
+              Today
+            </TabsTrigger>
+            <TabsTrigger
+              value="alltime"
+              className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan"
+            >
+              <Crown className="w-4 h-4 mr-1" />
+              All Time
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="today">
+            <LeaderboardList entries={todayLeaderboard} />
+          </TabsContent>
+          <TabsContent value="alltime">
+            <LeaderboardList entries={allTimeLeaderboard} />
+          </TabsContent>
+        </Tabs>
+      )}
+    </Card>
   );
 };

@@ -11,6 +11,7 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
+import { WeeklyLeaderboard } from '@/components/WeeklyLeaderboard';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useSeasonPassPurchase } from '@/hooks/useSeasonPassPurchase';
@@ -150,6 +151,11 @@ const Index = () => {
             <CyberGamesSection />
           </section>
 
+          {/* Weekly Leaderboard */}
+          <section id="weekly-leaderboard" className="px-2 sm:px-4">
+            <WeeklyLeaderboard />
+          </section>
+
           {/* NFT Marketplace Section - Mobile Optimized */}
          <section id="marketplace" className="px-2 sm:px-4">
             <Marketplace />
@@ -260,7 +266,7 @@ const Index = () => {
           {/* Copyright */}
           <div className="text-center border-t border-neon-purple/20 pt-4">
             <p className="text-muted-foreground text-xs sm:text-sm">
-              © 2024 <span className="text-neon-cyan">Cyber City Arcade LLC</span> • All Rights Reserved
+              © 2025 <span className="text-neon-cyan">Cyber City Arcade LLC</span> • All Rights Reserved
             </p>
             <p className="text-muted-foreground/60 text-xs mt-1">
               Built on the Stellar Blockchain • Play responsibly

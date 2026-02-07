@@ -4,3 +4,4 @@ export { CyberSequenceHUD } from './CyberSequenceHUD';
 export { CyberSequenceModeSelect } from './CyberSequenceModeSelect';
 export { CyberSequenceEndModal } from './CyberSequenceEndModal';
 export { CyberSequenceLeaderboard } from './CyberSequenceLeaderboard';
+export { CyberSequencePlayerStats } from './CyberSequencePlayerStats';
