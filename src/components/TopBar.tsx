@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Zap, Brain, HelpCircle } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Zap, Brain, HelpCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
    DropdownMenu,
@@ -27,6 +27,7 @@ const pageSections = [
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
   { path: '/cyber-chest', label: 'Cyber Chest', icon: Gift },
   { path: '/cyber-slots', label: 'Cyber Slots', icon: Gamepad2 },
+  { path: '/about', label: 'About Us', icon: Info },
 ];
 
 export const TopBar = () => {
