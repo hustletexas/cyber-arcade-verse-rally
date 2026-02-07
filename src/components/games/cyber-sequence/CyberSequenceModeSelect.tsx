@@ -20,17 +20,6 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
   return <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <Button variant="ghost" onClick={() => navigate('/')} className="absolute top-4 left-4 text-gray-400 hover:text-white">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-          CYBER SEQUENCE
-        </h1>
-        <p className="text-gray-400">
-          Watch. Remember. Repeat.
-        </p>
       </div>
 
       {/* Mode cards */}
