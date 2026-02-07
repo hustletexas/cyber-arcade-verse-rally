@@ -41,7 +41,7 @@ const roadmapItems = [
       'Launch Cyber City Arcade platform',
       'Deploy Cyber Match, Sequence & Trivia games',
       'Integrate digital wallet support',
-      'Build community hub & live chat',
+      'Build community hub & after school program',
     ],
   },
   {
