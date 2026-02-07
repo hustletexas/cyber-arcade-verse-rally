@@ -1,8 +1,7 @@
- import React from 'react';
- import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins } from 'lucide-react';
+import React from 'react';
+import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Zap, Brain, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
- import {
+import {
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
@@ -10,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
  } from '@/components/ui/dropdown-menu';
 import { UnifiedWalletDropdown } from './UnifiedWalletDropdown';
 import { useCart } from '@/contexts/CartContext';
-import { STELLAR_NETWORK } from '@/config/stellar';
 import { useNavigate } from 'react-router-dom';
 
 // Sections that scroll on homepage
@@ -58,23 +56,46 @@ export const TopBar = () => {
     <header className="border-b border-neon-cyan/20 bg-card/30 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between h-12">
-          {/* Network indicator */}
+          {/* Leaderboard dropdown for all 3 games */}
           <div className="flex-1 flex items-center gap-2">
-            {STELLAR_NETWORK.isMainnet ? (
-              <Badge 
-                variant="outline" 
-                className="bg-neon-green/20 border-neon-green/50 text-neon-green text-xs font-medium"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
+                >
+                  <Trophy className="h-4 w-4" />
+                  Leaderboard
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="start" 
+                className="w-48 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100]"
               >
-                ✓ {STELLAR_NETWORK.networkName} • Live
-              </Badge>
-            ) : (
-              <Badge 
-                variant="outline" 
-                className="bg-amber-500/20 border-amber-500/50 text-amber-400 text-xs font-medium animate-pulse"
-              >
-                ⚠️ {STELLAR_NETWORK.networkName} • Mainnet Soon
-              </Badge>
-            )}
+                <DropdownMenuItem
+                  onClick={() => navigate('/cyber-match')}
+                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+                >
+                  <Zap className="h-4 w-4 mr-2 text-neon-pink" />
+                  Cyber Match
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate('/cyber-sequence')}
+                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+                >
+                  <Brain className="h-4 w-4 mr-2 text-neon-purple" />
+                  Cyber Sequence
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate('/cyber-trivia')}
+                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+                >
+                  <HelpCircle className="h-4 w-4 mr-2 text-neon-cyan" />
+                  Cyber Trivia
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Right side actions */}
