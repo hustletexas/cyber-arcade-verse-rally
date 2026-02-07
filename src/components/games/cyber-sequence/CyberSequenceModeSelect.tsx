@@ -1,108 +1,98 @@
 import React from 'react';
 import { GameMode, GAME_ENTRY_FEE, MAX_DAILY_PLAYS } from '@/types/cyber-sequence';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, Trophy, Zap, Heart, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Gamepad2, Trophy, Zap, Heart } from 'lucide-react';
+
 interface CyberSequenceModeSelectProps {
   onSelectMode: (mode: GameMode) => void;
   cctrBalance: number;
   dailyPlaysRemaining?: number;
   walletConnected: boolean;
 }
+
 export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = ({
   onSelectMode,
   cctrBalance,
   dailyPlaysRemaining = MAX_DAILY_PLAYS,
   walletConnected
 }) => {
-  const navigate = useNavigate();
   const canPlayDaily = walletConnected && cctrBalance >= GAME_ENTRY_FEE && dailyPlaysRemaining > 0;
-  return <div className="max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="text-center mb-8">
-      </div>
 
-      {/* Mode cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Free Play */}
-        <div onClick={() => onSelectMode('free')} className="sequence-mode-card sequence-mode-free sequence-glass-panel cursor-pointer">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-green-500/20 border border-green-500/30">
-              <Gamepad2 className="w-6 h-6 text-green-400" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Free Play</h2>
-              <p className="text-sm text-gray-400">Practice Mode</p>
-            </div>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+      {/* Free Play Card */}
+      <Card className="cyber-glass p-6 hover:border-blue-500/50 transition-all duration-300 border-blue-500/30 bg-blue-950/20">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center">
+            <Gamepad2 className="w-8 h-8 text-blue-400" />
           </div>
-          
-          <ul className="space-y-2 text-sm text-gray-300 mb-4">
-            <li className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-green-400" />
-              No entry fee required
-            </li>
-            <li className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-green-400" />
-              Unlimited mistakes
-            </li>
-            <li className="flex items-center gap-2">
-              <Gamepad2 className="w-4 h-4 text-green-400" />
-              Perfect for practice
-            </li>
-          </ul>
-
-          <Button className="w-full bg-green-600 hover:bg-green-700" onClick={e => {
-          e.stopPropagation();
-          onSelectMode('free');
-        }}>
-            Start Free Play
+          <h2 className="text-2xl font-bold text-white">FREE PLAY</h2>
+          <p className="text-gray-400 text-sm">
+            Unlimited plays • Build your streak • Practice mode
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Badge variant="outline" className="border-blue-400/50 text-blue-400">
+              <Zap className="w-3 h-3 mr-1" /> No Entry Fee
+            </Badge>
+            <Badge variant="outline" className="border-blue-400/50 text-blue-400">
+              <Heart className="w-3 h-3 mr-1" /> Unlimited Lives
+            </Badge>
+            <Badge variant="outline" className="border-blue-400/50 text-blue-400">
+              <Gamepad2 className="w-3 h-3 mr-1" /> Practice
+            </Badge>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => onSelectMode('free')}
+            className="w-full py-6 text-lg font-bold text-blue-400 border-blue-400/50 bg-transparent hover:bg-blue-400/10"
+          >
+            PLAY NOW
           </Button>
         </div>
+      </Card>
 
-        {/* Daily Run */}
-        <div onClick={() => canPlayDaily && onSelectMode('daily')} className={`sequence-mode-card sequence-mode-daily sequence-glass-panel ${!canPlayDaily ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-purple-500/20 border border-purple-500/30">
-              <Trophy className="w-6 h-6 text-purple-400" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Daily Run</h2>
-              <p className="text-sm text-gray-400">Ranked Mode</p>
-            </div>
+      {/* Daily Run Card */}
+      <Card className={`cyber-glass p-6 hover:border-red-500/50 transition-all duration-300 border-red-500/30 bg-red-950/20 ${!canPlayDaily ? 'opacity-60' : ''}`}>
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-red-500/10 flex items-center justify-center">
+            <Trophy className="w-8 h-8 text-red-400" />
           </div>
-          
-          <ul className="space-y-2 text-sm text-gray-300 mb-4">
-            <li className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-purple-400" />
-              {GAME_ENTRY_FEE} CCTR entry fee
-            </li>
-            <li className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-purple-400" />
-              3 lives max
-            </li>
-            <li className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-purple-400" />
-              Leaderboard + rewards
-            </li>
-          </ul>
+          <h2 className="text-2xl font-bold text-white">DAILY RUN</h2>
+          <p className="text-gray-400 text-sm">
+            {GAME_ENTRY_FEE} CCC entry • 3 lives • Ranked leaderboard
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Badge variant="outline" className="border-red-400/50 text-red-400">
+              <Trophy className="w-3 h-3 mr-1" /> Compete Daily
+            </Badge>
+            <Badge variant="outline" className="border-red-400/50 text-red-400">
+              <Heart className="w-3 h-3 mr-1" /> 3 Lives
+            </Badge>
+            <Badge variant="outline" className="border-red-400/50 text-red-400">
+              <Zap className="w-3 h-3 mr-1" /> Rewards
+            </Badge>
+          </div>
 
-          {!walletConnected ? <p className="text-center text-sm text-yellow-400 mb-2">
-              Connect wallet to play
-            </p> : cctrBalance < GAME_ENTRY_FEE ? <p className="text-center text-sm text-red-400 mb-2">
-              Insufficient CCTR balance
-            </p> : dailyPlaysRemaining <= 0 ? <p className="text-center text-sm text-yellow-400 mb-2">
-              Daily plays exhausted
-            </p> : null}
+          {!walletConnected ? (
+            <p className="text-center text-sm text-yellow-400">Connect wallet to play</p>
+          ) : cctrBalance < GAME_ENTRY_FEE ? (
+            <p className="text-center text-sm text-red-400">Insufficient CCC balance</p>
+          ) : dailyPlaysRemaining <= 0 ? (
+            <p className="text-center text-sm text-yellow-400">Daily plays exhausted</p>
+          ) : null}
 
-          <Button className="w-full bg-purple-600 hover:bg-purple-700" disabled={!canPlayDaily} onClick={e => {
-          e.stopPropagation();
-          if (canPlayDaily) onSelectMode('daily');
-        }}>
-            {walletConnected ? `Play (${dailyPlaysRemaining}/${MAX_DAILY_PLAYS} remaining)` : 'Connect Wallet'}
+          <Button
+            variant="outline"
+            disabled={!canPlayDaily}
+            onClick={() => { if (canPlayDaily) onSelectMode('daily'); }}
+            className="w-full py-6 text-lg font-bold text-red-400 border-red-400/50 bg-transparent hover:bg-red-400/10"
+          >
+            {walletConnected ? `START DAILY RUN` : 'CONNECT WALLET'}
           </Button>
         </div>
-      </div>
-
-
-    </div>;
+      </Card>
+    </div>
+  );
 };
