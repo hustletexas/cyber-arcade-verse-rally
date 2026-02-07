@@ -9,6 +9,15 @@ interface UserBalance {
   claimable_rewards: number;
 }
 
+interface InitBalanceResponse {
+  success: boolean;
+  ccc_balance?: number;
+  claimable_rewards?: number;
+  daily_bonus_awarded?: number;
+  error?: string;
+  created?: boolean;
+}
+
 export const useUserBalance = () => {
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { user } = useAuth();
@@ -24,85 +33,30 @@ export const useUserBalance = () => {
     }
 
     try {
-      // Try to fetch by wallet address first
-      const { data, error } = await supabase
-        .from('user_balances')
-        .select('cctr_balance, claimable_rewards')
-        .eq('wallet_address', primaryWallet.address)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching balance:', error);
-        setLoading(false);
-        return;
-      }
-
-      if (data) {
-        setBalance({
-          cctr_balance: data.cctr_balance || 0,
-          claimable_rewards: data.claimable_rewards || 0
+      // Use the SECURITY DEFINER RPC directly — it handles both
+      // initialization and daily bonus checks, and bypasses RLS
+      // (wallet-only auth has no Supabase auth session)
+      const { data: initData, error: initError } = await supabase
+        .rpc('initialize_wallet_balance', {
+          p_wallet_address: primaryWallet.address
         });
-        
-        // Still call initialize to check for daily bonus
-        interface InitBalanceResponse {
-          success: boolean;
-          ccc_balance?: number;
-          claimable_rewards?: number;
-          daily_bonus_awarded?: number;
-          error?: string;
-          created?: boolean;
-        }
-        
-        const { data: initData } = await supabase
-          .rpc('initialize_wallet_balance', {
-            p_wallet_address: primaryWallet.address
-          });
 
-        const initResult = initData as unknown as InitBalanceResponse | null;
-        
-        if (initResult?.success) {
-          // Update balance if daily bonus was awarded
-          if (initResult.daily_bonus_awarded && initResult.daily_bonus_awarded > 0) {
-            setDailyBonusAwarded(initResult.daily_bonus_awarded);
-            setBalance({
-              cctr_balance: initResult.ccc_balance || data.cctr_balance || 0,
-              claimable_rewards: initResult.claimable_rewards || data.claimable_rewards || 0
-            });
-          }
+      const initResult = initData as unknown as InitBalanceResponse | null;
+
+      if (initError) {
+        console.error('Error fetching/initializing balance:', initError);
+        setBalance({ cctr_balance: 0, claimable_rewards: 0 });
+      } else if (initResult?.success) {
+        setBalance({
+          cctr_balance: initResult.ccc_balance || 0,
+          claimable_rewards: initResult.claimable_rewards || 0
+        });
+        if (initResult.daily_bonus_awarded && initResult.daily_bonus_awarded > 0) {
+          setDailyBonusAwarded(initResult.daily_bonus_awarded);
         }
       } else {
-        // No balance record exists - use secure server-side function to initialize
-        interface InitBalanceResponse {
-          success: boolean;
-          ccc_balance?: number;
-          claimable_rewards?: number;
-          daily_bonus_awarded?: number;
-          error?: string;
-          created?: boolean;
-        }
-        
-        const { data: initData, error: initError } = await supabase
-          .rpc('initialize_wallet_balance', {
-            p_wallet_address: primaryWallet.address
-          });
-
-        const initResult = initData as unknown as InitBalanceResponse | null;
-
-        if (initError) {
-          console.error('Error initializing balance:', initError);
-          setBalance({ cctr_balance: 0, claimable_rewards: 0 });
-        } else if (initResult?.success) {
-          setBalance({
-            cctr_balance: initResult.ccc_balance || 0,
-            claimable_rewards: initResult.claimable_rewards || 0
-          });
-          if (initResult.daily_bonus_awarded && initResult.daily_bonus_awarded > 0) {
-            setDailyBonusAwarded(initResult.daily_bonus_awarded);
-          }
-        } else {
-          console.error('Balance init failed:', initResult?.error);
-          setBalance({ cctr_balance: 0, claimable_rewards: 0 });
-        }
+        console.error('Balance init failed:', initResult?.error);
+        setBalance({ cctr_balance: 0, claimable_rewards: 0 });
       }
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -145,14 +99,12 @@ export const useUserBalance = () => {
         return { success: false, error: error.message || 'Failed to deduct balance' };
       }
 
-      // Cast the response to proper type
       const result = data as unknown as DeductFeeResponse;
 
       if (!result?.success) {
         return { success: false, error: result?.error || 'Failed to deduct balance' };
       }
 
-      // Update local state with new balance from server
       if (typeof result.new_balance === 'number') {
         setBalance(prev => ({
           ...prev,
@@ -172,8 +124,6 @@ export const useUserBalance = () => {
    * Adding balance should only happen through server-side functions for security.
    */
   const addBalance = useCallback(async (_amount: number): Promise<{ success: boolean; error?: string }> => {
-    // Balance additions should only happen through secure server-side functions
-    // like award_trivia_rewards, claim_user_rewards, etc.
     console.warn('addBalance is deprecated. Use server-side functions for balance additions.');
     return { success: false, error: 'Use server-side functions for balance additions' };
   }, []);
@@ -186,8 +136,6 @@ export const useUserBalance = () => {
     try {
       const claimed = balance.claimable_rewards;
       
-      // Use the existing claim_user_rewards function via direct update
-      // (The RPC function may not exist yet - fallback to safe pattern)
       const { error } = await supabase
         .from('user_balances')
         .update({ 
@@ -202,9 +150,7 @@ export const useUserBalance = () => {
         return { success: false, error: error.message };
       }
 
-      // Refresh balance from server
       await fetchBalance();
-
       return { success: true, claimed_amount: claimed };
     } catch (error) {
       console.error('Error claiming rewards:', error);
@@ -212,7 +158,7 @@ export const useUserBalance = () => {
     }
   }, [primaryWallet?.address, balance.claimable_rewards, balance.cctr_balance, fetchBalance]);
 
-  // Admin airdrop function - maintained for backwards compatibility
+  // Admin airdrop function
   const adminAirdrop = useCallback(async (amount: number, targetWalletAddress?: string) => {
     if (!user) return { success: false, error: 'Not authenticated' };
 
@@ -220,7 +166,6 @@ export const useUserBalance = () => {
       const targetWallet = targetWalletAddress || primaryWallet?.address;
       if (!targetWallet) return { success: false, error: 'No target wallet' };
       
-      // Use the secure RPC function if the user is a Supabase auth user
       if (user.id) {
         const { data, error } = await supabase.rpc('admin_airdrop', {
           target_user_id: user.id,
@@ -249,7 +194,6 @@ export const useUserBalance = () => {
     fetchBalance();
   }, [fetchBalance]);
 
-  // Also refetch when wallet connects/disconnects
   useEffect(() => {
     if (isWalletConnected) {
       fetchBalance();

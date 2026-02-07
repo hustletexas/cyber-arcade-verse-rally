@@ -114,7 +114,7 @@ export const UnifiedWalletDropdown = () => {
   const handleClaimRewards = () => {
     toast({
       title: "Claiming Rewards",
-      description: `Claiming ${balance.claimable_rewards.toLocaleString()} $CCTR...`
+      description: `Claiming ${balance.claimable_rewards.toLocaleString()} CCC...`
     });
     setShowRewardsModal(false);
   };
@@ -203,7 +203,7 @@ export const UnifiedWalletDropdown = () => {
                 </span>
                 <span className="text-[10px] text-neon-green font-bold flex items-center gap-1">
                   <Sparkles size={8} className="animate-pulse" />
-                  {balance.cctr_balance.toLocaleString()} $CCTR
+                  {balance.cctr_balance.toLocaleString()} CCC
                 </span>
               </div>
               <ChevronDown size={14} className="text-muted-foreground transition-transform duration-300 group-hover:rotate-180" />
@@ -249,7 +249,7 @@ export const UnifiedWalletDropdown = () => {
                 {/* CCTR and Claimable row */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">$CCTR Balance</p>
+                    <p className="text-xs text-muted-foreground mb-1">CCC Balance</p>
                     <p className="text-2xl font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
                       {balance.cctr_balance.toLocaleString()}
                     </p>
