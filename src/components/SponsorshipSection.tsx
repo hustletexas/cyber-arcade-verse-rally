@@ -121,11 +121,11 @@ export const SponsorshipSection = () => {
             </h3>
             <p className="text-muted-foreground text-sm mb-5">
               <Mail className="inline w-4 h-4 mr-1 -mt-0.5" />
-              partnerships@cybercityarcade.com
+              cybercityarcade@gmail.com
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button asChild className="cyber-button px-6 py-3 text-sm sm:text-base w-full sm:w-auto">
-                <a href="mailto:partnerships@cybercityarcade.com">
+                <a href="mailto:cybercityarcade@gmail.com">
                   📩 Request Sponsorship Info
                 </a>
               </Button>
