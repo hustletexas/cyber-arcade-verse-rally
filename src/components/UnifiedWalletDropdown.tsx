@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -77,6 +77,53 @@ export const UnifiedWalletDropdown = () => {
   const [sendAddress, setSendAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
   const [tokensMinimized, setTokensMinimized] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Invalid file', description: 'Please select an image file.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Max size is 2MB.', variant: 'destructive' });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const ext = file.name.split('.').pop();
+      const filePath = `${user.id}/avatar.${ext}`;
+
+      // Remove old avatar if exists
+      await supabase.storage.from('avatars').remove([filePath]);
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      await supabase.auth.updateUser({ data: { avatar_url: newUrl } });
+      setAvatarUrl(newUrl);
+
+      toast({ title: 'Avatar updated!', description: 'Your profile picture has been changed.' });
+    } catch (err: any) {
+      console.error('Avatar upload error:', err);
+      toast({ title: 'Upload failed', description: err.message || 'Could not upload avatar.', variant: 'destructive' });
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  };
   const handleSignOut = async () => {
     try {
       if (isWalletConnected) {
@@ -660,21 +707,35 @@ export const UnifiedWalletDropdown = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-4 p-4 bg-card/50 rounded-xl border border-white/10">
-              <Avatar className="w-16 h-16 border-2 border-neon-cyan/50">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-white text-xl font-bold">
-                  {user?.email?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
+              <div className="relative group cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
+                <Avatar className="w-16 h-16 border-2 border-neon-cyan/50 group-hover:border-neon-cyan transition-colors">
+                  <AvatarImage src={avatarUrl || user?.user_metadata?.avatar_url} />
+                  <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-white text-xl font-bold">
+                    {user?.email?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploadingAvatar ? (
+                    <Loader2 size={20} className="text-white animate-spin" />
+                  ) : (
+                    <User size={20} className="text-white" />
+                  )}
+                </div>
+              </div>
               <div className="flex-1">
                 <p className="font-bold text-lg">{user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'}</p>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
               </div>
-              <Button variant="outline" size="sm" className="border-neon-cyan/30 hover:border-neon-cyan hover:bg-neon-cyan/10" onClick={() => {
-                const input = document.querySelector<HTMLInputElement>('input[placeholder="Enter display name"]');
-                if (input) { input.focus(); input.select(); }
-              }}>
-                <User size={14} className="mr-1" /> Edit
+              <Button variant="outline" size="sm" className="border-neon-cyan/30 hover:border-neon-cyan hover:bg-neon-cyan/10" onClick={() => avatarInputRef.current?.click()} disabled={uploadingAvatar}>
+                {uploadingAvatar ? <Loader2 size={14} className="mr-1 animate-spin" /> : <User size={14} className="mr-1" />}
+                {uploadingAvatar ? 'Uploading…' : 'Edit'}
               </Button>
             </div>
             
