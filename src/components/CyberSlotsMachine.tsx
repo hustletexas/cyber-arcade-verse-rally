@@ -108,7 +108,7 @@ const SlotReel: React.FC<{
   return (
     <div 
       className={`
-        slot-reel-container relative flex-1 w-full max-w-[220px] rounded-xl overflow-hidden
+        slot-reel-container relative flex-1 w-full rounded-xl overflow-hidden
         bg-gradient-to-b from-neon-purple/30 to-black/80
         border-4 border-neon-cyan/60
         ${showWin && winRarity ? `shadow-2xl ${getRarityGlow(winRarity)} winner` : 'shadow-lg shadow-neon-purple/40'}
