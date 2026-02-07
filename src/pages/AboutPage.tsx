@@ -227,7 +227,7 @@ const AboutPage = () => {
             <Handshake className="h-7 w-7 text-neon-cyan" />
             <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Partners & Ecosystem</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="flex justify-center">
             {partners.map((partner) => (
               <div
                 key={partner.name}
