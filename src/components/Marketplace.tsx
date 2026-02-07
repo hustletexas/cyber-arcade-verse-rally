@@ -73,7 +73,7 @@ const mockNFTs = [
 // Common NFT
 {
   id: 4,
-  name: "Cyber City NFT",
+  name: "Cyber City Pass",
   price: {
     cctr: 50,
     xlm: 250,
