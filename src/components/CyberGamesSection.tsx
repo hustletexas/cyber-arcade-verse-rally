@@ -145,6 +145,10 @@ export const CyberGamesSection: React.FC = () => {
           <span className="text-lg">🎫</span>
           <span>Earn Tickets & Rewards</span>
         </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-lg">🎮</span>
+          <span>More Games Coming Soon</span>
+        </div>
       </div>
       </CardContent>
     </Card>;
