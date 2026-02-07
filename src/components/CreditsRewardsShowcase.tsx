@@ -107,10 +107,6 @@ export const CreditsRewardsShowcase = () => {
           </p>
         </CardHeader>
         <CardContent>
-          {/* Wallet & Balance Status */}
-          <div className="mb-6">
-            <WalletStatusBar />
-          </div>
 
           {/* Current Balance Display */}
           {isWalletConnected && (
