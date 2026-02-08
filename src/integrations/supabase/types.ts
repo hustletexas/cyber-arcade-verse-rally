@@ -2709,6 +2709,7 @@ export type Database = {
           wallet_address: string
         }[]
       }
+      get_current_wallet_address: { Args: never; Returns: string }
       get_own_wallet_address: {
         Args: { record_id: string; table_name: string }
         Returns: string
