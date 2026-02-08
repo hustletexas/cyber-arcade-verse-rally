@@ -120,7 +120,7 @@ const Index = () => {
           </div>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
-            Our Mission Cyber City Arcade uses gaming to promote teamwork, digital literacy, and positive youth engagement in safe, supervised environments.
+            Cyber City Arcade uses gaming to promote teamwork, digital literacy, and positive youth engagement in safe, supervised environments.
           </p>
 
           {/* Mobile-Enhanced Action Buttons */}
