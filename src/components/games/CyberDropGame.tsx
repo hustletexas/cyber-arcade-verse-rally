@@ -67,6 +67,7 @@ const CountdownTimer = ({ targetTime }: { targetTime: Date }) => {
 export const CyberDropGame: React.FC = () => {
   const { isWalletConnected } = useMultiWallet();
   const { isPlaying, playsRemaining, balance, play, isLoading, nextResetTime, maxPlays } = useCyberDrop();
+  
 
   const [animating, setAnimating] = useState(false);
   const [chipPosition, setChipPosition] = useState<{ x: number; y: number } | null>(null);
@@ -76,9 +77,12 @@ export const CyberDropGame: React.FC = () => {
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState<{ slotIndex: number; rewardAmount: number } | null>(null);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const [dropX, setDropX] = useState<number | null>(null); // player-chosen drop position
+  const [hovering, setHovering] = useState(false);
   const sparkleIdRef = useRef(0);
   const boardRef = useRef<HTMLDivElement>(null);
   const [boardWidth, setBoardWidth] = useState(700);
+  const canPlay = isWalletConnected && playsRemaining > 0 && !isPlaying && !animating;
 
   // Measure container width
   useEffect(() => {
@@ -132,9 +136,8 @@ export const CyberDropGame: React.FC = () => {
     }, 500);
   }, []);
 
-  const generatePath = useCallback((targetSlot: number) => {
+  const generatePath = useCallback((targetSlot: number, startX: number) => {
     const path: { x: number; y: number }[] = [];
-    const startX = boardWidth / 2;
     const targetX = targetSlot * SLOT_WIDTH + SLOT_WIDTH / 2;
     path.push({ x: startX, y: 0 });
     let currentX = startX;
@@ -175,7 +178,24 @@ export const CyberDropGame: React.FC = () => {
     return () => clearTimeout(timer);
   }, [animating, currentPathIndex, chipPath, spawnSparkles]);
 
-  const handleDrop = async () => {
+  const handleBoardClick = async (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!canPlay) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, e.clientX - rect.left));
+    setDropX(x);
+    // Trigger drop from this position
+    await triggerDrop(x);
+  };
+
+  const handleBoardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!canPlay || animating) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    setDropX(Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, x)));
+    setHovering(true);
+  };
+
+  const triggerDrop = async (startX: number) => {
     if (!isWalletConnected || playsRemaining <= 0 || isPlaying || animating) return;
 
     const result = await play();
@@ -184,12 +204,17 @@ export const CyberDropGame: React.FC = () => {
     setResultData(result);
     setLandedSlot(result.slotIndex);
 
-    const path = generatePath(result.slotIndex);
+    const path = generatePath(result.slotIndex, startX);
     setChipPath(path);
     setCurrentPathIndex(0);
     setChipPosition(path[0]);
     setSparkles([]);
+    setHovering(false);
     setAnimating(true);
+  };
+
+  const handleDrop = async () => {
+    await triggerDrop(dropX ?? boardWidth / 2);
   };
 
   if (isLoading) {
@@ -201,7 +226,7 @@ export const CyberDropGame: React.FC = () => {
     );
   }
 
-  const canPlay = isWalletConnected && playsRemaining > 0 && !isPlaying && !animating;
+  
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -238,9 +263,25 @@ export const CyberDropGame: React.FC = () => {
         <CardContent className="p-4">
           <div
             ref={boardRef}
-            className="relative w-full mx-auto"
+            className={`relative w-full mx-auto ${canPlay ? 'cursor-crosshair' : ''}`}
             style={{ height: BOARD_HEIGHT }}
+            onClick={handleBoardClick}
+            onMouseMove={handleBoardMouseMove}
+            onMouseLeave={() => setHovering(false)}
           >
+            {/* Drop position indicator */}
+            {hovering && dropX !== null && canPlay && !animating && (
+              <motion.div
+                className="absolute top-0 z-20 pointer-events-none"
+                animate={{ left: dropX - 12 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
+                <div className="w-6 h-6 rounded-full border-2 border-neon-cyan/80 bg-neon-cyan/20"
+                  style={{ boxShadow: '0 0 12px hsl(var(--neon-cyan) / 0.6)' }}
+                />
+                <div className="w-0.5 h-6 bg-neon-cyan/30 mx-auto" />
+              </motion.div>
+            )}
             {/* Pegs */}
             {pegs.map((peg, i) => (
               <div
@@ -344,7 +385,7 @@ export const CyberDropGame: React.FC = () => {
             ? 'DROPPING...'
             : playsRemaining <= 0
             ? 'COME BACK TOMORROW'
-            : `DROP (${playsRemaining}/${maxPlays} FREE)`}
+            : `CLICK THE BOARD TO DROP (${playsRemaining}/${maxPlays})`}
         </Button>
       )}
 
