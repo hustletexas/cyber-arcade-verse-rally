@@ -212,12 +212,9 @@ const Index = () => {
             <div className="text-center">
               <h4 className="text-neon-pink font-semibold mb-3 text-sm sm:text-base">Quick Links</h4>
               <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-                <button onClick={() => window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-              })} className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
+                <Link to="/about" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
                   About
-                </button>
+                </Link>
                 <a href="mailto:cybercityarcade@gmail.com" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
                   Support
                 </a>
