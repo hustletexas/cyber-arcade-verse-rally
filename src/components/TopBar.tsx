@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Zap, Brain, HelpCircle, Info } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
    DropdownMenu,
@@ -28,6 +28,7 @@ const pageSections = [
   { path: '/cyber-chest', label: 'Cyber Chest', icon: Gift },
   { path: '/cyber-drop', label: 'Cyber Drop', icon: Gamepad2 },
   { path: '/about', label: 'About Us', icon: Info },
+  { path: '/foundation', label: 'Foundation', icon: Heart },
 ];
 
 export const TopBar = () => {
@@ -57,46 +58,16 @@ export const TopBar = () => {
     <header className="border-b border-neon-cyan/20 bg-card/30 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between h-12">
-          {/* Leaderboard dropdown for all 3 games */}
+          {/* Foundation link */}
           <div className="flex-1 flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
-                >
-                  <Trophy className="h-4 w-4" />
-                  Leaderboard
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="start" 
-                className="w-48 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100]"
-              >
-                <DropdownMenuItem
-                  onClick={() => navigate('/cyber-match')}
-                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
-                >
-                  <Zap className="h-4 w-4 mr-2 text-neon-pink" />
-                  Cyber Match
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => navigate('/cyber-sequence')}
-                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
-                >
-                  <Brain className="h-4 w-4 mr-2 text-neon-purple" />
-                  Cyber Sequence
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => navigate('/cyber-trivia')}
-                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
-                >
-                  <HelpCircle className="h-4 w-4 mr-2 text-neon-cyan" />
-                  Cyber Trivia
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="ghost"
+              className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
+              onClick={() => navigate('/foundation')}
+            >
+              <Laptop className="h-4 w-4" />
+              Foundation
+            </Button>
           </div>
 
           {/* Right side actions */}
