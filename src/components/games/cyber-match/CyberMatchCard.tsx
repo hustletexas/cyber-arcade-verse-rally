@@ -62,9 +62,9 @@ export const CyberMatchCard: React.FC<CyberMatchCardProps> = ({
         {/* Card Front (face up) - NFT Image */}
         <div
           className={cn(
-            "absolute inset-0 w-full h-full rounded-xl overflow-hidden border-2 transition-all duration-300",
+            "absolute inset-0 w-full h-full rounded-xl overflow-hidden border-2 transition-all duration-500",
             card.isMatched 
-              ? "border-neon-green shadow-[0_0_35px_rgba(74,222,128,0.6),inset_0_0_20px_rgba(74,222,128,0.25)]" 
+              ? "border-neon-green shadow-[0_0_15px_rgba(74,222,128,0.5)]" 
               : "border-neon-cyan shadow-[0_0_25px_rgba(6,182,212,0.4),inset_0_0_15px_rgba(6,182,212,0.15)]"
           )}
           style={{ 
@@ -83,28 +83,14 @@ export const CyberMatchCard: React.FC<CyberMatchCardProps> = ({
             }}
           />
           
-          {/* Glow overlay */}
-          <div className={cn(
-            "absolute inset-0 pointer-events-none transition-opacity duration-300",
-            card.isMatched 
-              ? "bg-gradient-to-t from-neon-green/30 via-transparent to-neon-green/10"
-              : "bg-gradient-to-t from-neon-cyan/15 to-transparent"
-          )} />
-          
-          {/* Electric lightning match effect */}
+          {/* Lightning strike effect - plays once then disappears */}
           {card.isMatched && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-              {/* Lightning bolts via SVG */}
-              <svg className="absolute inset-0 w-full h-full animate-pulse" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M30 0 L25 35 L40 32 L20 65 L35 60 L15 100" stroke="#4ade80" strokeWidth="2" fill="none" opacity="0.9" className="animate-[lightning-flicker_0.3s_ease-in-out_infinite]" />
-                <path d="M70 0 L75 30 L60 28 L80 60 L65 55 L85 100" stroke="#22d3ee" strokeWidth="1.5" fill="none" opacity="0.7" className="animate-[lightning-flicker_0.4s_ease-in-out_infinite_0.1s]" />
-                <path d="M50 0 L45 20 L55 18 L40 50 L55 45 L50 100" stroke="#a78bfa" strokeWidth="1" fill="none" opacity="0.6" className="animate-[lightning-flicker_0.35s_ease-in-out_infinite_0.2s]" />
+            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl animate-lightning-strike">
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 140" preserveAspectRatio="none">
+                <path d="M55 0 L42 45 L58 42 L30 95 L50 88 L25 140" stroke="#4ade80" strokeWidth="3" fill="none" />
+                <path d="M55 0 L42 45 L58 42 L30 95 L50 88 L25 140" stroke="white" strokeWidth="1.5" fill="none" opacity="0.8" />
               </svg>
-              {/* Electric glow overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-neon-green/20 via-transparent to-cyan-400/20 animate-pulse" />
-              {/* Spark dots */}
-              <div className="absolute top-1 left-1/4 w-1 h-1 bg-neon-green rounded-full animate-ping" />
-              <div className="absolute bottom-2 right-1/4 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.15s' }} />
+              <div className="absolute inset-0 bg-white/30" />
             </div>
           )}
         </div>
