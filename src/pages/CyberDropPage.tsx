@@ -4,6 +4,7 @@ import PortalBreakerGame from '@/components/games/PortalBreakerGame';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 
 const CyberDropPage = () => {
   return (
@@ -29,6 +30,11 @@ const CyberDropPage = () => {
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
             Smash through portal shards, catch power-ups, and stabilize the gateway!
           </p>
+        </div>
+
+        {/* CCC Balance Bar */}
+        <div className="max-w-lg mx-auto mb-6">
+          <CCCBalanceBar />
         </div>
 
         {/* Game */}
