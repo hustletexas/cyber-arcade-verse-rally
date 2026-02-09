@@ -4,7 +4,7 @@ import { ArrowLeft, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const TermsOfService = () => {
-  const lastUpdated = "January 20, 2026";
+  const lastUpdated = "February 9, 2026";
 
   return (
     <div className="min-h-screen bg-arcade-dark p-4 md:p-8">
@@ -27,175 +27,153 @@ const TermsOfService = () => {
             </div>
           </CardHeader>
           <CardContent className="prose prose-invert max-w-none p-6 space-y-6">
-            
+
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                By accessing or using Cyber Arcade Verse ("the Platform"), you agree to be bound by these Terms of Service. 
-                If you do not agree to these terms, please do not use our services. These terms constitute a legally binding 
-                agreement between you and Cyber Arcade Verse.
+                Welcome to Cyber City Arcade. By accessing or using our website, applications, or services (collectively, the "Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, do not use the Platform.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">2. Eligibility</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">1. Overview of Services</h2>
               <p className="text-muted-foreground leading-relaxed">
-                You must be at least 18 years old to use this Platform. By using our services, you represent and warrant that 
-                you are of legal age in your jurisdiction to form a binding contract. Users under 18 may only use the Platform 
-                under the supervision of a parent or legal guardian who agrees to be bound by these Terms.
+                Cyber City Arcade is a gaming and entertainment platform that offers interactive experiences, digital content, and optional digital collectibles, including non-fungible tokens ("NFTs").
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-2">
+                NFTs offered on the Platform are intended as digital collectibles or access-based items and are not investment products.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">3. Account Responsibilities</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">2. Eligibility</h2>
               <p className="text-muted-foreground leading-relaxed">
-                You are responsible for maintaining the confidentiality of your account credentials, including wallet private keys. 
-                You agree to notify us immediately of any unauthorized use of your account. We are not liable for any losses 
-                resulting from unauthorized access to your account due to your failure to safeguard your credentials.
+                You must be at least 18 years old (or the age of majority in your jurisdiction) to make purchases on the Platform. By using the Platform, you represent that you meet this requirement.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">4. Cryptocurrency & Digital Assets</h2>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">4.1 Risk Acknowledgment:</strong> Cryptocurrency and digital asset transactions 
-                involve significant risks including volatility, regulatory uncertainty, and potential total loss of value. You 
-                acknowledge and accept these risks when using our Platform.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">4.2 CCC Tokens:</strong> CCC tokens are utility tokens for use within the 
-                Platform ecosystem. They are not securities, investments, or currency. CCC tokens have no guaranteed value 
-                outside the Platform.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">4.3 Wallet Security:</strong> You are solely responsible for securing your 
-                cryptocurrency wallets. We do not store private keys on our servers. Lost private keys cannot be recovered.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                <strong className="text-neon-cyan">4.4 Transaction Finality:</strong> Blockchain transactions are irreversible. 
-                We cannot reverse, cancel, or refund any cryptocurrency transactions once confirmed on the blockchain.
+              <h2 className="text-xl font-bold text-neon-pink mb-3">3. NFT & Digital Product Disclosures</h2>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-2">
+                <li>NFTs sold by Cyber City Arcade are not investments</li>
+                <li>NFTs do not provide ownership in the company</li>
+                <li>NFTs do not guarantee value, resale opportunities, profits, dividends, or future financial returns</li>
+                <li>Any utility associated with NFTs (such as access or rewards) may change or end at any time</li>
+              </ul>
+              <p className="text-muted-foreground leading-relaxed mt-3">
+                You acknowledge that blockchain technology involves inherent risks, including network failures, software bugs, or third-party wallet issues.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">5. NFTs & Digital Collectibles</h2>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">5.1 Ownership:</strong> NFT purchases grant you ownership of the token on the 
-                blockchain, not necessarily the underlying intellectual property unless explicitly stated.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">5.2 No Guarantees:</strong> We make no guarantees regarding the future value, 
-                transferability, or utility of any NFTs purchased on this Platform.
-              </p>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">4. Purchases & Payments</h2>
               <p className="text-muted-foreground leading-relaxed">
-                <strong className="text-neon-cyan">5.3 Gas Fees:</strong> You are responsible for all network transaction fees 
-                (gas fees) associated with NFT minting, transfers, and purchases.
+                All purchases are processed through third-party payment providers (such as Stripe). Cyber City Arcade does not store your payment card information.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-2">
+                Prices are displayed in fiat currency during checkout. You are responsible for any applicable taxes associated with your purchase.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">6. Gaming & Tournaments</h2>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">6.1 Fair Play:</strong> You agree to participate in all games and tournaments 
-                fairly. Cheating, exploiting bugs, using automated tools, or any form of manipulation is strictly prohibited.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">6.2 Entry Fees:</strong> Tournament entry fees are non-refundable once a 
-                tournament has begun. Refunds for cancelled tournaments will be processed within 7 business days.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong className="text-neon-cyan">6.3 Prizes:</strong> Prize distributions are final once confirmed. We reserve 
-                the right to withhold prizes if fraud or cheating is detected.
-              </p>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">5. Delivery of Digital Products</h2>
               <p className="text-muted-foreground leading-relaxed">
-                <strong className="text-neon-cyan">6.4 Skill-Based Gaming:</strong> Games on this Platform are skill-based. 
-                Outcomes depend on player skill and performance, not chance.
+                NFTs or digital access are delivered electronically after successful payment. Delivery times may vary due to technical or blockchain-related factors.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-2">
+                Cyber City Arcade is not responsible for delivery issues caused by incorrect wallet addresses or third-party wallet providers.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">7. Raffles & Promotions</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">6. Refunds & Cancellations</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Raffles are conducted using verifiable random selection methods. Participation in raffles is subject to 
-                applicable local laws. Void where prohibited. Winners are responsible for any taxes on prizes. 
-                We reserve the right to modify or cancel raffles at any time.
+                All purchases are subject to our <Link to="/refund-policy" className="text-neon-cyan hover:text-neon-purple transition-colors underline">Refund Policy</Link>, which is incorporated into these Terms by reference.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-2">
+                Except where required by law, digital products and NFTs are generally non-refundable once delivered.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">8. Prohibited Activities</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                You may not: (a) use the Platform for money laundering or illegal activities; (b) attempt to manipulate 
-                markets or prices; (c) harass other users; (d) infringe on intellectual property rights; (e) use bots or 
-                automated systems to gain unfair advantages; (f) circumvent security measures; (g) impersonate others.
+              <h2 className="text-xl font-bold text-neon-pink mb-3">7. User Conduct</h2>
+              <p className="text-muted-foreground leading-relaxed mb-2">
+                You agree not to:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-2">
+                <li>Use the Platform for unlawful purposes</li>
+                <li>Attempt to exploit, manipulate, or abuse pricing, rewards, or systems</li>
+                <li>Circumvent geographic or access restrictions</li>
+                <li>Engage in fraudulent or deceptive activity</li>
+              </ul>
+              <p className="text-muted-foreground leading-relaxed mt-3">
+                Cyber City Arcade reserves the right to suspend or terminate access for violations of these Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">9. Intellectual Property</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">8. Intellectual Property</h2>
               <p className="text-muted-foreground leading-relaxed">
-                All content on this Platform, including but not limited to graphics, logos, music, and software, is owned 
-                by Cyber Arcade Verse or its licensors. You may not reproduce, distribute, or create derivative works 
-                without express written permission.
+                All content on the Platform, including logos, branding, artwork, and software, is owned by Cyber City Arcade or its licensors.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-2">
+                Purchasing an NFT does not grant ownership of intellectual property unless explicitly stated.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">10. Limitation of Liability</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">9. No Guarantees or Warranties</h2>
               <p className="text-muted-foreground leading-relaxed">
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, CYBER ARCADE VERSE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, 
-                SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR DIGITAL ASSETS. OUR TOTAL 
-                LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID TO US IN THE PAST 12 MONTHS.
+                The Platform and all digital products are provided "as is" and "as available." Cyber City Arcade makes no guarantees regarding uninterrupted access, future features, or outcomes.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">11. Disclaimer of Warranties</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">10. Limitation of Liability</h2>
               <p className="text-muted-foreground leading-relaxed">
-                THE PLATFORM IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT GUARANTEE UNINTERRUPTED ACCESS, 
-                ERROR-FREE OPERATION, OR THAT THE PLATFORM WILL MEET YOUR EXPECTATIONS. CRYPTOCURRENCY VALUES CAN FLUCTUATE 
-                DRAMATICALLY AND YOU MAY LOSE YOUR ENTIRE INVESTMENT.
+                To the maximum extent permitted by law, Cyber City Arcade shall not be liable for indirect, incidental, or consequential damages, including loss of digital assets, lost profits, or data loss.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">12. Dispute Resolution</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">11. Changes to the Platform or Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Any disputes arising from these Terms shall be resolved through binding arbitration in accordance with 
-                applicable arbitration rules. You waive any right to participate in class action lawsuits or class-wide 
-                arbitration. This agreement shall be governed by applicable law.
+                We may modify these Terms or the Platform at any time. Updates will be posted on this page. Continued use of the Platform constitutes acceptance of the updated Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">13. Modifications</h2>
+              <h2 className="text-xl font-bold text-neon-pink mb-3">12. Governing Law</h2>
               <p className="text-muted-foreground leading-relaxed">
-                We reserve the right to modify these Terms at any time. Continued use of the Platform after changes 
-                constitutes acceptance of the new Terms. We will notify users of material changes via email or Platform 
-                notification.
+                These Terms are governed by the laws of the United States, without regard to conflict of law principles.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl text-neon-pink mb-3">14. Contact Information</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                For questions about these Terms, please contact us at: support@cyberarcadeverse.com
+              <h2 className="text-xl font-bold text-neon-pink mb-3">13. Contact Information</h2>
+              <p className="text-muted-foreground leading-relaxed mb-2">
+                For questions or concerns regarding these Terms, contact:
+              </p>
+              <p className="text-neon-cyan font-mono">
+                <a href="mailto:support@cybercityarcade.com" className="hover:text-neon-purple transition-colors underline">
+                  support@cybercityarcade.com
+                </a>
               </p>
             </section>
 
-            <div className="pt-6 border-t border-neon-cyan/20">
-              <p className="text-sm text-muted-foreground text-center">
-                By using Cyber Arcade Verse, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
-              </p>
+            <div className="pt-6 border-t border-neon-cyan/20 flex flex-wrap gap-4">
+              <Link to="/privacy">
+                <Button variant="outline" className="border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10">
+                  Privacy Policy
+                </Button>
+              </Link>
+              <Link to="/refund-policy">
+                <Button variant="outline" className="border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10">
+                  Refund Policy
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
-
-        <div className="mt-6 text-center">
-          <Link to="/privacy" className="text-neon-cyan hover:text-neon-pink transition-colors">
-            View Privacy Policy →
-          </Link>
-        </div>
       </div>
     </div>
   );
