@@ -27,6 +27,7 @@ const pageSections = [
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
   { path: '/cyber-chest', label: 'Cyber Chest', icon: Gift },
   { path: '/cyber-drop', label: 'Portal Breaker', icon: Gamepad2 },
+  { path: '/cyber-galaxy', label: 'Cyber Galaxy', icon: Gamepad2 },
   { path: '/about', label: 'About Us', icon: Info },
   { path: '/foundation', label: 'Foundation', icon: Heart },
 ];
