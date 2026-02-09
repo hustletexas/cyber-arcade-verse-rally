@@ -224,7 +224,9 @@ export const useCyberTrivia = () => {
         .insert({
           user_id: userId,
           mode,
-          lives_remaining: mode === 'daily_run' ? TRIVIA_CONFIG.DAILY_RUN.STARTING_LIVES : null,
+          lives_remaining: mode === 'daily_run' 
+            ? TRIVIA_CONFIG.DAILY_RUN.STARTING_LIVES 
+            : TRIVIA_CONFIG.FREE_PLAY.MAX_WRONG_ANSWERS,
         })
         .select()
         .single();
@@ -239,7 +241,9 @@ export const useCyberTrivia = () => {
         status: 'playing',
         questions: gameQuestions,
         timeRemaining: config.TIME_PER_QUESTION,
-        livesRemaining: mode === 'daily_run' ? TRIVIA_CONFIG.DAILY_RUN.STARTING_LIVES : null,
+        livesRemaining: mode === 'daily_run' 
+          ? TRIVIA_CONFIG.DAILY_RUN.STARTING_LIVES 
+          : TRIVIA_CONFIG.FREE_PLAY.MAX_WRONG_ANSWERS,
         runId: runData?.id || null,
       });
 
@@ -247,7 +251,7 @@ export const useCyberTrivia = () => {
         title: mode === 'daily_run' ? "🎯 Daily Run Started!" : "🎮 Free Play Started!",
         description: mode === 'daily_run' 
           ? `${TRIVIA_CONFIG.DAILY_RUN.TOTAL_QUESTIONS} questions, ${TRIVIA_CONFIG.DAILY_RUN.STARTING_LIVES} lives. Good luck!`
-          : "Endless mode - build your streak!",
+          : `3 wrong answers and you're out! 10s per question.`,
       });
     } catch (error) {
       console.error('Error starting game:', error);
