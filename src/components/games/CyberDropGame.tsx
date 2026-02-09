@@ -150,21 +150,36 @@ export const CyberDropGame: React.FC = () => {
     const targetX = targetSlot * SLOT_WIDTH + SLOT_WIDTH / 2;
     path.push({ x: startX, y: 0 });
     let currentX = startX;
+    const clampX = (x: number) => Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, x));
+
     for (let row = 0; row < PEG_ROWS; row++) {
       const progress = (row + 1) / PEG_ROWS;
       const targetForRow = startX + (targetX - startX) * progress;
-      const jitter = (Math.random() - 0.5) * SLOT_WIDTH * 0.6;
+      const jitter = (Math.random() - 0.5) * SLOT_WIDTH * 0.7;
       currentX = targetForRow + jitter;
-      currentX = Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, currentX));
+      currentX = clampX(currentX);
       const pegY = 50 + row * PEG_SPACING_Y;
+
+      // Hit the peg
       path.push({ x: currentX, y: pegY });
-      const bounceDir = currentX > targetForRow ? -1 : 1;
-      const bounceX = currentX + bounceDir * (SLOT_WIDTH * 0.3 + Math.random() * SLOT_WIDTH * 0.2);
-      const bounceY = pegY + PEG_SPACING_Y * 0.45;
-      path.push({
-        x: Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, bounceX)),
-        y: bounceY,
-      });
+
+      // First bounce — strong deflection off the peg
+      const bounceDir = Math.random() > 0.5 ? 1 : -1;
+      const bounce1X = currentX + bounceDir * (SLOT_WIDTH * 0.4 + Math.random() * SLOT_WIDTH * 0.3);
+      const bounce1Y = pegY + PEG_SPACING_Y * 0.25;
+      path.push({ x: clampX(bounce1X), y: bounce1Y });
+
+      // Second bounce — smaller ricochet in opposite direction
+      const bounce2X = clampX(bounce1X) - bounceDir * (SLOT_WIDTH * 0.15 + Math.random() * SLOT_WIDTH * 0.2);
+      const bounce2Y = pegY + PEG_SPACING_Y * 0.5;
+      path.push({ x: clampX(bounce2X), y: bounce2Y });
+
+      // Third micro-bounce — settle toward next row
+      const bounce3X = clampX(bounce2X) + (Math.random() - 0.5) * SLOT_WIDTH * 0.2;
+      const bounce3Y = pegY + PEG_SPACING_Y * 0.75;
+      path.push({ x: clampX(bounce3X), y: bounce3Y });
+
+      currentX = clampX(bounce3X);
     }
     path.push({ x: targetX, y: BOARD_HEIGHT - 40 });
     return path;
@@ -184,11 +199,12 @@ export const CyberDropGame: React.FC = () => {
     const timer = setTimeout(() => {
       const pos = chipPath[currentPathIndex];
       setChipPosition(pos);
-      if (currentPathIndex > 0 && currentPathIndex < chipPath.length - 1) {
+      // Sparkle only on peg hits (every 4th point after the first)
+      if (currentPathIndex > 0 && currentPathIndex < chipPath.length - 1 && currentPathIndex % 4 === 1) {
         spawnSparkles(pos.x, pos.y);
       }
       setCurrentPathIndex(prev => prev + 1);
-    }, 200);
+    }, 90);
 
     return () => clearTimeout(timer);
   }, [animating, currentPathIndex, chipPath, spawnSparkles]);
@@ -376,7 +392,7 @@ export const CyberDropGame: React.FC = () => {
                   left: chipPosition.x - 20,
                   top: chipPosition.y - 20,
                 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, mass: 0.8 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 12, mass: 0.6 }}
               />
             )}
 
