@@ -47,15 +47,15 @@ export interface DifficultyConfig {
 export const DIFFICULTY_CONFIGS: Record<GameMode, DifficultyConfig> = {
   free: {
     baseSpeed: 800,
-    speedDecrement: 30,
-    minSpeed: 200,
+    speedDecrement: 50,
+    minSpeed: 180,
     startingLength: 2,
     maxMistakes: null, // unlimited
   },
   daily: {
     baseSpeed: 700,
-    speedDecrement: 40,
-    minSpeed: 150,
+    speedDecrement: 60,
+    minSpeed: 140,
     startingLength: 3,
     maxMistakes: 3,
   },
