@@ -5,9 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TriviaUserStats, TriviaDailyLeaderboardEntry } from '@/types/cyber-trivia';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft, Calendar, Crown } from 'lucide-react';
+import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft, Calendar, Crown, FlaskConical, Dumbbell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-type TriviaCategory = 'Gaming' | 'Entertainment';
+type TriviaCategory = 'Gaming' | 'Entertainment' | 'Science' | 'Sports';
 type PlayMode = 'free' | 'prize';
 interface CyberTriviaHomeProps {
   onStartFreePlay: (category: TriviaCategory, playMode: PlayMode) => void;
@@ -79,15 +79,9 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                     Video games, esports, retro classics & gaming culture
                   </p>
                   <div className="flex flex-wrap justify-center gap-2 mb-2">
-                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">
-                      Retro
-                    </Badge>
-                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">
-                      Esports
-                    </Badge>
-                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">
-                      Console
-                    </Badge>
+                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">Retro</Badge>
+                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">Esports</Badge>
+                    <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan text-xs">Console</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3 pt-2">
                     <Button onClick={() => handleCategorySelect('Gaming', 'free')} disabled={loading} variant="outline" className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 py-5">
@@ -108,24 +102,70 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
                   </div>
                   <h3 className="text-2xl font-bold text-white">ENTERTAINMENT</h3>
                   <p className="text-gray-400 text-sm">
-                    Movies, TV shows, music, sports & pop culture
+                    Movies, TV shows, music & pop culture
                   </p>
                   <div className="flex flex-wrap justify-center gap-2 mb-2">
-                    <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">
-                      Movies
-                    </Badge>
-                    <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">
-                      Music
-                    </Badge>
-                    <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">
-                      Sports
-                    </Badge>
+                    <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">Movies</Badge>
+                    <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">Music</Badge>
+                    <Badge variant="outline" className="border-purple-400/50 text-purple-400 text-xs">TV</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3 pt-2">
                     <Button onClick={() => handleCategorySelect('Entertainment', 'free')} disabled={loading} variant="outline" className="border-purple-400/50 text-purple-400 hover:bg-purple-500/10 py-5">
                       <span className="font-bold">FREE</span>
                     </Button>
                     <Button onClick={() => handleCategorySelect('Entertainment', 'prize')} disabled={loading} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5">
+                      🏆 WIN CCC
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Science Category */}
+              <Card className="cyber-glass p-6" style={{ borderColor: 'rgba(34, 197, 94, 0.3)' }}>
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-green-500/10 flex items-center justify-center">
+                    <FlaskConical className="w-8 h-8 text-green-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">SCIENCE</h3>
+                  <p className="text-gray-400 text-sm">
+                    Physics, chemistry, biology, space & technology
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 mb-2">
+                    <Badge variant="outline" className="border-green-400/50 text-green-400 text-xs">Physics</Badge>
+                    <Badge variant="outline" className="border-green-400/50 text-green-400 text-xs">Space</Badge>
+                    <Badge variant="outline" className="border-green-400/50 text-green-400 text-xs">Biology</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <Button onClick={() => handleCategorySelect('Science', 'free')} disabled={loading} variant="outline" className="border-green-400/50 text-green-400 hover:bg-green-500/10 py-5">
+                      <span className="font-bold">FREE</span>
+                    </Button>
+                    <Button onClick={() => handleCategorySelect('Science', 'prize')} disabled={loading} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5">
+                      🏆 WIN CCC
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Sports Category */}
+              <Card className="cyber-glass p-6" style={{ borderColor: 'rgba(249, 115, 22, 0.3)' }}>
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-orange-500/10 flex items-center justify-center">
+                    <Dumbbell className="w-8 h-8 text-orange-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">SPORTS</h3>
+                  <p className="text-gray-400 text-sm">
+                    Football, basketball, soccer, Olympics & athletics
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 mb-2">
+                    <Badge variant="outline" className="border-orange-400/50 text-orange-400 text-xs">Football</Badge>
+                    <Badge variant="outline" className="border-orange-400/50 text-orange-400 text-xs">Basketball</Badge>
+                    <Badge variant="outline" className="border-orange-400/50 text-orange-400 text-xs">Soccer</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <Button onClick={() => handleCategorySelect('Sports', 'free')} disabled={loading} variant="outline" className="border-orange-400/50 text-orange-400 hover:bg-orange-500/10 py-5">
+                      <span className="font-bold">FREE</span>
+                    </Button>
+                    <Button onClick={() => handleCategorySelect('Sports', 'prize')} disabled={loading} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-5">
                       🏆 WIN CCC
                     </Button>
                   </div>
