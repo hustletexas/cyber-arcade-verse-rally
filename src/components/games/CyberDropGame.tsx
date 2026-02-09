@@ -5,22 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useCyberDrop } from '@/hooks/useCyberDrop';
-import { WalletStatusBar } from '@/components/WalletStatusBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SLOT_REWARDS = [0, 5, 10, 15, 25, 40, 60, 90, 140, 250, 500];
+// Pyramid order: lowest on edges, highest in center
+const SLOT_REWARDS = [0, 10, 25, 60, 140, 500, 250, 90, 40, 15, 5];
 const SLOT_COUNT = 11;
 const PEG_ROWS = 9;
 
-// Color mapping for reward tiers
 const getSlotColor = (reward: number): string => {
   if (reward === 0) return 'hsl(var(--muted))';
   if (reward <= 10) return 'hsl(var(--neon-cyan))';
   if (reward <= 25) return 'hsl(var(--neon-green))';
   if (reward <= 60) return 'hsl(var(--neon-purple))';
   if (reward <= 140) return 'hsl(var(--neon-pink))';
-  return 'hsl(50, 100%, 60%)'; // gold for 250/500
+  return 'hsl(50, 100%, 60%)';
 };
 
 const getSlotGlow = (reward: number): string => {
@@ -32,7 +31,13 @@ const getSlotGlow = (reward: number): string => {
   return 'shadow-[0_0_25px_hsl(50_100%_60%/0.8)]';
 };
 
-// Countdown timer component
+interface Sparkle {
+  id: number;
+  x: number;
+  y: number;
+  angle: number;
+}
+
 const CountdownTimer = ({ targetTime }: { targetTime: Date }) => {
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -40,10 +45,7 @@ const CountdownTimer = ({ targetTime }: { targetTime: Date }) => {
     const update = () => {
       const now = new Date().getTime();
       const diff = targetTime.getTime() - now;
-      if (diff <= 0) {
-        setTimeLeft('Ready!');
-        return;
-      }
+      if (diff <= 0) { setTimeLeft('Ready!'); return; }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
@@ -64,7 +66,7 @@ const CountdownTimer = ({ targetTime }: { targetTime: Date }) => {
 
 export const CyberDropGame: React.FC = () => {
   const { isWalletConnected } = useMultiWallet();
-  const { isPlaying, hasPlayedToday, balance, play, isLoading, nextResetTime } = useCyberDrop();
+  const { isPlaying, playsRemaining, balance, play, isLoading, nextResetTime, maxPlays } = useCyberDrop();
 
   const [animating, setAnimating] = useState(false);
   const [chipPosition, setChipPosition] = useState<{ x: number; y: number } | null>(null);
@@ -73,13 +75,28 @@ export const CyberDropGame: React.FC = () => {
   const [landedSlot, setLandedSlot] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState<{ slotIndex: number; rewardAmount: number } | null>(null);
+  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const sparkleIdRef = useRef(0);
   const boardRef = useRef<HTMLDivElement>(null);
+  const [boardWidth, setBoardWidth] = useState(700);
 
-  const BOARD_WIDTH = 360;
-  const BOARD_HEIGHT = 420;
-  const SLOT_WIDTH = BOARD_WIDTH / SLOT_COUNT;
+  // Measure container width
+  useEffect(() => {
+    const measure = () => {
+      if (boardRef.current?.parentElement) {
+        const w = boardRef.current.parentElement.clientWidth - 32; // padding
+        setBoardWidth(Math.min(Math.max(w, 300), 900));
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
-  // Generate peg positions
+  const BOARD_HEIGHT = Math.round(boardWidth * 1.1);
+  const SLOT_WIDTH = boardWidth / SLOT_COUNT;
+  const PEG_SPACING_Y = (BOARD_HEIGHT - 80) / PEG_ROWS;
+
   const pegs = React.useMemo(() => {
     const p: { x: number; y: number; row: number; col: number }[] = [];
     for (let row = 0; row < PEG_ROWS; row++) {
@@ -88,48 +105,56 @@ export const CyberDropGame: React.FC = () => {
       for (let col = 0; col < pegsInRow; col++) {
         p.push({
           x: offset + col * SLOT_WIDTH + SLOT_WIDTH / 2,
-          y: 40 + row * 38,
+          y: 50 + row * PEG_SPACING_Y,
           row,
           col,
         });
       }
     }
     return p;
+  }, [boardWidth, SLOT_WIDTH, PEG_SPACING_Y]);
+
+  // Spawn sparkles at a position
+  const spawnSparkles = useCallback((x: number, y: number) => {
+    const count = 4 + Math.floor(Math.random() * 3);
+    const newSparkles: Sparkle[] = [];
+    for (let i = 0; i < count; i++) {
+      newSparkles.push({
+        id: sparkleIdRef.current++,
+        x,
+        y,
+        angle: (360 / count) * i + Math.random() * 30,
+      });
+    }
+    setSparkles(prev => [...prev, ...newSparkles]);
+    setTimeout(() => {
+      setSparkles(prev => prev.filter(s => !newSparkles.find(n => n.id === s.id)));
+    }, 500);
   }, []);
 
-  // Generate chip animation path to target slot
   const generatePath = useCallback((targetSlot: number) => {
     const path: { x: number; y: number }[] = [];
-    const startX = BOARD_WIDTH / 2;
+    const startX = boardWidth / 2;
     const targetX = targetSlot * SLOT_WIDTH + SLOT_WIDTH / 2;
-
-    // Start position
     path.push({ x: startX, y: 0 });
-
-    // Bounce through peg rows toward target
     let currentX = startX;
     for (let row = 0; row < PEG_ROWS; row++) {
       const progress = (row + 1) / PEG_ROWS;
       const targetForRow = startX + (targetX - startX) * progress;
-      // Add some randomness but trend toward target
       const jitter = (Math.random() - 0.5) * SLOT_WIDTH * 0.6;
       currentX = targetForRow + jitter;
-      // Clamp to board
-      currentX = Math.max(SLOT_WIDTH / 2, Math.min(BOARD_WIDTH - SLOT_WIDTH / 2, currentX));
-      path.push({ x: currentX, y: 40 + row * 38 });
+      currentX = Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, currentX));
+      path.push({ x: currentX, y: 50 + row * PEG_SPACING_Y });
     }
-
-    // Final landing
-    path.push({ x: targetX, y: BOARD_HEIGHT - 30 });
+    path.push({ x: targetX, y: BOARD_HEIGHT - 40 });
     return path;
-  }, []);
+  }, [boardWidth, SLOT_WIDTH, PEG_SPACING_Y, BOARD_HEIGHT]);
 
   // Animate chip along path
   useEffect(() => {
     if (!animating || chipPath.length === 0) return;
 
     if (currentPathIndex >= chipPath.length) {
-      // Animation complete
       setTimeout(() => {
         setAnimating(false);
         setShowResult(true);
@@ -138,15 +163,20 @@ export const CyberDropGame: React.FC = () => {
     }
 
     const timer = setTimeout(() => {
-      setChipPosition(chipPath[currentPathIndex]);
+      const pos = chipPath[currentPathIndex];
+      setChipPosition(pos);
+      // Sparkle on each peg row hit (skip first position which is the start)
+      if (currentPathIndex > 0 && currentPathIndex < chipPath.length - 1) {
+        spawnSparkles(pos.x, pos.y);
+      }
       setCurrentPathIndex(prev => prev + 1);
-    }, 120);
+    }, 110);
 
     return () => clearTimeout(timer);
-  }, [animating, currentPathIndex, chipPath]);
+  }, [animating, currentPathIndex, chipPath, spawnSparkles]);
 
   const handleDrop = async () => {
-    if (!isWalletConnected || hasPlayedToday || isPlaying || animating) return;
+    if (!isWalletConnected || playsRemaining <= 0 || isPlaying || animating) return;
 
     const result = await play();
     if (!result) return;
@@ -154,27 +184,29 @@ export const CyberDropGame: React.FC = () => {
     setResultData(result);
     setLandedSlot(result.slotIndex);
 
-    // Start animation
     const path = generatePath(result.slotIndex);
     setChipPath(path);
     setCurrentPathIndex(0);
     setChipPosition(path[0]);
+    setSparkles([]);
     setAnimating(true);
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-md mx-auto">
+      <div className="space-y-6 max-w-3xl mx-auto">
         <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-[450px] w-full rounded-2xl" />
+        <Skeleton className="h-[500px] w-full rounded-2xl" />
       </div>
     );
   }
 
+  const canPlay = isWalletConnected && playsRemaining > 0 && !isPlaying && !animating;
+
   return (
-    <div className="space-y-6 max-w-md mx-auto">
-      {/* Balance display */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Balance + plays remaining */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl">💎</span>
           <div>
@@ -182,7 +214,23 @@ export const CyberDropGame: React.FC = () => {
             <p className="font-display text-xl text-neon-cyan">{balance.toLocaleString()}</p>
           </div>
         </div>
-        {hasPlayedToday && nextResetTime && <CountdownTimer targetTime={nextResetTime} />}
+        <div className="flex items-center gap-4">
+          {/* Plays remaining indicator */}
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs text-muted-foreground mr-1">Drops:</p>
+            {Array.from({ length: maxPlays }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-3 h-3 rounded-full border transition-all ${
+                  i < playsRemaining
+                    ? 'bg-neon-cyan border-neon-cyan shadow-[0_0_8px_hsl(var(--neon-cyan)/0.6)]'
+                    : 'bg-transparent border-muted-foreground/30'
+                }`}
+              />
+            ))}
+          </div>
+          {playsRemaining === 0 && nextResetTime && <CountdownTimer targetTime={nextResetTime} />}
+        </div>
       </div>
 
       {/* Plinko Board */}
@@ -190,35 +238,64 @@ export const CyberDropGame: React.FC = () => {
         <CardContent className="p-4">
           <div
             ref={boardRef}
-            className="relative mx-auto"
-            style={{ width: BOARD_WIDTH, height: BOARD_HEIGHT }}
+            className="relative w-full mx-auto"
+            style={{ height: BOARD_HEIGHT }}
           >
             {/* Pegs */}
             {pegs.map((peg, i) => (
               <div
                 key={i}
-                className="absolute w-2 h-2 rounded-full bg-neon-purple/60"
+                className="absolute w-2.5 h-2.5 rounded-full bg-neon-purple/60"
                 style={{
-                  left: peg.x - 4,
-                  top: peg.y - 4,
+                  left: peg.x - 5,
+                  top: peg.y - 5,
                   boxShadow: '0 0 6px hsl(var(--neon-purple) / 0.4)',
                 }}
               />
             ))}
 
+            {/* Sparkle particles */}
+            <AnimatePresence>
+              {sparkles.map(s => {
+                const rad = (s.angle * Math.PI) / 180;
+                const dist = 18 + Math.random() * 12;
+                return (
+                  <motion.div
+                    key={s.id}
+                    className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
+                    style={{
+                      left: s.x - 3,
+                      top: s.y - 3,
+                      background: 'hsl(var(--neon-cyan))',
+                      boxShadow: '0 0 6px hsl(var(--neon-cyan) / 0.9)',
+                    }}
+                    initial={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                    animate={{
+                      opacity: 0,
+                      scale: 0.3,
+                      x: Math.cos(rad) * dist,
+                      y: Math.sin(rad) * dist,
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                  />
+                );
+              })}
+            </AnimatePresence>
+
             {/* Chip */}
             {chipPosition && animating && (
               <motion.div
-                className="absolute w-5 h-5 rounded-full z-10"
+                className="absolute w-6 h-6 rounded-full z-10"
                 style={{
                   background: 'radial-gradient(circle, hsl(var(--neon-cyan)), hsl(var(--neon-cyan) / 0.6))',
                   boxShadow: '0 0 15px hsl(var(--neon-cyan) / 0.8), 0 0 30px hsl(var(--neon-cyan) / 0.4)',
                 }}
                 animate={{
-                  left: chipPosition.x - 10,
-                  top: chipPosition.y - 10,
+                  left: chipPosition.x - 12,
+                  top: chipPosition.y - 12,
                 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20, duration: 0.12 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20, duration: 0.11 }}
               />
             )}
 
@@ -227,10 +304,8 @@ export const CyberDropGame: React.FC = () => {
               {SLOT_REWARDS.map((reward, i) => (
                 <div
                   key={i}
-                  className={`flex-1 text-center py-2 border-x border-neon-purple/20 rounded-b-lg transition-all duration-300 ${
-                    landedSlot === i && !animating
-                      ? `${getSlotGlow(reward)} scale-110`
-                      : ''
+                  className={`flex-1 text-center py-2.5 border-x border-neon-purple/20 rounded-b-lg transition-all duration-300 ${
+                    landedSlot === i && !animating ? `${getSlotGlow(reward)} scale-110` : ''
                   }`}
                   style={{
                     backgroundColor:
@@ -240,7 +315,7 @@ export const CyberDropGame: React.FC = () => {
                   }}
                 >
                   <span
-                    className="font-display text-[10px] sm:text-xs font-bold"
+                    className="font-display text-xs sm:text-sm font-bold"
                     style={{ color: getSlotColor(reward) }}
                   >
                     {reward}
@@ -262,14 +337,14 @@ export const CyberDropGame: React.FC = () => {
       ) : (
         <Button
           onClick={handleDrop}
-          disabled={hasPlayedToday || isPlaying || animating}
+          disabled={!canPlay}
           className="w-full py-6 text-lg font-display tracking-wider bg-transparent border border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 hover:border-neon-cyan transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {animating
             ? 'DROPPING...'
-            : hasPlayedToday
+            : playsRemaining <= 0
             ? 'COME BACK TOMORROW'
-            : 'DROP (FREE DAILY)'}
+            : `DROP (${playsRemaining}/${maxPlays} FREE)`}
         </Button>
       )}
 
@@ -281,7 +356,7 @@ export const CyberDropGame: React.FC = () => {
               {resultData && resultData.rewardAmount > 0 ? '🎉 POINTS WON!' : '💫 NICE TRY!'}
             </DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">
-              Your daily Cyber Drop result
+              Your Cyber Drop result
             </DialogDescription>
           </DialogHeader>
           {resultData && (
@@ -314,7 +389,7 @@ export const CyberDropGame: React.FC = () => {
                 onClick={() => setShowResult(false)}
                 className="w-full bg-transparent border border-neon-purple/50 text-neon-purple hover:bg-neon-purple/10"
               >
-                CLOSE
+                {playsRemaining > 0 ? 'DROP AGAIN' : 'CLOSE'}
               </Button>
             </div>
           )}
