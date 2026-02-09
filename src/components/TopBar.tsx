@@ -26,7 +26,7 @@ const pageSections = [
   { path: '/raffles', label: 'Raffles', icon: Ticket },
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
   { path: '/cyber-chest', label: 'Cyber Chest', icon: Gift },
-  { path: '/cyber-slots', label: 'Cyber Slots', icon: Gamepad2 },
+  { path: '/cyber-drop', label: 'Cyber Drop', icon: Gamepad2 },
   { path: '/about', label: 'About Us', icon: Info },
 ];
 
