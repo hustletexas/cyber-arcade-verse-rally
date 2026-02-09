@@ -4,14 +4,12 @@ import { useMultiWallet } from './useMultiWallet';
 
 interface CyberDropState {
   isPlaying: boolean;
-  playsRemaining: number;
+  freePlayUsed: boolean;
   balance: number;
-  lastResult: { playId: string; slotIndex: number; rewardAmount: number } | null;
+  lastResult: { playId: string; slotIndex: number; rewardAmount: number; isPaid: boolean } | null;
   isLoading: boolean;
   nextResetTime: Date | null;
 }
-
-const MAX_DAILY_PLAYS = 3;
 
 const getChicagoMidnight = (): Date => {
   const now = new Date();
@@ -30,7 +28,7 @@ export const useCyberDrop = () => {
 
   const [state, setState] = useState<CyberDropState>({
     isPlaying: false,
-    playsRemaining: MAX_DAILY_PLAYS,
+    freePlayUsed: false,
     balance: 0,
     lastResult: null,
     isLoading: true,
@@ -49,9 +47,10 @@ export const useCyberDrop = () => {
       const [playsRes, balanceRes] = await Promise.all([
         supabase
           .from('cyberdrop_plays')
-          .select('id')
+          .select('id, is_paid')
           .eq('user_id', walletAddress)
-          .eq('played_on_date', chicagoDate),
+          .eq('played_on_date', chicagoDate)
+          .eq('is_paid', false),
         supabase
           .from('user_points')
           .select('balance')
@@ -59,15 +58,14 @@ export const useCyberDrop = () => {
           .maybeSingle(),
       ]);
 
-      const playsToday = playsRes.data?.length ?? 0;
-      const remaining = Math.max(0, MAX_DAILY_PLAYS - playsToday);
+      const freePlaysToday = playsRes.data?.length ?? 0;
 
       setState(prev => ({
         ...prev,
-        playsRemaining: remaining,
+        freePlayUsed: freePlaysToday >= 1,
         balance: balanceRes.data?.balance ?? 0,
         isLoading: false,
-        nextResetTime: remaining === 0 ? getChicagoMidnight() : null,
+        nextResetTime: freePlaysToday >= 1 ? getChicagoMidnight() : null,
       }));
     } catch (err) {
       console.error('[CyberDrop] Status check failed:', err);
@@ -79,14 +77,17 @@ export const useCyberDrop = () => {
     checkStatus();
   }, [checkStatus]);
 
-  const play = useCallback(async (): Promise<{ slotIndex: number; rewardAmount: number } | null> => {
-    if (!walletAddress || state.playsRemaining <= 0 || state.isPlaying) return null;
+  const play = useCallback(async (isPaid: boolean): Promise<{ slotIndex: number; rewardAmount: number; isPaid: boolean } | null> => {
+    if (!walletAddress || state.isPlaying) return null;
+    if (!isPaid && state.freePlayUsed) return null;
+    if (isPaid && state.balance < 1) return null;
 
     setState(prev => ({ ...prev, isPlaying: true }));
 
     try {
       const { data, error } = await supabase.rpc('play_cyberdrop', {
         p_wallet_address: walletAddress,
+        p_is_paid: isPaid,
       });
 
       if (error) throw error;
@@ -98,37 +99,38 @@ export const useCyberDrop = () => {
           setState(prev => ({
             ...prev,
             isPlaying: false,
-            playsRemaining: 0,
+            freePlayUsed: true,
             nextResetTime: getChicagoMidnight(),
           }));
+        } else if (result.error === 'INSUFFICIENT_BALANCE') {
+          setState(prev => ({ ...prev, isPlaying: false }));
         } else {
           setState(prev => ({ ...prev, isPlaying: false }));
         }
         return null;
       }
 
-      const remaining = result.playsRemaining ?? Math.max(0, state.playsRemaining - 1);
-
       setState(prev => ({
         ...prev,
         isPlaying: false,
-        playsRemaining: remaining,
+        freePlayUsed: isPaid ? prev.freePlayUsed : true,
         balance: result.updatedBalance,
         lastResult: {
           playId: result.playId,
           slotIndex: result.slotIndex,
           rewardAmount: result.rewardAmount,
+          isPaid: result.isPaid,
         },
-        nextResetTime: remaining === 0 ? getChicagoMidnight() : null,
+        nextResetTime: prev.freePlayUsed || !isPaid ? getChicagoMidnight() : prev.nextResetTime,
       }));
 
-      return { slotIndex: result.slotIndex, rewardAmount: result.rewardAmount };
+      return { slotIndex: result.slotIndex, rewardAmount: result.rewardAmount, isPaid: result.isPaid };
     } catch (err) {
       console.error('[CyberDrop] Play failed:', err);
       setState(prev => ({ ...prev, isPlaying: false }));
       return null;
     }
-  }, [walletAddress, state.playsRemaining, state.isPlaying]);
+  }, [walletAddress, state.freePlayUsed, state.isPlaying, state.balance]);
 
-  return { ...state, play, refetch: checkStatus, maxPlays: MAX_DAILY_PLAYS };
+  return { ...state, play, refetch: checkStatus };
 };
