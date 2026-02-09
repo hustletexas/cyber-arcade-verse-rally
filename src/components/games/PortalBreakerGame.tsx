@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Play, Pause, RotateCcw, Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { toast } from 'sonner';
 
 // ─── Constants ───────────────────────────────────────────────────────
 const BASE_WIDTH = 480;
@@ -172,8 +174,9 @@ const PortalBreakerGame: React.FC = () => {
   const [loadingLb, setLoadingLb] = useState(false);
   const scaleRef = useRef(1);
 
-  const { primaryWallet } = useMultiWallet();
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
   const walletAddress = primaryWallet?.address || '';
+  const { deductBalance } = useUserBalance();
 
   // Fetch leaderboard
   const fetchLeaderboard = useCallback(async () => {
@@ -616,9 +619,19 @@ const PortalBreakerGame: React.FC = () => {
     return () => cancelAnimationFrame(rafRef.current);
   }, [loop]);
 
-  const startGame = () => {
+  const startGame = async () => {
     const s = stateRef.current;
     if (s.status === 'idle' || s.status === 'gameover') {
+      if (!isWalletConnected) {
+        toast.error('Connect your wallet to play');
+        return;
+      }
+      const result = await deductBalance(1, 'cyber-match');
+      if (!result.success) {
+        toast.error(result.error || 'Not enough CCC (1 CCC required)');
+        return;
+      }
+      toast.success('1 CCC deducted — game starting!');
       Object.assign(s, initState(BASE_WIDTH, BASE_HEIGHT));
       s.status = 'running';
       scoreSubmittedRef.current = false;
@@ -631,8 +644,19 @@ const PortalBreakerGame: React.FC = () => {
     else if (s.status === 'paused') s.status = 'running';
   };
 
-  const restartGame = () => {
+  const restartGame = async () => {
+    if (!isWalletConnected) {
+      toast.error('Connect your wallet to play');
+      return;
+    }
+    const result = await deductBalance(1, 'cyber-match');
+    if (!result.success) {
+      toast.error(result.error || 'Not enough CCC (1 CCC required)');
+      return;
+    }
+    toast.success('1 CCC deducted — game restarting!');
     Object.assign(stateRef.current, initState(BASE_WIDTH, BASE_HEIGHT));
+    stateRef.current.status = 'running';
     particles = [];
     scoreSubmittedRef.current = false;
   };
