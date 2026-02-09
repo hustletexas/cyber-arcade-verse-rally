@@ -528,6 +528,30 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_breaker_scores: {
+        Row: {
+          created_at: string
+          id: string
+          level: number
+          score: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: number
+          score?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: number
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       prizes: {
         Row: {
           contract_address: string | null
