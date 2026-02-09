@@ -240,6 +240,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cyberdrop_plays: {
+        Row: {
+          created_at: string
+          id: string
+          played_on_date: string
+          reward_amount: number
+          slot_index: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          played_on_date?: string
+          reward_amount?: number
+          slot_index: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          played_on_date?: string
+          reward_amount?: number
+          slot_index?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_limits: {
         Row: {
           last_play_date: string
@@ -1725,6 +1752,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_points: {
+        Row: {
+          balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_prizes: {
         Row: {
           created_at: string
@@ -2751,6 +2796,7 @@ export type Database = {
       mask_stripe_session: { Args: { session_id: string }; Returns: string }
       mask_transaction_hash: { Args: { tx_hash: string }; Returns: string }
       mask_wallet_address: { Args: { wallet_addr: string }; Returns: string }
+      play_cyberdrop: { Args: { p_wallet_address: string }; Returns: Json }
       purchase_nft_with_cctr: {
         Args: {
           nft_id_param: string
