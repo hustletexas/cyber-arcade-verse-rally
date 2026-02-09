@@ -1,10 +1,9 @@
 import React from 'react';
 import { TopBar } from '@/components/TopBar';
-import { CyberDropGame } from '@/components/games/CyberDropGame';
+import PortalBreakerGame from '@/components/games/PortalBreakerGame';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 
 const CyberDropPage = () => {
   return (
@@ -24,23 +23,16 @@ const CyberDropPage = () => {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-3xl sm:text-4xl text-neon-cyan tracking-wider mb-2">
-            CYBER DROP
+          <h1 className="font-display text-3xl sm:text-4xl text-purple-300 tracking-wider mb-2">
+            PORTAL BREAKER
           </h1>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            Drop a chip through the Plinko board and earn points! One free drop per day.
+            Smash through portal shards, catch power-ups, and stabilize the gateway!
           </p>
         </div>
 
-        {/* CCC Balance Bar */}
-        <div className="max-w-4xl mx-auto mb-6">
-          <CCCBalanceBar />
-        </div>
-
-        {/* Game - full width */}
-        <div className="max-w-4xl mx-auto">
-          <CyberDropGame />
-        </div>
+        {/* Game */}
+        <PortalBreakerGame />
       </main>
     </div>
   );
