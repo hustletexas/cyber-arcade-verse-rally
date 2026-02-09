@@ -27,8 +27,8 @@ const CYBER_CHESTS: CyberChest[] = [{
   passName: 'Common Arcade Pass',
   image: '/lovable-uploads/common-cyber-chest-nft.png',
   rewards: {
-    minCCC: 100,
-    maxCCC: 500,
+    minCCC: 1,
+    maxCCC: 10,
     bonuses: ['Free Game Entry', 'Bonus XP']
   }
 }, {
@@ -38,8 +38,8 @@ const CYBER_CHESTS: CyberChest[] = [{
   passName: 'Rare Arcade Pass',
   image: '/lovable-uploads/rare-cyber-chest-nft.png',
   rewards: {
-    minCCC: 500,
-    maxCCC: 1500,
+    minCCC: 1,
+    maxCCC: 50,
     bonuses: ['NFT Badge', 'Tournament Entry', '2x XP']
   }
 }, {
@@ -49,8 +49,8 @@ const CYBER_CHESTS: CyberChest[] = [{
   passName: 'Epic Arcade Pass',
   image: '/lovable-uploads/epic-cyber-chest-nft.png',
   rewards: {
-    minCCC: 1500,
-    maxCCC: 3000,
+    minCCC: 1,
+    maxCCC: 100,
     bonuses: ['Exclusive NFT', 'VIP Tournament', '3x XP']
   }
 }, {
@@ -60,8 +60,8 @@ const CYBER_CHESTS: CyberChest[] = [{
   passName: 'Legendary Arcade Pass',
   image: '/lovable-uploads/legendary-cyber-chest-nft.png',
   rewards: {
-    minCCC: 3000,
-    maxCCC: 10000,
+    minCCC: 100,
+    maxCCC: 1000,
     bonuses: ['Ultra Rare NFT', 'Jackpot Entry', 'Lifetime 5x XP']
   }
 }];
