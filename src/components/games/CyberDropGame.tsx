@@ -147,8 +147,19 @@ export const CyberDropGame: React.FC = () => {
       const jitter = (Math.random() - 0.5) * SLOT_WIDTH * 0.6;
       currentX = targetForRow + jitter;
       currentX = Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, currentX));
-      path.push({ x: currentX, y: 50 + row * PEG_SPACING_Y });
+      const pegY = 50 + row * PEG_SPACING_Y;
+      // Hit the peg
+      path.push({ x: currentX, y: pegY });
+      // Bounce off - deflect left or right
+      const bounceDir = currentX > targetForRow ? -1 : 1;
+      const bounceX = currentX + bounceDir * (SLOT_WIDTH * 0.3 + Math.random() * SLOT_WIDTH * 0.2);
+      const bounceY = pegY + PEG_SPACING_Y * 0.45;
+      path.push({
+        x: Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, bounceX)),
+        y: bounceY,
+      });
     }
+    // Final landing
     path.push({ x: targetX, y: BOARD_HEIGHT - 40 });
     return path;
   }, [boardWidth, SLOT_WIDTH, PEG_SPACING_Y, BOARD_HEIGHT]);
@@ -173,7 +184,7 @@ export const CyberDropGame: React.FC = () => {
         spawnSparkles(pos.x, pos.y);
       }
       setCurrentPathIndex(prev => prev + 1);
-    }, 110);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [animating, currentPathIndex, chipPath, spawnSparkles]);
@@ -327,16 +338,16 @@ export const CyberDropGame: React.FC = () => {
             {/* Chip */}
             {chipPosition && animating && (
               <motion.div
-                className="absolute w-6 h-6 rounded-full z-10"
+                className="absolute w-10 h-10 rounded-full z-10"
                 style={{
-                  background: 'radial-gradient(circle, hsl(var(--neon-cyan)), hsl(var(--neon-cyan) / 0.6))',
-                  boxShadow: '0 0 15px hsl(var(--neon-cyan) / 0.8), 0 0 30px hsl(var(--neon-cyan) / 0.4)',
+                  background: 'radial-gradient(circle, hsl(var(--neon-cyan)), hsl(var(--neon-cyan) / 0.5))',
+                  boxShadow: '0 0 20px hsl(var(--neon-cyan) / 0.8), 0 0 40px hsl(var(--neon-cyan) / 0.4)',
                 }}
                 animate={{
-                  left: chipPosition.x - 12,
-                  top: chipPosition.y - 12,
+                  left: chipPosition.x - 20,
+                  top: chipPosition.y - 20,
                 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20, duration: 0.11 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, mass: 0.8 }}
               />
             )}
 
