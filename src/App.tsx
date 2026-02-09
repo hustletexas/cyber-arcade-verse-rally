@@ -25,6 +25,7 @@ import TournamentsPage from "./pages/TournamentsPage";
 import RafflesPage from "./pages/RafflesPage";
 import AboutPage from "./pages/AboutPage";
 import FoundationPage from "./pages/FoundationPage";
+import CyberGalaxyPage from "./pages/CyberGalaxyPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/games/cyber-sequence" element={<CyberSequence />} />
                 <Route path="/games/cyber-trivia" element={<CyberTrivia />} />
                 <Route path="/cyber-drop" element={<CyberDropPage />} />
+                <Route path="/cyber-galaxy" element={<CyberGalaxyPage />} />
                 <Route path="/cyber-chest" element={<CyberChestPage />} />
                 <Route path="/store" element={<StorePage />} />
                 <Route path="/tournaments" element={<TournamentsPage />} />
