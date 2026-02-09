@@ -4,7 +4,7 @@ import { CyberDropGame } from '@/components/games/CyberDropGame';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { WalletStatusBar } from '@/components/WalletStatusBar';
+import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 
 const CyberDropPage = () => {
   return (
@@ -32,9 +32,9 @@ const CyberDropPage = () => {
           </p>
         </div>
 
-        {/* Wallet Status */}
-        <div className="max-w-md mx-auto mb-6">
-          <WalletStatusBar />
+        {/* CCC Balance Bar */}
+        <div className="max-w-4xl mx-auto mb-6">
+          <CCCBalanceBar />
         </div>
 
         {/* Game - full width */}
