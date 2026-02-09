@@ -72,6 +72,14 @@ serve(async (req) => {
       customer_email: email || undefined,
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel`,
+      custom_text: {
+        terms_of_service_acceptance: {
+          message: `By purchasing, you agree to our [Refund Policy](${origin}/refund-policy).`,
+        },
+      },
+      consent_collection: {
+        terms_of_service: "required",
+      },
     });
 
     console.log(`[CREATE-CHECKOUT] Session created: ${session.id}`);

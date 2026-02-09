@@ -224,6 +224,9 @@ const Index = () => {
                 <Link to="/privacy" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
                   Privacy
                 </Link>
+                <Link to="/refund-policy" className="text-neon-cyan hover:text-neon-purple transition-colors text-xs sm:text-sm underline touch-manipulation">
+                  Refunds
+                </Link>
               </div>
             </div>
             

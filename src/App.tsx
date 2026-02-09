@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import TokenCreator from "./pages/TokenCreator";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
 import CyberMatch from "./pages/CyberMatch";
 import CyberSequence from "./pages/CyberSequence";
 import CyberTrivia from "./pages/CyberTrivia";
@@ -41,6 +42,7 @@ const App = () => (
                 <Route path="/token-creator" element={<TokenCreator />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
                 <Route path="/games/cyber-match" element={<CyberMatch />} />
                 <Route path="/games/cyber-sequence" element={<CyberSequence />} />
                 <Route path="/games/cyber-trivia" element={<CyberTrivia />} />
