@@ -157,7 +157,7 @@ const CyberSequence: React.FC = () => {
               <div className="text-center mb-4">
                 <Badge variant="outline"
                   className={mode === 'free' ? "border-green-500/50 text-green-400" : "border-purple-500/50 text-purple-400"}>
-                  {mode === 'free' ? 'FREE PLAY' : 'DAILY RUN'}
+                  {mode === 'free' ? 'FREE PLAY' : 'TOURNAMENT RUN'}
                 </Badge>
               </div>
 
