@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Gamepad2, Brain, Zap, Trophy, ArrowRight, Gift } from 'lucide-react';
+import { Gamepad2, Brain, Zap, Trophy, ArrowRight } from 'lucide-react';
 interface GameCardProps {
   title: string;
   description: string;
@@ -58,25 +58,14 @@ export const CyberGamesSection: React.FC = () => {
       <CardContent className="p-6 space-y-6">
       {/* Section Banner */}
       <div className="w-full">
-        <img 
-          src="/images/games/arcade-games-banner.png" 
-          alt="Cyber City Arcade Games" 
-          className="w-full h-auto rounded-lg"
-        />
+        <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/ec98eeae-f619-4bd7-8341-d889a6f3e202.png" />
       </div>
 
       {/* Games Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Cyber Match - Image Card */}
-        <Card 
-          className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30"
-          onClick={() => navigate('/games/cyber-match')}
-        >
-          <img 
-            src="/images/games/cyber-match-card.png" 
-            alt="Cyber Match" 
-            className="w-full h-full object-cover"
-          />
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30" onClick={() => navigate('/games/cyber-match')}>
+          <img src="/images/games/cyber-match-card.png" alt="Cyber Match" className="w-full h-full object-cover" />
           <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
             POPULAR
           </Badge>
@@ -89,15 +78,8 @@ export const CyberGamesSection: React.FC = () => {
         </Card>
         
         {/* Cyber Sequence - Image Card */}
-        <Card 
-          className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-purple/30"
-          onClick={() => navigate('/games/cyber-sequence')}
-        >
-          <img 
-            src="/images/games/cyber-sequence-card.png" 
-            alt="Cyber Sequence" 
-            className="w-full h-full object-cover"
-          />
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-purple/30" onClick={() => navigate('/games/cyber-sequence')}>
+          <img src="/images/games/cyber-sequence-card.png" alt="Cyber Sequence" className="w-full h-full object-cover" />
           <Badge className="absolute top-3 right-3 bg-neon-purple text-black font-bold text-xs">
             NEW
           </Badge>
@@ -110,15 +92,8 @@ export const CyberGamesSection: React.FC = () => {
         </Card>
         
         {/* Cyber Trivia - Image Card */}
-        <Card 
-          className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30"
-          onClick={() => navigate('/games/cyber-trivia')}
-        >
-          <img 
-            src="/images/games/cyber-trivia-card.png" 
-            alt="Cyber Trivia" 
-            className="w-full h-full object-cover"
-          />
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30" onClick={() => navigate('/games/cyber-trivia')}>
+          <img src="/images/games/cyber-trivia-card.png" alt="Cyber Trivia" className="w-full h-full object-cover" />
           <Badge className="absolute top-3 right-3 bg-neon-pink text-black font-bold text-xs">
             HOT
           </Badge>
@@ -129,18 +104,6 @@ export const CyberGamesSection: React.FC = () => {
             </div>
           </div>
         </Card>
-      </div>
-
-      {/* Claim Chest Button */}
-      <div className="flex justify-center">
-        <Button
-          onClick={() => navigate('/cyber-chest')}
-          className="bg-transparent border border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 text-yellow-400 font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] backdrop-blur-sm"
-        >
-          <Gift className="w-5 h-5 mr-2" />
-          Claim Chest
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
       </div>
 
       {/* Features */}
