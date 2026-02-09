@@ -131,14 +131,15 @@ export const RARITY_BG: Record<CosmeticRarity, string> = {
 // Scoring constants
 export const TRIVIA_CONFIG = {
   FREE_PLAY: {
-    TIME_PER_QUESTION: 15,
+    TIME_PER_QUESTION: 10,
     BASE_POINTS: 100,
-    STREAK_BONUS_MULTIPLIER: 0.1, // 10% per streak level
-    SPEED_BONUS_MAX: 50, // max bonus for answering quickly
-    COMBO_DECAY_TIME: 3, // seconds before combo starts decaying
+    STREAK_BONUS_MULTIPLIER: 0.1,
+    SPEED_BONUS_MAX: 50,
+    COMBO_DECAY_TIME: 3,
+    MAX_WRONG_ANSWERS: 3,
   },
   DAILY_RUN: {
-    TIME_PER_QUESTION: 20,
+    TIME_PER_QUESTION: 10,
     TOTAL_QUESTIONS: 10,
     STARTING_LIVES: 2,
     BASE_POINTS: 150,
