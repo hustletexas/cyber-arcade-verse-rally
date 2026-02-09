@@ -116,21 +116,6 @@ export const CyberTriviaResults: React.FC<CyberTriviaResultsProps> = ({
         </div>
       </Card>
 
-      {/* Tickets Earned */}
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Card className="cyber-glass-pink p-4">
-          <div className="flex items-center justify-center gap-3">
-            <Ticket className="w-6 h-6 text-pink-400 ticket-earned" />
-            <span className="text-lg font-bold text-white">
-              +{gameState.correctCount + (gameState.bestStreak >= 5 ? 3 : 0) + (gameState.bestStreak >= 10 ? 10 : 0)} Tickets Earned!
-            </span>
-          </div>
-        </Card>
-      </motion.div>
 
       {/* Daily Leaderboard Position */}
       {gameState.mode === 'daily_run' && userRank > 0 && (
