@@ -76,9 +76,7 @@ export const WeeklyLeaderboard: React.FC = () => {
         </div>
 
         <p className="text-sm text-gray-400">
-          Top 3 players win <span className="text-neon-cyan font-bold">50 CCC</span> + 
-          <span className="text-purple-400 font-bold"> Cyber Chest</span> + 
-          <span className="text-yellow-400 font-bold"> Raffle Ticket</span> every Monday
+          Top 3 players earn rewards every Monday (minimum <span className="text-neon-cyan font-bold">5 players</span> required)
         </p>
 
         {/* Column Headers */}
@@ -153,8 +151,8 @@ export const WeeklyLeaderboard: React.FC = () => {
         <div className="grid grid-cols-3 gap-3 pt-4 border-t border-neon-cyan/10">
           {[
             { place: '1st', emoji: '🥇', reward: '50 CCC + Chest + Ticket' },
-            { place: '2nd', emoji: '🥈', reward: '50 CCC + Chest + Ticket' },
-            { place: '3rd', emoji: '🥉', reward: '50 CCC + Chest + Ticket' },
+            { place: '2nd', emoji: '🥈', reward: '25 CCC + Ticket' },
+            { place: '3rd', emoji: '🥉', reward: '10 CCC' },
           ].map((tier) => (
             <div key={tier.place} className="text-center p-2 rounded-lg bg-black/20">
               <div className="text-xl">{tier.emoji}</div>
