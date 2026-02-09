@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -6,6 +6,41 @@ import { Progress } from '@/components/ui/progress';
 import { TriviaGameState, TriviaUserStats, TRIVIA_CONFIG } from '@/types/cyber-trivia';
 import { Flame, Zap, Heart, Clock, Target, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const CONFETTI_COLORS = ['#4ade80', '#22d3ee', '#a78bfa', '#facc15', '#f472b6', '#fb923c'];
+
+const ConfettiBurst: React.FC = () => {
+  const pieces = Array.from({ length: 30 }, (_, i) => {
+    const angle = (i / 30) * 360;
+    const velocity = 80 + Math.random() * 120;
+    const x = Math.cos((angle * Math.PI) / 180) * velocity;
+    const y = Math.sin((angle * Math.PI) / 180) * velocity - 60;
+    const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+    const size = 4 + Math.random() * 6;
+    const rotation = Math.random() * 360;
+    return { x, y, color, size, rotation, delay: Math.random() * 0.15 };
+  });
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50">
+      {pieces.map((p, i) => (
+        <motion.div
+          key={i}
+          initial={{ x: '50vw', y: '45vh', opacity: 1, scale: 1, rotate: 0 }}
+          animate={{ x: `calc(50vw + ${p.x}px)`, y: `calc(45vh + ${p.y}px)`, opacity: 0, scale: 0.3, rotate: p.rotation }}
+          transition={{ duration: 0.8, delay: p.delay, ease: 'easeOut' }}
+          style={{
+            position: 'absolute',
+            width: p.size,
+            height: p.size * 0.6,
+            backgroundColor: p.color,
+            borderRadius: 2,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 interface CyberTriviaGameplayProps {
   gameState: TriviaGameState;
@@ -30,6 +65,7 @@ export const CyberTriviaGameplay: React.FC<CyberTriviaGameplayProps> = ({
   onUseSkip,
   onQuit,
 }) => {
+  const [showConfetti, setShowConfetti] = useState(false);
   const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
   const config = gameState.mode === 'daily_run' ? TRIVIA_CONFIG.DAILY_RUN : TRIVIA_CONFIG.FREE_PLAY;
   const timePercent = (gameState.timeRemaining / config.TIME_PER_QUESTION) * 100;
@@ -42,6 +78,15 @@ export const CyberTriviaGameplay: React.FC<CyberTriviaGameplayProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.timeRemaining, gameState.showResult]);
+
+  // Confetti on correct answer
+  useEffect(() => {
+    if (gameState.showResult && gameState.lastAnswerCorrect) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.showResult, gameState.lastAnswerCorrect, gameState.currentQuestionIndex]);
 
   // Auto-advance after showing result
   useEffect(() => {
@@ -80,6 +125,7 @@ export const CyberTriviaGameplay: React.FC<CyberTriviaGameplayProps> = ({
 
   return (
     <div className="relative z-10 space-y-4 max-w-4xl mx-auto">
+      {showConfetti && <ConfettiBurst />}
       {/* Top Bar - Stats & Timer */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         {/* Left: Progress & Lives */}
