@@ -59,13 +59,13 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
           <div className="w-16 h-16 mx-auto rounded-full bg-green-500/10 flex items-center justify-center">
             <Trophy className="w-8 h-8 text-green-400" />
           </div>
-          <h2 className="text-2xl font-bold text-white">DAILY RUN</h2>
+          <h2 className="text-2xl font-bold text-white">TOURNAMENT RUN</h2>
           <p className="text-gray-400 text-sm">
             {GAME_ENTRY_FEE} CCC entry • 3 lives • Ranked leaderboard
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             <Badge variant="outline" className="border-green-400/50 text-green-400">
-              <Trophy className="w-3 h-3 mr-1" /> Compete Daily
+              <Trophy className="w-3 h-3 mr-1" /> Compete
             </Badge>
             <Badge variant="outline" className="border-green-400/50 text-green-400">
               <Heart className="w-3 h-3 mr-1" /> 3 Lives
@@ -89,7 +89,7 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
             onClick={() => { if (canPlayDaily) onSelectMode('daily'); }}
             className="w-full py-6 text-lg font-bold text-green-400 border-green-400/50 bg-transparent hover:bg-green-400/10"
           >
-            {walletConnected ? `START DAILY RUN` : 'CONNECT WALLET'}
+            {walletConnected ? `START TOURNAMENT RUN` : 'CONNECT WALLET'}
           </Button>
         </div>
       </Card>
