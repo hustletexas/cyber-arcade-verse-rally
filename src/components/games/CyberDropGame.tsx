@@ -39,6 +39,17 @@ interface Sparkle {
   angle: number;
 }
 
+interface ExplosionParticle {
+  id: number;
+  x: number;
+  y: number;
+  angle: number;
+  distance: number;
+  size: number;
+  color: string;
+  delay: number;
+}
+
 const CountdownTimer = ({ targetTime }: { targetTime: Date }) => {
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -77,6 +88,7 @@ export const CyberDropGame: React.FC = () => {
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState<{ slotIndex: number; rewardAmount: number; isPaid: boolean } | null>(null);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const [explosion, setExplosion] = useState<ExplosionParticle[]>([]);
   const [dropX, setDropX] = useState<number | null>(null);
   const [hovering, setHovering] = useState(false);
   const [playMode, setPlayMode] = useState<'free' | 'paid'>('free');
@@ -148,66 +160,124 @@ export const CyberDropGame: React.FC = () => {
   const generatePath = useCallback((targetSlot: number, startX: number) => {
     const path: { x: number; y: number }[] = [];
     const targetX = targetSlot * SLOT_WIDTH + SLOT_WIDTH / 2;
-    path.push({ x: startX, y: 0 });
+    const clampX = (x: number) => Math.max(SLOT_WIDTH * 0.3, Math.min(boardWidth - SLOT_WIDTH * 0.3, x));
+
+    // Start position
+    path.push({ x: startX, y: 10 });
+
     let currentX = startX;
-    const clampX = (x: number) => Math.max(SLOT_WIDTH / 2, Math.min(boardWidth - SLOT_WIDTH / 2, x));
 
     for (let row = 0; row < PEG_ROWS; row++) {
       const progress = (row + 1) / PEG_ROWS;
-      const targetForRow = startX + (targetX - startX) * progress;
-      const jitter = (Math.random() - 0.5) * SLOT_WIDTH * 0.7;
-      currentX = targetForRow + jitter;
-      currentX = clampX(currentX);
+      const pegsInRow = row % 2 === 0 ? SLOT_COUNT - 1 : SLOT_COUNT;
+      const offset = row % 2 === 0 ? SLOT_WIDTH / 2 : 0;
       const pegY = 50 + row * PEG_SPACING_Y;
 
-      // Hit the peg
-      path.push({ x: currentX, y: pegY });
+      // Find nearest peg in this row
+      let nearestPegX = offset + SLOT_WIDTH / 2;
+      let nearestDist = Infinity;
+      for (let col = 0; col < pegsInRow; col++) {
+        const px = offset + col * SLOT_WIDTH + SLOT_WIDTH / 2;
+        const dist = Math.abs(currentX - px);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestPegX = px;
+        }
+      }
 
-      // First bounce — strong deflection off the peg
-      const bounceDir = Math.random() > 0.5 ? 1 : -1;
-      const bounce1X = currentX + bounceDir * (SLOT_WIDTH * 0.4 + Math.random() * SLOT_WIDTH * 0.3);
-      const bounce1Y = pegY + PEG_SPACING_Y * 0.25;
-      path.push({ x: clampX(bounce1X), y: bounce1Y });
+      // Guide toward target with randomness
+      const guidedX = currentX + (targetX - currentX) * 0.15;
+      const finalPegX = nearestPegX + (guidedX - nearestPegX) * 0.3;
 
-      // Second bounce — smaller ricochet in opposite direction
-      const bounce2X = clampX(bounce1X) - bounceDir * (SLOT_WIDTH * 0.15 + Math.random() * SLOT_WIDTH * 0.2);
-      const bounce2Y = pegY + PEG_SPACING_Y * 0.5;
-      path.push({ x: clampX(bounce2X), y: bounce2Y });
+      // 1. Move TO the peg (coin falls onto it)
+      path.push({ x: clampX(finalPegX), y: pegY - 4 });
 
-      // Third micro-bounce — settle toward next row
-      const bounce3X = clampX(bounce2X) + (Math.random() - 0.5) * SLOT_WIDTH * 0.2;
-      const bounce3Y = pegY + PEG_SPACING_Y * 0.75;
-      path.push({ x: clampX(bounce3X), y: bounce3Y });
+      // 2. Bounce direction — away from peg center
+      const hitSide = currentX >= finalPegX ? 1 : -1;
+      const bounceStrength = SLOT_WIDTH * (0.35 + Math.random() * 0.35);
+      const bounceX = finalPegX + hitSide * bounceStrength;
 
-      currentX = clampX(bounce3X);
+      // 3. First bounce — strong deflection upward-ish
+      path.push({
+        x: clampX(bounceX),
+        y: pegY + PEG_SPACING_Y * 0.15,
+      });
+
+      // 4. Second bounce — settle back with gravity
+      const settleX = clampX(bounceX) - hitSide * bounceStrength * 0.3;
+      path.push({
+        x: clampX(settleX),
+        y: pegY + PEG_SPACING_Y * 0.45,
+      });
+
+      // 5. Drift down to next peg row
+      const driftX = clampX(settleX) + (Math.random() - 0.5) * SLOT_WIDTH * 0.15;
+      path.push({
+        x: clampX(driftX),
+        y: pegY + PEG_SPACING_Y * 0.8,
+      });
+
+      currentX = clampX(driftX);
     }
-    path.push({ x: targetX, y: BOARD_HEIGHT - 40 });
+
+    // Final landing into slot
+    path.push({ x: targetX, y: BOARD_HEIGHT - 50 });
+    path.push({ x: targetX, y: BOARD_HEIGHT - 35 });
     return path;
   }, [boardWidth, SLOT_WIDTH, PEG_SPACING_Y, BOARD_HEIGHT]);
+
+  const spawnExplosion = useCallback((x: number, y: number, reward: number) => {
+    const color = getSlotColor(reward);
+    const count = reward >= 100 ? 24 : reward >= 25 ? 16 : 10;
+    const particles: ExplosionParticle[] = [];
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        id: sparkleIdRef.current++,
+        x,
+        y,
+        angle: (360 / count) * i + Math.random() * 20,
+        distance: 30 + Math.random() * 60,
+        size: 3 + Math.random() * 5,
+        color,
+        delay: Math.random() * 0.1,
+      });
+    }
+    setExplosion(particles);
+    setTimeout(() => setExplosion([]), 900);
+  }, []);
 
   useEffect(() => {
     if (!animating || chipPath.length === 0) return;
 
     if (currentPathIndex >= chipPath.length) {
+      // Coin has fully landed — trigger explosion then show result
+      if (resultData) {
+        const lastPos = chipPath[chipPath.length - 1];
+        spawnExplosion(lastPos.x, lastPos.y, resultData.rewardAmount);
+      }
       setTimeout(() => {
         setAnimating(false);
         setShowResult(true);
-      }, 300);
+      }, 600);
       return;
     }
+
+    // Faster at start, slightly slower near pegs
+    const isOnPeg = currentPathIndex % 4 === 1;
+    const speed = isOnPeg ? 75 : 55;
 
     const timer = setTimeout(() => {
       const pos = chipPath[currentPathIndex];
       setChipPosition(pos);
-      // Sparkle only on peg hits (every 4th point after the first)
-      if (currentPathIndex > 0 && currentPathIndex < chipPath.length - 1 && currentPathIndex % 4 === 1) {
+      // Sparkle on peg hits (first point of each peg group)
+      if (currentPathIndex > 0 && currentPathIndex < chipPath.length - 2 && currentPathIndex % 4 === 1) {
         spawnSparkles(pos.x, pos.y);
       }
       setCurrentPathIndex(prev => prev + 1);
-    }, 90);
+    }, speed);
 
     return () => clearTimeout(timer);
-  }, [animating, currentPathIndex, chipPath, spawnSparkles]);
+  }, [animating, currentPathIndex, chipPath, spawnSparkles, spawnExplosion, resultData]);
 
   const handleBoardClick = async (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canPlay) return;
@@ -380,6 +450,36 @@ export const CyberDropGame: React.FC = () => {
               })}
             </AnimatePresence>
 
+            {/* Landing Explosion */}
+            <AnimatePresence>
+              {explosion.map(p => {
+                const rad = (p.angle * Math.PI) / 180;
+                return (
+                  <motion.div
+                    key={p.id}
+                    className="absolute rounded-full pointer-events-none z-20"
+                    style={{
+                      left: p.x - p.size / 2,
+                      top: p.y - p.size / 2,
+                      width: p.size,
+                      height: p.size,
+                      background: p.color,
+                      boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+                    }}
+                    initial={{ opacity: 1, scale: 1.5, x: 0, y: 0 }}
+                    animate={{
+                      opacity: 0,
+                      scale: 0,
+                      x: Math.cos(rad) * p.distance,
+                      y: Math.sin(rad) * p.distance * 0.8 - 20,
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.7, ease: 'easeOut', delay: p.delay }}
+                  />
+                );
+              })}
+            </AnimatePresence>
+
             {/* Chip */}
             {chipPosition && animating && (
               <motion.div
@@ -392,7 +492,7 @@ export const CyberDropGame: React.FC = () => {
                   left: chipPosition.x - 20,
                   top: chipPosition.y - 20,
                 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 12, mass: 0.6 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 14, mass: 0.5 }}
               />
             )}
 
