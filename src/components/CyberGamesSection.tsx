@@ -58,7 +58,7 @@ export const CyberGamesSection: React.FC = () => {
       <CardContent className="p-6 space-y-6">
       {/* Section Banner */}
       <div className="w-full">
-        <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/ec98eeae-f619-4bd7-8341-d889a6f3e202.png" />
+        <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/f24b9448-ce82-4c3b-8526-60e1a3cf3f4d.png" />
       </div>
 
       {/* Games Grid */}
