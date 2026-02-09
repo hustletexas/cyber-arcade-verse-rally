@@ -37,8 +37,10 @@ const CyberDropPage = () => {
           <WalletStatusBar />
         </div>
 
-        {/* Game */}
-        <CyberDropGame />
+        {/* Game - full width */}
+        <div className="max-w-4xl mx-auto">
+          <CyberDropGame />
+        </div>
       </main>
     </div>
   );
