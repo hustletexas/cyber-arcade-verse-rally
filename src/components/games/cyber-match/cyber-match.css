@@ -195,6 +195,17 @@
   animation: match-glow 0.5s ease-out;
 }
 
+/* Lightning flicker for matched cards */
+@keyframes lightning-flicker {
+  0%, 100% { opacity: 0.9; filter: brightness(1); }
+  10% { opacity: 0.2; filter: brightness(2); }
+  20% { opacity: 1; filter: brightness(1.5); }
+  30% { opacity: 0.4; filter: brightness(1); }
+  50% { opacity: 1; filter: brightness(1.8); }
+  70% { opacity: 0.3; filter: brightness(1.2); }
+  90% { opacity: 0.8; filter: brightness(1.6); }
+}
+
 @keyframes grid-pulse {
   0%, 100% { opacity: 0.15; }
   50% { opacity: 0.25; }
