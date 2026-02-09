@@ -65,8 +65,8 @@ export const SponsorshipSection = () => {
             SPONSORSHIPS & PARTNERSHIPS
           </h2>
         </div>
-        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-          ​Our mission is to use gaming and technology to bring people together, promote digital literacy, and provide inclusive opportunities for youth and communities to learn, compete, and grow in safe environments.                   
+        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
+          Cyber City Arcade builds:{'\n\n'}🎯 Teamwork & Communication{'\n'}🧩 Problem-Solving & Critical Thinking{'\n'}🕹️ Digital Literacy & Tech Awareness{'\n'}🏆 Goal-Setting & Sportsmanship{'\n'}💡 Creativity & Strategic Thinking                   
         </p>
       </div>
 
