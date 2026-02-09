@@ -195,15 +195,18 @@
   animation: match-glow 0.5s ease-out;
 }
 
-/* Lightning flicker for matched cards */
-@keyframes lightning-flicker {
-  0%, 100% { opacity: 0.9; filter: brightness(1); }
-  10% { opacity: 0.2; filter: brightness(2); }
-  20% { opacity: 1; filter: brightness(1.5); }
-  30% { opacity: 0.4; filter: brightness(1); }
-  50% { opacity: 1; filter: brightness(1.8); }
-  70% { opacity: 0.3; filter: brightness(1.2); }
-  90% { opacity: 0.8; filter: brightness(1.6); }
+/* Lightning strike - plays once then hides */
+@keyframes lightning-strike {
+  0% { opacity: 1; filter: brightness(2); }
+  15% { opacity: 0.3; filter: brightness(1); }
+  30% { opacity: 1; filter: brightness(2.5); }
+  50% { opacity: 0.8; filter: brightness(1.5); }
+  70% { opacity: 0.2; filter: brightness(1); }
+  100% { opacity: 0; filter: brightness(1); }
+}
+
+.animate-lightning-strike {
+  animation: lightning-strike 0.6s ease-out forwards;
 }
 
 @keyframes grid-pulse {
