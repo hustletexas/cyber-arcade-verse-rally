@@ -5,9 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TriviaUserStats, TriviaDailyLeaderboardEntry } from '@/types/cyber-trivia';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft, Calendar, Crown, FlaskConical, Dumbbell } from 'lucide-react';
+import { Flame, Zap, Trophy, Target, Ticket, Clock, Gamepad2, Film, ArrowLeft, Calendar, Crown, FlaskConical, Dumbbell, Tv, ToyBrick } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-type TriviaCategory = 'Gaming' | 'Entertainment' | 'Science' | 'Sports';
+type TriviaCategory = 'Gaming' | 'Entertainment' | 'Science' | 'Sports' | 'Cartoon' | 'Toys';
 type PlayMode = 'free' | 'prize';
 interface CyberTriviaHomeProps {
   onStartFreePlay: (category: TriviaCategory, playMode: PlayMode) => void;
