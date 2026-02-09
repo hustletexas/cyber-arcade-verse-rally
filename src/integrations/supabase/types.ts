@@ -244,6 +244,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_paid: boolean
           played_on_date: string
           reward_amount: number
           slot_index: number
@@ -252,6 +253,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_paid?: boolean
           played_on_date?: string
           reward_amount?: number
           slot_index: number
@@ -260,6 +262,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_paid?: boolean
           played_on_date?: string
           reward_amount?: number
           slot_index?: number
@@ -2796,7 +2799,12 @@ export type Database = {
       mask_stripe_session: { Args: { session_id: string }; Returns: string }
       mask_transaction_hash: { Args: { tx_hash: string }; Returns: string }
       mask_wallet_address: { Args: { wallet_addr: string }; Returns: string }
-      play_cyberdrop: { Args: { p_wallet_address: string }; Returns: Json }
+      play_cyberdrop:
+        | { Args: { p_wallet_address: string }; Returns: Json }
+        | {
+            Args: { p_is_paid?: boolean; p_wallet_address: string }
+            Returns: Json
+          }
       purchase_nft_with_cctr: {
         Args: {
           nft_id_param: string
