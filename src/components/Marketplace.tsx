@@ -232,8 +232,6 @@ export const Marketplace = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Wallet Connection Status */}
-          <WalletStatusBar />
 
           {/* Filters and Currency Selection */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
