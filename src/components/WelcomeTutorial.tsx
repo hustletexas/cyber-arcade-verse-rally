@@ -49,8 +49,8 @@ export const WelcomeTutorial: React.FC<WelcomeTutorialProps> = ({ isOpen, onClos
     },
     {
       id: 3,
-      title: "Supported Wallets 🔐",
-      description: "We support 5 Stellar wallets:\n\n⭐ LOBSTR (Recommended) - Best for mobile & beginners\n🚀 Freighter - Browser extension, great for desktop\n🌐 Albedo - Web-based, no download needed\n🐂 xBull - Advanced features for power users\n🔥 Hot Wallet - Simple and lightweight",
+      title: "Why Connect a Wallet? 🔐",
+      description: "Wallets unlock power features, not gameplay advantages.\n\n🧠 Identity & Verification\n• Verified player ID\n• Anti-smurf protection\n• Tournament eligibility validation\n• One-player-one-pass enforcement\n\n🏆 Competitive Play\n• Ranked leaderboards\n• Official tournaments\n• Season ladders\n• Championship brackets\n• Match result verification\n\n⚠️ Important: Wallet ≠ better odds\nWallet = verified identity\n\n🔗 Player keeps progress\n• Cross-device continuity\n• Long-term identity\n• Platform-independent history",
       icon: <Wallet className="w-8 h-8 text-neon-green" />
     },
     {
