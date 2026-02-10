@@ -12,7 +12,7 @@ const CyberGalaxyPage = () => {
       <TopBar />
       <CartDrawer />
 
-      <main className="container mx-auto px-4 pt-24 pb-16">
+      <main className="max-w-5xl mx-auto px-4 pt-24 pb-16">
         {/* Back navigation */}
         <Link
           to="/"

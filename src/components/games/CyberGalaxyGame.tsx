@@ -1,31 +1,31 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Trophy } from 'lucide-react';
 
 // ─── Constants ───────────────────────────────────────────────────────
-const BASE_W = 480;
-const BASE_H = 720;
-const STAR_COUNT = 150;
-const PLAYER_W = 36;
-const PLAYER_H = 28;
+const BASE_W = 720;
+const BASE_H = 780;
+const STAR_COUNT = 200;
+const PLAYER_W = 40;
+const PLAYER_H = 32;
 const BULLET_W = 3;
 const BULLET_H = 12;
 const E_BULLET_W = 4;
 const E_BULLET_H = 10;
 const MAX_PLAYER_BULLETS = 5;
-const SHOOT_COOLDOWN = 200; // ms
-const POWER_UP_SIZE = 18;
-const POWER_UP_DROP_CHANCE = 0.08;
+const SHOOT_COOLDOWN = 200;
+const POWER_UP_SIZE = 20;
+const POWER_UP_DROP_CHANCE = 0.14;
 const WEAPON_DURATION = 20000;
 const SHIELD_HITS = 1;
 const INVULN_TIME = 1500;
 const WAVE_OVERLAY_TIME = 1200;
-const DIVE_INTERVAL_BASE = 3000;
-const ENEMY_SHOOT_INTERVAL_BASE = 1200;
+const DIVE_INTERVAL_BASE = 3500;
+const ENEMY_SHOOT_INTERVAL_BASE = 2200;
 
 // ─── Types ───────────────────────────────────────────────────────────
 type EnemyType = 'scout' | 'striker' | 'core';
-type PowerUpType = 'overcharge' | 'shield' | 'bomb';
+type PowerUpType = 'overcharge' | 'shield' | 'bomb' | 'rapidfire' | 'extralife';
 type GameStatus = 'idle' | 'running' | 'paused' | 'gameover';
 
 interface Star { x: number; y: number; r: number; a: number; speed: number; }
@@ -35,6 +35,7 @@ interface Player {
   weaponLevel: number; weaponTimer: number;
   shieldActive: boolean; shieldHits: number;
   invulnTimer: number; lives: number;
+  rapidFire: boolean; rapidFireEnd: number;
 }
 
 interface Bullet { x: number; y: number; vx: number; vy: number; }
@@ -77,6 +78,12 @@ interface GameState {
   cw: number; ch: number;
 }
 
+interface LeaderboardEntry {
+  score: number;
+  wave: number;
+  date: string;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 function createStars(w: number, h: number): Star[] {
   return Array.from({ length: STAR_COUNT }, () => ({
@@ -94,12 +101,12 @@ const ENEMY_META: Record<EnemyType, { hp: number; w: number; h: number; score: n
 
 function spawnWave(wave: number, cw: number): Enemy[] {
   const enemies: Enemy[] = [];
-  const cols = 8;
+  const cols = 10;
   const rows = Math.min(5 + Math.floor(wave / 3), 7);
-  const gapX = 44;
-  const gapY = 38;
+  const gapX = 52;
+  const gapY = 40;
   const startX = (cw - (cols - 1) * gapX) / 2;
-  const startY = 80;
+  const startY = 90;
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -116,7 +123,7 @@ function spawnWave(wave: number, cw: number): Enemy[] {
         formX: fx, formY: fy,
         isDiving: false, diveT: 0,
         diveStartX: 0, diveStartY: 0, diveCurveDir: 1,
-        shootTimer: Math.random() * 3000,
+        shootTimer: Math.random() * 4000 + 2000,
         wobble: Math.random() * Math.PI * 2,
       });
     }
@@ -126,11 +133,12 @@ function spawnWave(wave: number, cw: number): Enemy[] {
 
 function initPlayer(cw: number, ch: number): Player {
   return {
-    x: cw / 2 - PLAYER_W / 2, y: ch - 60,
+    x: cw / 2 - PLAYER_W / 2, y: ch - 70,
     w: PLAYER_W, h: PLAYER_H,
     weaponLevel: 1, weaponTimer: 0,
     shieldActive: false, shieldHits: 0,
     invulnTimer: 0, lives: 3,
+    rapidFire: false, rapidFireEnd: 0,
   };
 }
 
@@ -162,6 +170,19 @@ function spawnParticles(particles: Particle[], x: number, y: number, color: stri
   }
 }
 
+function getLeaderboard(): LeaderboardEntry[] {
+  try {
+    return JSON.parse(localStorage.getItem('cyberGalaxyLeaderboard') || '[]');
+  } catch { return []; }
+}
+
+function saveToLeaderboard(score: number, wave: number) {
+  const lb = getLeaderboard();
+  lb.push({ score, wave, date: new Date().toLocaleDateString() });
+  lb.sort((a, b) => b.score - a.score);
+  localStorage.setItem('cyberGalaxyLeaderboard', JSON.stringify(lb.slice(0, 10)));
+}
+
 // ─── Component ───────────────────────────────────────────────────────
 const CyberGalaxyGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -184,13 +205,19 @@ const CyberGalaxyGame: React.FC = () => {
   const [uiPower, setUiPower] = useState('');
   const [uiShield, setUiShield] = useState(false);
   const [uiAccuracy, setUiAccuracy] = useState('');
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [hasFreeTry, setHasFreeTry] = useState(() => {
+    return localStorage.getItem('cyberGalaxyFreeTryUsed') !== 'true';
+  });
+  const [needsPayment, setNeedsPayment] = useState(false);
 
   // ─── Resize ──────────────────────────────────────────────────────
   useEffect(() => {
     const resize = () => {
       const c = containerRef.current;
       if (!c) return;
-      const maxW = Math.min(c.clientWidth, 520);
+      const maxW = Math.min(c.clientWidth, 800);
       const scale = maxW / BASE_W;
       scaleRef.current = scale;
       const canvas = canvasRef.current;
@@ -259,7 +286,8 @@ const CyberGalaxyGame: React.FC = () => {
     } else {
       s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -8 });
     }
-    s.shootCooldown = SHOOT_COOLDOWN;
+    const cooldown = p.rapidFire ? SHOOT_COOLDOWN * 0.5 : SHOOT_COOLDOWN;
+    s.shootCooldown = cooldown;
   }, []);
 
   // ─── Update ──────────────────────────────────────────────────────
@@ -274,7 +302,7 @@ const CyberGalaxyGame: React.FC = () => {
     // Particles
     s.particles = s.particles.filter(p => {
       p.x += p.vx; p.y += p.vy; p.life -= dtMs * 0.002;
-      p.vy += 0.05; // gravity
+      p.vy += 0.05;
       return p.life > 0;
     });
 
@@ -290,10 +318,16 @@ const CyberGalaxyGame: React.FC = () => {
       s.activePowerLabel = '';
       s.activePowerEnd = 0;
       if (p.weaponLevel > 1) p.weaponLevel = 1;
+      p.rapidFire = false;
     }
 
     // Invulnerability
     if (p.invulnTimer > 0) p.invulnTimer -= dtMs;
+
+    // Rapid fire timer
+    if (p.rapidFire && now > p.rapidFireEnd) {
+      p.rapidFire = false;
+    }
 
     // ── Player movement ──
     const speed = 5;
@@ -313,7 +347,7 @@ const CyberGalaxyGame: React.FC = () => {
     if (wantShoot && s.shootCooldown <= 0) shootPlayer(s);
 
     // ── Enemy formation sway ──
-    const swayX = Math.sin(now * 0.0005) * 20;
+    const swayX = Math.sin(now * 0.0005) * 25;
     s.enemies.forEach(e => {
       if (!e.isDiving) {
         e.x = e.formX + swayX + Math.sin(e.wobble + now * 0.002) * 3;
@@ -322,7 +356,7 @@ const CyberGalaxyGame: React.FC = () => {
     });
 
     // ── Dive timer ──
-    const diveInterval = Math.max(800, DIVE_INTERVAL_BASE - s.wave * 150);
+    const diveInterval = Math.max(1200, DIVE_INTERVAL_BASE - s.wave * 120);
     s.diveTimer -= dtMs;
     if (s.diveTimer <= 0) {
       s.diveTimer = diveInterval;
@@ -346,28 +380,31 @@ const CyberGalaxyGame: React.FC = () => {
       e.diveT += dtMs * 0.001;
       const t = e.diveT;
       if (t < 1.5) {
-        // Curve down
         e.x = e.diveStartX + Math.sin(t * 2) * 80 * e.diveCurveDir;
         e.y = e.diveStartY + t * (s.ch * 0.5);
       } else {
-        // Return to formation
-        const returnT = Math.min((t - 1.5) / 1.0, 1);
         e.x = e.x + (e.formX + swayX - e.x) * 0.05;
         e.y = e.y + (e.formY - e.y) * 0.05;
-        if (returnT >= 1 || Math.abs(e.y - e.formY) < 3) {
+        if (Math.abs(e.y - e.formY) < 3) {
           e.isDiving = false;
         }
       }
     });
 
-    // ── Enemy shooting ──
-    const enemyBulletSpeed = 3 + s.wave * 0.15;
+    // ── Enemy shooting — starts slow, speeds up with waves ──
+    // Wave 1: bullet speed ~1.5, Wave 5: ~2.5, Wave 10: ~3.5
+    const enemyBulletSpeed = 1.5 + s.wave * 0.2;
+    // Wave 1: shoot chance ~10%, scales up slowly
+    const shootChance = Math.min(0.1 + s.wave * 0.025, 0.5);
+    // Shoot interval decreases with waves (starts very generous)
+    const baseInterval = Math.max(1200, ENEMY_SHOOT_INTERVAL_BASE - s.wave * 80);
+    
     s.enemies.forEach(e => {
       e.shootTimer -= dtMs;
-      const interval = e.isDiving ? ENEMY_SHOOT_INTERVAL_BASE * 0.4 : ENEMY_SHOOT_INTERVAL_BASE;
+      const interval = e.isDiving ? baseInterval * 0.5 : baseInterval;
       if (e.shootTimer <= 0) {
-        e.shootTimer = interval + Math.random() * 1000;
-        if (Math.random() < 0.3 + s.wave * 0.02) {
+        e.shootTimer = interval + Math.random() * 1500;
+        if (Math.random() < shootChance) {
           const dx = (p.x + p.w / 2) - (e.x + e.w / 2);
           const dy = (p.y) - (e.y + e.h);
           const mag = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -396,7 +433,6 @@ const CyberGalaxyGame: React.FC = () => {
     s.powerUps = s.powerUps.filter(pu => {
       pu.y += pu.vy;
       if (pu.y > s.ch + 20) return false;
-      // Collision with player
       if (pu.x > p.x - POWER_UP_SIZE && pu.x < p.x + p.w + POWER_UP_SIZE &&
           pu.y > p.y - POWER_UP_SIZE && pu.y < p.y + p.h) {
         applyPowerUp(s, pu.type, now);
@@ -420,12 +456,18 @@ const CyberGalaxyGame: React.FC = () => {
             const bonus = e.isDiving ? 100 : 0;
             s.score += meta.score + bonus;
             spawnParticles(s.particles, e.x + e.w / 2, e.y + e.h / 2, meta.color, 15);
-            // Power-up drop
             if (Math.random() < POWER_UP_DROP_CHANCE) {
-              const types: PowerUpType[] = ['overcharge', 'shield', 'bomb'];
+              const types: PowerUpType[] = ['overcharge', 'shield', 'bomb', 'rapidfire', 'extralife'];
+              const weights = [0.3, 0.25, 0.2, 0.15, 0.1];
+              let r = Math.random();
+              let selectedType: PowerUpType = 'overcharge';
+              for (let ti = 0; ti < types.length; ti++) {
+                r -= weights[ti];
+                if (r <= 0) { selectedType = types[ti]; break; }
+              }
               s.powerUps.push({
-                type: types[Math.floor(Math.random() * types.length)],
-                x: e.x + e.w / 2, y: e.y + e.h / 2, vy: 2,
+                type: selectedType,
+                x: e.x + e.w / 2, y: e.y + e.h / 2, vy: 1.5,
               });
             }
             s.enemies.splice(ei, 1);
@@ -478,11 +520,9 @@ const CyberGalaxyGame: React.FC = () => {
       p.shieldActive = true;
       p.shieldHits = SHIELD_HITS;
       s.activePowerLabel = 'SHIELD';
-      s.activePowerEnd = 0; // lasts until hit
+      s.activePowerEnd = 0;
     } else if (type === 'bomb') {
-      // Clear enemy bullets
       s.enemyBullets = [];
-      // Damage all enemies 1 HP
       for (let i = s.enemies.length - 1; i >= 0; i--) {
         s.enemies[i].hp--;
         if (s.enemies[i].hp <= 0) {
@@ -492,12 +532,21 @@ const CyberGalaxyGame: React.FC = () => {
           s.enemies.splice(i, 1);
         }
       }
-      // Screen flash effect via particles
       for (let i = 0; i < 30; i++) {
         spawnParticles(s.particles, Math.random() * s.cw, Math.random() * s.ch, '#ffffff', 1);
       }
       s.activePowerLabel = 'BOMB!';
       s.activePowerEnd = performance.now() + 1000;
+    } else if (type === 'rapidfire') {
+      p.rapidFire = true;
+      p.rapidFireEnd = now + 10000;
+      s.activePowerLabel = 'RAPID FIRE';
+      s.activePowerEnd = now + 10000;
+    } else if (type === 'extralife') {
+      p.lives = Math.min(p.lives + 1, 5);
+      s.activePowerLabel = '+1 LIFE';
+      s.activePowerEnd = now + 1500;
+      spawnParticles(s.particles, p.x + p.w / 2, p.y, '#00ff88', 15);
     }
   }
 
@@ -517,6 +566,7 @@ const CyberGalaxyGame: React.FC = () => {
     p.invulnTimer = INVULN_TIME;
     p.weaponLevel = 1;
     p.weaponTimer = 0;
+    p.rapidFire = false;
     s.activePowerLabel = '';
     s.activePowerEnd = 0;
     spawnParticles(s.particles, p.x + p.w / 2, p.y + p.h / 2, '#ff3d7f', 20);
@@ -535,6 +585,8 @@ const CyberGalaxyGame: React.FC = () => {
       s.bestWave = s.wave;
       localStorage.setItem('cyberGalaxyBestWave', String(s.wave));
     }
+    saveToLeaderboard(s.score, s.wave);
+    setLeaderboard(getLeaderboard());
   }
 
   // ─── Render ──────────────────────────────────────────────────────
@@ -561,14 +613,14 @@ const CyberGalaxyGame: React.FC = () => {
     });
     ctx.globalAlpha = 1;
 
-    // Portal ring at top center
-    const pcx = cw / 2, pcy = 60;
+    // Portal ring
+    const pcx = cw / 2, pcy = 65;
     for (let i = 0; i < 3; i++) {
       const angle = s.portalAngle + (i * Math.PI * 2 / 3);
       ctx.strokeStyle = `hsla(${280 + i * 40}, 100%, 60%, ${0.3 + Math.sin(angle * 2) * 0.15})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(pcx, pcy, 180 + i * 10, 25 + i * 5, angle * 0.3, 0, Math.PI * 2);
+      ctx.ellipse(pcx, pcy, 260 + i * 12, 28 + i * 5, angle * 0.3, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -587,8 +639,6 @@ const CyberGalaxyGame: React.FC = () => {
       const meta = ENEMY_META[e.type];
       ctx.save();
       ctx.translate(e.x + e.w / 2, e.y + e.h / 2);
-
-      // Glow
       ctx.shadowColor = meta.color;
       ctx.shadowBlur = 8;
       ctx.strokeStyle = meta.color;
@@ -596,7 +646,6 @@ const CyberGalaxyGame: React.FC = () => {
       ctx.fillStyle = `${meta.color}33`;
 
       if (e.type === 'scout') {
-        // Diamond shape
         ctx.beginPath();
         ctx.moveTo(0, -e.h / 2);
         ctx.lineTo(e.w / 2, 0);
@@ -605,7 +654,6 @@ const CyberGalaxyGame: React.FC = () => {
         ctx.closePath();
         ctx.fill(); ctx.stroke();
       } else if (e.type === 'striker') {
-        // Hexagonal
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
           const a = (Math.PI / 3) * i - Math.PI / 2;
@@ -616,7 +664,6 @@ const CyberGalaxyGame: React.FC = () => {
         ctx.closePath();
         ctx.fill(); ctx.stroke();
       } else {
-        // Core: octagon with inner glow
         ctx.beginPath();
         for (let i = 0; i < 8; i++) {
           const a = (Math.PI / 4) * i - Math.PI / 8;
@@ -626,14 +673,12 @@ const CyberGalaxyGame: React.FC = () => {
         }
         ctx.closePath();
         ctx.fill(); ctx.stroke();
-        // Inner dot
         ctx.fillStyle = meta.color;
         ctx.beginPath();
         ctx.arc(0, 0, 5, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // HP indicator for multi-hp
       if (e.maxHp > 1) {
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#fff';
@@ -641,7 +686,6 @@ const CyberGalaxyGame: React.FC = () => {
         ctx.textAlign = 'center';
         ctx.fillText(`${e.hp}`, 0, 3);
       }
-
       ctx.restore();
     });
 
@@ -666,8 +710,8 @@ const CyberGalaxyGame: React.FC = () => {
     ctx.shadowBlur = 0;
 
     // Power-ups
-    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', bomb: '#ff3d7f' };
-    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', bomb: 'B' };
+    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', bomb: '#ff3d7f', rapidfire: '#00ff88', extralife: '#ff69b4' };
+    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', bomb: 'B', rapidfire: 'R', extralife: '♥' };
     s.powerUps.forEach(pu => {
       ctx.fillStyle = puColors[pu.type];
       ctx.shadowColor = puColors[pu.type];
@@ -696,19 +740,17 @@ const CyberGalaxyGame: React.FC = () => {
       ctx.lineWidth = 2;
       ctx.fillStyle = 'rgba(0,255,204,0.15)';
 
-      // Ship shape: arrow/chevron
       ctx.beginPath();
-      ctx.moveTo(0, -p.h / 2);           // nose
-      ctx.lineTo(p.w / 2, p.h / 2);      // right wing
-      ctx.lineTo(p.w / 4, p.h / 4);      // right indent
-      ctx.lineTo(0, p.h / 3);            // bottom center
-      ctx.lineTo(-p.w / 4, p.h / 4);     // left indent
-      ctx.lineTo(-p.w / 2, p.h / 2);     // left wing
+      ctx.moveTo(0, -p.h / 2);
+      ctx.lineTo(p.w / 2, p.h / 2);
+      ctx.lineTo(p.w / 4, p.h / 4);
+      ctx.lineTo(0, p.h / 3);
+      ctx.lineTo(-p.w / 4, p.h / 4);
+      ctx.lineTo(-p.w / 2, p.h / 2);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
 
-      // Engine glow
       ctx.fillStyle = '#8b5cf6';
       ctx.shadowColor = '#8b5cf6';
       ctx.shadowBlur = 8;
@@ -718,7 +760,6 @@ const CyberGalaxyGame: React.FC = () => {
 
       ctx.restore();
 
-      // Shield bubble
       if (p.shieldActive) {
         ctx.strokeStyle = 'rgba(0,204,255,0.5)';
         ctx.lineWidth = 2;
@@ -827,10 +868,28 @@ const CyberGalaxyGame: React.FC = () => {
   const startGame = () => {
     const s = stateRef.current;
     if (s.status === 'idle' || s.status === 'gameover') {
+      // Check if free try available or needs payment
+      if (!hasFreeTry) {
+        setNeedsPayment(true);
+        return;
+      }
+      // Use free try
+      localStorage.setItem('cyberGalaxyFreeTryUsed', 'true');
+      setHasFreeTry(false);
+      
       Object.assign(s, initGame(BASE_W, BASE_H));
       s.status = 'running';
       s.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
     }
+  };
+
+  const startPaidGame = () => {
+    // For now, just start - integrate with CCC balance deduction
+    const s = stateRef.current;
+    Object.assign(s, initGame(BASE_W, BASE_H));
+    s.status = 'running';
+    s.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
+    setNeedsPayment(false);
   };
 
   const togglePause = () => {
@@ -840,9 +899,20 @@ const CyberGalaxyGame: React.FC = () => {
   };
 
   const restartGame = () => {
+    if (!hasFreeTry) {
+      setNeedsPayment(true);
+      return;
+    }
     Object.assign(stateRef.current, initGame(BASE_W, BASE_H));
     stateRef.current.status = 'running';
     stateRef.current.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
+  };
+
+  const restartPaidGame = () => {
+    Object.assign(stateRef.current, initGame(BASE_W, BASE_H));
+    stateRef.current.status = 'running';
+    stateRef.current.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
+    setNeedsPayment(false);
   };
 
   const fireButton = () => {
@@ -853,7 +923,7 @@ const CyberGalaxyGame: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto flex flex-col items-center gap-4">
+    <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
       {/* HUD */}
       <div className="w-full grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono">
         <div className="bg-black/30 backdrop-blur-sm border border-neon-cyan/30 rounded-lg px-3 py-2 text-center">
@@ -878,10 +948,28 @@ const CyberGalaxyGame: React.FC = () => {
         </div>
       </div>
 
-      {/* Active power */}
+      {/* Active power + entry info */}
       <div className="h-5 flex items-center gap-3">
         {uiPower && <span className="text-xs font-mono text-amber-400 animate-pulse">{uiPower}</span>}
+        {hasFreeTry && <span className="text-xs font-mono text-neon-green">🎮 First play FREE!</span>}
+        {!hasFreeTry && <span className="text-xs font-mono text-amber-400">🪙 1 CCC per play</span>}
       </div>
+
+      {/* Payment Modal */}
+      {needsPayment && (
+        <div className="w-full bg-black/60 backdrop-blur-md border border-amber-500/40 rounded-xl p-6 text-center space-y-4">
+          <p className="text-amber-400 font-mono text-lg font-bold">🪙 Entry Fee: 1 CCC</p>
+          <p className="text-muted-foreground text-sm">Your free play has been used. Each game costs 1 Cyber City Coin.</p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={startPaidGame} className="bg-amber-600 hover:bg-amber-500 text-black font-bold gap-2">
+              <Play className="w-4 h-4" /> Pay 1 CCC & Play
+            </Button>
+            <Button onClick={() => setNeedsPayment(false)} variant="outline" className="border-muted-foreground/30">
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Canvas */}
       <div ref={containerRef} className="w-full flex justify-center">
@@ -896,7 +984,7 @@ const CyberGalaxyGame: React.FC = () => {
       <div className="flex gap-3 flex-wrap justify-center">
         {(uiStatus === 'idle' || uiStatus === 'gameover') && (
           <Button onClick={startGame} className="bg-purple-600 hover:bg-purple-500 text-white gap-2">
-            <Play className="w-4 h-4" /> Start
+            <Play className="w-4 h-4" /> {hasFreeTry ? 'Start (Free)' : 'Start (1 CCC)'}
           </Button>
         )}
         {(uiStatus === 'running' || uiStatus === 'paused') && (
@@ -906,6 +994,9 @@ const CyberGalaxyGame: React.FC = () => {
         )}
         <Button onClick={restartGame} variant="outline" className="border-purple-500/50 gap-2">
           <RotateCcw className="w-4 h-4" /> Restart
+        </Button>
+        <Button onClick={() => { setLeaderboard(getLeaderboard()); setShowLeaderboard(!showLeaderboard); }} variant="outline" className="border-amber-500/50 text-amber-400 gap-2">
+          <Trophy className="w-4 h-4" /> Leaderboard
         </Button>
       </div>
 
@@ -918,6 +1009,40 @@ const CyberGalaxyGame: React.FC = () => {
           FIRE
         </Button>
       )}
+
+      {/* Leaderboard */}
+      {showLeaderboard && (
+        <div className="w-full bg-black/40 backdrop-blur-sm border border-amber-500/30 rounded-xl p-4 space-y-3">
+          <h3 className="text-amber-400 font-mono font-bold text-center text-lg flex items-center justify-center gap-2">
+            <Trophy className="w-5 h-5" /> TOP 10 SCORES
+          </h3>
+          {leaderboard.length === 0 ? (
+            <p className="text-muted-foreground text-center text-sm font-mono">No scores yet. Play to set a record!</p>
+          ) : (
+            <div className="space-y-1">
+              {leaderboard.map((entry, i) => (
+                <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-lg font-mono text-sm ${i === 0 ? 'bg-amber-500/20 border border-amber-500/40' : i < 3 ? 'bg-purple-500/10 border border-purple-500/20' : 'bg-black/20'}`}>
+                  <span className={`font-bold w-8 ${i === 0 ? 'text-amber-400' : i < 3 ? 'text-purple-300' : 'text-muted-foreground'}`}>
+                    #{i + 1}
+                  </span>
+                  <span className="text-neon-cyan flex-1">{entry.score.toLocaleString()}</span>
+                  <span className="text-purple-300 mr-3">W{entry.wave}</span>
+                  <span className="text-muted-foreground text-xs">{entry.date}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Power-up Legend */}
+      <div className="w-full flex flex-wrap justify-center gap-3 text-xs font-mono text-muted-foreground">
+        <span><span className="text-amber-400">W</span> Overcharge</span>
+        <span><span className="text-cyan-400">S</span> Shield</span>
+        <span><span className="text-pink-400">B</span> Bomb</span>
+        <span><span className="text-green-400">R</span> Rapid Fire</span>
+        <span><span className="text-pink-300">♥</span> Extra Life</span>
+      </div>
 
       {/* Controls hint */}
       <p className="text-xs text-muted-foreground text-center font-mono max-w-sm">
