@@ -646,37 +646,87 @@ const CyberGalaxyGame: React.FC = () => {
       ctx.fillStyle = `${meta.color}33`;
 
       if (e.type === 'scout') {
+        // Small fighter ship — nose pointing down (toward player)
+        const hw = e.w / 2, hh = e.h / 2;
         ctx.beginPath();
-        ctx.moveTo(0, -e.h / 2);
-        ctx.lineTo(e.w / 2, 0);
-        ctx.lineTo(0, e.h / 2);
-        ctx.lineTo(-e.w / 2, 0);
+        ctx.moveTo(0, hh);              // nose (bottom center)
+        ctx.lineTo(-hw * 0.3, -hh * 0.1);  // left body
+        ctx.lineTo(-hw, -hh);           // left wing tip
+        ctx.lineTo(-hw * 0.4, -hh * 0.5);  // left wing inner
+        ctx.lineTo(0, -hh * 0.7);      // top center
+        ctx.lineTo(hw * 0.4, -hh * 0.5);   // right wing inner
+        ctx.lineTo(hw, -hh);            // right wing tip
+        ctx.lineTo(hw * 0.3, -hh * 0.1);   // right body
         ctx.closePath();
         ctx.fill(); ctx.stroke();
-      } else if (e.type === 'striker') {
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = (Math.PI / 3) * i - Math.PI / 2;
-          const px = Math.cos(a) * e.w / 2;
-          const py = Math.sin(a) * e.h / 2;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.fill(); ctx.stroke();
-      } else {
-        ctx.beginPath();
-        for (let i = 0; i < 8; i++) {
-          const a = (Math.PI / 4) * i - Math.PI / 8;
-          const px = Math.cos(a) * e.w / 2;
-          const py = Math.sin(a) * e.h / 2;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.fill(); ctx.stroke();
+        // Engine glow
         ctx.fillStyle = meta.color;
+        ctx.shadowBlur = 12;
         ctx.beginPath();
-        ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.ellipse(0, -hh * 0.5, 3, 4, 0, 0, Math.PI * 2);
         ctx.fill();
+      } else if (e.type === 'striker') {
+        // Medium assault ship — broader wings, more aggressive
+        const hw = e.w / 2, hh = e.h / 2;
+        ctx.beginPath();
+        ctx.moveTo(0, hh);              // nose
+        ctx.lineTo(-hw * 0.25, hh * 0.2);  // left fuselage
+        ctx.lineTo(-hw * 0.7, -hh * 0.1);  // left wing root
+        ctx.lineTo(-hw, -hh * 0.7);     // left wing tip
+        ctx.lineTo(-hw * 0.6, -hh * 0.4);  // left wing notch
+        ctx.lineTo(-hw * 0.3, -hh * 0.6);  // left body top
+        ctx.lineTo(0, -hh);             // tail center
+        ctx.lineTo(hw * 0.3, -hh * 0.6);   // right body top
+        ctx.lineTo(hw * 0.6, -hh * 0.4);   // right wing notch
+        ctx.lineTo(hw, -hh * 0.7);      // right wing tip
+        ctx.lineTo(hw * 0.7, -hh * 0.1);   // right wing root
+        ctx.lineTo(hw * 0.25, hh * 0.2);   // right fuselage
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Twin engines
+        ctx.fillStyle = meta.color;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.ellipse(-hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Core — heavy capital ship / mini-boss
+        const hw = e.w / 2, hh = e.h / 2;
+        ctx.beginPath();
+        ctx.moveTo(0, hh);              // nose
+        ctx.lineTo(-hw * 0.2, hh * 0.5);   // left chin
+        ctx.lineTo(-hw * 0.5, hh * 0.3);   // left body
+        ctx.lineTo(-hw, 0);             // left wing tip
+        ctx.lineTo(-hw * 0.8, -hh * 0.3);  // left wing back
+        ctx.lineTo(-hw * 0.5, -hh * 0.5);  // left hull
+        ctx.lineTo(-hw * 0.3, -hh);     // left tail
+        ctx.lineTo(0, -hh * 0.7);       // tail center
+        ctx.lineTo(hw * 0.3, -hh);      // right tail
+        ctx.lineTo(hw * 0.5, -hh * 0.5);   // right hull
+        ctx.lineTo(hw * 0.8, -hh * 0.3);   // right wing back
+        ctx.lineTo(hw, 0);              // right wing tip
+        ctx.lineTo(hw * 0.5, hh * 0.3);    // right body
+        ctx.lineTo(hw * 0.2, hh * 0.5);    // right chin
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Central core glow
+        ctx.fillStyle = meta.color;
+        ctx.shadowBlur = 16;
+        ctx.globalAlpha = 0.6 + Math.sin(now * 0.005) * 0.3;
+        ctx.beginPath();
+        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        // Triple engines
+        ctx.shadowBlur = 8;
+        for (const ox of [-hw * 0.25, 0, hw * 0.25]) {
+          ctx.beginPath();
+          ctx.ellipse(ox, -hh * 0.6, 2, 4, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       if (e.maxHp > 1) {
