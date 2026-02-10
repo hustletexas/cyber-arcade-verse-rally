@@ -224,7 +224,7 @@ export const Marketplace = () => {
         <CardTitle className="font-display text-2xl text-neon-pink flex items-center gap-3 flex-wrap">
           <div>
             <span>CYBER CITY SEASON PASS</span>
-            <p className="text-xs text-muted-foreground font-normal mt-1">The Cyber City Season Pass is a digital access pass that unlocks a full season of competitive arcade experiences, exclusive challenges, and player recognition inside Cyber City Arcade.</p>
+            <p className="text-xs text-muted-foreground font-normal mt-1">The Cyber City Season Pass is a digital access pass that unlocks a full season of competitive arcade experiences, exclusive chest and challenges, and player recognition inside Cyber City Arcade.</p>
           </div>
           
           {getTotalItems() > 0 && <Button onClick={() => setIsOpen(true)} className="bg-neon-cyan text-black ml-auto hover:bg-neon-cyan/80 flex items-center gap-2">
