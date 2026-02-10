@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop, Scale } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
    DropdownMenu,
@@ -25,7 +25,7 @@ const scrollSections = [
 // Sections that navigate to dedicated pages
 const pageSections = [
   { path: '/tournaments', label: 'Tournament Hub', icon: Trophy },
-  
+  { path: '/tournament-rules', label: 'Tournament Rules', icon: Scale },
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
   { path: '/about', label: 'About Us', icon: Info },
   { path: '/foundation', label: 'Foundation', icon: Heart },
