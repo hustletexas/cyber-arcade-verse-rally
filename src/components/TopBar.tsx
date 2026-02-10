@@ -58,14 +58,37 @@ export const TopBar = () => {
         <div className="flex items-center justify-between h-12">
           {/* Foundation link */}
           <div className="flex-1 flex items-center gap-2">
-            <Button
-              variant="ghost"
-              className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
-              onClick={() => navigate('/foundation')}
-            >
-              <Laptop className="h-4 w-4" />
-              Foundation
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
+                >
+                  <Bot className="h-4 w-4" />
+                  AI Coach
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="start" 
+                className="w-48 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100]"
+              >
+                <DropdownMenuItem
+                  onClick={() => scrollToSection('ai-coach')}
+                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+                >
+                  <Bot className="h-4 w-4 mr-2 text-neon-cyan" />
+                  Gaming Coach
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate('/foundation')}
+                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+                >
+                  <Heart className="h-4 w-4 mr-2 text-neon-pink" />
+                  Foundation
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Right side actions */}
