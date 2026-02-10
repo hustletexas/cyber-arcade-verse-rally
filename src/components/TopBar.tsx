@@ -85,7 +85,7 @@ export const TopBar = () => {
                   className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground justify-center"
                 >
                   <Bot className="h-4 w-4 mr-2 text-neon-cyan" />
-                  Open Gaming Coach
+                  Ask a Question
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
