@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,7 +7,9 @@ import {
    DropdownMenuItem,
    DropdownMenuTrigger,
  } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { UnifiedWalletDropdown } from './UnifiedWalletDropdown';
+import { AIGamingCoach } from './AIGamingCoach';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,6 +34,7 @@ const pageSections = [
 export const TopBar = () => {
   const { setIsOpen, items } = useCart();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const [showCoach, setShowCoach] = useState(false);
   const navigate = useNavigate();
 
   const scrollToSection = (id: string) => {
@@ -74,7 +77,7 @@ export const TopBar = () => {
                 className="w-48 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100]"
               >
                 <DropdownMenuItem
-                  onClick={() => scrollToSection('ai-coach')}
+                  onClick={() => setShowCoach(true)}
                   className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
                 >
                   <Bot className="h-4 w-4 mr-2 text-neon-cyan" />
@@ -145,6 +148,12 @@ export const TopBar = () => {
           </div>
         </div>
       </div>
+      {/* AI Coach Dialog */}
+      <Dialog open={showCoach} onOpenChange={setShowCoach}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-card border-neon-cyan/30 p-0">
+          <AIGamingCoach />
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };
