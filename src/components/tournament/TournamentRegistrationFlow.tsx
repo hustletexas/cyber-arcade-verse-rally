@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useTournamentRegistrations } from '@/hooks/useTournaments';
 import { useSorobanContracts } from '@/hooks/useSorobanContracts';
+import { useSeasonPass } from '@/hooks/useSeasonPass';
 
 interface TournamentRegistrationFlowProps {
   tournament: Tournament;
@@ -30,6 +31,7 @@ export const TournamentRegistrationFlow: React.FC<TournamentRegistrationFlowProp
   const { user } = useAuth();
   const { primaryWallet, isWalletConnected, connectWallet } = useMultiWallet();
   const { registerForTournament, loading } = useTournamentRegistrations();
+  const { hasPass: hasSeasonPass, isLoading: isPassLoading } = useSeasonPass();
   
   const [step, setStep] = useState<RegistrationStep>('wallet');
   const [passVerified, setPassVerified] = useState(false);
@@ -40,11 +42,8 @@ export const TournamentRegistrationFlow: React.FC<TournamentRegistrationFlowProp
 
   useEffect(() => {
     if (isWalletConnected && primaryWallet?.address) {
-      if (tournament.requires_pass) {
-        setStep('pass_check');
-      } else {
-        setStep(tournament.entry_fee_usd > 0 ? 'payment' : 'confirm');
-      }
+      // Season Pass is always required for tournament entry
+      setStep('pass_check');
     }
   }, [isWalletConnected, primaryWallet, tournament]);
 
@@ -55,31 +54,12 @@ export const TournamentRegistrationFlow: React.FC<TournamentRegistrationFlowProp
     setError(null);
     
     try {
-      // Simulated pass check - in production this would query Soroban NFT Pass contract
-      // For now, simulate a successful verification for demo purposes
-      const mockResult = {
-        hasPass: true,
-        tier: 'gold'
-      };
-      
-      if (mockResult.hasPass) {
-        // Check tier requirement
-        if (tournament.required_pass_tier) {
-          const tierOrder = ['bronze', 'silver', 'gold', 'platinum'];
-          const requiredIndex = tierOrder.indexOf(tournament.required_pass_tier);
-          const userIndex = tierOrder.indexOf(mockResult.tier || '');
-          
-          if (userIndex < requiredIndex) {
-            setError(`This tournament requires ${tournament.required_pass_tier} tier or higher. You have ${mockResult.tier} tier.`);
-            return;
-          }
-        }
-        
+      if (hasSeasonPass) {
         setPassVerified(true);
-        setPassTier(mockResult.tier || null);
+        setPassTier('season');
         setStep(tournament.entry_fee_usd > 0 ? 'payment' : 'confirm');
       } else {
-        setError('You do not own a Cyber City Pass NFT. Please mint one to participate.');
+        setError('You do not own a Cyber City Season Pass. Visit the Store to get one.');
       }
     } catch (err: any) {
       setError(err.message);
