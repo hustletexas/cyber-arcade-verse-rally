@@ -79,8 +79,6 @@ export const useCyberDrop = () => {
 
   const play = useCallback(async (isPaid: boolean): Promise<{ slotIndex: number; rewardAmount: number; isPaid: boolean } | null> => {
     if (!walletAddress || state.isPlaying) return null;
-    if (!isPaid && state.freePlayUsed) return null;
-    if (isPaid && state.balance < 1) return null;
 
     setState(prev => ({ ...prev, isPlaying: true }));
 

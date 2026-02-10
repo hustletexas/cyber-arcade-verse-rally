@@ -619,6 +619,7 @@ const PortalBreakerGame: React.FC = () => {
     return () => cancelAnimationFrame(rafRef.current);
   }, [loop]);
 
+  // All games are now free to play unlimited
   const startGame = async () => {
     const s = stateRef.current;
     if (s.status === 'idle' || s.status === 'gameover') {
@@ -626,12 +627,6 @@ const PortalBreakerGame: React.FC = () => {
         toast.error('Connect your wallet to play');
         return;
       }
-      const result = await deductBalance(1, 'cyber-match');
-      if (!result.success) {
-        toast.error(result.error || 'Not enough CCC (1 CCC required)');
-        return;
-      }
-      toast.success('1 CCC deducted — game starting!');
       Object.assign(s, initState(BASE_WIDTH, BASE_HEIGHT));
       s.status = 'running';
       scoreSubmittedRef.current = false;
@@ -649,12 +644,6 @@ const PortalBreakerGame: React.FC = () => {
       toast.error('Connect your wallet to play');
       return;
     }
-    const result = await deductBalance(1, 'cyber-match');
-    if (!result.success) {
-      toast.error(result.error || 'Not enough CCC (1 CCC required)');
-      return;
-    }
-    toast.success('1 CCC deducted — game restarting!');
     Object.assign(stateRef.current, initState(BASE_WIDTH, BASE_HEIGHT));
     stateRef.current.status = 'running';
     particles = [];
