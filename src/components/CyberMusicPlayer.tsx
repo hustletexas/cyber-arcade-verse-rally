@@ -19,7 +19,7 @@ export const CyberMusicPlayer = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [playlist] = useState<Playlist>(cyberDreamsPlaylist);
   const [tracks, setTracks] = useState<Track[]>(cyberDreamsPlaylist.tracks);
