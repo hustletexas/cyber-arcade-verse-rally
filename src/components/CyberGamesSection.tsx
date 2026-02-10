@@ -106,16 +106,41 @@ export const CyberGamesSection: React.FC = () => {
         </Card>
       </div>
 
-      {/* Claim Chest Button */}
-      <div className="flex justify-center">
-        <Button
-          onClick={() => navigate('/cyber-chest')}
-          className="bg-transparent border border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 backdrop-blur-sm text-yellow-400 hover:text-yellow-300 px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]"
-        >
-          <Gift className="w-5 h-5 mr-2" />
-          Claim Chest
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
+      {/* Cyber Breaker, Claim Chest & Cyber Galaxy Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        {/* Cyber Breaker - Left */}
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-pink-500/30" onClick={() => navigate('/portal-breaker')}>
+          <img src="/images/games/cyber-breaker-card.png" alt="Cyber Breaker" className="w-full h-auto object-cover" />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
+            <div className="flex items-center text-pink-400 text-sm font-medium">
+              Play Now
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Card>
+
+        {/* Claim Chest - Center */}
+        <div className="flex justify-center">
+          <Button
+            onClick={() => navigate('/cyber-chest')}
+            className="bg-transparent border border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 backdrop-blur-sm text-yellow-400 hover:text-yellow-300 px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]"
+          >
+            <Gift className="w-5 h-5 mr-2" />
+            Claim Chest
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+
+        {/* Cyber Galaxy - Right */}
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-purple-500/30" onClick={() => navigate('/cyber-galaxy')}>
+          <img src="/images/games/cyber-galaxy-card.png" alt="Cyber Galaxy" className="w-full h-auto object-cover" />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
+            <div className="flex items-center text-purple-400 text-sm font-medium">
+              Play Now
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Features */}
