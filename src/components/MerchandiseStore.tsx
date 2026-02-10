@@ -190,8 +190,6 @@ export const MerchandiseStore = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Wallet Connection Status */}
-        <WalletStatusBar />
 
         {/* Category Filter */}
         <div className="flex flex-wrap gap-3 justify-center">
