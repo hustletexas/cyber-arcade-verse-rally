@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Trophy } from 'lucide-react';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { toast } from 'sonner';
 
 // ─── Constants ───────────────────────────────────────────────────────
 const BASE_W = 720;
@@ -187,6 +189,7 @@ function saveToLeaderboard(score: number, wave: number) {
 const CyberGalaxyGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { deductBalance } = useUserBalance();
   const stateRef = useRef<GameState>(initGame(BASE_W, BASE_H));
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
@@ -933,8 +936,13 @@ const CyberGalaxyGame: React.FC = () => {
     }
   };
 
-  const startPaidGame = () => {
-    // For now, just start - integrate with CCC balance deduction
+  const startPaidGame = async () => {
+    const result = await deductBalance(1, 'cyber-match');
+    if (!result.success) {
+      toast.error(result.error || 'Insufficient CCC balance');
+      return;
+    }
+    toast.success('1 CCC deducted — good luck!');
     const s = stateRef.current;
     Object.assign(s, initGame(BASE_W, BASE_H));
     s.status = 'running';
@@ -958,7 +966,13 @@ const CyberGalaxyGame: React.FC = () => {
     stateRef.current.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
   };
 
-  const restartPaidGame = () => {
+  const restartPaidGame = async () => {
+    const result = await deductBalance(1, 'cyber-match');
+    if (!result.success) {
+      toast.error(result.error || 'Insufficient CCC balance');
+      return;
+    }
+    toast.success('1 CCC deducted — good luck!');
     Object.assign(stateRef.current, initGame(BASE_W, BASE_H));
     stateRef.current.status = 'running';
     stateRef.current.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
