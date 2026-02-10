@@ -78,7 +78,7 @@ export const TopBar = () => {
               >
                 <div className="text-center mb-3">
                   <p className="text-xs text-neon-cyan font-display">🤖 ASK AI ANYTHING ABOUT GAMING</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Strategies, tips, builds & more — 1 CCC per question</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Strategies, tips, builds & more — totally free!</p>
                 </div>
                 <DropdownMenuItem
                   onClick={() => setShowCoach(true)}

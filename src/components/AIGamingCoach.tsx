@@ -19,17 +19,9 @@ export const AIGamingCoach = () => {
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const QUESTION_COST = 1; // 1 CCC per question
+  const QUESTION_COST = 0; // Free for all players
 
   const handleAskQuestion = async () => {
-    if (!isWalletConnected || !primaryWallet) {
-      toast({
-        title: "Wallet Required", 
-        description: "Please connect your wallet to pay for AI coaching",
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (!question.trim()) {
       toast({
@@ -49,15 +41,6 @@ export const AIGamingCoach = () => {
       return;
     }
 
-    // Client-side balance check (for UX only - server validates)
-    if (balance.cctr_balance < QUESTION_COST) {
-      toast({
-        title: "Insufficient Balance",
-        description: `You need ${QUESTION_COST} CCC for AI coaching. Current balance: ${balance.cctr_balance}`,
-        variant: "destructive",
-      });
-      return;
-    }
 
     setIsLoading(true);
 
@@ -66,7 +49,7 @@ export const AIGamingCoach = () => {
       const { data, error } = await supabase.functions.invoke('gaming-coach', {
         body: { 
           question: question.trim(),
-          wallet_address: primaryWallet.address
+          wallet_address: primaryWallet?.address || 'anonymous'
         }
       });
 
@@ -98,8 +81,8 @@ export const AIGamingCoach = () => {
       await refetchBalance();
 
       toast({
-        title: "Question Processed!",
-        description: `Charged ${data.cost || QUESTION_COST} CCC for AI coaching`,
+        title: "Answer Ready!",
+        description: "Your AI coach has responded",
       });
 
     } catch (error) {
