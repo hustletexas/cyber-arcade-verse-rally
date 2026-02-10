@@ -229,8 +229,8 @@ export const WeeklyLeaderboard: React.FC = () => {
             {/* Reward Tiers */}
             <div className="grid grid-cols-3 gap-3 pt-4 border-t border-neon-cyan/10">
               {[
-                { place: '1st', emoji: '🥇', reward: '50 CCC + Chest + Ticket' },
-                { place: '2nd', emoji: '🥈', reward: '25 CCC + Ticket' },
+                { place: '1st', emoji: '🥇', reward: '50 CCC' },
+                { place: '2nd', emoji: '🥈', reward: '25 CCC' },
                 { place: '3rd', emoji: '🥉', reward: '10 CCC' },
               ].map((tier) => (
                 <div key={tier.place} className="text-center p-2 rounded-lg bg-black/20">
