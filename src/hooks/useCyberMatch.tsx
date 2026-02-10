@@ -127,10 +127,10 @@ export function useCyberMatch() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const matchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Derived state
-  const canPlayDaily = dailyLimit ? dailyLimit.plays_today < MAX_DAILY_PLAYS : true;
-  const playsRemaining = dailyLimit ? MAX_DAILY_PLAYS - dailyLimit.plays_today : MAX_DAILY_PLAYS;
-  const hasEnoughCCC = balance.cctr_balance >= GAME_ENTRY_FEE;
+  // All games are now free to play unlimited
+  const canPlayDaily = true;
+  const playsRemaining = 999;
+  const hasEnoughCCC = true;
   const cccBalance = balance.cctr_balance;
   const totalPairs = gameMode ? DIFFICULTY_CONFIGS[difficulty].pairs : 0;
 
@@ -265,60 +265,8 @@ export function useCyberMatch() {
     };
   }, []);
 
-  // Start game
+  // Start game - all modes are now free to play
   const startGame = useCallback(async (mode: GameMode, diff: Difficulty) => {
-    // Daily mode requires wallet
-    if (mode === 'daily' && !walletAddress) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet to play Daily Match Run",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (mode === 'daily') {
-      if (!canPlayDaily) {
-        toast({
-          title: "Daily Limit Reached",
-          description: "Come back tomorrow for more Daily Match plays!",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Deduct CCTR entry fee using secure server-side function
-      const result = await deductBalance(GAME_ENTRY_FEE, 'cyber-match');
-      if (!result.success) {
-        toast({
-          title: "Insufficient Balance",
-          description: result.error || `You need ${GAME_ENTRY_FEE} CCTR to play Daily Match`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Entry Fee Paid",
-        description: `${GAME_ENTRY_FEE} CCTR deducted. Good luck!`,
-      });
-
-      // Increment plays_today
-      const today = new Date().toISOString().split('T')[0];
-      const newPlays = (dailyLimit?.plays_today || 0) + 1;
-
-      await supabase.from('daily_limits').upsert({
-        user_id: walletAddress,
-        plays_today: newPlays,
-        last_play_date: today,
-      });
-
-      setDailyLimit(prev => prev ? { ...prev, plays_today: newPlays } : {
-        user_id: walletAddress!,
-        plays_today: newPlays,
-        last_play_date: today,
-      });
-    }
 
     const config = DIFFICULTY_CONFIGS[diff];
     setGameMode(mode);
@@ -357,7 +305,7 @@ export function useCyberMatch() {
         return { ...prev, timeSeconds: prev.timeSeconds + 1 };
       });
     }, 1000);
-  }, [walletAddress, canPlayDaily, dailyLimit, deductBalance]);
+  }, [walletAddress]);
 
   // End game
   const endGame = useCallback(async (state: GameState, isGameOver: boolean = false) => {
@@ -377,8 +325,8 @@ export function useCyberMatch() {
     setTicketsEarned(tickets);
     setChestEarned(false);
 
-    // Only save score for daily mode
-    if (gameMode === 'daily' && walletAddress && !isGameOver) {
+    // Save score for all modes when wallet connected
+    if (walletAddress && !isGameOver) {
       try {
         await supabase.from('match_scores').insert({
           user_id: walletAddress,

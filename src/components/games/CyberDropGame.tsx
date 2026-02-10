@@ -96,15 +96,8 @@ export const CyberDropGame: React.FC = () => {
   const boardRef = useRef<HTMLDivElement>(null);
   const [boardWidth, setBoardWidth] = useState(700);
 
-  const canPlayFree = isWalletConnected && !freePlayUsed && !isPlaying && !animating;
-  const canPlayPaid = isWalletConnected && balance >= 1 && !isPlaying && !animating;
-  const canPlay = playMode === 'free' ? canPlayFree : canPlayPaid;
-
-  // Auto-select mode
-  useEffect(() => {
-    if (freePlayUsed) setPlayMode('paid');
-    else setPlayMode('free');
-  }, [freePlayUsed]);
+  // All plays are now free and unlimited
+  const canPlay = isWalletConnected && !isPlaying && !animating;
 
   // Measure container width
   useEffect(() => {
@@ -298,8 +291,7 @@ export const CyberDropGame: React.FC = () => {
   const triggerDrop = async (startX: number) => {
     if (!canPlay) return;
 
-    const isPaid = playMode === 'paid';
-    const result = await play(isPaid);
+    const result = await play(false); // Always free
     if (!result) return;
 
     setResultData(result);
@@ -329,58 +321,10 @@ export const CyberDropGame: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      {/* Balance + play mode */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">💎</span>
-          <div>
-            <p className="text-xs text-muted-foreground">Your Points</p>
-            <p className="font-display text-xl text-neon-cyan">{balance.toLocaleString()}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Play mode toggle */}
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-black/40 border border-neon-purple/20">
-            <button
-              onClick={() => !freePlayUsed && setPlayMode('free')}
-              disabled={freePlayUsed}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                playMode === 'free' && !freePlayUsed
-                  ? 'bg-neon-green/20 text-neon-green border border-neon-green/40'
-                  : freePlayUsed
-                  ? 'text-muted-foreground/40 cursor-not-allowed'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Free {freePlayUsed ? '✓' : ''}
-            </button>
-            <button
-              onClick={() => setPlayMode('paid')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
-                playMode === 'paid'
-                  ? 'bg-accent/20 text-accent border border-accent/40'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Coins className="w-3 h-3" />
-              1 CCC
-            </button>
-          </div>
-          {freePlayUsed && nextResetTime && <CountdownTimer targetTime={nextResetTime} />}
-        </div>
-      </div>
-
-      {/* Leaderboard info */}
+      {/* Free to play info */}
       <div className="text-center">
-        <Badge
-          variant="outline"
-          className={`text-xs ${
-            playMode === 'paid'
-              ? 'border-accent/50 text-accent'
-              : 'border-muted-foreground/30 text-muted-foreground'
-          }`}
-        >
-          {playMode === 'paid' ? '🏆 Ranked — Counts to Leaderboard' : '🎮 Free Play — No Leaderboard'}
+        <Badge variant="outline" className="text-xs border-neon-green/50 text-neon-green">
+          🎮 Free to Play — Unlimited Drops
         </Badge>
       </div>
 

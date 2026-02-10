@@ -210,10 +210,6 @@ const CyberGalaxyGame: React.FC = () => {
   const [uiAccuracy, setUiAccuracy] = useState('');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [hasFreeTry, setHasFreeTry] = useState(() => {
-    return localStorage.getItem('cyberGalaxyFreeTryUsed') !== 'true';
-  });
-  const [needsPayment, setNeedsPayment] = useState(false);
 
   // ─── Resize ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -917,37 +913,14 @@ const CyberGalaxyGame: React.FC = () => {
     return () => cancelAnimationFrame(rafRef.current);
   }, [loop]);
 
-  // ─── Controls ────────────────────────────────────────────────────
+  // All games are now free to play unlimited
   const startGame = () => {
     const s = stateRef.current;
     if (s.status === 'idle' || s.status === 'gameover') {
-      // Check if free try available or needs payment
-      if (!hasFreeTry) {
-        setNeedsPayment(true);
-        return;
-      }
-      // Use free try
-      localStorage.setItem('cyberGalaxyFreeTryUsed', 'true');
-      setHasFreeTry(false);
-      
       Object.assign(s, initGame(BASE_W, BASE_H));
       s.status = 'running';
       s.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
     }
-  };
-
-  const startPaidGame = async () => {
-    const result = await deductBalance(1, 'cyber-match');
-    if (!result.success) {
-      toast.error(result.error || 'Insufficient CCC balance');
-      return;
-    }
-    toast.success('1 CCC deducted — good luck!');
-    const s = stateRef.current;
-    Object.assign(s, initGame(BASE_W, BASE_H));
-    s.status = 'running';
-    s.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
-    setNeedsPayment(false);
   };
 
   const togglePause = () => {
@@ -957,26 +930,9 @@ const CyberGalaxyGame: React.FC = () => {
   };
 
   const restartGame = () => {
-    if (!hasFreeTry) {
-      setNeedsPayment(true);
-      return;
-    }
     Object.assign(stateRef.current, initGame(BASE_W, BASE_H));
     stateRef.current.status = 'running';
     stateRef.current.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
-  };
-
-  const restartPaidGame = async () => {
-    const result = await deductBalance(1, 'cyber-match');
-    if (!result.success) {
-      toast.error(result.error || 'Insufficient CCC balance');
-      return;
-    }
-    toast.success('1 CCC deducted — good luck!');
-    Object.assign(stateRef.current, initGame(BASE_W, BASE_H));
-    stateRef.current.status = 'running';
-    stateRef.current.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
-    setNeedsPayment(false);
   };
 
   const fireButton = () => {
@@ -1012,28 +968,11 @@ const CyberGalaxyGame: React.FC = () => {
         </div>
       </div>
 
-      {/* Active power + entry info */}
+      {/* Active power */}
       <div className="h-5 flex items-center gap-3">
         {uiPower && <span className="text-xs font-mono text-amber-400 animate-pulse">{uiPower}</span>}
-        {hasFreeTry && <span className="text-xs font-mono text-neon-green">🎮 First play FREE!</span>}
-        {!hasFreeTry && <span className="text-xs font-mono text-amber-400">🪙 1 CCC per play</span>}
+        <span className="text-xs font-mono text-neon-green">🎮 Free to Play</span>
       </div>
-
-      {/* Payment Modal */}
-      {needsPayment && (
-        <div className="w-full bg-black/60 backdrop-blur-md border border-amber-500/40 rounded-xl p-6 text-center space-y-4">
-          <p className="text-amber-400 font-mono text-lg font-bold">🪙 Entry Fee: 1 CCC</p>
-          <p className="text-muted-foreground text-sm">Your free play has been used. Each game costs 1 Cyber City Coin.</p>
-          <div className="flex gap-3 justify-center">
-            <Button onClick={startPaidGame} className="bg-amber-600 hover:bg-amber-500 text-black font-bold gap-2">
-              <Play className="w-4 h-4" /> Pay 1 CCC & Play
-            </Button>
-            <Button onClick={() => setNeedsPayment(false)} variant="outline" className="border-muted-foreground/30">
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Canvas */}
       <div ref={containerRef} className="w-full flex justify-center">
@@ -1048,7 +987,7 @@ const CyberGalaxyGame: React.FC = () => {
       <div className="flex gap-3 flex-wrap justify-center">
         {(uiStatus === 'idle' || uiStatus === 'gameover') && (
           <Button onClick={startGame} className="bg-purple-600 hover:bg-purple-500 text-white gap-2">
-            <Play className="w-4 h-4" /> {hasFreeTry ? 'Start (Free)' : 'Start (1 CCC)'}
+            <Play className="w-4 h-4" /> Start
           </Button>
         )}
         {(uiStatus === 'running' || uiStatus === 'paused') && (
