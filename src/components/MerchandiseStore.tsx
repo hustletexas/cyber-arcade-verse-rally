@@ -65,7 +65,7 @@ const merchandiseItems: MerchandiseItem[] = [
     id: '5',
     name: 'Cyber Galaxy Space Tee',
     price: 29.99,
-    image: '/images/store/cyber-galaxy-shirt.png',
+    image: '/images/store/cyber-galaxy-shirt-v2.png',
     category: 'shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black', 'Navy'],
