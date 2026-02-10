@@ -80,13 +80,6 @@ export const TopBar = () => {
                   <Bot className="h-4 w-4 mr-2 text-neon-cyan" />
                   Gaming Coach
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => navigate('/foundation')}
-                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
-                >
-                  <Heart className="h-4 w-4 mr-2 text-neon-pink" />
-                  Foundation
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
