@@ -50,11 +50,10 @@ export const CommunityHub = () => {
   const { createOrLoginWithWallet } = useWalletAuth();
   const { toast } = useToast();
   
-  const [selectedRoomId, setSelectedRoomId] = useState<string>('00000000-0000-0000-0000-000000000001');
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('00000000-0000-0000-0000-000000000002');
   const [newMessage, setNewMessage] = useState('');
   
   const chatRooms = [
-    { id: '00000000-0000-0000-0000-000000000001', name: 'Crypto', description: 'Crypto Hub' },
     { id: '00000000-0000-0000-0000-000000000002', name: 'Gamers', description: 'Gamers Lounge' },
     { id: '00000000-0000-0000-0000-000000000003', name: 'Social', description: 'Social Circle' }
   ];
@@ -241,14 +240,13 @@ export const CommunityHub = () => {
             </CardTitle>
             
             <Tabs value={selectedRoomId} onValueChange={setSelectedRoomId} className="w-full mt-3">
-              <TabsList className="grid w-full grid-cols-3 bg-card/20 backdrop-blur-sm border border-neon-cyan/20">
+              <TabsList className="grid w-full grid-cols-2 bg-card/20 backdrop-blur-sm border border-neon-cyan/20">
                 {chatRooms.map((room) => (
                   <TabsTrigger 
                     key={room.id} 
                     value={room.id}
                     className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan data-[state=active]:shadow-neon-glow font-mono text-sm"
                   >
-                        {room.id === '00000000-0000-0000-0000-000000000001' && '₿'} 
                         {room.id === '00000000-0000-0000-0000-000000000002' && '🎮'} 
                         {room.id === '00000000-0000-0000-0000-000000000003' && '💬'}
                     {room.name}
