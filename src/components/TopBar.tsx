@@ -74,14 +74,18 @@ export const TopBar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="start" 
-                className="w-48 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100]"
+                className="w-64 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100] p-3"
               >
+                <div className="text-center mb-3">
+                  <p className="text-xs text-neon-cyan font-display">🤖 ASK AI ANYTHING ABOUT GAMING</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Strategies, tips, builds & more — 1 CCC per question</p>
+                </div>
                 <DropdownMenuItem
                   onClick={() => setShowCoach(true)}
-                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground"
+                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground justify-center"
                 >
                   <Bot className="h-4 w-4 mr-2 text-neon-cyan" />
-                  Gaming Coach
+                  Open Gaming Coach
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
