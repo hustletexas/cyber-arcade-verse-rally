@@ -177,10 +177,8 @@ const Index = () => {
             <VotingSection />
           </section>
 
-          {/* CCC Credits Section - How to Earn */}
-          <section className="px-2 sm:px-4">
-            <CreditsRewardsShowcase />
-          </section>
+
+
 
           {/* Sponsorships & Partnerships */}
           <section id="sponsorships" className="px-2 sm:px-4">
