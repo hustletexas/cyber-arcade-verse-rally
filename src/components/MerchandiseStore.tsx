@@ -50,6 +50,36 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black', 'Navy', 'Charcoal'],
     description: 'Premium bomber jacket featuring the complete Cyber City Arcade design with neon cityscape'
+  },
+  {
+    id: '4',
+    name: 'Cyber Breaker Neon Tee',
+    price: 29.99,
+    image: '/images/store/cyber-breaker-shirt.png',
+    category: 'shirt',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black', 'Charcoal'],
+    description: 'Bold neon brick-breaker design with electric lightning and rainbow blocks on premium cotton'
+  },
+  {
+    id: '5',
+    name: 'Cyber Galaxy Space Tee',
+    price: 29.99,
+    image: '/images/store/cyber-galaxy-shirt.png',
+    category: 'shirt',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black', 'Navy'],
+    description: 'Epic space shooter design with neon trails and galactic combat on premium cotton'
+  },
+  {
+    id: '6',
+    name: 'Cyber City Retrowave Tee',
+    price: 29.99,
+    image: '/images/store/cyber-city-shirt.png',
+    category: 'shirt',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black', 'Charcoal', 'Navy'],
+    description: 'Synthwave cityscape with retro car and neon sunset on premium cotton'
   }
 ];
 
