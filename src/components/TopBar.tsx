@@ -25,7 +25,7 @@ const scrollSections = [
 // Sections that navigate to dedicated pages
 const pageSections = [
   { path: '/tournaments', label: 'Tournament Hub', icon: Trophy },
-  { path: '/raffles', label: 'Raffles', icon: Ticket },
+  
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
   { path: '/about', label: 'About Us', icon: Info },
   { path: '/foundation', label: 'Foundation', icon: Heart },
