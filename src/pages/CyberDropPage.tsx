@@ -22,14 +22,9 @@ const CyberDropPage = () => {
           <span className="text-sm">Back to Arcade</span>
         </Link>
 
-        {/* Header */}
+        {/* Header Image */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-3xl sm:text-4xl text-purple-300 tracking-wider mb-2">
-            PORTAL BREAKER
-          </h1>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            Smash through portal shards, catch power-ups, and stabilize the gateway!
-          </p>
+          <img src="/images/games/cyber-breaker-logo.png" alt="Cyber Breaker" className="max-w-md mx-auto w-full h-auto" />
         </div>
 
         {/* CCC Balance Bar */}
