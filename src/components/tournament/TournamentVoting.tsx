@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Vote, ThumbsUp, Gamepad2, Trophy, Users, Monitor, Smartphone, Plus, Lock, ShieldCheck } from 'lucide-react';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSeasonPass } from '@/hooks/useSeasonPass';
 
 type GameCategory = 'pc' | 'ps5' | 'mobile';
 
@@ -48,36 +48,9 @@ const categoryConfig: Record<GameCategory, { label: string; icon: React.ReactNod
 export const TournamentVoting: React.FC = () => {
   const [proposals, setProposals] = useState<GameProposal[]>(initialProposals);
   const [newGameInputs, setNewGameInputs] = useState<Record<GameCategory, string>>({ pc: '', ps5: '', mobile: '' });
-  const [hasSeasonPass, setHasSeasonPass] = useState<boolean | null>(null);
-  const [isCheckingPass, setIsCheckingPass] = useState(false);
+  const { hasPass: hasSeasonPass, isLoading: isCheckingPass } = useSeasonPass();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
-
-  // Check season pass ownership when wallet changes
-  React.useEffect(() => {
-    const checkPass = async () => {
-      if (!primaryWallet?.address) {
-        setHasSeasonPass(null);
-        return;
-      }
-      setIsCheckingPass(true);
-      try {
-        const { data, error } = await supabase
-          .from('nft_mints')
-          .select('id')
-          .eq('wallet_address', primaryWallet.address)
-          .limit(1);
-
-        if (error) throw error;
-        setHasSeasonPass(data && data.length > 0);
-      } catch {
-        setHasSeasonPass(false);
-      } finally {
-        setIsCheckingPass(false);
-      }
-    };
-    checkPass();
-  }, [primaryWallet?.address]);
 
   const handleVote = (proposalId: string) => {
     if (!isWalletConnected) {
