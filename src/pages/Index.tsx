@@ -166,10 +166,6 @@ const Index = () => {
             <Web3Gaming />
           </section>
 
-          {/* AI Gaming Coach Section - Mobile Optimized */}
-         <section id="ai-coach" className="px-2 sm:px-4">
-            <AIGamingCoach />
-          </section>
 
           {/* Community Hub Section */}
          <section id="community-hub" className="px-2 sm:px-4">
