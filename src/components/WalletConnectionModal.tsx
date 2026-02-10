@@ -427,6 +427,15 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             >
               Get LOBSTR wallet
             </a>
+            {' '}and/or{' '}
+            <a 
+              href="https://www.freighter.app/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              Freighter wallet
+            </a>
           </p>
         </div>
       </DialogContent>
