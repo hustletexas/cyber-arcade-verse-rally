@@ -62,7 +62,7 @@ export const WelcomeTutorial: React.FC<WelcomeTutorialProps> = ({ isOpen, onClos
     {
       id: 5,
       title: "Our Games 🎮",
-      description: "Explore our arcade games:\n\n🧩 Cyber Match - Memory card matching game\n🎯 Cyber Sequence - Pattern memory challenge\n🧠 Cyber Trivia - Test your gaming knowledge\n🎰 Cyber Slots - Try your luck!\n👾 Retro Classics - Pac-Man, Tetris, Galaga",
+      description: "Explore our arcade games:\n\n🧩 Cyber Match - Memory card matching game\n🎯 Cyber Sequence - Pattern memory challenge\n🧠 Cyber Trivia - 6 category knowledge challenge\n🚀 Cyber Galaxy - Galaga-style arcade shooter\n🧱 Portal Breaker - Neon brick breaker\n🎰 Cyber Drop - Try your luck!",
       icon: <Target className="w-8 h-8 text-neon-cyan" />
     },
     {
