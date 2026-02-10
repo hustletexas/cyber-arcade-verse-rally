@@ -84,7 +84,7 @@ export const useUserBalance = () => {
     }
 
     // Map game type to allowed values
-    const allowedGameTypes = ['cyber-match', 'neon-match', 'trivia', 'ai-coach', 'cyber-sequence'];
+    const allowedGameTypes = ['cyber-match', 'neon-match', 'trivia', 'ai-coach', 'cyber-sequence', 'portal-breaker'];
     const validGameType = allowedGameTypes.includes(gameType) ? gameType : 'cyber-match';
 
     try {
