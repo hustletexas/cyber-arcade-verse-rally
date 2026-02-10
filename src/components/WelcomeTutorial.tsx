@@ -55,8 +55,8 @@ export const WelcomeTutorial: React.FC<WelcomeTutorialProps> = ({ isOpen, onClos
     },
     {
       id: 4,
-      title: "How to Earn CCC Points 🪙",
-      description: "CCC (Cyber City Credits) is our in-game currency. Here's how to earn:\n\n🎮 Play Games - Earn CCC for every game you complete\n📅 Daily Login - Get bonus CCC just for showing up\n🏆 Win Tournaments - Big CCC prizes for top players\n⭐ Achievements - Unlock milestones for CCC rewards\n🔥 Streaks - Build winning streaks for multipliers",
+      title: "🎮 CCC (Cyber City Credits)",
+      description: "CCC are in-game credits earned by playing games and completing challenges.\nThey are used to unlock cosmetic items, features, and optional promotional perks.",
       icon: <Coins className="w-8 h-8 text-neon-pink" />
     },
     {
