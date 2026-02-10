@@ -22,7 +22,7 @@ import CyberDropPage from "./pages/CyberDropPage";
 import CyberChestPage from "./pages/CyberChestPage";
 import StorePage from "./pages/StorePage";
 import TournamentsPage from "./pages/TournamentsPage";
-import RafflesPage from "./pages/RafflesPage";
+
 import AboutPage from "./pages/AboutPage";
 import FoundationPage from "./pages/FoundationPage";
 import CyberGalaxyPage from "./pages/CyberGalaxyPage";
@@ -53,7 +53,7 @@ const App = () => (
                 <Route path="/cyber-chest" element={<CyberChestPage />} />
                 <Route path="/store" element={<StorePage />} />
                 <Route path="/tournaments" element={<TournamentsPage />} />
-                <Route path="/raffles" element={<RafflesPage />} />
+                
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/foundation" element={<FoundationPage />} />
                 <Route path="/success" element={<Success />} />
