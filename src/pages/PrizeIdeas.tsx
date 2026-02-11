@@ -60,9 +60,6 @@ const PrizeIdeas = () => {
               <CardTitle className="flex items-center gap-3 text-xl">
                 <Sparkles className="w-6 h-6 text-neon-magenta" />
                 2️⃣ Experience-Based Rewards
-                <span className="ml-auto text-xs font-normal bg-neon-magenta/10 text-neon-magenta px-3 py-1 rounded-full">
-                  Very Strong Option
-                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
