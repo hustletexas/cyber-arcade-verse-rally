@@ -112,23 +112,6 @@ const PrizeIdeas = () => {
                 <li className="flex items-center gap-3">🎮 <span>Event credit</span></li>
                 <li className="flex items-center gap-3">🏆 <span>"Season Points" for ranking</span></li>
               </ul>
-
-              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-semibold text-destructive mb-2">Important:</p>
-                    <p className="text-muted-foreground text-sm">
-                      If you create an internal points system, make sure:
-                    </p>
-                    <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
-                      <li>It cannot be redeemed for cash</li>
-                      <li>It cannot be transferred</li>
-                      <li>It cannot be traded</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
