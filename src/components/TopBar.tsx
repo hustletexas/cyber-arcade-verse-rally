@@ -14,13 +14,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 // Sections that scroll on homepage
-const scrollSections = [
-  { id: 'marketplace', label: 'Season Pass', icon: Sparkles },
-  { id: 'arcade-hub', label: 'Arcade Hub', icon: Gamepad2 },
-  { id: 'community-hub', label: 'Community HQ', icon: Users },
-  { id: 'web3-gaming', label: 'Web3 Gaming', icon: Coins },
-  { id: 'ai-coach', label: 'AI Coach', icon: Bot },
-];
+const scrollSections: { id: string; label: string; icon: any }[] = [];
 
 // Sections that navigate to dedicated pages
 const pageSections = [
