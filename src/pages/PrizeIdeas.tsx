@@ -17,7 +17,7 @@ const PrizeIdeas = () => {
 
         <div className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-neon-cyan to-neon-magenta bg-clip-text text-transparent">
-            Prize Ideas for Tournament Winners
+            Tournament Winners
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             School-friendly, non-monetary reward options that celebrate achievement and keep students motivated.
