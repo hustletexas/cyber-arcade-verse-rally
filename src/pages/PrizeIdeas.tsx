@@ -54,7 +54,7 @@ const PrizeIdeas = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Schools LOVE these because they feel educational. These don't involve money — so they're very safe.
+                ​               
               </p>
               <ul className="space-y-3">
                 <li className="flex items-center gap-3">🎮 <span>Extra play session time</span></li>
