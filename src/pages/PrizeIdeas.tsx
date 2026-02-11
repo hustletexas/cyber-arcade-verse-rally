@@ -82,9 +82,6 @@ const PrizeIdeas = () => {
               <CardTitle className="flex items-center gap-3 text-xl">
                 <BookOpen className="w-6 h-6 text-neon-cyan" />
                 3️⃣ Educational / Tech Rewards
-                <span className="ml-auto text-xs font-normal bg-neon-cyan/10 text-neon-cyan px-3 py-1 rounded-full">
-                  District-Friendly
-                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
