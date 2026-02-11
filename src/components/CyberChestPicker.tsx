@@ -186,11 +186,7 @@ export const CyberChestPicker: React.FC = () => {
     setOpenedReward(null);
   };
   const eligibleChest = getEligibleChest();
-  return <div className="space-y-6">
-      {/* Wallet Status */}
-      <div className="flex justify-end">
-        <WalletStatusBar compact />
-      </div>
+  return <div className="space-y-6 w-full max-w-full">
 
       {/* Header */}
       <div className="flex flex-col items-center justify-center w-full">
