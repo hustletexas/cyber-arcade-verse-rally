@@ -144,19 +144,7 @@ export const CyberGamesSection: React.FC = () => {
       </div>
 
       {/* Features */}
-      <div className="flex flex-wrap justify-center gap-4 text-xs sm:text-sm text-gray-400">
-        <div className="flex items-center gap-1.5">
-          <Zap className="w-4 h-4 text-yellow-400" />
-          <span>Free & Ranked Modes</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Trophy className="w-4 h-4 text-neon-cyan" />
-          <span>Daily Leaderboards</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-lg">🎫</span>
-          <span>Earn Tickets & Rewards</span>
-        </div>
+      <div className="flex flex-wrap justify-center gap-4 text-xs sm:text-sm text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <span className="text-lg">🎮</span>
           <span>More Games Coming Soon</span>
