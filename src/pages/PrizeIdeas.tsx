@@ -41,9 +41,6 @@ const PrizeIdeas = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
-                These are the safest and most school-approved options. <strong className="text-foreground">Recognition {'>'} money in school settings.</strong>
-              </p>
               <ul className="space-y-3">
                 <li className="flex items-center gap-3">🏅 <span>Physical medals or trophies</span></li>
                 <li className="flex items-center gap-3">📜 <span>Printed certificates of achievement</span></li>
