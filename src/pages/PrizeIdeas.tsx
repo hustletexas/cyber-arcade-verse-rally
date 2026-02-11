@@ -4,20 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Medal, Sparkles, BookOpen, GraduationCap, AlertTriangle } from 'lucide-react';
-
 const PrizeIdeas = () => {
   const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
+  return <div className="min-h-screen bg-background text-foreground">
       <TopBar />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 text-muted-foreground hover:text-foreground"
-        >
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
@@ -105,7 +98,7 @@ const PrizeIdeas = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Instead of "cash prizes," say:
+                ​    
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center gap-3">🎓 <span>Program credit toward future sessions</span></li>
@@ -116,8 +109,6 @@ const PrizeIdeas = () => {
           </Card>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default PrizeIdeas;
