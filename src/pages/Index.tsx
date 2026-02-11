@@ -126,9 +126,9 @@ const Index = () => {
           {/* Mobile-Enhanced Action Buttons */}
           <div className="flex flex-col items-center gap-3 sm:gap-4 mb-6 md:mb-8 px-2 sm:px-4">
             {/* Mobile-Optimized Tutorial Button */}
-            <Button onClick={() => setShowTutorial(true)} variant="outline" className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base">
-              <span className="text-base sm:text-lg mr-2">📚</span>
-              Take Tutorial
+            <Button onClick={() => navigate('/after-school')} variant="outline" className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base">
+              <span className="text-base sm:text-lg mr-2">🎓</span>
+              After-School Program
             </Button>
           </div>
         </div>
