@@ -38,9 +38,6 @@ const PrizeIdeas = () => {
               <CardTitle className="flex items-center gap-3 text-xl">
                 <Medal className="w-6 h-6 text-neon-cyan" />
                 1️⃣ Recognition-Based Rewards
-                <span className="ml-auto text-xs font-normal bg-neon-cyan/10 text-neon-cyan px-3 py-1 rounded-full">
-                  Safest for Schools
-                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
