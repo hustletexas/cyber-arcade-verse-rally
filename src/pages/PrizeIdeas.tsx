@@ -76,7 +76,7 @@ const PrizeIdeas = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                These make administrators comfortable. You're giving skill-building tools, not cash.
+                ​         
               </p>
               <ul className="space-y-3">
                 <li className="flex items-center gap-3">🎧 <span>Gaming headset</span></li>
