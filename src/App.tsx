@@ -27,6 +27,7 @@ import AboutPage from "./pages/AboutPage";
 import FoundationPage from "./pages/FoundationPage";
 import CyberGalaxyPage from "./pages/CyberGalaxyPage";
 import TournamentRules from "./pages/TournamentRules";
+import AfterSchoolProgram from "./pages/AfterSchoolProgram";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/foundation" element={<FoundationPage />} />
                 <Route path="/tournament-rules" element={<TournamentRules />} />
+                <Route path="/after-school" element={<AfterSchoolProgram />} />
                 <Route path="/success" element={<Success />} />
                 <Route path="/cancel" element={<Cancel />} />
                 <Route path="*" element={<NotFound />} />
