@@ -104,9 +104,6 @@ const PrizeIdeas = () => {
               <CardTitle className="flex items-center gap-3 text-xl">
                 <GraduationCap className="w-6 h-6 text-neon-magenta" />
                 4️⃣ Scholarship / Credit-Based
-                <span className="ml-auto text-xs font-normal bg-neon-magenta/10 text-neon-magenta px-3 py-1 rounded-full">
-                  Careful Framing
-                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
