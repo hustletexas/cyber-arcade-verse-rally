@@ -33,7 +33,7 @@ const initialProposals: GameProposal[] = [
   { id: 'ps5-2', game: 'GTA 6', category: 'ps5', format: 'Round Robin', entryFee: '$15 USDC', prizePool: '$1,000 USDC', votes: 71, hasVoted: false },
   { id: 'ps5-3', game: 'UNDISPUTED BOXING', category: 'ps5', format: 'Single Elimination', entryFee: '$5 USDC', prizePool: '$300 USDC', votes: 39, hasVoted: false },
   { id: 'ps5-4', game: 'FORTNITE PS5', category: 'ps5', format: 'Battle Royale', entryFee: 'Free', prizePool: '$250 USDC', votes: 45, hasVoted: false },
-  { id: 'mob-1', game: 'CLASH ROYALE', category: 'mobile', format: 'Double Elimination', entryFee: 'Free', prizePool: '$250 USDC', votes: 47, hasVoted: false },
+  { id: 'mob-1', game: 'BRAWL STARS', category: 'mobile', format: 'Double Elimination', entryFee: 'Free', prizePool: '$250 USDC', votes: 47, hasVoted: false },
   { id: 'mob-2', game: 'PUBG MOBILE', category: 'mobile', format: 'Battle Royale', entryFee: '$5 USDC', prizePool: '$500 USDC', votes: 55, hasVoted: false },
   { id: 'mob-3', game: 'COD MOBILE', category: 'mobile', format: 'Single Elimination', entryFee: '$5 USDC', prizePool: '$400 USDC', votes: 38, hasVoted: false },
   { id: 'mob-4', game: 'GENSHIN IMPACT', category: 'mobile', format: 'Score Attack', entryFee: 'Free', prizePool: '$200 USDC', votes: 29, hasVoted: false },

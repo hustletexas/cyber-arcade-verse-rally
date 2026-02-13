@@ -183,18 +183,18 @@ const ps5Games = [
 
 const mobileGames = [
   {
-    id: 'clash-royale',
-    name: 'Clash Royale',
-    category: 'Strategy',
+    id: 'brawl-stars',
+    name: 'Brawl Stars',
+    category: 'Action',
     blockchain: 'N/A',
-    image: '/images/games/clash-royale.webp',
-    description: 'Real-time multiplayer battle game combining cards, strategy, and tower defense',
-    playUrl: 'https://supercell.com/en/games/clashroyale/',
-    downloadUrl: 'https://play.google.com/store/apps/details?id=com.supercell.clashroyale',
+    image: '/images/games/brawl-stars.webp',
+    description: 'Fast-paced 3v3 multiplayer and battle royale made for mobile with tons of unique brawlers',
+    playUrl: 'https://supercell.com/en/games/brawlstars/',
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.supercell.brawlstars',
     isWebBased: false,
-    rewards: ['Gems', 'Cards', 'Chests'],
+    rewards: ['Gems', 'Brawlers', 'Star Points'],
     players: '500M+',
-    rating: 4.5
+    rating: 4.6
   },
   {
     id: 'genshin-impact',
