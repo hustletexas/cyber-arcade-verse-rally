@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Trophy, Users, Calendar, DollarSign, Gamepad2, Shield } from 'lucide-react';
 import { Tournament, GAME_OPTIONS } from '@/types/tournament';
+import { TournamentRegistrationFlow } from './TournamentRegistrationFlow';
 
 interface TournamentListProps {
   tournaments: Tournament[];
@@ -17,6 +19,7 @@ export const TournamentList: React.FC<TournamentListProps> = ({
   loading,
   onSelect 
 }) => {
+  const [registeringTournament, setRegisteringTournament] = useState<Tournament | null>(null);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'registration_open': return 'bg-neon-green text-black';
@@ -141,7 +144,13 @@ export const TournamentList: React.FC<TournamentListProps> = ({
 
             {/* Action Button */}
             {tournament.status === 'registration_open' && (
-              <Button className="w-full cyber-button">
+              <Button 
+                className="w-full cyber-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRegisteringTournament(tournament);
+                }}
+              >
                 Register Now
               </Button>
             )}
@@ -153,6 +162,22 @@ export const TournamentList: React.FC<TournamentListProps> = ({
           </CardContent>
         </Card>
       ))}
+
+      {/* Registration Dialog */}
+      <Dialog 
+        open={!!registeringTournament} 
+        onOpenChange={(open) => !open && setRegisteringTournament(null)}
+      >
+        <DialogContent className="max-w-md p-0 bg-transparent border-none shadow-none">
+          {registeringTournament && (
+            <TournamentRegistrationFlow
+              tournament={registeringTournament}
+              onSuccess={() => setRegisteringTournament(null)}
+              onCancel={() => setRegisteringTournament(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
