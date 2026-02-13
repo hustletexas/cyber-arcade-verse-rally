@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GameCard } from './GameCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
 
 const featuredGames = [
   {
@@ -275,15 +276,25 @@ export const FeaturedGames = () => {
                 <Button 
                   variant="outline"
                   className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: 'CyberBrawl.io',
-                        text: 'Check out CyberBrawl.io - an action-packed Web3 gaming experience!',
-                        url: 'https://cyberbrawl.io',
-                      });
-                    } else {
-                      navigator.clipboard.writeText('https://cyberbrawl.io');
+                  onClick={async () => {
+                    try {
+                      if (navigator.share) {
+                        await navigator.share({
+                          title: 'CyberBrawl.io',
+                          text: 'Check out CyberBrawl.io - an action-packed Web3 gaming experience!',
+                          url: 'https://cyberbrawl.io',
+                        });
+                      } else {
+                        await navigator.clipboard.writeText('https://cyberbrawl.io');
+                        toast.success('Link copied to clipboard!');
+                      }
+                    } catch {
+                      try {
+                        await navigator.clipboard.writeText('https://cyberbrawl.io');
+                        toast.success('Link copied to clipboard!');
+                      } catch {
+                        toast.error('Unable to share or copy link');
+                      }
                     }
                   }}
                 >
