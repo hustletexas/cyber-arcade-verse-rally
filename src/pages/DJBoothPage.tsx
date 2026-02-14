@@ -5,20 +5,34 @@ import { Button } from '@/components/ui/button';
 import { ProDeckControls } from '@/components/dj/ProDeckControls';
 import { ProMixer } from '@/components/dj/ProMixer';
 import { DJLibrary } from '@/components/dj/DJLibrary';
+import { DJAchievements } from '@/components/dj/DJAchievements';
 import { useDJEnginePro } from '@/hooks/useDJEnginePro';
+import { useDJAchievements } from '@/hooks/useDJAchievements';
+import { useAuth } from '@/hooks/useAuth';
 import { cyberDreamsPlaylist } from '@/data/musicPlaylist';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Disc3, Radio, Mic2, Shield, Users } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const DJBoothPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
   const dj = useDJEnginePro();
+  const achievements = useDJAchievements();
   const tracks = cyberDreamsPlaylist.tracks;
   const [recordingBlob, setRecordingBlob] = useState<Blob | null>(null);
 
   const handleStopRecording = async () => {
-    const { blob } = await dj.stopRecording();
+    const { blob, duration } = await dj.stopRecording();
     setRecordingBlob(blob);
+
+    // Save completed mix to Supabase and check milestones
+    const mixTitle = `Mix ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+    const result = await achievements.saveMix(mixTitle, duration);
+    if (result) {
+      toast({ title: '✅ Mix Saved!', description: `${duration}s mix recorded. Download or check your badges!` });
+    }
   };
 
   const handleDownloadRecording = () => {
@@ -88,6 +102,17 @@ const DJBoothPage = () => {
               <Users className="w-3 h-3 mr-1" /> All Ages
             </Badge>
           </div>
+        </div>
+
+        {/* On-Chain DJ Achievements */}
+        <div className="mb-4">
+          <DJAchievements
+            milestones={achievements.milestones}
+            mixCount={achievements.mixCount}
+            loading={achievements.loading}
+            isAuthenticated={!!user}
+            onClaim={achievements.claimBadge}
+          />
         </div>
 
         {/* Library */}
@@ -196,7 +221,7 @@ const DJBoothPage = () => {
               <li>• Adjust 3-band EQ (HI/MID/LOW) + Gain per deck</li>
               <li>• Select FX (Filter/Echo/Reverb/Flanger) per deck</li>
               <li>• Blend with crossfader and channel faders</li>
-              <li>• Hit REC to capture your mix, then download!</li>
+              <li>• Hit REC to capture your mix → earn on-chain badges!</li>
             </ul>
           </div>
         </div>

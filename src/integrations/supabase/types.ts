@@ -288,6 +288,33 @@ export type Database = {
         }
         Relationships: []
       }
+      dj_completed_mixes: {
+        Row: {
+          created_at: string
+          duration_seconds: number
+          id: string
+          is_featured: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          is_featured?: boolean
+          title?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          is_featured?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dj_cues: {
         Row: {
           color: string | null
@@ -319,6 +346,48 @@ export type Database = {
           label?: string | null
           time_position?: number
           track_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dj_milestones: {
+        Row: {
+          claim_eligible: boolean
+          claim_transaction_hash: string | null
+          claimed: boolean
+          claimed_at: string | null
+          created_at: string
+          id: string
+          milestone_type: string
+          mix_count: number
+          reached_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claim_eligible?: boolean
+          claim_transaction_hash?: string | null
+          claimed?: boolean
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          milestone_type: string
+          mix_count?: number
+          reached_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claim_eligible?: boolean
+          claim_transaction_hash?: string | null
+          claimed?: boolean
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          milestone_type?: string
+          mix_count?: number
+          reached_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2943,6 +3012,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_dj_milestones: { Args: { p_user_id: string }; Returns: Json }
       check_rate_limit: {
         Args: {
           function_name_param: string
