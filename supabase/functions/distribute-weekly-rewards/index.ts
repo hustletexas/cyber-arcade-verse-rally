@@ -19,15 +19,54 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // Authenticate - require admin
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Use service role to bypass RLS
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(
+      authHeader.replace("Bearer ", "")
+    );
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check admin role via service role client
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: adminCheck } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", claimsData.claims.sub)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!adminCheck) {
+      return new Response(
+        JSON.stringify({ error: "Admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Calculate the previous week's date range (Monday to Sunday)
     const now = new Date();
-    const dayOfWeek = now.getUTCDay(); // 0 = Sunday
+    const dayOfWeek = now.getUTCDay();
     const daysToLastMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     
     const lastMonday = new Date(now);
@@ -45,7 +84,7 @@ Deno.serve(async (req) => {
 
     console.log(`[Weekly Rewards] Processing week: ${weekStartDate} to ${weekEndDate}`);
 
-    // Check if rewards already distributed for this week
+    // Check if rewards already distributed
     const { data: existingRewards } = await supabase
       .from("weekly_reward_distributions")
       .select("id")
@@ -53,7 +92,6 @@ Deno.serve(async (req) => {
       .limit(1);
 
     if (existingRewards && existingRewards.length > 0) {
-      console.log("[Weekly Rewards] Already distributed for this week, skipping");
       return new Response(
         JSON.stringify({
           success: true,
@@ -67,19 +105,14 @@ Deno.serve(async (req) => {
     // Get combined weekly leaderboard
     const { data: leaderboard, error: leaderboardError } = await supabase.rpc(
       "get_combined_weekly_leaderboard",
-      {
-        p_week_start: weekStartStr,
-        p_week_end: weekEndStr,
-      }
+      { p_week_start: weekStartStr, p_week_end: weekEndStr }
     );
 
     if (leaderboardError) {
-      console.error("[Weekly Rewards] Leaderboard error:", leaderboardError);
       throw new Error(`Failed to get leaderboard: ${leaderboardError.message}`);
     }
 
     if (!leaderboard || leaderboard.length === 0) {
-      console.log("[Weekly Rewards] No players found for this week");
       return new Response(
         JSON.stringify({
           success: true,
@@ -90,8 +123,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[Weekly Rewards] Found ${leaderboard.length} players. Top 3:`);
-
     const results: Array<{
       placement: number;
       wallet: string;
@@ -100,19 +131,10 @@ Deno.serve(async (req) => {
       success: boolean;
     }> = [];
 
-    // Distribute rewards to top 3
     for (const tier of REWARD_TIERS) {
       const player = leaderboard[tier.placement - 1];
-      if (!player) {
-        console.log(`[Weekly Rewards] No player for ${tier.label}, skipping`);
-        continue;
-      }
+      if (!player) continue;
 
-      console.log(
-        `[Weekly Rewards] ${tier.label}: ${player.wallet_address} (score: ${player.total_score})`
-      );
-
-      // Call the distribute function
       const { data: distributed, error: distError } = await supabase.rpc(
         "distribute_weekly_rewards",
         {
@@ -125,36 +147,16 @@ Deno.serve(async (req) => {
         }
       );
 
-      if (distError) {
-        console.error(
-          `[Weekly Rewards] Error distributing to ${tier.label}:`,
-          distError
-        );
-        results.push({
-          placement: tier.placement,
-          wallet: player.wallet_address,
-          score: Number(player.total_score),
-          ccc: tier.ccc,
-          success: false,
-        });
-      } else {
-        console.log(
-          `[Weekly Rewards] ✅ ${tier.label} rewarded: ${tier.ccc} CCC + chest + raffle ticket`
-        );
-        results.push({
-          placement: tier.placement,
-          wallet: player.wallet_address,
-          score: Number(player.total_score),
-          ccc: tier.ccc,
-          success: !!distributed,
-        });
-      }
+      results.push({
+        placement: tier.placement,
+        wallet: player.wallet_address,
+        score: Number(player.total_score),
+        ccc: tier.ccc,
+        success: !distError && !!distributed,
+      });
     }
 
     const successCount = results.filter((r) => r.success).length;
-    console.log(
-      `[Weekly Rewards] Distribution complete. ${successCount}/${results.length} successful.`
-    );
 
     return new Response(
       JSON.stringify({
