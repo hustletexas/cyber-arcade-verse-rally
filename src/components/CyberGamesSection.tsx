@@ -59,10 +59,10 @@ export const CyberGamesSection: React.FC = () => {
       {/* Section Banner */}
       <div className="w-full relative">
         <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/b8a7ac8d-1113-4d55-ab57-c5cbf1182247.png" />
-        <div className="flex justify-center mt-3">
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center">
           <Button
             onClick={() => navigate('/esports')}
-            className="bg-transparent border border-neon-cyan/50 hover:border-neon-cyan hover:bg-neon-cyan/10 backdrop-blur-sm text-neon-cyan hover:text-white px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(0,255,255,0.3)]"
+            className="bg-black/60 backdrop-blur-sm border border-neon-cyan/50 hover:border-neon-cyan hover:bg-neon-cyan/10 text-neon-cyan hover:text-white px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(0,255,255,0.3)]"
           >
             <Trophy className="w-5 h-5 mr-2" />
             Cyber City Esports
