@@ -23,18 +23,18 @@ const featuredGames = [
     rating: 4.8
   },
   {
-    id: 'wilder-world',
-    name: 'Wilder World',
-    category: 'Open World Metaverse',
-    blockchain: 'Ethereum',
-    image: '/lovable-uploads/51af8344-cf64-4bfe-a0a5-128e31280d81.png',
-    description: 'Immersive metaverse with photorealistic graphics and NFT integration',
-    playUrl: 'https://www.wilderworld.com/',
-    downloadUrl: 'https://store.epicgames.com/en-US/p/wilder-world-wilder-world-alpha-b4ccf8',
-    isWebBased: false,
-    rewards: ['WILD', 'Wilder NFTs', 'Land NFTs'],
-    players: '35K+',
-    rating: 4.7
+    id: 'star-atlas',
+    name: 'Star Atlas',
+    category: 'MMO Strategy',
+    blockchain: 'Solana',
+    image: '/lovable-uploads/1070ae3c-2007-492b-ac52-1f15c99e05c1.png',
+    description: 'Epic space exploration and combat MMO built on Solana',
+    playUrl: 'https://play.staratlas.com',
+    downloadUrl: null,
+    isWebBased: true,
+    rewards: ['ATLAS', 'POLIS', 'Ship NFTs'],
+    players: '50K+',
+    rating: 4.8
   },
   {
     id: 'magiccraft',
