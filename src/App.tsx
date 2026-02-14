@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { TieredAuthProvider } from "./contexts/AuthContext";
 import { AuthProvider } from "./hooks/useAuth";
 import { CartProvider } from "./contexts/CartContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -36,42 +37,44 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
-      <AuthProvider>
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/token-creator" element={<TokenCreator />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/refund-policy" element={<RefundPolicy />} />
-                <Route path="/games/cyber-match" element={<CyberMatch />} />
-                <Route path="/games/cyber-sequence" element={<CyberSequence />} />
-                <Route path="/games/cyber-trivia" element={<CyberTrivia />} />
-                <Route path="/cyber-drop" element={<CyberDropPage />} />
-                <Route path="/cyber-galaxy" element={<CyberGalaxyPage />} />
-                <Route path="/cyber-chest" element={<CyberChestPage />} />
-                <Route path="/store" element={<StorePage />} />
-                <Route path="/tournaments" element={<TournamentsPage />} />
-                
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/foundation" element={<FoundationPage />} />
-                <Route path="/tournament-rules" element={<TournamentRules />} />
-                <Route path="/after-school" element={<AfterSchoolProgram />} />
-                <Route path="/prize-ideas" element={<PrizeIdeas />} />
-                <Route path="/esports" element={<EsportsPage />} />
-                <Route path="/success" element={<Success />} />
-                <Route path="/cancel" element={<Cancel />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </CartProvider>
-      </AuthProvider>
+      <TieredAuthProvider>
+        <AuthProvider>
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ScrollToTop />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/token-creator" element={<TokenCreator />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/refund-policy" element={<RefundPolicy />} />
+                  <Route path="/games/cyber-match" element={<CyberMatch />} />
+                  <Route path="/games/cyber-sequence" element={<CyberSequence />} />
+                  <Route path="/games/cyber-trivia" element={<CyberTrivia />} />
+                  <Route path="/cyber-drop" element={<CyberDropPage />} />
+                  <Route path="/cyber-galaxy" element={<CyberGalaxyPage />} />
+                  <Route path="/cyber-chest" element={<CyberChestPage />} />
+                  <Route path="/store" element={<StorePage />} />
+                  <Route path="/tournaments" element={<TournamentsPage />} />
+                  
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/foundation" element={<FoundationPage />} />
+                  <Route path="/tournament-rules" element={<TournamentRules />} />
+                  <Route path="/after-school" element={<AfterSchoolProgram />} />
+                  <Route path="/prize-ideas" element={<PrizeIdeas />} />
+                  <Route path="/esports" element={<EsportsPage />} />
+                  <Route path="/success" element={<Success />} />
+                  <Route path="/cancel" element={<Cancel />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </CartProvider>
+        </AuthProvider>
+      </TieredAuthProvider>
     </ErrorBoundary>
   </QueryClientProvider>
 );
