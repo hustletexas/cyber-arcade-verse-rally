@@ -153,7 +153,7 @@ export const TrackActions: React.FC<TrackActionsProps> = ({
           className="flex items-center gap-1 h-8 px-3 text-neon-cyan hover:text-neon-green hover:bg-neon-green/20 transition-all duration-300"
         >
           <Disc3 size={14} />
-          <span className="text-xs">Remix</span>
+          <span className="text-xs">DJ Booth</span>
         </Button>
       </div>
 
