@@ -6,9 +6,35 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const EsportsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleCreateAccount = async () => {
+    if (user) {
+      toast({ title: "You're already signed in!", description: "Head to tournaments to start competing." });
+      navigate('/tournaments');
+    } else {
+      // Prompt sign up via Supabase Auth
+      const email = window.prompt('Enter your email to create an account:');
+      if (email) {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) {
+          toast({ title: "Error", description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: "Check your email!", description: "We sent you a magic link to sign in." });
+        }
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -249,8 +275,8 @@ const EsportsPage = () => {
             <Rocket className="w-7 h-7 text-primary" /> Ready To Enter The Arena?
           </h2>
           <div className="flex flex-wrap justify-center gap-4 mb-6">
-            <Button onClick={() => navigate('/')} className="bg-primary hover:bg-primary/80 text-primary-foreground font-display">
-              Create Your Account
+            <Button onClick={handleCreateAccount} className="bg-primary hover:bg-primary/80 text-primary-foreground font-display">
+              {user ? 'Go To Tournaments' : 'Create Your Account'}
             </Button>
             <Button onClick={() => navigate('/tournaments')} variant="outline" className="border-accent text-accent hover:bg-accent/10 font-display">
               View Tournaments
