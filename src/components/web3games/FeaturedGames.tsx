@@ -9,17 +9,17 @@ import { toast } from 'sonner';
 
 const featuredGames = [
   {
-    id: 'star-atlas',
-    name: 'Star Atlas',
-    category: 'MMO Strategy',
-    blockchain: 'Solana',
-    image: '/lovable-uploads/1070ae3c-2007-492b-ac52-1f15c99e05c1.png',
-    description: 'Epic space exploration and combat MMO built on Solana',
-    playUrl: 'https://play.staratlas.com',
-    downloadUrl: null,
-    isWebBased: true,
-    rewards: ['ATLAS', 'POLIS', 'Ship NFTs'],
-    players: '50K+',
+    id: 'illuvium',
+    name: 'Illuvium',
+    category: 'Open World RPG',
+    blockchain: 'Ethereum',
+    image: '/images/games/illuvium.webp',
+    description: 'An open-world RPG adventure where you hunt and capture creatures called Illuvials',
+    playUrl: 'https://illuvium.io',
+    downloadUrl: 'https://illuvium.io/download',
+    isWebBased: false,
+    rewards: ['ILV', 'Illuvial NFTs', 'Land NFTs'],
+    players: '200K+',
     rating: 4.8
   },
   {
