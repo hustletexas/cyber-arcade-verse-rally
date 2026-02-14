@@ -2505,6 +2505,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          updated_at: string | null
+          username: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          updated_at?: string | null
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          updated_at?: string | null
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
       profiles_secure: {
         Row: {
           avatar_url: string | null
