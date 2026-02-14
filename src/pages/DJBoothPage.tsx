@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { TopBar } from '@/components/TopBar';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { DeckControls } from '@/components/dj/DeckControls';
-import { useDJEngine } from '@/hooks/useDJEngine';
+import { Button } from '@/components/ui/button';
+import { ProDeckControls } from '@/components/dj/ProDeckControls';
+import { ProMixer } from '@/components/dj/ProMixer';
+import { DJLibrary } from '@/components/dj/DJLibrary';
+import { useDJEnginePro } from '@/hooks/useDJEnginePro';
 import { cyberDreamsPlaylist } from '@/data/musicPlaylist';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Disc3, Radio, Mic2, Download, Square } from 'lucide-react';
+import { ArrowLeft, Disc3, Radio, Mic2, Shield, Users } from 'lucide-react';
 
 const DJBoothPage = () => {
   const navigate = useNavigate();
-  const dj = useDJEngine();
+  const dj = useDJEnginePro();
   const tracks = cyberDreamsPlaylist.tracks;
   const [recordingBlob, setRecordingBlob] = useState<Blob | null>(null);
 
   const handleStopRecording = async () => {
-    const blob = await dj.stopRecording();
+    const { blob } = await dj.stopRecording();
     setRecordingBlob(blob);
   };
 
@@ -56,145 +57,148 @@ const DJBoothPage = () => {
 
       <TopBar />
 
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10 max-w-6xl">
+      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 relative z-10 max-w-7xl">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-neon-cyan hover:bg-neon-cyan/10">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Arcade
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </Button>
         </div>
 
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Disc3 className="w-8 h-8 text-neon-cyan animate-spin" style={{ animationDuration: '3s' }} />
-            <h1 className="text-3xl sm:text-4xl font-bold text-neon-cyan font-display tracking-wide">
-              DJ PRACTICE BOOTH
+        <div className="text-center mb-4">
+          <div className="flex items-center justify-center gap-3 mb-1">
+            <Disc3 className="w-6 h-6 sm:w-8 sm:h-8 text-neon-cyan animate-spin" style={{ animationDuration: '3s' }} />
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neon-cyan font-display tracking-wide">
+              CYBER CITY DJ BOOTH
             </h1>
-            <Disc3 className="w-8 h-8 text-neon-pink animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }} />
+            <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink/40 text-[10px]">PRO</Badge>
           </div>
-          <p className="text-white/50 text-sm">Mix tracks from the Cyber City Radio library • Web Audio Engine</p>
-          <div className="flex justify-center gap-2 mt-3">
-            <Badge variant="outline" className="border-neon-cyan/40 text-neon-cyan text-xs">
+          <p className="text-white/50 text-xs">Serato-style mixing • Web Audio Engine • Cyber City Music Only</p>
+          <div className="flex flex-wrap justify-center gap-2 mt-2">
+            <Badge variant="outline" className="border-neon-cyan/40 text-neon-cyan text-[10px]">
               <Radio className="w-3 h-3 mr-1" /> {tracks.length} Tracks
             </Badge>
-            <Badge variant="outline" className="border-neon-pink/40 text-neon-pink text-xs">
+            <Badge variant="outline" className="border-neon-pink/40 text-neon-pink text-[10px]">
               <Mic2 className="w-3 h-3 mr-1" /> Web Audio API
+            </Badge>
+            <Badge variant="outline" className="border-neon-purple/40 text-neon-purple text-[10px]">
+              <Shield className="w-3 h-3 mr-1" /> Built on Stellar
+            </Badge>
+            <Badge variant="outline" className="border-neon-green/40 text-neon-green text-[10px]">
+              <Users className="w-3 h-3 mr-1" /> All Ages
             </Badge>
           </div>
         </div>
 
-        {/* DJ Console */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-4 items-start">
+        {/* Library */}
+        <div className="mb-4">
+          <DJLibrary tracks={tracks} onLoadToDeck={(deck, track) => dj.loadTrack(deck, track)} />
+        </div>
+
+        {/* DJ Console — Desktop: 3-column, Mobile: stacked */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px_1fr] gap-3 items-start">
           {/* Deck A */}
-          <DeckControls
+          <ProDeckControls
             label="DECK A"
             deck={dj.deckA}
+            deckId="A"
             color="#00ffff"
-            tracks={tracks}
-            onLoadTrack={(t) => dj.loadTrack('A', t)}
             onPlayPause={() => dj.playPause('A')}
             onSetCue={() => dj.setCuePoint('A')}
             onJumpToCue={() => dj.jumpToCue('A')}
-            onVolumeChange={(v) => dj.setVolume('A', v)}
-            onBPMChange={(b) => dj.setBPM('A', b)}
-            onFilterChange={(f) => dj.setFilter('A', f)}
-            onEchoChange={(e) => dj.setEcho('A', e)}
+            onSync={() => dj.syncBPM()}
             onSeek={(t) => dj.seek('A', t)}
+            onBPMChange={(b) => dj.setBPM('A', b)}
+            onBpmRangeToggle={(r) => dj.setBpmRange('A', r)}
+            onTapBPM={() => dj.tapBPM('A')}
+            onEQ={(band, val) => dj.setEQ('A', band, val)}
+            onGain={(v) => dj.setGain('A', v)}
+            onHotCueSet={(i) => dj.setHotCue('A', i)}
+            onHotCueJump={(i) => dj.jumpToHotCue('A', i)}
+            onHotCueClear={(i) => dj.clearHotCue('A', i)}
+            onLoopAuto={(b) => dj.setAutoLoop('A', b)}
+            onLoopIn={() => dj.setLoopIn('A')}
+            onLoopOut={() => dj.setLoopOut('A')}
+            onLoopToggle={() => dj.toggleLoop('A')}
           />
 
-          {/* Center Controls */}
-          <div className="flex flex-col items-center gap-4 py-4 lg:py-8">
-            {/* Sync Button */}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={dj.syncBPM}
-              className="border-neon-purple/50 text-neon-purple hover:bg-neon-purple/10 text-xs font-bold tracking-wider"
-            >
-              SYNC
-            </Button>
-
-            {/* Crossfader */}
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-xs text-white/40 uppercase tracking-widest">Crossfader</span>
-              <div className="w-48 lg:w-16 lg:h-48 flex lg:flex-col items-center">
-                {/* Horizontal on mobile, vertical concept but we'll keep horizontal for simplicity */}
-                <span className="text-xs text-neon-cyan font-bold mr-2 lg:mr-0 lg:mb-2">A</span>
-                <Slider
-                  value={[dj.crossfader]}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onValueChange={([v]) => dj.updateCrossfader(v)}
-                  className="flex-1"
-                />
-                <span className="text-xs text-neon-pink font-bold ml-2 lg:ml-0 lg:mt-2">B</span>
-              </div>
-            </div>
-
-            {/* Record Controls */}
-            <div className="flex flex-col items-center gap-2 mt-4">
-              {!dj.isRecording ? (
-                <Button
-                  size="sm"
-                  onClick={dj.startRecording}
-                  className="bg-red-600 hover:bg-red-700 text-white text-xs"
-                >
-                  <div className="w-2 h-2 rounded-full bg-white mr-2 animate-pulse" />
-                  REC
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={handleStopRecording}
-                  className="bg-red-800 hover:bg-red-900 text-white text-xs animate-pulse"
-                >
-                  <Square className="w-3 h-3 mr-1" /> STOP
-                </Button>
-              )}
-
-              {recordingBlob && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDownloadRecording}
-                  className="border-neon-green/40 text-neon-green text-xs"
-                >
-                  <Download className="w-3 h-3 mr-1" /> Download Mix
-                </Button>
-              )}
-            </div>
+          {/* Center Mixer — sticky on mobile */}
+          <div className="lg:sticky lg:top-20 order-first lg:order-none">
+            <ProMixer
+              deckA={dj.deckA}
+              deckB={dj.deckB}
+              crossfader={dj.crossfader}
+              channelFaderA={dj.channelFaderA}
+              channelFaderB={dj.channelFaderB}
+              masterVolume={dj.masterVolume}
+              masterPeakL={dj.masterPeakL}
+              masterPeakR={dj.masterPeakR}
+              isRecording={dj.isRecording}
+              recordingDuration={dj.recordingDuration}
+              onCrossfader={dj.updateCrossfader}
+              onChannelFaderA={(v) => dj.updateChannelFader('A', v)}
+              onChannelFaderB={(v) => dj.updateChannelFader('B', v)}
+              onMasterVolume={dj.updateMasterVolume}
+              onFilterA={(f) => dj.setFilter('A', f)}
+              onEchoA={(w) => dj.setEcho('A', w)}
+              onActiveFxA={(fx) => dj.setActiveFx('A', fx)}
+              onFilterB={(f) => dj.setFilter('B', f)}
+              onEchoB={(w) => dj.setEcho('B', w)}
+              onActiveFxB={(fx) => dj.setActiveFx('B', fx)}
+              onStartRecording={dj.startRecording}
+              onStopRecording={handleStopRecording}
+              onDownloadRecording={handleDownloadRecording}
+              hasRecording={!!recordingBlob}
+            />
           </div>
 
           {/* Deck B */}
-          <DeckControls
+          <ProDeckControls
             label="DECK B"
             deck={dj.deckB}
+            deckId="B"
             color="#ff00ff"
-            tracks={tracks}
-            onLoadTrack={(t) => dj.loadTrack('B', t)}
             onPlayPause={() => dj.playPause('B')}
             onSetCue={() => dj.setCuePoint('B')}
             onJumpToCue={() => dj.jumpToCue('B')}
-            onVolumeChange={(v) => dj.setVolume('B', v)}
-            onBPMChange={(b) => dj.setBPM('B', b)}
-            onFilterChange={(f) => dj.setFilter('B', f)}
-            onEchoChange={(e) => dj.setEcho('B', e)}
+            onSync={() => dj.syncBPM()}
             onSeek={(t) => dj.seek('B', t)}
+            onBPMChange={(b) => dj.setBPM('B', b)}
+            onBpmRangeToggle={(r) => dj.setBpmRange('B', r)}
+            onTapBPM={() => dj.tapBPM('B')}
+            onEQ={(band, val) => dj.setEQ('B', band, val)}
+            onGain={(v) => dj.setGain('B', v)}
+            onHotCueSet={(i) => dj.setHotCue('B', i)}
+            onHotCueJump={(i) => dj.jumpToHotCue('B', i)}
+            onHotCueClear={(i) => dj.clearHotCue('B', i)}
+            onLoopAuto={(b) => dj.setAutoLoop('B', b)}
+            onLoopIn={() => dj.setLoopIn('B')}
+            onLoopOut={() => dj.setLoopOut('B')}
+            onLoopToggle={() => dj.toggleLoop('B')}
           />
         </div>
 
-        {/* Tips */}
-        <div className="mt-8 p-4 rounded-xl border border-white/10 bg-black/30 backdrop-blur-sm">
-          <h3 className="text-sm font-bold text-neon-cyan mb-2">🎧 DJ Tips</h3>
-          <ul className="text-xs text-white/50 space-y-1">
-            <li>• Load a track on each deck from the Cyber City Radio library</li>
-            <li>• Use the <strong className="text-white/70">BPM</strong> slider to match tempos, or press <strong className="text-white/70">SYNC</strong> to auto-match</li>
-            <li>• Slide the <strong className="text-white/70">Crossfader</strong> to blend between decks A ↔ B</li>
-            <li>• Set <strong className="text-white/70">CUE</strong> points to mark drop positions, then jump back with the CUE button</li>
-            <li>• Apply <strong className="text-white/70">Filter</strong> (low-pass) and <strong className="text-white/70">Echo FX</strong> for transitions</li>
-            <li>• Hit <strong className="text-white/70">REC</strong> to record your mix, then download it!</li>
-          </ul>
+        {/* Disclaimer & Tips */}
+        <div className="mt-6 space-y-3">
+          <div className="p-3 rounded-xl border border-neon-cyan/20 bg-black/30 backdrop-blur-sm">
+            <p className="text-[10px] text-neon-cyan/70 text-center">
+              ⚠️ DJ Booth uses Cyber City-owned music only. All tracks are licensed for in-app mixing.
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl border border-white/10 bg-black/30 backdrop-blur-sm">
+            <h3 className="text-xs font-bold text-neon-cyan mb-2 font-display">🎧 PRO DJ TIPS</h3>
+            <ul className="text-[10px] text-white/50 space-y-0.5 columns-1 sm:columns-2">
+              <li>• Load tracks from the library to Deck A or B</li>
+              <li>• Use BPM slider or TAP to match tempos, then SYNC</li>
+              <li>• Set 8 Hot Cues per track (right-click to clear)</li>
+              <li>• Use loop buttons (1/2/4/8/16) for auto-loops</li>
+              <li>• Adjust 3-band EQ (HI/MID/LOW) + Gain per deck</li>
+              <li>• Select FX (Filter/Echo/Reverb/Flanger) per deck</li>
+              <li>• Blend with crossfader and channel faders</li>
+              <li>• Hit REC to capture your mix, then download!</li>
+            </ul>
+          </div>
         </div>
       </main>
     </div>

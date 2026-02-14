@@ -288,6 +288,72 @@ export type Database = {
         }
         Relationships: []
       }
+      dj_cues: {
+        Row: {
+          color: string | null
+          created_at: string
+          cue_index: number
+          id: string
+          label: string | null
+          time_position: number
+          track_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          cue_index: number
+          id?: string
+          label?: string | null
+          time_position?: number
+          track_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          cue_index?: number
+          id?: string
+          label?: string | null
+          time_position?: number
+          track_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dj_sets: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          mix_url: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          mix_url: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          mix_url?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dj_uploads: {
         Row: {
           approved_at: string | null
