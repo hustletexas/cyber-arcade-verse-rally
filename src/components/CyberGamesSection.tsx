@@ -57,18 +57,8 @@ export const CyberGamesSection: React.FC = () => {
   return <Card className="arcade-frame">
       <CardContent className="p-6 space-y-6">
       {/* Section Banner */}
-      <div className="w-full relative">
+      <div className="w-full">
         <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/b8a7ac8d-1113-4d55-ab57-c5cbf1182247.png" />
-        <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-          <Button
-            onClick={() => navigate('/esports')}
-            className="bg-black/60 backdrop-blur-sm border border-neon-cyan/50 hover:border-neon-cyan hover:bg-neon-cyan/10 text-neon-cyan hover:text-white px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(0,255,255,0.3)]"
-          >
-            <Trophy className="w-5 h-5 mr-2" />
-            Cyber City Esports
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
       </div>
 
       {/* Games Grid */}
