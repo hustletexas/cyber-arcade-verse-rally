@@ -130,6 +130,10 @@ const Index = () => {
               <span className="text-base sm:text-lg mr-2">🎓</span>
               After-School Program
             </Button>
+            <Button onClick={() => navigate('/esports')} variant="outline" className="text-neon-cyan border-neon-cyan hover:bg-neon-cyan/10 px-4 sm:px-6 py-2 sm:py-3 w-full max-w-xs sm:max-w-sm touch-manipulation min-h-[2.5rem] text-sm sm:text-base">
+              <span className="text-base sm:text-lg mr-2">🏆</span>
+              Cyber City Esports
+            </Button>
           </div>
         </div>
 
