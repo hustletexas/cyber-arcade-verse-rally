@@ -124,7 +124,7 @@ export const SponsorshipSection = () => {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button asChild className="cyber-button px-6 py-3 text-sm sm:text-base w-full sm:w-auto">
-                <a href="mailto:cybercityarcade@gmail.com">
+                <a href="/docs/Cyber_City_Arcade_Sponsorship_One_Page.pdf" target="_blank" rel="noopener noreferrer">
                   📩 Request Sponsorship Info
                 </a>
               </Button>
