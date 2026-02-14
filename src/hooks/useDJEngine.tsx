@@ -131,28 +131,65 @@ export function useDJEngine() {
   const loadTrack = useCallback((deck: 'A' | 'B', track: Track) => {
     const audioRef = deck === 'A' ? audioARef : audioBRef;
     const setDeck = deck === 'A' ? setDeckA : setDeckB;
+    const sourceRef = deck === 'A' ? sourceARef : sourceBRef;
 
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.crossOrigin = 'anonymous';
-      audioRef.current.preload = 'auto';
+    // Stop current playback
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
 
-    audioRef.current.src = track.url;
-    audioRef.current.load();
+    // If source already exists, reuse the same audio element
+    if (audioRef.current && sourceRef.current) {
+      audioRef.current.src = track.url;
+      audioRef.current.load();
 
-    audioRef.current.onloadedmetadata = () => {
-      setupDeckAudio(deck, audioRef.current!);
+      const onLoaded = () => {
+        setDeck(prev => ({
+          ...prev,
+          track,
+          duration: audioRef.current?.duration || 0,
+          currentTime: 0,
+          isPlaying: false,
+          cuePoint: 0,
+          isCued: false,
+        }));
+        audioRef.current?.removeEventListener('loadedmetadata', onLoaded);
+      };
+      const onError = () => {
+        console.error(`DJ Deck ${deck}: Failed to load track "${track.title}"`);
+        audioRef.current?.removeEventListener('error', onError);
+      };
+      audioRef.current.addEventListener('loadedmetadata', onLoaded);
+      audioRef.current.addEventListener('error', onError, { once: true });
+      return;
+    }
+
+    // Create new audio element for first load
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.preload = 'auto';
+    audioRef.current = audio;
+
+    audio.src = track.url;
+    audio.load();
+
+    audio.addEventListener('loadedmetadata', () => {
+      setupDeckAudio(deck, audio);
       setDeck(prev => ({
         ...prev,
         track,
-        duration: audioRef.current?.duration || 0,
+        duration: audio.duration || 0,
         currentTime: 0,
         isPlaying: false,
         cuePoint: 0,
         isCued: false,
       }));
-    };
+    }, { once: true });
+
+    audio.addEventListener('error', (e) => {
+      console.error(`DJ Deck ${deck}: Failed to load track "${track.title}"`, e);
+    }, { once: true });
   }, [setupDeckAudio]);
 
   const playPause = useCallback((deck: 'A' | 'B') => {
