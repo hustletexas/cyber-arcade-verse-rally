@@ -621,6 +621,102 @@ export type Database = {
         }
         Relationships: []
       }
+      radio_listen_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          listen_date: string
+          session_count: number
+          total_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listen_date?: string
+          session_count?: number
+          total_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listen_date?: string
+          session_count?: number
+          total_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      radio_milestone_claims: {
+        Row: {
+          claimed_at: string
+          id: string
+          milestone_type: string
+          milestone_value: number
+          reward_description: string | null
+          reward_type: string
+          transaction_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          id?: string
+          milestone_type: string
+          milestone_value: number
+          reward_description?: string | null
+          reward_type: string
+          transaction_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          id?: string
+          milestone_type?: string
+          milestone_value?: number
+          reward_description?: string | null
+          reward_type?: string
+          transaction_hash?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      radio_streaks: {
+        Row: {
+          current_streak: number
+          last_listen_date: string | null
+          longest_streak: number
+          tier: string
+          total_listen_days: number
+          total_listen_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          last_listen_date?: string | null
+          longest_streak?: number
+          tier?: string
+          total_listen_days?: number
+          total_listen_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          last_listen_date?: string | null
+          longest_streak?: number
+          tier?: string
+          total_listen_days?: number
+          total_listen_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       raffle_tickets: {
         Row: {
           id: string
@@ -2735,6 +2831,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      claim_radio_milestone: {
+        Args: {
+          p_milestone_type: string
+          p_milestone_value: number
+          p_reward_description: string
+          p_reward_type: string
+          p_wallet_address: string
+        }
+        Returns: Json
+      }
       claim_user_rewards: { Args: never; Returns: Json }
       claim_weekly_trivia_bonus: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
@@ -2839,6 +2945,10 @@ export type Database = {
       }
       purchase_song: {
         Args: { song_id_param: string; user_id_param: string }
+        Returns: Json
+      }
+      record_radio_listen: {
+        Args: { p_seconds: number; p_wallet_address: string }
         Returns: Json
       }
       submit_tournament_score: {

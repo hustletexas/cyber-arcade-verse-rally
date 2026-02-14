@@ -10,6 +10,9 @@ import { Track, Playlist } from '@/types/music';
 import { cyberDreamsPlaylist } from '@/data/musicPlaylist';
 import { TrackActions } from '@/components/music/TrackActions';
 import { PlaylistView } from '@/components/music/PlaylistView';
+import { RadioRewards } from '@/components/music/RadioRewards';
+import { useRadioStreaks } from '@/hooks/useRadioStreaks';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 
 export const CyberMusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -27,6 +30,13 @@ export const CyberMusicPlayer = () => {
   const playerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { trackAchievement } = useAchievements();
+  const { primaryWallet, connectWallet } = useMultiWallet();
+  const walletAddress = primaryWallet?.address || null;
+  const { streakData, milestones, claimMilestone, formatListenTime } = useRadioStreaks(walletAddress, isPlaying);
+
+  const handleConnectWallet = () => {
+    window.dispatchEvent(new CustomEvent('openWalletModal'));
+  };
 
   // Auto-pause when tab is not visible
   useEffect(() => {
@@ -537,6 +547,17 @@ export const CyberMusicPlayer = () => {
             onPlayPause={handlePlayPause}
           />
         )}
+
+        {/* Stellar Radio Rewards */}
+        <RadioRewards
+          streakData={streakData}
+          milestones={milestones}
+          isConnected={!!walletAddress}
+          isPlaying={isPlaying}
+          formatListenTime={formatListenTime}
+          onClaimMilestone={claimMilestone}
+          onConnectWallet={handleConnectWallet}
+        />
         </>
         )}
 
