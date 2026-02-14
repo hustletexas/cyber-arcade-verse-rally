@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MessageCircle, Share2, RotateCcw } from 'lucide-react';
+import { Heart, MessageCircle, Share2, RotateCcw, Disc3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Track } from '@/types/music';
 
 interface TrackActionsProps {
@@ -23,6 +24,7 @@ export const TrackActions: React.FC<TrackActionsProps> = ({
   onPurchaseNFT
 }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [commentText, setCommentText] = useState('');
 
@@ -141,6 +143,17 @@ export const TrackActions: React.FC<TrackActionsProps> = ({
         >
           <RotateCcw size={14} />
           <span className="text-xs">Replay</span>
+        </Button>
+
+        {/* Remix Button */}
+        <Button
+          onClick={() => navigate('/dj')}
+          size="sm"
+          variant="ghost"
+          className="flex items-center gap-1 h-8 px-3 text-neon-cyan hover:text-neon-green hover:bg-neon-green/20 transition-all duration-300"
+        >
+          <Disc3 size={14} />
+          <span className="text-xs">Remix</span>
         </Button>
       </div>
 
