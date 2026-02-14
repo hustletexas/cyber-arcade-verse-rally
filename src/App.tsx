@@ -31,6 +31,7 @@ import TournamentRules from "./pages/TournamentRules";
 import AfterSchoolProgram from "./pages/AfterSchoolProgram";
 import PrizeIdeas from "./pages/PrizeIdeas";
 import EsportsPage from "./pages/EsportsPage";
+import WelcomePromoPopup from "./components/WelcomePromoPopup";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <ScrollToTop />
+                <WelcomePromoPopup />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/token-creator" element={<TokenCreator />} />
