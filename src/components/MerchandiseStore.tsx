@@ -14,7 +14,7 @@ interface MerchandiseItem {
   name: string;
   price: number;
   image: string;
-  category: 'shirt' | 'hoodie' | 'jacket';
+  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker';
   sizes: string[];
   colors: string[];
   description: string;
@@ -110,6 +110,36 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black', 'Charcoal'],
     description: 'Premium hoodie with bold neon brick-breaker design, electric lightning and rainbow blocks'
+  },
+  {
+    id: '10',
+    name: 'Season 1 Sticker Pack - Classic',
+    price: 12.99,
+    image: '/images/store/sticker-pack-1.png',
+    category: 'sticker',
+    sizes: ['One Size'],
+    colors: ['Multi'],
+    description: 'Limited edition 20-piece sticker pack featuring iconic Cyber City Arcade designs, Built on Stellar Blockchain badges, and retro gaming art'
+  },
+  {
+    id: '11',
+    name: 'Season 1 Sticker Pack - Cypher',
+    price: 12.99,
+    image: '/images/store/sticker-pack-2.png',
+    category: 'sticker',
+    sizes: ['One Size'],
+    colors: ['Multi'],
+    description: 'Limited edition 20-piece sticker pack with Power Up, Level Up, Digital Hustler, Gamer Life designs and more cyberpunk artwork'
+  },
+  {
+    id: '12',
+    name: 'Season 1 Sticker Pack - Finals',
+    price: 12.99,
+    image: '/images/store/sticker-pack-3.png',
+    category: 'sticker',
+    sizes: ['One Size'],
+    colors: ['Multi'],
+    description: 'Limited edition 20-piece sticker pack featuring Cyber Finals NFT, Claim Rewards, Top Ranked Player, and arcade fight stick designs'
   }
 ];
 
@@ -125,7 +155,8 @@ export const MerchandiseStore = () => {
     { value: 'all', label: '🎮 ALL ITEMS', icon: '🎮' },
     { value: 'shirt', label: '👕 T-SHIRTS', icon: '👕' },
     { value: 'hoodie', label: '🧥 HOODIES', icon: '🧥' },
-    { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' }
+    { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' },
+    { value: 'sticker', label: '🎨 STICKERS', icon: '🎨' }
   ];
 
   const filteredItems = selectedCategory === 'all' 
