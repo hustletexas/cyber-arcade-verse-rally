@@ -58,7 +58,7 @@ export const CyberGamesSection: React.FC = () => {
       <CardContent className="p-6 space-y-6">
       {/* Section Banner */}
       <div className="w-full">
-        <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/f24b9448-ce82-4c3b-8526-60e1a3cf3f4d.png" />
+        <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/b8a7ac8d-1113-4d55-ab57-c5cbf1182247.png" />
       </div>
 
       {/* Games Grid */}
@@ -123,8 +123,8 @@ export const CyberGamesSection: React.FC = () => {
         <div className="flex justify-center">
           <Button
             onClick={() => navigate('/cyber-chest')}
-            className="bg-transparent border border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 backdrop-blur-sm text-yellow-400 hover:text-yellow-300 px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]"
-          >
+            className="bg-transparent border border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 backdrop-blur-sm text-yellow-400 hover:text-yellow-300 px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+
             <Gift className="w-5 h-5 mr-2" />
             Unlock Chest
             <ArrowRight className="w-4 h-4 ml-2" />
