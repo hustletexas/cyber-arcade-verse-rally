@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GameCard } from './GameCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
 const featuredGames = [
@@ -259,33 +260,55 @@ export const FeaturedGames = () => {
                 >
                   📖 Learn More
                 </Button>
-                <Button 
-                  variant="outline"
-                  className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
-                  onClick={async () => {
-                    try {
-                      if (navigator.share) {
-                        await navigator.share({
-                          title: 'CyberBrawl.io',
-                          text: 'Check out CyberBrawl.io - an action-packed Web3 gaming experience!',
-                          url: 'https://cyberbrawl.io',
-                        });
-                      } else {
-                        await navigator.clipboard.writeText('https://cyberbrawl.io');
-                        toast.success('Link copied to clipboard!');
-                      }
-                    } catch {
-                      try {
-                        await navigator.clipboard.writeText('https://cyberbrawl.io');
-                        toast.success('Link copied to clipboard!');
-                      } catch {
-                        toast.error('Unable to share or copy link');
-                      }
-                    }
-                  }}
-                >
-                  📤 Share
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black"
+                    >
+                      📤 Share
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-black/90 border-neon-cyan/30 backdrop-blur-md">
+                    {(() => {
+                      const shareUrl = encodeURIComponent('https://cyberbrawl.io');
+                      const shareText = encodeURIComponent('Check out CyberBrawl.io - an action-packed Web3 gaming experience!');
+                      const shareTitle = encodeURIComponent('CyberBrawl.io');
+                      return (
+                        <>
+                          <DropdownMenuItem className="text-white hover:bg-neon-cyan/20 cursor-pointer" onClick={() => window.open(`https://x.com/intent/tweet?text=${shareText}&url=${shareUrl}`, '_blank')}>
+                            𝕏 Share on X
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white hover:bg-neon-cyan/20 cursor-pointer" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank')}>
+                            📘 Share on Facebook
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white hover:bg-neon-cyan/20 cursor-pointer" onClick={() => window.open(`https://wa.me/?text=${shareText}%20${shareUrl}`, '_blank')}>
+                            💬 Share on WhatsApp
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white hover:bg-neon-cyan/20 cursor-pointer" onClick={() => window.open(`https://t.me/share/url?url=${shareUrl}&text=${shareText}`, '_blank')}>
+                            ✈️ Share on Telegram
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white hover:bg-neon-cyan/20 cursor-pointer" onClick={() => window.open(`https://www.reddit.com/submit?url=${shareUrl}&title=${shareTitle}`, '_blank')}>
+                            🔴 Share on Reddit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white hover:bg-neon-cyan/20 cursor-pointer" onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`, '_blank')}>
+                            💼 Share on LinkedIn
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-white hover:bg-neon-cyan/20 cursor-pointer" onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText('https://cyberbrawl.io');
+                              toast.success('Link copied to clipboard!');
+                            } catch {
+                              toast.error('Unable to copy link');
+                            }
+                          }}>
+                            📋 Copy Link
+                          </DropdownMenuItem>
+                        </>
+                      );
+                    })()}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             <div className="relative">
