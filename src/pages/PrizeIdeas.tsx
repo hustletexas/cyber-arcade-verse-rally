@@ -10,7 +10,7 @@ const PrizeIdeas = () => {
       <TopBar />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')} className="mb-6 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
