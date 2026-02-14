@@ -155,11 +155,6 @@ const Index = () => {
             <CyberGamesSection />
           </section>
 
-          {/* Weekly Leaderboard */}
-          <section id="weekly-leaderboard" className="px-2 sm:px-4">
-            <WeeklyLeaderboard />
-          </section>
-
           {/* NFT Marketplace Section - Mobile Optimized */}
          <section id="marketplace" className="px-2 sm:px-4">
             <Marketplace />
@@ -170,6 +165,10 @@ const Index = () => {
             <Web3Gaming />
           </section>
 
+          {/* Weekly Leaderboard */}
+          <section id="weekly-leaderboard" className="px-2 sm:px-4">
+            <WeeklyLeaderboard />
+          </section>
 
           {/* Community Hub Section */}
          <section id="community-hub" className="px-2 sm:px-4">
