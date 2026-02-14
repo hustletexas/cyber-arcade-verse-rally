@@ -9,8 +9,6 @@ import { WalletConnectionModal } from '@/components/WalletConnectionModal';
 import { 
   Gamepad2, 
   Trophy, 
-  Gift, 
-  Calendar, 
   Award, 
   Zap,
   Star,
@@ -35,7 +33,7 @@ export const CreditsRewardsShowcase = () => {
       icon: Gamepad2,
       title: 'Play Games',
       description: 'Earn CCC by playing arcade games, completing matches, and achieving high scores',
-      reward: '5-50 CCC per game',
+      reward: '2-5 CCC per game',
       color: 'text-neon-green',
       bgColor: 'from-neon-green/20 to-neon-green/5'
     },
@@ -48,26 +46,26 @@ export const CreditsRewardsShowcase = () => {
       bgColor: 'from-neon-cyan/20 to-neon-cyan/5'
     },
     {
-      icon: Calendar,
-      title: 'Daily Login',
-      description: 'Connect your wallet daily to claim bonus credits and build streaks',
-      reward: '10-100 CCC daily',
+      icon: Zap,
+      title: 'Listen to Radio',
+      description: 'Tune into Cyber City Radio and earn CCC while you vibe to cyberpunk beats',
+      reward: '1 CCC per session',
       color: 'text-neon-pink',
       bgColor: 'from-neon-pink/20 to-neon-pink/5'
     },
     {
       icon: Award,
-      title: 'Achievements',
-      description: 'Unlock achievements by completing challenges and reaching milestones',
-      reward: '25-500 CCC per badge',
+      title: 'Chat & Engage',
+      description: 'Participate in community chat rooms and earn credits for active engagement',
+      reward: '1 CCC per message batch',
       color: 'text-neon-purple',
       bgColor: 'from-neon-purple/20 to-neon-purple/5'
     },
     {
-      icon: Gift,
-      title: 'Slot Machine',
-      description: 'Spin the Cyber Slots daily for a chance to hit jackpots',
-      reward: '50-6000 CCC',
+      icon: Star,
+      title: 'Achievements',
+      description: 'Unlock achievements by completing challenges and reaching milestones',
+      reward: '10 CCC per badge',
       color: 'text-neon-yellow',
       bgColor: 'from-neon-yellow/20 to-neon-yellow/5'
     },
@@ -207,7 +205,7 @@ export const CreditsRewardsShowcase = () => {
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-neon-green">✓</span>
-                    <span><strong>100 CCC Starter</strong> - New wallets receive free credits</span>
+                    <span><strong>10 CCC Starter</strong> - New wallets receive a one-time bonus</span>
                   </div>
                 </div>
               </Card>
@@ -219,7 +217,7 @@ export const CreditsRewardsShowcase = () => {
                   className="w-full cyber-button text-lg py-6"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  CONNECT WALLET & GET 100 FREE CCC
+                  CONNECT WALLET & GET 10 FREE CCC
                 </Button>
               )}
             </div>
