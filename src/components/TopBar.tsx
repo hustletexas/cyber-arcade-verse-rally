@@ -18,8 +18,8 @@ const scrollSections: { id: string; label: string; icon: any }[] = [];
 
 // Sections that navigate to dedicated pages
 const pageSections = [
-  { path: '/store', label: 'Merch Store', icon: ShoppingBag },
-  { path: '/tournaments', label: 'Tournament Hub', icon: Trophy },
+  { path: '/store', label: 'Merch', icon: ShoppingBag },
+  { path: '/tournaments', label: 'Tournament', icon: Trophy },
   { path: '/tournament-rules', label: 'Rules', icon: Scale },
   { path: '/rewards', label: 'Rewards', icon: Award },
   { path: '/foundation', label: 'Foundation', icon: Heart },
