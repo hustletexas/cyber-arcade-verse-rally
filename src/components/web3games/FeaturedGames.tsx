@@ -37,20 +37,6 @@ const featuredGames = [
     rating: 4.8
   },
   {
-    id: 'magiccraft',
-    name: 'MagicCraft',
-    category: 'MOBA Strategy',
-    blockchain: 'Polygon',
-    image: '/lovable-uploads/424982ae-ffcd-4769-8e5c-c63cd572d347.png',
-    description: 'Epic MOBA with magical battles and strategic gameplay',
-    playUrl: 'https://magiccraft.io/play',
-    downloadUrl: 'https://store.steampowered.com/app/2103140/Magicraft/',
-    isWebBased: false,
-    rewards: ['MCRT', 'Hero NFTs', 'Spell NFTs'],
-    players: '30K+',
-    rating: 4.5
-  },
-  {
     id: 'gods-unchained',
     name: 'Gods Unchained',
     category: 'Trading Card Game',
@@ -77,20 +63,6 @@ const featuredGames = [
     rewards: ['OTG', 'Weapon NFTs', 'Character NFTs'],
     players: '150K+',
     rating: 4.7
-  },
-  {
-    id: 'pudgy-party',
-    name: 'Pudgy Party',
-    category: 'Party Game',
-    blockchain: 'Ethereum',
-    image: '/lovable-uploads/8bd58f1c-faa8-4f92-b4e2-20ee5ee8a6fe.png',
-    description: 'Fun multiplayer party games featuring the beloved Pudgy Penguins NFT collection',
-    playUrl: 'https://pudgyparty.com/play',
-    downloadUrl: null,
-    isWebBased: true,
-    rewards: ['FISH', 'Pudgy NFTs', 'Party Items'],
-    players: '75K+',
-    rating: 4.6
   },
   {
     id: 'phantom-galaxies',
@@ -237,6 +209,34 @@ const mobileGames = [
     rewards: ['GMEE', 'NFT Prizes', 'Leaderboard Rewards'],
     players: '200K+',
     rating: 4.5
+  },
+  {
+    id: 'magiccraft',
+    name: 'MagicCraft',
+    category: 'MOBA Strategy',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/424982ae-ffcd-4769-8e5c-c63cd572d347.png',
+    description: 'Epic MOBA with magical battles and strategic gameplay',
+    playUrl: null,
+    downloadUrl: 'https://store.steampowered.com/app/2103140/Magicraft/',
+    isWebBased: false,
+    rewards: ['MCRT', 'Hero NFTs', 'Spell NFTs'],
+    players: '30K+',
+    rating: 4.5
+  },
+  {
+    id: 'pudgy-party',
+    name: 'Pudgy Party',
+    category: 'Party Game',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/8bd58f1c-faa8-4f92-b4e2-20ee5ee8a6fe.png',
+    description: 'Fun multiplayer party games featuring the beloved Pudgy Penguins NFT collection',
+    playUrl: null,
+    downloadUrl: null,
+    isWebBased: false,
+    rewards: ['FISH', 'Pudgy NFTs', 'Party Items'],
+    players: '75K+',
+    rating: 4.6
   }
 ];
 
