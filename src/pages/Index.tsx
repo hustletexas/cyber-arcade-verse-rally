@@ -11,7 +11,7 @@ import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
-import { WeeklyLeaderboard } from '@/components/WeeklyLeaderboard';
+
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useSeasonPassPurchase } from '@/hooks/useSeasonPassPurchase';
@@ -165,10 +165,6 @@ const Index = () => {
             <Web3Gaming />
           </section>
 
-          {/* Weekly Leaderboard */}
-          <section id="weekly-leaderboard" className="px-2 sm:px-4">
-            <WeeklyLeaderboard />
-          </section>
 
           {/* Community Hub Section */}
          <section id="community-hub" className="px-2 sm:px-4">
