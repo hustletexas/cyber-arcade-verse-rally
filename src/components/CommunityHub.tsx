@@ -266,12 +266,6 @@ export const CommunityHub = () => {
 
               {/* Quick Actions */}
               <div className="flex flex-wrap gap-2 justify-center pt-3 border-t border-neon-cyan/10">
-                <Button size="sm" variant="outline" className="border-neon-green/50 text-neon-green hover:bg-neon-green/10 text-xs" onClick={() => navigate('/dj')}>
-                  <Disc3 className="w-3 h-3 mr-1" /> DJ Booth
-                </Button>
-                <Button size="sm" variant="outline" className="border-neon-pink/50 text-neon-pink hover:bg-neon-pink/10 text-xs" onClick={() => navigate('/cyber-match')}>
-                  🃏 Cyber Match
-                </Button>
                 <Button size="sm" variant="outline" className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 text-xs" onClick={() => navigate('/tournaments')}>
                   <Swords className="w-3 h-3 mr-1" /> Tournaments
                 </Button>
