@@ -288,6 +288,60 @@ export type Database = {
         }
         Relationships: []
       }
+      dj_uploads: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          artist: string
+          bpm: number | null
+          created_at: string
+          duration_seconds: number | null
+          file_path: string
+          file_size_bytes: number
+          genre: string | null
+          id: string
+          rejection_reason: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          artist: string
+          bpm?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_path: string
+          file_size_bytes?: number
+          genre?: string | null
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          artist?: string
+          bpm?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_path?: string
+          file_size_bytes?: number
+          genre?: string | null
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_scores: {
         Row: {
           created_at: string

@@ -31,6 +31,7 @@ import TournamentRules from "./pages/TournamentRules";
 import AfterSchoolProgram from "./pages/AfterSchoolProgram";
 import PrizeIdeas from "./pages/PrizeIdeas";
 import EsportsPage from "./pages/EsportsPage";
+import DJBoothPage from "./pages/DJBoothPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
                   <Route path="/after-school" element={<AfterSchoolProgram />} />
                   <Route path="/prize-ideas" element={<PrizeIdeas />} />
                   <Route path="/esports" element={<EsportsPage />} />
+                  <Route path="/dj" element={<DJBoothPage />} />
                   <Route path="/success" element={<Success />} />
                   <Route path="/cancel" element={<Cancel />} />
                   <Route path="*" element={<NotFound />} />
