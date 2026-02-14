@@ -122,7 +122,7 @@ export const CyberGamesSection: React.FC = () => {
         {/* Rewards - Center */}
         <div className="flex justify-center">
           <Button
-            onClick={() => navigate('/prize-ideas')}
+            onClick={() => navigate('/rewards')}
             className="bg-transparent border border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 backdrop-blur-sm text-yellow-400 hover:text-yellow-300 px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]">
             <Trophy className="w-5 h-5 mr-2" />
             Rewards

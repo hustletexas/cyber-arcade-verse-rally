@@ -24,7 +24,7 @@ const pageSections = [
   { path: '/about', label: 'About Us', icon: Info },
   { path: '/foundation', label: 'Foundation', icon: Heart },
   { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
-  { path: '/prize-ideas', label: 'Rewards', icon: Award },
+  { path: '/rewards', label: 'Rewards', icon: Award },
 ];
 
 export const TopBar = () => {

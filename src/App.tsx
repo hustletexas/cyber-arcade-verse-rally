@@ -29,7 +29,7 @@ import FoundationPage from "./pages/FoundationPage";
 import CyberGalaxyPage from "./pages/CyberGalaxyPage";
 import TournamentRules from "./pages/TournamentRules";
 import AfterSchoolProgram from "./pages/AfterSchoolProgram";
-import PrizeIdeas from "./pages/PrizeIdeas";
+import RewardsPage from "./pages/RewardsPage";
 import EsportsPage from "./pages/EsportsPage";
 import DJBoothPage from "./pages/DJBoothPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
@@ -67,7 +67,7 @@ const App = () => (
                   <Route path="/foundation" element={<FoundationPage />} />
                   <Route path="/tournament-rules" element={<TournamentRules />} />
                   <Route path="/after-school" element={<AfterSchoolProgram />} />
-                  <Route path="/prize-ideas" element={<PrizeIdeas />} />
+                  <Route path="/rewards" element={<RewardsPage />} />
                   <Route path="/esports" element={<EsportsPage />} />
                   <Route path="/dj" element={<DJBoothPage />} />
                   <Route path="/success" element={<Success />} />

@@ -1019,6 +1019,57 @@ export type Database = {
         }
         Relationships: []
       }
+      rewards_ledger: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          icon: string | null
+          id: string
+          requirement: string | null
+          reward_name: string
+          reward_source: string
+          reward_type: string
+          status: string
+          unlock_info: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          icon?: string | null
+          id?: string
+          requirement?: string | null
+          reward_name: string
+          reward_source: string
+          reward_type?: string
+          status?: string
+          unlock_info?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          icon?: string | null
+          id?: string
+          requirement?: string | null
+          reward_name?: string
+          reward_source?: string
+          reward_type?: string
+          status?: string
+          unlock_info?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       room_participants: {
         Row: {
           id: string
