@@ -13,6 +13,7 @@ import { PlaylistView } from '@/components/music/PlaylistView';
 import { RadioRewards } from '@/components/music/RadioRewards';
 import { useRadioStreaks } from '@/hooks/useRadioStreaks';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { WalletConnectionModal } from '@/components/WalletConnectionModal';
 
 export const CyberMusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -24,6 +25,7 @@ export const CyberMusicPlayer = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [isMinimized, setIsMinimized] = useState(true);
   const [showPlaylist, setShowPlaylist] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const [playlist] = useState<Playlist>(cyberDreamsPlaylist);
   const [tracks, setTracks] = useState<Track[]>(cyberDreamsPlaylist.tracks);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -35,7 +37,7 @@ export const CyberMusicPlayer = () => {
   const { streakData, milestones, claimMilestone, formatListenTime } = useRadioStreaks(walletAddress, isPlaying);
 
   const handleConnectWallet = () => {
-    window.dispatchEvent(new CustomEvent('openWalletModal'));
+    setShowWalletModal(true);
   };
 
   // Auto-pause when tab is not visible
@@ -240,6 +242,7 @@ export const CyberMusicPlayer = () => {
   );
 
   return (
+    <>
     <Card 
       ref={playerRef}
       className={`w-full max-w-2xl mx-auto overflow-hidden relative transition-all duration-300 ${
@@ -603,5 +606,15 @@ export const CyberMusicPlayer = () => {
         )}
       </CardContent>
     </Card>
+
+    <WalletConnectionModal
+      isOpen={showWalletModal}
+      onClose={() => setShowWalletModal(false)}
+      onWalletConnected={(walletType, address) => {
+        connectWallet(walletType as any, address);
+        setShowWalletModal(false);
+      }}
+    />
+    </>
   );
 };
