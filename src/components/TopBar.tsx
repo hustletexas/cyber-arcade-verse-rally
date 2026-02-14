@@ -21,10 +21,10 @@ const pageSections = [
   { path: '/tournaments', label: 'Tournament Hub', icon: Trophy },
   { path: '/tournament-rules', label: 'Tournament Rules', icon: Scale },
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
-  { path: '/about', label: 'About Us', icon: Info },
   { path: '/foundation', label: 'Foundation', icon: Heart },
   { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
   { path: '/rewards', label: 'Rewards', icon: Award },
+  { path: '/about', label: 'About Us', icon: Info },
 ];
 
 export const TopBar = () => {
