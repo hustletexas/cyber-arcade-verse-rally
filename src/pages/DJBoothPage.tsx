@@ -10,7 +10,7 @@ import { useDJEnginePro } from '@/hooks/useDJEnginePro';
 import { useDJAchievements } from '@/hooks/useDJAchievements';
 import { useAuth } from '@/hooks/useAuth';
 import { cyberDreamsPlaylist } from '@/data/musicPlaylist';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Disc3, Radio, Mic2, Shield, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -74,8 +74,10 @@ const DJBoothPage = () => {
       <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 relative z-10 max-w-7xl">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-neon-cyan hover:bg-neon-cyan/10">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <Button variant="ghost" size="sm" asChild className="text-neon-cyan hover:bg-neon-cyan/10">
+            <Link to="/">
+              <ArrowLeft className="w-4 h-4 mr-1" /> Back
+            </Link>
           </Button>
         </div>
 
