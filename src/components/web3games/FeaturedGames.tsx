@@ -93,20 +93,6 @@ const featuredGames = [
     rating: 4.6
   },
   {
-    id: 'arc8',
-    name: 'Arc8',
-    category: 'Mobile Arcade',
-    blockchain: 'Polygon',
-    image: '/lovable-uploads/1861aafc-236e-44ca-a286-768e7c5ddba0.png',
-    description: 'Mobile gaming platform with skill-based tournaments and GMEE token rewards',
-    playUrl: 'https://arc8.gamee.com/play',
-    downloadUrl: 'https://arc8.gamee.com/download',
-    isWebBased: false,
-    rewards: ['GMEE', 'NFT Prizes', 'Leaderboard Rewards'],
-    players: '200K+',
-    rating: 4.5
-  },
-  {
     id: 'phantom-galaxies',
     name: 'Phantom Galaxies',
     category: 'Space Combat',
@@ -237,6 +223,20 @@ const mobileGames = [
     rewards: ['CP', 'Camos', 'Operators'],
     players: '650M+',
     rating: 4.4
+  },
+  {
+    id: 'arc8',
+    name: 'Arc8',
+    category: 'Mobile Arcade',
+    blockchain: 'N/A',
+    image: '/lovable-uploads/1861aafc-236e-44ca-a286-768e7c5ddba0.png',
+    description: 'Mobile gaming platform with skill-based tournaments and GMEE token rewards',
+    playUrl: null,
+    downloadUrl: 'https://arc8.gamee.com/download',
+    isWebBased: false,
+    rewards: ['GMEE', 'NFT Prizes', 'Leaderboard Rewards'],
+    players: '200K+',
+    rating: 4.5
   }
 ];
 
