@@ -22,7 +22,6 @@ const pageSections = [
   { path: '/tournament-rules', label: 'Tournament Rules', icon: Scale },
   { path: '/store', label: 'Merch Store', icon: ShoppingBag },
   { path: '/rewards', label: 'Rewards', icon: Award },
-  { path: '/rewards', label: 'Rewards', icon: Award },
   { path: '/foundation', label: 'Foundation', icon: Heart },
   { path: '/about', label: 'About Us', icon: Info },
 ];
