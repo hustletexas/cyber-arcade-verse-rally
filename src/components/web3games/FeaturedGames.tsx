@@ -37,20 +37,6 @@ const featuredGames = [
     rating: 4.8
   },
   {
-    id: 'gods-unchained',
-    name: 'Gods Unchained',
-    category: 'Trading Card Game',
-    blockchain: 'Ethereum',
-    image: '/lovable-uploads/9874a5ea-c92e-439a-93c9-d12a486f9dae.png',
-    description: 'Free-to-play tactical card game with true ownership of digital assets',
-    playUrl: 'https://godsunchained.com/play',
-    downloadUrl: null,
-    isWebBased: true,
-    rewards: ['GODS', 'Card NFTs', 'Packs'],
-    players: '400K+',
-    rating: 4.6
-  },
-  {
     id: 'off-the-grid',
     name: 'Off The Grid',
     category: 'Battle Royale',
