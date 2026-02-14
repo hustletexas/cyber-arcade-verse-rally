@@ -11,8 +11,8 @@ export interface DeckState {
   playbackRate: number;
   isCued: boolean;
   cuePoint: number;
-  filterFreq: number; // 20-20000 Hz
-  echoWet: number; // 0-1
+  filterFreq: number;
+  echoWet: number;
   waveformData: number[];
 }
 
@@ -34,7 +34,6 @@ const defaultDeck: DeckState = {
 export function useDJEngine() {
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Deck A refs
   const sourceARef = useRef<MediaElementAudioSourceNode | null>(null);
   const audioARef = useRef<HTMLAudioElement | null>(null);
   const gainARef = useRef<GainNode | null>(null);
@@ -43,7 +42,6 @@ export function useDJEngine() {
   const delayGainARef = useRef<GainNode | null>(null);
   const analyserARef = useRef<AnalyserNode | null>(null);
 
-  // Deck B refs
   const sourceBRef = useRef<MediaElementAudioSourceNode | null>(null);
   const audioBRef = useRef<HTMLAudioElement | null>(null);
   const gainBRef = useRef<GainNode | null>(null);
@@ -52,13 +50,16 @@ export function useDJEngine() {
   const delayGainBRef = useRef<GainNode | null>(null);
   const analyserBRef = useRef<AnalyserNode | null>(null);
 
-  // Crossfader
   const crossfaderGainARef = useRef<GainNode | null>(null);
   const crossfaderGainBRef = useRef<GainNode | null>(null);
 
+  // Track whether Web Audio is connected for each deck
+  const webAudioConnectedA = useRef(false);
+  const webAudioConnectedB = useRef(false);
+
   const [deckA, setDeckA] = useState<DeckState>({ ...defaultDeck });
   const [deckB, setDeckB] = useState<DeckState>({ ...defaultDeck });
-  const [crossfader, setCrossfader] = useState(0.5); // 0=A, 1=B
+  const [crossfader, setCrossfader] = useState(0.5);
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -67,7 +68,6 @@ export function useDJEngine() {
   const getOrCreateContext = useCallback(() => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext();
-      // Create crossfader gains
       crossfaderGainARef.current = audioContextRef.current.createGain();
       crossfaderGainBRef.current = audioContextRef.current.createGain();
       crossfaderGainARef.current.connect(audioContextRef.current.destination);
@@ -79,11 +79,7 @@ export function useDJEngine() {
     return audioContextRef.current;
   }, []);
 
-  const setupDeckAudio = useCallback((
-    deck: 'A' | 'B',
-    audioEl: HTMLAudioElement
-  ) => {
-    const ctx = getOrCreateContext();
+  const tryConnectWebAudio = useCallback((deck: 'A' | 'B', audioEl: HTMLAudioElement) => {
     const sourceRef = deck === 'A' ? sourceARef : sourceBRef;
     const gainRef = deck === 'A' ? gainARef : gainBRef;
     const filterRef = deck === 'A' ? filterARef : filterBRef;
@@ -91,47 +87,52 @@ export function useDJEngine() {
     const delayGainRef = deck === 'A' ? delayGainARef : delayGainBRef;
     const analyserRef = deck === 'A' ? analyserARef : analyserBRef;
     const crossGainRef = deck === 'A' ? crossfaderGainARef : crossfaderGainBRef;
+    const connectedRef = deck === 'A' ? webAudioConnectedA : webAudioConnectedB;
 
-    // Don't recreate if already connected to same element
-    if (sourceRef.current) return;
+    if (connectedRef.current || sourceRef.current) return;
 
-    const source = ctx.createMediaElementSource(audioEl);
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 20000;
-    const delay = ctx.createDelay(1);
-    delay.delayTime.value = 0.3;
-    const delayGain = ctx.createGain();
-    delayGain.gain.value = 0;
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
+    try {
+      const ctx = getOrCreateContext();
+      const source = ctx.createMediaElementSource(audioEl);
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 20000;
+      const delay = ctx.createDelay(1);
+      delay.delayTime.value = 0.3;
+      const delayGain = ctx.createGain();
+      delayGain.gain.value = 0;
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
 
-    // Chain: source -> gain -> filter -> analyser -> crossfader
-    source.connect(gain);
-    gain.connect(filter);
-    filter.connect(analyser);
-    analyser.connect(crossGainRef.current!);
+      source.connect(gain);
+      gain.connect(filter);
+      filter.connect(analyser);
+      analyser.connect(crossGainRef.current!);
 
-    // Echo: filter -> delay -> delayGain -> crossfader
-    filter.connect(delay);
-    delay.connect(delayGain);
-    delayGain.connect(crossGainRef.current!);
-    // Feedback loop
-    delayGain.connect(delay);
+      filter.connect(delay);
+      delay.connect(delayGain);
+      delayGain.connect(crossGainRef.current!);
+      delayGain.connect(delay);
 
-    sourceRef.current = source;
-    gainRef.current = gain;
-    filterRef.current = filter;
-    delayRef.current = delay;
-    delayGainRef.current = delayGain;
-    analyserRef.current = analyser;
+      sourceRef.current = source;
+      gainRef.current = gain;
+      filterRef.current = filter;
+      delayRef.current = delay;
+      delayGainRef.current = delayGain;
+      analyserRef.current = analyser;
+      connectedRef.current = true;
+      console.log(`DJ Deck ${deck}: Web Audio connected successfully`);
+    } catch (err) {
+      console.warn(`DJ Deck ${deck}: Web Audio connection failed, using basic playback`, err);
+      connectedRef.current = false;
+    }
   }, [getOrCreateContext]);
 
   const loadTrack = useCallback((deck: 'A' | 'B', track: Track) => {
     const audioRef = deck === 'A' ? audioARef : audioBRef;
     const setDeck = deck === 'A' ? setDeckA : setDeckB;
-    const sourceRef = deck === 'A' ? sourceARef : sourceBRef;
+    const connectedRef = deck === 'A' ? webAudioConnectedA : webAudioConnectedB;
 
     // Stop current playback
     if (audioRef.current) {
@@ -139,43 +140,7 @@ export function useDJEngine() {
       audioRef.current.currentTime = 0;
     }
 
-    // If source already exists, reuse the same audio element
-    if (audioRef.current && sourceRef.current) {
-      audioRef.current.src = track.url;
-      audioRef.current.load();
-
-      const onLoaded = () => {
-        setDeck(prev => ({
-          ...prev,
-          track,
-          duration: audioRef.current?.duration || 0,
-          currentTime: 0,
-          isPlaying: false,
-          cuePoint: 0,
-          isCued: false,
-        }));
-        audioRef.current?.removeEventListener('loadedmetadata', onLoaded);
-      };
-      const onError = () => {
-        console.error(`DJ Deck ${deck}: Failed to load track "${track.title}"`);
-        audioRef.current?.removeEventListener('error', onError);
-      };
-      audioRef.current.addEventListener('loadedmetadata', onLoaded);
-      audioRef.current.addEventListener('error', onError, { once: true });
-      return;
-    }
-
-    // Create new audio element for first load
-    const audio = new Audio();
-    audio.crossOrigin = 'anonymous';
-    audio.preload = 'auto';
-    audioRef.current = audio;
-
-    audio.src = track.url;
-    audio.load();
-
-    audio.addEventListener('loadedmetadata', () => {
-      setupDeckAudio(deck, audio);
+    const updateDeckState = (audio: HTMLAudioElement) => {
       setDeck(prev => ({
         ...prev,
         track,
@@ -185,12 +150,54 @@ export function useDJEngine() {
         cuePoint: 0,
         isCued: false,
       }));
+    };
+
+    // If we already have an audio element and Web Audio is connected, reuse it
+    if (audioRef.current && connectedRef.current) {
+      audioRef.current.src = track.url;
+      audioRef.current.load();
+      audioRef.current.addEventListener('loadedmetadata', () => updateDeckState(audioRef.current!), { once: true });
+      audioRef.current.addEventListener('error', () => {
+        console.error(`DJ Deck ${deck}: Failed to load track "${track.title}"`);
+      }, { once: true });
+      return;
+    }
+
+    // Create new audio element - try with CORS first, fallback without
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.preload = 'auto';
+    audio.src = track.url;
+    audioRef.current = audio;
+
+    audio.addEventListener('loadedmetadata', () => {
+      tryConnectWebAudio(deck, audio);
+      updateDeckState(audio);
     }, { once: true });
 
-    audio.addEventListener('error', (e) => {
-      console.error(`DJ Deck ${deck}: Failed to load track "${track.title}"`, e);
+    audio.addEventListener('error', () => {
+      console.warn(`DJ Deck ${deck}: CORS load failed for "${track.title}", retrying without CORS...`);
+      // Retry without crossOrigin
+      const fallbackAudio = new Audio();
+      fallbackAudio.preload = 'auto';
+      fallbackAudio.src = track.url;
+      audioRef.current = fallbackAudio;
+
+      fallbackAudio.addEventListener('loadedmetadata', () => {
+        // Don't connect to Web Audio (CORS prevents it), just play directly
+        updateDeckState(fallbackAudio);
+        console.log(`DJ Deck ${deck}: Track loaded in basic mode (no FX)`);
+      }, { once: true });
+
+      fallbackAudio.addEventListener('error', () => {
+        console.error(`DJ Deck ${deck}: Track "${track.title}" completely failed to load`);
+      }, { once: true });
+
+      fallbackAudio.load();
     }, { once: true });
-  }, [setupDeckAudio]);
+
+    audio.load();
+  }, [tryConnectWebAudio]);
 
   const playPause = useCallback((deck: 'A' | 'B') => {
     const audioRef = deck === 'A' ? audioARef : audioBRef;
@@ -201,7 +208,7 @@ export function useDJEngine() {
     getOrCreateContext();
 
     if (audio.paused) {
-      audio.play();
+      audio.play().catch(err => console.warn('Play failed:', err));
       setDeck(prev => ({ ...prev, isPlaying: true }));
     } else {
       audio.pause();
@@ -226,9 +233,13 @@ export function useDJEngine() {
 
   const setVolume = useCallback((deck: 'A' | 'B', vol: number) => {
     const gainRef = deck === 'A' ? gainARef : gainBRef;
+    const audioRef = deck === 'A' ? audioARef : audioBRef;
     const setDeck = deck === 'A' ? setDeckA : setDeckB;
     if (gainRef.current) {
       gainRef.current.gain.value = vol;
+    } else if (audioRef.current) {
+      // Fallback: control volume directly on the audio element
+      audioRef.current.volume = vol;
     }
     setDeck(prev => ({ ...prev, volume: vol }));
   }, []);
@@ -236,7 +247,7 @@ export function useDJEngine() {
   const setBPM = useCallback((deck: 'A' | 'B', bpm: number) => {
     const audioRef = deck === 'A' ? audioARef : audioBRef;
     const setDeck = deck === 'A' ? setDeckA : setDeckB;
-    const rate = bpm / 120; // Normalize around 120 BPM
+    const rate = bpm / 120;
     if (audioRef.current) {
       audioRef.current.playbackRate = rate;
     }
@@ -244,7 +255,6 @@ export function useDJEngine() {
   }, []);
 
   const syncBPM = useCallback(() => {
-    // Sync deck B's BPM to deck A's
     setBPM('B', deckA.bpm);
   }, [deckA.bpm, setBPM]);
 
@@ -261,7 +271,7 @@ export function useDJEngine() {
     const delayGainRef = deck === 'A' ? delayGainARef : delayGainBRef;
     const setDeck = deck === 'A' ? setDeckA : setDeckB;
     if (delayGainRef.current) {
-      delayGainRef.current.gain.value = wet * 0.6; // Cap feedback
+      delayGainRef.current.gain.value = wet * 0.6;
     }
     setDeck(prev => ({ ...prev, echoWet: wet }));
   }, []);
@@ -313,7 +323,7 @@ export function useDJEngine() {
     });
   }, []);
 
-  // Animation loop to update current time + waveform
+  // Animation loop
   useEffect(() => {
     const updateLoop = () => {
       if (audioARef.current) {
@@ -323,7 +333,6 @@ export function useDJEngine() {
         setDeckB(prev => ({ ...prev, currentTime: audioBRef.current?.currentTime || 0 }));
       }
 
-      // Waveform data
       if (analyserARef.current) {
         const data = new Uint8Array(analyserARef.current.frequencyBinCount);
         analyserARef.current.getByteFrequencyData(data);
