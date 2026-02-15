@@ -54,16 +54,6 @@ export const merchandiseItems: MerchandiseItem[] = [
     isLimited: true
   },
   {
-    id: '10',
-    name: 'Season 1 Sticker Pack - Classic',
-    price: 12.99,
-    image: '/images/store/sticker-pack-1.png',
-    category: 'sticker',
-    sizes: ['One Size'],
-    colors: ['Multi'],
-    description: 'Limited edition 20-piece sticker pack featuring iconic Cyber City Arcade designs'
-  },
-  {
     id: '13',
     name: 'Cyber City Arcade RGB Mousepad',
     price: 19.99,
@@ -133,5 +123,15 @@ export const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black'],
     description: 'Athletic mesh shorts with neon Cyber City skyline print, Stellar Blockchain badge, and drawstring waist'
+  },
+  {
+    id: '10',
+    name: 'Season 1 Sticker Pack - Classic',
+    price: 12.99,
+    image: '/images/store/sticker-pack-1.png',
+    category: 'sticker',
+    sizes: ['One Size'],
+    colors: ['Multi'],
+    description: 'Limited edition 20-piece sticker pack featuring iconic Cyber City Arcade designs'
   }
 ];
