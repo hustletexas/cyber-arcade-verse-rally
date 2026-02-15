@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { StoreHero } from '@/components/store/StoreHero';
+
 import { QuickShopStrip } from '@/components/store/QuickShopStrip';
 import { LimitedDropSection } from '@/components/store/LimitedDropSection';
 import { TrustSection } from '@/components/store/TrustSection';
@@ -41,7 +41,7 @@ const StorePage = () => {
       backgroundRepeat: 'no-repeat',
     }}>
       <StoreNav onCategorySelect={handleCategorySelect} />
-      <StoreHero />
+      
       <div ref={shopRef}>
         <QuickShopStrip items={filteredItems} onSelectItem={setSelectedItem} />
       </div>
