@@ -37,7 +37,7 @@ const StorePage = () => {
       background: 'linear-gradient(180deg, #14002B 0%, #0D0020 50%, #0A0018 100%)'
     }}>
       <StoreNav onCategorySelect={handleCategorySelect} />
-      <StoreHero onShopNow={scrollToShop} onLimitedDrop={scrollToLimited} />
+      <StoreHero />
       <div ref={shopRef}>
         <QuickShopStrip items={filteredItems} onSelectItem={setSelectedItem} />
       </div>
