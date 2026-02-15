@@ -357,7 +357,7 @@ export const MerchandiseStore = () => {
                     <img 
                       src={selectedItem.image}
                       alt={selectedItem.name}
-                      className="w-full h-96 object-cover rounded-lg"
+                      className="w-full h-96 object-contain rounded-lg"
                     />
                     <div className="flex justify-center">
                       <Badge className="bg-neon-green text-black text-xl px-4 py-2 font-bold">
