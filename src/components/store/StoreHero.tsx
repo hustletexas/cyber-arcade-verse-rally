@@ -24,14 +24,6 @@ export const StoreHero = ({ onShopNow, onLimitedDrop }: StoreHeroProps) => {
       </div>
 
       <div className="relative z-10 space-y-6 max-w-md mx-auto">
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight"
-          style={{
-            background: 'linear-gradient(135deg, #FFFFFF 0%, #FF2FAF 50%, #00E5FF 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
-          CYBER CITY<br />ARCADE STORE
-        </h1>
 
         <p className="text-white/60 text-lg font-display tracking-widest">
           Level Up Your Reality
