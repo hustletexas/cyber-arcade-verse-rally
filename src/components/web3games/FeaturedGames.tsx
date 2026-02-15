@@ -224,6 +224,20 @@ const mobileGames = [
     rewards: ['FISH', 'Pudgy NFTs', 'Party Items'],
     players: '75K+',
     rating: 4.6
+  },
+  {
+    id: 'asphalt-legends',
+    name: 'Asphalt Legends',
+    category: 'Racing',
+    blockchain: 'N/A',
+    image: '/images/games/asphalt-legends.webp',
+    description: 'High-octane arcade racing with licensed supercars, stunning graphics, and competitive multiplayer',
+    playUrl: null,
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.gameloft.android.ANMP.GloftA9HM',
+    isWebBased: false,
+    rewards: ['Credits', 'Blueprints', 'Tokens'],
+    players: '300M+',
+    rating: 4.5
   }
 ];
 
