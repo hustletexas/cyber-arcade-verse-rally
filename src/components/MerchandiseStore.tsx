@@ -180,6 +180,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['One Size'],
     colors: ['Black'],
     description: 'Cozy knit beanie with neon Cyber City Arcade skyline patch and purple pom-pom'
+  },
+  {
+    id: '17',
+    name: 'Cyber City Arcade Bucket Hat',
+    price: 27.99,
+    image: '/images/store/cyber-city-bucket-hat.png',
+    category: 'hat',
+    sizes: ['One Size'],
+    colors: ['Black'],
+    description: 'Stylish bucket hat with neon Cyber City Arcade skyline print and LED-accent brim'
   }
 ];
 
