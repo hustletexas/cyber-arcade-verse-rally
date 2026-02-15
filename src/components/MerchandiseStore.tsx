@@ -82,36 +82,6 @@ const merchandiseItems: MerchandiseItem[] = [
     description: 'Synthwave cityscape with retro car and neon sunset on premium cotton'
   },
   {
-    id: '7',
-    name: 'Cyber City Retrowave Hoodie',
-    price: 49.99,
-    image: '/images/store/cyber-city-hoodie.png',
-    category: 'hoodie',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Dark Gray'],
-    description: 'Premium hoodie featuring synthwave cityscape with retro car and neon sunset design'
-  },
-  {
-    id: '8',
-    name: 'Cyber Galaxy Premium Hoodie',
-    price: 49.99,
-    image: '/images/store/cyber-galaxy-hoodie.png',
-    category: 'hoodie',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Navy'],
-    description: 'Premium hoodie with epic space shooter design featuring neon trails and galactic combat'
-  },
-  {
-    id: '9',
-    name: 'Cyber Breaker Neon Hoodie',
-    price: 49.99,
-    image: '/images/store/cyber-breaker-hoodie.png',
-    category: 'hoodie',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Charcoal'],
-    description: 'Premium hoodie with bold neon brick-breaker design, electric lightning and rainbow blocks'
-  },
-  {
     id: '10',
     name: 'Season 1 Sticker Pack - Classic',
     price: 12.99,
