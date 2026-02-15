@@ -170,6 +170,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['One Size'],
     colors: ['Black'],
     description: 'Premium snapback cap with neon Cyber City Arcade logo and Stellar Blockchain badge'
+  },
+  {
+    id: '16',
+    name: 'Cyber City Arcade Pom Beanie',
+    price: 24.99,
+    image: '/images/store/cyber-city-beanie.png',
+    category: 'hat',
+    sizes: ['One Size'],
+    colors: ['Black'],
+    description: 'Cozy knit beanie with neon Cyber City Arcade skyline patch and purple pom-pom'
   }
 ];
 
