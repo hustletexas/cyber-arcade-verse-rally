@@ -125,7 +125,7 @@ export const SponsorshipSection = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button asChild className="cyber-button px-6 py-3 text-sm sm:text-base w-full sm:w-auto">
                 <a href="mailto:cybercityarcade@gmail.com?subject=Sponsorship%20Inquiry%20-%20Cyber%20City%20Arcade&body=Hi%2C%20I%27m%20interested%20in%20learning%20more%20about%20sponsorship%20opportunities%20with%20Cyber%20City%20Arcade.">
-                  📩 Request Sponsorship Info
+                  📩 cybercityarcade@gmail.com
                 </a>
               </Button>
             </div>
