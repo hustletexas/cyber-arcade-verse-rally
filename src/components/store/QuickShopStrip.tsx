@@ -1,5 +1,9 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useCart } from '@/contexts/CartContext';
+import { useToast } from '@/hooks/use-toast';
 import { type MerchandiseItem } from '@/data/storeProducts';
 
 interface QuickShopStripProps {
@@ -8,38 +12,117 @@ interface QuickShopStripProps {
 }
 
 export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => {
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+
+  const handleQuickAdd = (e: React.MouseEvent, item: MerchandiseItem) => {
+    e.stopPropagation();
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      category: item.category,
+      selectedSize: item.sizes[1] || item.sizes[0], // default M or first
+      selectedColor: item.colors[0],
+    });
+    toast({
+      title: "Added to Cart! 🛒",
+      description: `${item.name} (${item.sizes[1] || item.sizes[0]}, ${item.colors[0]})`,
+    });
+  };
+
   return (
-    <section className="py-8">
-      <h2 className="font-display text-lg text-white/80 tracking-wider px-6 mb-4">
-        QUICK SHOP
-      </h2>
-      <div className="flex gap-4 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scrollbar-hide"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <section className="py-10">
+      <div className="flex items-center justify-between px-6 mb-5">
+        <h2 className="font-display text-lg text-white/80 tracking-wider">
+          QUICK SHOP
+        </h2>
+        <span className="text-white/30 text-xs font-display tracking-wider">
+          SWIPE →
+        </span>
+      </div>
+
+      <div
+        className="flex gap-5 overflow-x-auto px-6 pb-6 snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         {items.map((item) => (
           <div
             key={item.id}
             onClick={() => onSelectItem(item)}
-            className="flex-none w-40 snap-start cursor-pointer group"
+            className="flex-none w-64 snap-center cursor-pointer group"
           >
-            <div className="relative aspect-square rounded-xl overflow-hidden mb-2 border border-white/10 group-hover:border-[#FF2FAF]/50 transition-colors">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-              {item.isLimited && (
-                <Badge className="absolute top-2 left-2 bg-[#FF2FAF] text-white text-[10px] px-2 py-0.5 border-0">
-                  LIMITED
-                </Badge>
-              )}
+            {/* Card */}
+            <div
+              className="rounded-2xl overflow-hidden border border-white/10 group-hover:border-[#FF2FAF]/40 transition-all duration-300"
+              style={{
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,47,175,0.04) 100%)',
+              }}
+            >
+              {/* Image */}
+              <div className="relative aspect-[4/5] overflow-hidden">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                />
+                {/* Gradient overlay at bottom of image */}
+                <div
+                  className="absolute inset-x-0 bottom-0 h-1/3"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(20,0,43,0.95), transparent)',
+                  }}
+                />
+                {item.isLimited && (
+                  <Badge className="absolute top-3 left-3 bg-[#FF2FAF]/90 backdrop-blur-sm text-white text-[10px] px-2.5 py-1 border-0 font-display tracking-wider">
+                    LIMITED DROP
+                  </Badge>
+                )}
+                {/* Price overlay */}
+                <div className="absolute bottom-3 left-3">
+                  <span className="font-display text-2xl font-black text-[#00E5FF] drop-shadow-lg">
+                    ${item.price}
+                  </span>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="p-4 space-y-3">
+                <p className="text-white/90 text-sm font-semibold line-clamp-2 leading-snug min-h-[2.5rem]">
+                  {item.name}
+                </p>
+                <p className="text-white/40 text-xs line-clamp-1">
+                  {item.description}
+                </p>
+
+                {/* Sizes preview */}
+                <div className="flex gap-1.5 flex-wrap">
+                  {item.sizes.slice(0, 5).map((s) => (
+                    <span
+                      key={s}
+                      className="text-[10px] px-2 py-0.5 rounded-md bg-white/5 text-white/40 font-display"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Quick Add Button */}
+                <Button
+                  onClick={(e) => handleQuickAdd(e, item)}
+                  className="w-full h-11 rounded-xl text-sm font-display font-bold tracking-wider gap-2 transition-all duration-300"
+                  style={{
+                    background: 'linear-gradient(135deg, #FF2FAF, #CC0088)',
+                    boxShadow: '0 0 20px rgba(255,47,175,0.2)',
+                  }}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  QUICK ADD
+                </Button>
+              </div>
             </div>
-            <p className="text-white/80 text-sm font-medium line-clamp-2 leading-tight">
-              {item.name}
-            </p>
-            <p className="text-[#00E5FF] font-display text-sm font-bold mt-1">
-              ${item.price}
-            </p>
           </div>
         ))}
       </div>
