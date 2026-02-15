@@ -35,7 +35,7 @@ const merchandiseItems: MerchandiseItem[] = [
     id: '2',
     name: 'Cyber City Arcade Premium Hoodie',
     price: 49.99,
-    image: '/lovable-uploads/d02c55c8-cdcf-4072-814b-340278e7ba0d.png',
+    image: '/images/store/cyber-city-arcade-hoodie.png',
     category: 'hoodie',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black', 'Dark Gray', 'Navy'],
