@@ -150,6 +150,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['One Size'],
     colors: ['Black'],
     description: 'Extended RGB gaming mousepad featuring the iconic Cyber City Arcade design with neon LED edge lighting'
+  },
+  {
+    id: '14',
+    name: 'Cyber City Arcade Track Jacket',
+    price: 89.99,
+    image: '/images/store/cyber-city-track-jacket.png',
+    category: 'jacket',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black'],
+    description: 'Premium track jacket with Stellar Blockchain badge, neon piping, and Cyber City skyline design'
   }
 ];
 
