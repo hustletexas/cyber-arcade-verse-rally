@@ -81,7 +81,8 @@ export const merchandiseItems: MerchandiseItem[] = [
     category: 'hat',
     sizes: ['One Size'],
     colors: ['Black'],
-    description: 'Cozy knit beanie with neon Cyber City Arcade skyline patch and purple pom-pom'
+    description: 'Cozy knit beanie with neon Cyber City Arcade skyline patch and purple pom-pom',
+    isLimited: true
   },
   {
     id: '17',
