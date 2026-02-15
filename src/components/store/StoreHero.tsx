@@ -10,21 +10,18 @@ interface StoreHeroProps {
 export const StoreHero = ({ onShopNow, onLimitedDrop }: StoreHeroProps) => {
   return (
     <section className="relative min-h-[calc(100vh-56px)] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
-      {/* Subtle skyline at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[20%] opacity-20"
-        style={{
-          background: `
-            linear-gradient(0deg, rgba(255,47,175,0.15) 0%, transparent 100%),
-            repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(0,229,255,0.05) 30px, rgba(0,229,255,0.05) 32px)
-          `
-        }}
-      />
-
-      {/* Glow orbs */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full opacity-20 blur-[100px]"
-        style={{ background: '#FF2FAF' }} />
-      <div className="absolute bottom-1/3 right-1/4 w-48 h-48 rounded-full opacity-15 blur-[80px]"
-        style={{ background: '#00E5FF' }} />
+      {/* Background image */}
+      <div className="absolute inset-0">
+        <img
+          src="/images/store/store-hero-bg.png"
+          alt=""
+          className="w-full h-full object-cover"
+        />
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(180deg, rgba(20,0,43,0.5) 0%, rgba(20,0,43,0.3) 40%, rgba(20,0,43,0.6) 100%)'
+        }} />
+      </div>
 
       <div className="relative z-10 space-y-6 max-w-md mx-auto">
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight"
