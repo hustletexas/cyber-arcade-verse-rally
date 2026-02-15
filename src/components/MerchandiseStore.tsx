@@ -122,26 +122,6 @@ const merchandiseItems: MerchandiseItem[] = [
     description: 'Limited edition 20-piece sticker pack featuring iconic Cyber City Arcade designs, Built on Stellar Blockchain badges, and retro gaming art'
   },
   {
-    id: '11',
-    name: 'Season 1 Sticker Pack - Cypher',
-    price: 12.99,
-    image: '/images/store/sticker-pack-2.png',
-    category: 'sticker',
-    sizes: ['One Size'],
-    colors: ['Multi'],
-    description: 'Limited edition 20-piece sticker pack with Power Up, Level Up, Digital Hustler, Gamer Life designs and more cyberpunk artwork'
-  },
-  {
-    id: '12',
-    name: 'Season 1 Sticker Pack - Finals',
-    price: 12.99,
-    image: '/images/store/sticker-pack-3.png',
-    category: 'sticker',
-    sizes: ['One Size'],
-    colors: ['Multi'],
-    description: 'Limited edition 20-piece sticker pack featuring Cyber Finals NFT, Claim Rewards, Top Ranked Player, and arcade fight stick designs'
-  },
-  {
     id: '13',
     name: 'Cyber City Arcade RGB Mousepad',
     price: 19.99,
