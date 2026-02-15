@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +14,13 @@ interface QuickShopStripProps {
 export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => {
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const amount = 280;
+    scrollRef.current.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+  };
 
   const handleQuickAdd = (e: React.MouseEvent, item: MerchandiseItem) => {
     e.stopPropagation();
@@ -23,7 +30,7 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
       price: item.price,
       image: item.image,
       category: item.category,
-      selectedSize: item.sizes[1] || item.sizes[0], // default M or first
+      selectedSize: item.sizes[1] || item.sizes[0],
       selectedColor: item.colors[0],
     });
     toast({
@@ -38,12 +45,24 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
         <h2 className="font-display text-lg text-white/80 tracking-wider">
           QUICK SHOP
         </h2>
-        <span className="text-white/30 text-xs font-display tracking-wider">
-          SWIPE →
-        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => scroll('left')}
+            className="h-8 w-8 rounded-full border border-white/20 flex items-center justify-center text-white/50 hover:text-white hover:border-[#FF2FAF]/50 hover:bg-[#FF2FAF]/10 transition-all"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            className="h-8 w-8 rounded-full border border-white/20 flex items-center justify-center text-white/50 hover:text-white hover:border-[#FF2FAF]/50 hover:bg-[#FF2FAF]/10 transition-all"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div
+        ref={scrollRef}
         className="flex gap-5 overflow-x-auto px-6 pb-6 snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
@@ -53,14 +72,12 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
             onClick={() => onSelectItem(item)}
             className="flex-none w-64 snap-center cursor-pointer group"
           >
-            {/* Card */}
             <div
               className="rounded-2xl overflow-hidden border border-white/10 group-hover:border-[#FF2FAF]/40 transition-all duration-300"
               style={{
                 background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,47,175,0.04) 100%)',
               }}
             >
-              {/* Image */}
               <div className="relative aspect-[4/5] overflow-hidden">
                 <img
                   src={item.image}
@@ -68,7 +85,6 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
                 />
-                {/* Gradient overlay at bottom of image */}
                 <div
                   className="absolute inset-x-0 bottom-0 h-1/3"
                   style={{
@@ -80,7 +96,6 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
                     LIMITED DROP
                   </Badge>
                 )}
-                {/* Price overlay */}
                 <div className="absolute bottom-3 left-3">
                   <span className="font-display text-2xl font-black text-[#00E5FF] drop-shadow-lg">
                     ${item.price}
@@ -88,7 +103,6 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
                 </div>
               </div>
 
-              {/* Info */}
               <div className="p-4 space-y-3">
                 <p className="text-white/90 text-sm font-semibold line-clamp-2 leading-snug min-h-[2.5rem]">
                   {item.name}
@@ -96,8 +110,6 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
                 <p className="text-white/40 text-xs line-clamp-1">
                   {item.description}
                 </p>
-
-                {/* Sizes preview */}
                 <div className="flex gap-1.5 flex-wrap">
                   {item.sizes.slice(0, 5).map((s) => (
                     <span
@@ -108,8 +120,6 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
                     </span>
                   ))}
                 </div>
-
-                {/* Quick Add Button */}
                 <Button
                   onClick={(e) => handleQuickAdd(e, item)}
                   className="w-full h-11 rounded-xl text-sm font-display font-bold tracking-wider gap-2 transition-all duration-300"
