@@ -11,7 +11,7 @@ interface LimitedDropSectionProps {
 export const LimitedDropSection = ({ onSelectItem }: LimitedDropSectionProps) => {
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const limitedItem = merchandiseItems.find(i => i.id === '20')!; // Neon Hoodie
+  const limitedItem = merchandiseItems.find(i => i.id === '16')!; // Pom Beanie
 
   // Countdown timer - next Sunday midnight
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });

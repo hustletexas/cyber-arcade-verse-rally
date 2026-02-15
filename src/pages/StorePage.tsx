@@ -20,8 +20,9 @@ const StorePage = () => {
   const limitedRef = useRef<HTMLDivElement>(null);
 
   const filteredItems = useMemo(() => {
-    if (activeCategory === 'all') return merchandiseItems;
-    return merchandiseItems.filter(item => item.category === activeCategory);
+    const base = merchandiseItems.filter(item => item.id !== '16');
+    if (activeCategory === 'all') return base;
+    return base.filter(item => item.category === activeCategory);
   }, [activeCategory]);
 
   const scrollToShop = () => shopRef.current?.scrollIntoView({ behavior: 'smooth' });
