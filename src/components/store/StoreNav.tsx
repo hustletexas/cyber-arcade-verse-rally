@@ -21,12 +21,11 @@ export const StoreNav = ({ onCategorySelect }: StoreNavProps) => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
-        <div className="font-display text-[10px] tracking-wider text-center" style={{
-          background: 'linear-gradient(135deg, #FF2FAF, #00E5FF)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
+        <div className="font-display text-sm tracking-widest text-center font-bold" style={{
+          color: '#00E5FF',
+          textShadow: '0 0 10px #00E5FF, 0 0 20px #00E5FF44'
         }}>
-          SEASON PASS HOLDERS GET 15% OFF
+          CYBER STORE
         </div>
 
         <Button
