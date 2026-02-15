@@ -18,8 +18,15 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
+    const container = scrollRef.current;
     const amount = 280;
-    scrollRef.current.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+    if (direction === 'right' && container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+      container.scrollTo({ left: 0, behavior: 'smooth' });
+    } else if (direction === 'left' && container.scrollLeft <= 10) {
+      container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+    } else {
+      container.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+    }
   };
 
   const handleQuickAdd = (e: React.MouseEvent, item: MerchandiseItem) => {
