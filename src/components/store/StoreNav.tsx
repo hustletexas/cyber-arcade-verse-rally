@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 interface StoreNavProps {
   onCategorySelect?: (category: string) => void;
@@ -10,12 +11,13 @@ interface StoreNavProps {
 export const StoreNav = ({ onCategorySelect }: StoreNavProps) => {
   const { setIsOpen, items } = useCart();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-[#FF2FAF]/20"
       style={{ background: 'rgba(20, 0, 43, 0.9)' }}>
       <div className="flex items-center justify-between px-4 h-14">
-        <Button variant="ghost" size="icon" className="text-[#FF2FAF]" onClick={() => window.location.href = '/'}>
+        <Button variant="ghost" size="icon" className="text-[#FF2FAF]" onClick={() => navigate('/')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
