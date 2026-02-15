@@ -14,7 +14,7 @@ interface MerchandiseItem {
   name: string;
   price: number;
   image: string;
-  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker' | 'mousepad' | 'hat';
+  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker' | 'mousepad' | 'hat' | 'jersey';
   sizes: string[];
   colors: string[];
   description: string;
@@ -190,6 +190,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['One Size'],
     colors: ['Black'],
     description: 'Stylish bucket hat with neon Cyber City Arcade skyline print and LED-accent brim'
+  },
+  {
+    id: '18',
+    name: 'Cyber City Arcade Hustle Jersey',
+    price: 44.99,
+    image: '/images/store/cyber-city-jersey.png',
+    category: 'jersey',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black'],
+    description: 'Premium esports jersey with neon Cyber City skyline, #01 HUSTLE back print, and Stellar Blockchain badge'
   }
 ];
 
@@ -208,7 +218,8 @@ export const MerchandiseStore = () => {
     { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' },
     { value: 'sticker', label: '🎨 STICKERS', icon: '🎨' },
     { value: 'mousepad', label: '🖱️ MOUSEPADS', icon: '🖱️' },
-    { value: 'hat', label: '🧢 HATS', icon: '🧢' }
+    { value: 'hat', label: '🧢 HATS', icon: '🧢' },
+    { value: 'jersey', label: '🏆 JERSEYS', icon: '🏆' }
   ];
 
   const filteredItems = selectedCategory === 'all' 
