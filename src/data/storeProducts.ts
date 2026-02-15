@@ -46,7 +46,7 @@ export const merchandiseItems: MerchandiseItem[] = [
     id: '3',
     name: 'Cyber City Arcade Bomber Jacket',
     price: 89.99,
-    image: '/images/store/cyber-city-bomber-jacket.png',
+    image: '/images/store/cyber-city-bomber-jacket-v2.png',
     category: 'jacket',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black'],
