@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react';
 
 export const StoreHero = () => {
   return (
-    <section className="relative min-h-[calc(100vh-56px)] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
+    <section className="relative aspect-[16/9] max-h-[60vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
       <div className="absolute inset-0">
         <img
           src="/images/store/store-hero-bg-v2.png"
