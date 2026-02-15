@@ -14,7 +14,7 @@ interface MerchandiseItem {
   name: string;
   price: number;
   image: string;
-  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker';
+  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker' | 'mousepad';
   sizes: string[];
   colors: string[];
   description: string;
@@ -140,6 +140,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['One Size'],
     colors: ['Multi'],
     description: 'Limited edition 20-piece sticker pack featuring Cyber Finals NFT, Claim Rewards, Top Ranked Player, and arcade fight stick designs'
+  },
+  {
+    id: '13',
+    name: 'Cyber City Arcade RGB Mousepad',
+    price: 19.99,
+    image: '/images/store/cyber-city-mousepad.png',
+    category: 'mousepad',
+    sizes: ['One Size'],
+    colors: ['Black'],
+    description: 'Extended RGB gaming mousepad featuring the iconic Cyber City Arcade design with neon LED edge lighting'
   }
 ];
 
@@ -156,7 +166,8 @@ export const MerchandiseStore = () => {
     { value: 'shirt', label: '👕 T-SHIRTS', icon: '👕' },
     { value: 'hoodie', label: '🧥 HOODIES', icon: '🧥' },
     { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' },
-    { value: 'sticker', label: '🎨 STICKERS', icon: '🎨' }
+    { value: 'sticker', label: '🎨 STICKERS', icon: '🎨' },
+    { value: 'mousepad', label: '🖱️ MOUSEPADS', icon: '🖱️' }
   ];
 
   const filteredItems = selectedCategory === 'all' 
