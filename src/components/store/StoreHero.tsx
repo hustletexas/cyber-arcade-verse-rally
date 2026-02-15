@@ -13,25 +13,16 @@ export const StoreHero = ({ onShopNow, onLimitedDrop }: StoreHeroProps) => {
       {/* Background image */}
       <div className="absolute inset-0">
         <img
-          src="/images/store/store-hero-bg.png"
+          src="/images/store/store-hero-bg-v2.png"
           alt=""
           className="w-full h-full object-cover"
         />
-        {/* Gradient overlay for text readability */}
         <div className="absolute inset-0" style={{
-          background: 'linear-gradient(180deg, rgba(20,0,43,0.5) 0%, rgba(20,0,43,0.3) 40%, rgba(20,0,43,0.6) 100%)'
+          background: 'linear-gradient(180deg, rgba(20,0,43,0.3) 0%, rgba(20,0,43,0.1) 40%, rgba(20,0,43,0.5) 100%)'
         }} />
       </div>
 
-      <div className="relative z-10 space-y-6 max-w-md mx-auto">
-
-        <p className="text-white/60 text-lg font-display tracking-widest">
-          Level Up Your Reality
-        </p>
-
-        <p className="text-white/40 text-xs tracking-wider uppercase">
-          Seen in the Houston Esports Scene • All Ages Esports
-        </p>
+      <div className="relative z-10 space-y-6 max-w-md mx-auto mt-auto mb-32">
 
         <div className="space-y-3 pt-4">
           <Button
