@@ -15,7 +15,7 @@ export const StoreNav = ({ onCategorySelect }: StoreNavProps) => {
     <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-[#FF2FAF]/20"
       style={{ background: 'rgba(20, 0, 43, 0.9)' }}>
       <div className="flex items-center justify-between px-4 h-14">
-        <Button variant="ghost" size="icon" className="text-[#FF2FAF]" onClick={() => window.history.back()}>
+        <Button variant="ghost" size="icon" className="text-[#FF2FAF]" onClick={() => window.location.href = '/'}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
