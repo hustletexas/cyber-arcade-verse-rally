@@ -34,7 +34,11 @@ const StorePage = () => {
 
   return (
     <div className="min-h-screen relative" style={{
-      background: 'linear-gradient(180deg, #14002B 0%, #0D0020 50%, #0A0018 100%)'
+      backgroundImage: 'url(/images/store/store-hero-bg-v2.png)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center top',
+      backgroundAttachment: 'fixed',
+      backgroundRepeat: 'no-repeat',
     }}>
       <StoreNav onCategorySelect={handleCategorySelect} />
       <StoreHero />
