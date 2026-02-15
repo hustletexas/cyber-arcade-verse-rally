@@ -36,18 +36,19 @@ export const StoreHero = ({ onShopNow, onLimitedDrop }: StoreHeroProps) => {
         <div className="space-y-3 pt-4">
           <Button
             onClick={onShopNow}
-            className="w-full h-14 rounded-2xl text-lg font-display font-bold tracking-wider"
+            className="w-full h-14 rounded-2xl text-lg font-display font-bold tracking-wider bg-transparent backdrop-blur-md border border-[#FF2FAF]/40 text-white hover:bg-[#FF2FAF]/10 transition-all duration-300"
             style={{
-              background: 'linear-gradient(135deg, #FF2FAF, #CC0088)',
-              boxShadow: '0 0 30px rgba(255,47,175,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+              boxShadow: '0 0 20px rgba(255,47,175,0.15), inset 0 0 20px rgba(255,47,175,0.05)'
             }}
           >
             SHOP NOW
           </Button>
           <Button
             onClick={onLimitedDrop}
-            variant="outline"
-            className="w-full h-14 rounded-2xl text-lg font-display font-bold tracking-wider border-2 border-[#00E5FF]/50 text-[#00E5FF] bg-transparent hover:bg-[#00E5FF]/10"
+            className="w-full h-14 rounded-2xl text-lg font-display font-bold tracking-wider bg-transparent backdrop-blur-md border border-[#00E5FF]/40 text-white hover:bg-[#00E5FF]/10 transition-all duration-300"
+            style={{
+              boxShadow: '0 0 20px rgba(0,229,255,0.15), inset 0 0 20px rgba(0,229,255,0.05)'
+            }}
           >
             LIMITED DROP
           </Button>
