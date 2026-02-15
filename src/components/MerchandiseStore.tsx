@@ -48,7 +48,7 @@ const merchandiseItems: MerchandiseItem[] = [
     image: '/lovable-uploads/6cc1e7b7-f790-42ba-9363-08220cbc8ae1.png',
     category: 'jacket',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'Navy', 'Charcoal'],
+    colors: ['Black'],
     description: 'Premium bomber jacket featuring the complete Cyber City Arcade design with neon cityscape'
   },
   {
