@@ -108,7 +108,7 @@ export const merchandiseItems: MerchandiseItem[] = [
     id: '19',
     name: 'Cyber City Arcade Shorts',
     price: 34.99,
-    image: '/images/store/cyber-city-shorts.png',
+    image: '/images/store/cyber-city-shorts-v2.png',
     category: 'shorts',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black'],
