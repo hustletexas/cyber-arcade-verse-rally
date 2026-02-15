@@ -54,16 +54,6 @@ export const merchandiseItems: MerchandiseItem[] = [
     isLimited: true
   },
   {
-    id: '13',
-    name: 'Cyber City Arcade RGB Mousepad',
-    price: 19.99,
-    image: '/images/store/cyber-city-mousepad.png',
-    category: 'mousepad',
-    sizes: ['One Size'],
-    colors: ['Black'],
-    description: 'Extended RGB gaming mousepad featuring the iconic Cyber City Arcade design with neon LED edge lighting'
-  },
-  {
     id: '14',
     name: 'Cyber City Arcade Track Jacket',
     price: 89.99,
@@ -123,6 +113,16 @@ export const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black'],
     description: 'Athletic mesh shorts with neon Cyber City skyline print, Stellar Blockchain badge, and drawstring waist'
+  },
+  {
+    id: '13',
+    name: 'Cyber City Arcade RGB Mousepad',
+    price: 19.99,
+    image: '/images/store/cyber-city-mousepad.png',
+    category: 'mousepad',
+    sizes: ['One Size'],
+    colors: ['Black'],
+    description: 'Extended RGB gaming mousepad featuring the iconic Cyber City Arcade design with neon LED edge lighting'
   },
   {
     id: '10',
