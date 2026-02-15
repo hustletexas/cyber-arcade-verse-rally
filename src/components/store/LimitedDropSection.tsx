@@ -110,7 +110,7 @@ export const LimitedDropSection = ({ onSelectItem }: LimitedDropSectionProps) =>
           boxShadow: '0 0 30px rgba(255,47,175,0.3)'
         }}
       >
-        ADD TO CART — ${limitedItem.price}
+        PRE-ORDER — ${limitedItem.price}
       </Button>
     </section>
   );
