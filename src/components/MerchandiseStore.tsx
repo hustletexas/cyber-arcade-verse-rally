@@ -14,7 +14,7 @@ interface MerchandiseItem {
   name: string;
   price: number;
   image: string;
-  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker' | 'mousepad' | 'hat' | 'jersey';
+  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker' | 'mousepad' | 'hat' | 'jersey' | 'shorts';
   sizes: string[];
   colors: string[];
   description: string;
@@ -200,6 +200,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black'],
     description: 'Premium esports jersey with neon Cyber City skyline, #01 HUSTLE back print, and Stellar Blockchain badge'
+  },
+  {
+    id: '19',
+    name: 'Cyber City Arcade Shorts',
+    price: 34.99,
+    image: '/images/store/cyber-city-shorts.png',
+    category: 'shorts',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black'],
+    description: 'Athletic mesh shorts with neon Cyber City skyline print, Stellar Blockchain badge, and drawstring waist'
   }
 ];
 
@@ -219,7 +229,8 @@ export const MerchandiseStore = () => {
     { value: 'sticker', label: '🎨 STICKERS', icon: '🎨' },
     { value: 'mousepad', label: '🖱️ MOUSEPADS', icon: '🖱️' },
     { value: 'hat', label: '🧢 HATS', icon: '🧢' },
-    { value: 'jersey', label: '🏆 JERSEYS', icon: '🏆' }
+    { value: 'jersey', label: '🏆 JERSEYS', icon: '🏆' },
+    { value: 'shorts', label: '🩳 SHORTS', icon: '🩳' }
   ];
 
   const filteredItems = selectedCategory === 'all' 
