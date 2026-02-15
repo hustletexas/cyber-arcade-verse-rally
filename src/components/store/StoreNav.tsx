@@ -2,7 +2,6 @@ import React from 'react';
 import { Menu, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
-import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,16 +9,30 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export const StoreNav = () => {
+const categories = [
+  { key: 'all', label: '🛒 All Items' },
+  { key: 'shirt', label: '👕 Shirts' },
+  { key: 'hoodie', label: '🧥 Hoodies' },
+  { key: 'jacket', label: '🧥 Jackets' },
+  { key: 'jersey', label: '🏆 Jerseys' },
+  { key: 'hat', label: '🧢 Hats' },
+  { key: 'shorts', label: '🩳 Shorts' },
+  { key: 'mousepad', label: '🖱️ Mousepads' },
+  { key: 'sticker', label: '✨ Stickers' },
+];
+
+interface StoreNavProps {
+  onCategorySelect?: (category: string) => void;
+}
+
+export const StoreNav = ({ onCategorySelect }: StoreNavProps) => {
   const { setIsOpen, items } = useCart();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-[#FF2FAF]/20"
       style={{ background: 'rgba(20, 0, 43, 0.9)' }}>
       <div className="flex items-center justify-between px-4 h-14">
-        {/* Hamburger */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="text-[#FF2FAF]">
@@ -27,22 +40,18 @@ export const StoreNav = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48 bg-[#14002B]/95 backdrop-blur-md border-[#FF2FAF]/30">
-            <DropdownMenuItem onClick={() => navigate('/')} className="text-white/80 hover:text-white focus:text-white hover:bg-[#FF2FAF]/10 focus:bg-[#FF2FAF]/10">
-              🎮 Arcade Home
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/tournaments')} className="text-white/80 hover:text-white focus:text-white hover:bg-[#FF2FAF]/10 focus:bg-[#FF2FAF]/10">
-              🏆 Tournaments
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/rewards')} className="text-white/80 hover:text-white focus:text-white hover:bg-[#FF2FAF]/10 focus:bg-[#FF2FAF]/10">
-              🎁 Rewards
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/about')} className="text-white/80 hover:text-white focus:text-white hover:bg-[#FF2FAF]/10 focus:bg-[#FF2FAF]/10">
-              ℹ️ About
-            </DropdownMenuItem>
+            {categories.map((cat) => (
+              <DropdownMenuItem
+                key={cat.key}
+                onClick={() => onCategorySelect?.(cat.key)}
+                className="text-white/80 hover:text-white focus:text-white hover:bg-[#FF2FAF]/10 focus:bg-[#FF2FAF]/10"
+              >
+                {cat.label}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Center Logo */}
         <div className="font-display text-sm tracking-wider" style={{
           background: 'linear-gradient(135deg, #FF2FAF, #00E5FF)',
           WebkitBackgroundClip: 'text',
@@ -51,7 +60,6 @@ export const StoreNav = () => {
           CYBER CITY STORE
         </div>
 
-        {/* Cart */}
         <Button
           variant="ghost"
           size="icon"
