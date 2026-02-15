@@ -14,7 +14,7 @@ interface MerchandiseItem {
   name: string;
   price: number;
   image: string;
-  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker' | 'mousepad';
+  category: 'shirt' | 'hoodie' | 'jacket' | 'sticker' | 'mousepad' | 'hat';
   sizes: string[];
   colors: string[];
   description: string;
@@ -160,6 +160,16 @@ const merchandiseItems: MerchandiseItem[] = [
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: ['Black'],
     description: 'Premium track jacket with Stellar Blockchain badge, neon piping, and Cyber City skyline design'
+  },
+  {
+    id: '15',
+    name: 'Cyber City Arcade Snapback',
+    price: 29.99,
+    image: '/images/store/cyber-city-hat.png',
+    category: 'hat',
+    sizes: ['One Size'],
+    colors: ['Black'],
+    description: 'Premium snapback cap with neon Cyber City Arcade logo and Stellar Blockchain badge'
   }
 ];
 
@@ -177,7 +187,8 @@ export const MerchandiseStore = () => {
     { value: 'hoodie', label: '🧥 HOODIES', icon: '🧥' },
     { value: 'jacket', label: '🧥 JACKETS', icon: '🧥' },
     { value: 'sticker', label: '🎨 STICKERS', icon: '🎨' },
-    { value: 'mousepad', label: '🖱️ MOUSEPADS', icon: '🖱️' }
+    { value: 'mousepad', label: '🖱️ MOUSEPADS', icon: '🖱️' },
+    { value: 'hat', label: '🧢 HATS', icon: '🧢' }
   ];
 
   const filteredItems = selectedCategory === 'all' 
