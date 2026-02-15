@@ -136,7 +136,7 @@ export const QuickShopStrip = ({ items, onSelectItem }: QuickShopStripProps) => 
                   }}
                 >
                   <ShoppingCart className="h-4 w-4" />
-                  QUICK ADD
+                  PRE-ORDER
                 </Button>
               </div>
             </div>
