@@ -39,7 +39,7 @@ export const SpotlightProduct = ({ onSelectItem }: SpotlightProductProps) => {
             color: '#000'
           }}
         >
-          BUY NOW
+          PRE-ORDER
         </Button>
       </div>
     </section>
