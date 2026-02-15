@@ -54,7 +54,7 @@ const StorePage = () => {
       <SocialProofSection />
       <BrandIdentitySection onShop={scrollToShop} />
       <StoreFooter />
-      <StickyBottomCTA onShopNow={scrollToShop} onLimitedDrop={scrollToLimited} />
+      
       <CartDrawer />
       <ProductDetailDialog item={selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
