@@ -42,6 +42,16 @@ const merchandiseItems: MerchandiseItem[] = [
     description: 'Premium hoodie featuring the complete Cyber City Arcade design with neon cityscape and retro arcade cabinet'
   },
   {
+    id: '20',
+    name: 'Cyber City Arcade Neon Hoodie',
+    price: 54.99,
+    image: '/images/store/cyber-city-neon-hoodie.png',
+    category: 'hoodie',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: ['Black'],
+    description: 'Premium pullover hoodie with neon Cyber City skyline, LED-accent piping, galaxy hood lining, and Stellar Blockchain badge'
+  },
+  {
     id: '3',
     name: 'Cyber City Arcade Bomber Jacket',
     price: 89.99,
