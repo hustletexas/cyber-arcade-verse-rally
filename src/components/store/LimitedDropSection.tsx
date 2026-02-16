@@ -104,7 +104,7 @@ export const LimitedDropSection = ({ onSelectItem }: LimitedDropSectionProps) =>
 
       <Button
         onClick={handleQuickAdd}
-        className="w-full h-14 rounded-2xl text-lg font-display font-bold tracking-wider"
+        className="h-12 px-8 rounded-xl text-sm font-display font-bold tracking-wider mx-auto block"
         style={{
           background: 'linear-gradient(135deg, #FF2FAF, #CC0088)',
           boxShadow: '0 0 30px rgba(255,47,175,0.3)'
