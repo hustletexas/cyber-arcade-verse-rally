@@ -43,7 +43,7 @@ const StorePage = () => {
     }}>
       <StoreNav onCategorySelect={handleCategorySelect} />
       {/* Spacer to show background title */}
-      <div className="h-[20vh]" />
+      <div className="h-0" />
       <div ref={shopRef}>
         <QuickShopStrip items={filteredItems} onSelectItem={setSelectedItem} />
       </div>
