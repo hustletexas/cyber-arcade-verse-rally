@@ -1,11 +1,11 @@
-// Stellar-only NFT hook (Solana functionality removed)
+// Stellar-only NFT hook
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useSolanaNFT = () => {
+export const useStellarNFT = () => {
   const { toast } = useToast();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { user } = useAuth();

@@ -17,7 +17,7 @@ const NODE_PRICES = {
   legendary: 100000
 };
 
-export const useSolanaNodes = () => {
+export const useStellarNodes = () => {
   const { user } = useAuth();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();

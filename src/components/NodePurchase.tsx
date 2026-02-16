@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useAuth } from '@/hooks/useAuth';
-import { useSolanaNodes } from '@/hooks/useSolanaNodes';
+import { useStellarNodes } from '@/hooks/useStellarNodes';
 import { NodeInfo } from '@/components/nodes/NodeInfo';
 import { NodeCards } from '@/components/nodes/NodeCards';
 import { NodeRewards } from '@/components/nodes/NodeRewards';
@@ -79,7 +79,7 @@ export const NodePurchase = () => {
   const { toast } = useToast();
   const { isWalletConnected, primaryWallet } = useMultiWallet();
   const { user } = useAuth();
-  const { purchaseNode, isProcessing, userNodes, fetchUserNodes } = useSolanaNodes();
+  const { purchaseNode, isProcessing, userNodes, fetchUserNodes } = useStellarNodes();
   const [nodeSupplies, setNodeSupplies] = useState({ basic: 0, premium: 0, legendary: 0 });
   const [selectedNode, setSelectedNode] = useState<NodeType>(nodeTypes[0]);
 

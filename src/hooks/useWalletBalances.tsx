@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { STELLAR_NETWORK } from '@/config/stellar';
 
-type ChainType = 'solana' | 'ethereum' | 'stellar';
+type ChainType = 'stellar';
 
 interface WalletInput {
   address: string;
@@ -43,90 +43,12 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
   const [balances, setBalances] = useState<Record<string, WalletBalance>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch Solana balance using public RPC with fallback
-  const fetchSolanaBalance = async (address: string): Promise<number> => {
-    try {
-      // Use Helius free tier or other CORS-friendly RPC
-      const rpcs = [
-        'https://solana-mainnet.g.alchemy.com/v2/demo',
-        'https://rpc.ankr.com/solana'
-      ];
-      
-      for (const rpc of rpcs) {
-        try {
-          const response = await fetch(rpc, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: 1,
-              method: 'getBalance',
-              params: [address]
-            })
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.result?.value !== undefined) {
-              return data.result.value / 1e9; // Convert lamports to SOL
-            }
-          }
-        } catch {
-          continue;
-        }
-      }
-      return 0;
-    } catch (error) {
-      console.error('Error fetching SOL balance:', error);
-      return 0;
-    }
-  };
-
-  // Fetch Ethereum balance
-  const fetchEthereumBalance = async (address: string): Promise<number> => {
-    try {
-      // Use window.ethereum if available, otherwise use a public RPC
-      const provider = window.ethereum;
-      if (provider) {
-        const balanceHex = await provider.request({
-          method: 'eth_getBalance',
-          params: [address, 'latest']
-        });
-        // Convert from wei (hex) to ETH
-        const balanceWei = parseInt(balanceHex, 16);
-        return balanceWei / 1e18;
-      }
-      
-      // Fallback to public RPC
-      const response = await fetch('https://eth.llamarpc.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'eth_getBalance',
-          params: [address, 'latest'],
-          id: 1
-        })
-      });
-      const data = await response.json();
-      if (data.result) {
-        const balanceWei = parseInt(data.result, 16);
-        return balanceWei / 1e18;
-      }
-      return 0;
-    } catch (error) {
-      console.error('Error fetching ETH balance:', error);
-      return 0;
-    }
-  };
-
   // Fetch all Stellar balances (XLM and tokens)
   const fetchStellarBalances = async (address: string): Promise<{ xlmBalance: number; assets: StellarAsset[] }> => {
     try {
       const response = await fetch(`${STELLAR_HORIZON}/accounts/${address}`);
       if (!response.ok) {
         if (response.status === 404) {
-          // Account not funded yet
           return { xlmBalance: 0, assets: [] };
         }
         throw new Error('Failed to fetch Stellar account');
@@ -136,7 +58,6 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
       const assets: StellarAsset[] = [];
       let xlmBalance = 0;
       
-      // Parse all balances from Horizon response
       if (data.balances && Array.isArray(data.balances)) {
         for (const b of data.balances) {
           if (b.asset_type === 'native') {
@@ -147,7 +68,6 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
               assetType: 'native'
             });
           } else {
-            // Credit alphanum tokens (e.g., USDC, CCTR)
             assets.push({
               code: b.asset_code || 'Unknown',
               issuer: b.asset_issuer,
@@ -165,45 +85,24 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
     }
   };
 
-  // Fetch balance based on chain type
+  // Fetch balance for a wallet
   const fetchBalance = async (wallet: WalletInput): Promise<WalletBalance> => {
-    const chain = wallet.chain || 'solana';
     const baseBalance: WalletBalance = {
       address: wallet.address,
-      chain,
+      chain: 'stellar',
       balance: 0,
-      symbol: wallet.symbol || '',
+      symbol: wallet.symbol || 'XLM',
       isLoading: true,
       stellarAssets: []
     };
 
     try {
-      let balance = 0;
-      let symbol = '';
-      let stellarAssets: StellarAsset[] = [];
-
-      switch (wallet.chain) {
-        case 'solana':
-          balance = await fetchSolanaBalance(wallet.address);
-          symbol = 'SOL';
-          break;
-        case 'ethereum':
-          balance = await fetchEthereumBalance(wallet.address);
-          symbol = 'ETH';
-          break;
-        case 'stellar':
-          const stellarData = await fetchStellarBalances(wallet.address);
-          balance = stellarData.xlmBalance;
-          stellarAssets = stellarData.assets;
-          symbol = 'XLM';
-          break;
-      }
-
+      const stellarData = await fetchStellarBalances(wallet.address);
       return {
         ...baseBalance,
-        balance,
-        symbol,
-        stellarAssets,
+        balance: stellarData.xlmBalance,
+        symbol: 'XLM',
+        stellarAssets: stellarData.assets,
         isLoading: false
       };
     } catch (error: any) {
@@ -242,25 +141,21 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
     }
   }, [connectedWallets]);
 
-  // Get balance for a specific address
   const getBalance = useCallback((address: string): WalletBalance | null => {
     return balances[address] || null;
   }, [balances]);
 
-  // Get Stellar assets for a specific address
   const getStellarAssets = useCallback((address: string): StellarAsset[] => {
     const walletBalance = balances[address];
     return walletBalance?.stellarAssets || [];
   }, [balances]);
 
-  // Fetch balances when wallets change
   useEffect(() => {
     if (connectedWallets.length > 0) {
       refreshBalances();
     }
   }, [connectedWallets.length]);
 
-  // Auto-refresh every 30 seconds
   useEffect(() => {
     if (connectedWallets.length === 0) return;
 
@@ -282,7 +177,6 @@ export const useWalletBalances = (connectedWallets: WalletInput[]): UseWalletBal
 
 export type { StellarAsset };
 
-// Format balance for display
 export const formatBalance = (balance: number, decimals: number = 4): string => {
   if (balance === 0) return '0';
   if (balance < 0.0001) return '<0.0001';

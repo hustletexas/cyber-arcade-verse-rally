@@ -12,19 +12,19 @@ export const NodeInfo = () => {
         <CardHeader>
           <CardTitle className="text-xl text-neon-cyan flex items-center gap-2">
             <Server className="w-6 h-6" />
-            What are Solana Nodes?
+            What are Stellar Nodes?
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Solana nodes are validator infrastructure that help secure and maintain the Solana blockchain network. 
+            Stellar nodes are validator infrastructure that help secure and maintain the Stellar blockchain network. 
             By owning a node, you become part of the decentralized network and earn rewards for helping validate transactions.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <h4 className="font-semibold text-neon-purple">Key Benefits:</h4>
               <ul className="space-y-1 text-sm">
-                <li>• Passive SOL income daily</li>
+                <li>• Passive XLM income daily</li>
                 <li>• Help secure the network</li>
                 <li>• No technical knowledge required</li>
                 <li>• Automated reward distribution</li>
@@ -59,7 +59,7 @@ export const NodeInfo = () => {
               </div>
               <h4 className="font-semibold text-neon-cyan">1. Purchase Node</h4>
               <p className="text-sm text-muted-foreground">
-                Buy a node with SOL and it becomes active immediately
+                Buy a node with XLM and it becomes active immediately
               </p>
             </div>
             <div className="text-center space-y-3">
@@ -77,7 +77,7 @@ export const NodeInfo = () => {
               </div>
               <h4 className="font-semibold text-neon-green">3. Earn Rewards</h4>
               <p className="text-sm text-muted-foreground">
-                Receive daily SOL rewards directly to your wallet
+                Receive daily XLM rewards directly to your wallet
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export const NodeInfo = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Badge className="bg-neon-purple text-white text-xs">SECURE</Badge>
-                  <span>Audited smart contracts on Solana</span>
+                  <span>Audited smart contracts on Stellar</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Badge className="bg-neon-cyan text-black text-xs">LIQUID</Badge>
@@ -122,7 +122,7 @@ export const NodeInfo = () => {
                 <div>Network Fee = 5% (for maintenance)</div>
                 <div>Your Reward = Daily Reward × 0.95</div>
                 <div className="text-neon-green pt-2">
-                  Example: Premium Node = 1.5 SOL × 0.95 = 1.425 SOL/day
+                  Example: Premium Node = 1.5 XLM × 0.95 = 1.425 XLM/day
                 </div>
               </div>
             </div>

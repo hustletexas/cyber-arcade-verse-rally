@@ -300,12 +300,10 @@ export const WalletManager = () => {
         description: "Generating a new secure Stellar wallet",
       });
 
-      const { Keypair } = await import('@solana/web3.js');
-      const bs58 = await import('bs58');
-      
-      const newKeypair = Keypair.generate();
-      const publicKey = newKeypair.publicKey.toString();
-      const privateKey = bs58.default.encode(newKeypair.secretKey);
+      const StellarSdk = await import('@stellar/stellar-sdk');
+      const keypair = StellarSdk.Keypair.random();
+      const publicKey = keypair.publicKey();
+      const privateKey = keypair.secret();
       
       // Request password to encrypt
       requestPassword('create', { publicKey, privateKey });
@@ -331,12 +329,9 @@ export const WalletManager = () => {
     }
 
     try {
-      const { Keypair } = await import('@solana/web3.js');
-      const bs58 = await import('bs58');
-      
-      const secretKey = bs58.default.decode(importPrivateKey.trim());
-      const keypair = Keypair.fromSecretKey(secretKey);
-      const publicKey = keypair.publicKey.toString();
+      const StellarSdk = await import('@stellar/stellar-sdk');
+      const keypair = StellarSdk.Keypair.fromSecret(importPrivateKey.trim());
+      const publicKey = keypair.publicKey();
       
       // Request password to encrypt
       requestPassword('import', { publicKey, privateKey: importPrivateKey.trim() });

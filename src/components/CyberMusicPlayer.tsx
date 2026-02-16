@@ -183,9 +183,9 @@ export const CyberMusicPlayer = () => {
     if (track.nft) {
       toast({
         title: "NFT Purchase",
-        description: `Initiating purchase of "${track.title}" NFT for ${track.nft.price} SOL`,
+        description: `Initiating purchase of "${track.title}" NFT for ${track.nft.price} XLM`,
       });
-      // Here you would integrate with Solana wallet and marketplace
+      // Here you would integrate with Stellar wallet and marketplace
     }
   };
 
