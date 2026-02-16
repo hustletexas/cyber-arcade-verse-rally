@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Coins, TrendingUp, Clock, Gift } from 'lucide-react';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
-import { useSolanaNodes } from '@/hooks/useSolanaNodes';
+import { useStellarNodes } from '@/hooks/useStellarNodes';
 
 interface NodeRewardsProps {
   userNodes?: { basic: number; premium: number; legendary: number };
@@ -22,7 +22,7 @@ interface NodeReward {
 }
 
 export const NodeRewards = ({ userNodes = { basic: 0, premium: 0, legendary: 0 } }: NodeRewardsProps) => {
-  const { claimRewards, isProcessing } = useSolanaNodes();
+  const { claimRewards, isProcessing } = useStellarNodes();
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const { toast } = useToast();
   const [rewards, setRewards] = useState<NodeReward[]>([]);
