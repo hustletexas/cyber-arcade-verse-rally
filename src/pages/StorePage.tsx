@@ -35,7 +35,7 @@ const StorePage = () => {
 
   return (
     <div className="min-h-screen relative" style={{
-      backgroundImage: 'url(/images/store/store-hero-bg-v2.png)',
+      backgroundImage: 'url(/images/store/store-hero-bg-v3.png)',
       backgroundSize: 'cover',
       backgroundPosition: 'center top',
       backgroundAttachment: 'fixed',
