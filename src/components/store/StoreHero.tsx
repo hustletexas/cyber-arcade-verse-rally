@@ -6,7 +6,7 @@ export const StoreHero = () => {
     <section className="relative aspect-[16/9] max-h-[60vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
       <div className="absolute inset-0">
         <img
-          src="/images/store/store-hero-bg-v2.png"
+          src="/images/store/store-hero-bg-v3.png"
           alt=""
           className="w-full h-full object-cover"
         />
