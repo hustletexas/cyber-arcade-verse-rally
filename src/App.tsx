@@ -32,6 +32,7 @@ import AfterSchoolProgram from "./pages/AfterSchoolProgram";
 import RewardsPage from "./pages/RewardsPage";
 import EsportsPage from "./pages/EsportsPage";
 import DJBoothPage from "./pages/DJBoothPage";
+import CyberBreakerPage from "./pages/CyberBreakerPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
                   <Route path="/rewards" element={<RewardsPage />} />
                   <Route path="/esports" element={<EsportsPage />} />
                   <Route path="/dj" element={<DJBoothPage />} />
+                  <Route path="/games/cyber-breaker" element={<CyberBreakerPage />} />
                   <Route path="/success" element={<Success />} />
                   <Route path="/cancel" element={<Cancel />} />
                   <Route path="*" element={<NotFound />} />
