@@ -5,7 +5,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
-import { SeasonPassGate } from '@/components/SeasonPassGate';
+
 
 const CyberBreakerPage = () => {
   return (
@@ -36,9 +36,7 @@ const CyberBreakerPage = () => {
           <CCCBalanceBar />
         </div>
 
-        <SeasonPassGate featureName="Cyber Breaker">
-          <PortalBreakerGame />
-        </SeasonPassGate>
+        <PortalBreakerGame />
       </main>
     </div>
   );
