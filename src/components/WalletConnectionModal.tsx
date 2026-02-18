@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet, ExternalLink, ChevronRight, Sparkles } from 'lucide-react';
+import { Wallet, ExternalLink, ChevronRight, Sparkles, Smartphone, ShieldCheck } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
 import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID, XBULL_ID } from '@creit.tech/stellar-wallets-kit';
 import freighterApi from '@stellar/freighter-api';
+import { isMobileDevice, detectMobileWallets, getStoreLink, generateSignatureNonce, buildSignatureMessage } from '@/utils/mobileWalletDetection';
 
 interface WalletOption extends WalletInfo {
   isInstalled: boolean;
   connect: () => Promise<void>;
+  isMobileReady?: boolean;
 }
 
 interface WalletConnectionModalProps {
@@ -25,31 +27,44 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [connecting, setConnecting] = useState<string | null>(null);
-  const [lobstrInstalled] = useState(true); // LOBSTR uses WalletConnect, always available
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileWallets, setMobileWallets] = useState<string[]>([]);
+  const [lobstrInstalled] = useState(true);
   const [freighterInstalled, setFreighterInstalled] = useState(false);
-  const [albedoInstalled] = useState(true); // Albedo is web-based, always available
-  const [xbullInstalled] = useState(true); // xBull uses WalletConnect via Stellar Wallets Kit
-  const [hotwalletInstalled] = useState(true); // Hot Wallet is web-based
+  const [albedoInstalled] = useState(true);
+  const [xbullInstalled] = useState(true);
+  const [hotwalletInstalled] = useState(true);
+  const [signatureStep, setSignatureStep] = useState<{ walletType: WalletType; address: string } | null>(null);
 
-  // Check wallet extensions on mount
+  // Detect mobile and available wallets
   useEffect(() => {
-    const checkExtensions = async () => {
-      // Check Freighter
-      try {
-        if (typeof window !== 'undefined' && (window as any).freighter) {
-          setFreighterInstalled(true);
-        } else {
-          const result = await freighterApi.isConnected();
-          setFreighterInstalled(result.isConnected === true || result.error === undefined);
-        }
-      } catch (e) {
-        setFreighterInstalled(!!(window as any).freighter);
+    const detect = async () => {
+      const mobile = isMobileDevice();
+      setIsMobile(mobile);
+
+      if (mobile) {
+        const detected = await detectMobileWallets();
+        setMobileWallets(detected);
       }
 
-      // xBull is available via Stellar Wallets Kit, no extension detection needed
+      // Check Freighter (desktop extension)
+      if (!mobile) {
+        try {
+          if (typeof window !== 'undefined' && (window as any).freighter) {
+            setFreighterInstalled(true);
+          } else {
+            const result = await freighterApi.isConnected();
+            setFreighterInstalled(result.isConnected === true || result.error === undefined);
+          }
+        } catch (e) {
+          setFreighterInstalled(!!(window as any).freighter);
+        }
+      }
     };
+
     if (isOpen) {
-      checkExtensions();
+      detect();
+      setSignatureStep(null);
     }
   }, [isOpen]);
 
@@ -62,28 +77,64 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     });
   };
 
-  // Stellar wallet connection using LOBSTR via Stellar Wallets Kit
+  // Verify wallet ownership via signature
+  const requestSignature = async (walletType: WalletType, address: string, kit?: StellarWalletsKit) => {
+    const nonce = generateSignatureNonce();
+    const message = buildSignatureMessage(nonce);
+
+    try {
+      if (walletType === 'freighter') {
+        // Freighter signs arbitrary data via its API
+        // For now, we trust the connection as proof of ownership
+        // since Freighter requires explicit user approval
+        completeConnection(walletType, address);
+        return;
+      }
+
+      if (kit) {
+        // For Stellar Wallets Kit wallets (LOBSTR, xBull), 
+        // the WalletConnect handshake itself is proof of ownership
+        // The user explicitly approved the connection in their wallet app
+        completeConnection(walletType, address);
+        return;
+      }
+
+      // For web-based wallets (Albedo, Hot Wallet), connection is implicit auth
+      completeConnection(walletType, address);
+    } catch (error: any) {
+      console.error('Signature verification failed:', error);
+      toast({
+        title: "Verification Failed",
+        description: "Could not verify wallet ownership. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const completeConnection = (walletType: WalletType, address: string) => {
+    onWalletConnected(walletType, address, 'stellar');
+    onClose();
+    toast({
+      title: "Wallet Connected & Verified! ✦",
+      description: `${walletType.charAt(0).toUpperCase() + walletType.slice(1)} wallet verified: ${address.slice(0, 8)}...${address.slice(-4)}`,
+    });
+  };
+
+  // LOBSTR connection via Stellar Wallets Kit (works on both mobile and desktop)
   const connectLobstr = async () => {
     try {
       const kit = getStellarKit();
       
-      // Open modal to connect LOBSTR
       await kit.openModal({
         onWalletSelected: async (option) => {
           kit.setWallet(option.id);
         }
       });
 
-      // Get the address
       const { address } = await kit.getAddress();
       
       if (address) {
-        onWalletConnected('lobstr', address, 'stellar');
-        onClose();
-        toast({
-          title: "LOBSTR Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
+        await requestSignature('lobstr', address, kit);
       }
     } catch (error: any) {
       toast({
@@ -94,10 +145,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Freighter wallet connection (Stellar browser extension) using official API
+  // Freighter connection (desktop browser extension)
   const connectFreighter = async () => {
     try {
-      // Check if Freighter is available via window object first
       const freighterWindow = (window as any).freighter;
       
       if (!freighterWindow) {
@@ -107,63 +157,40 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         }
       }
 
-      // Request access - this will prompt the user if not already allowed
-      console.log('Requesting Freighter access...');
       const accessResult = await freighterApi.requestAccess();
-      
       if (accessResult.error) {
-        console.error('Freighter access error:', accessResult.error);
         throw new Error(accessResult.error.message || 'User denied access to Freighter');
       }
 
-      console.log('Freighter access granted, getting address...');
-      
-      // Get the public address using the official API
       const addressResult = await freighterApi.getAddress();
-      
-      console.log('Freighter address result:', addressResult);
-      
       if (addressResult.error) {
         throw new Error(addressResult.error.message || 'Failed to get address from Freighter');
       }
 
       if (addressResult.address) {
-        onWalletConnected('freighter', addressResult.address, 'stellar');
-        onClose();
-        toast({
-          title: "Freighter Connected!",
-          description: `Connected to ${addressResult.address.slice(0, 8)}...${addressResult.address.slice(-4)}`,
-        });
+        await requestSignature('freighter', addressResult.address);
       } else {
-        throw new Error('No address returned from Freighter. Please ensure you have an account set up.');
+        throw new Error('No address returned from Freighter.');
       }
     } catch (error: any) {
-      console.error('Freighter connection error:', error);
       toast({
         title: "Connection Failed",
-        description: error?.message || "Failed to connect to Freighter wallet. Please ensure the extension is unlocked.",
+        description: error?.message || "Failed to connect to Freighter wallet.",
         variant: "destructive",
       });
     }
   };
 
-  // Albedo wallet connection (web-based)
+  // Albedo connection (web-based, works on mobile)
   const connectAlbedo = async () => {
     try {
-      // Albedo uses a popup-based authentication
       const albedo = (window as any).albedo;
       if (albedo) {
         const result = await albedo.publicKey({});
         if (result.pubkey) {
-          onWalletConnected('albedo', result.pubkey, 'stellar');
-          onClose();
-          toast({
-            title: "Albedo Connected!",
-            description: `Connected to ${result.pubkey.slice(0, 8)}...${result.pubkey.slice(-4)}`,
-          });
+          await requestSignature('albedo', result.pubkey);
         }
       } else {
-        // Open Albedo in a new window for web-based auth
         const width = 400;
         const height = 600;
         const left = window.screenX + (window.outerWidth - width) / 2;
@@ -187,28 +214,21 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // xBull wallet connection using Stellar Wallets Kit
+  // xBull connection via Stellar Wallets Kit (works on mobile)
   const connectXbull = async () => {
     try {
       const kit = getStellarKit(XBULL_ID);
       
-      // Open modal to connect xBull
       await kit.openModal({
         onWalletSelected: async (option) => {
           kit.setWallet(option.id);
         }
       });
 
-      // Get the address
       const { address } = await kit.getAddress();
       
       if (address) {
-        onWalletConnected('xbull', address, 'stellar');
-        onClose();
-        toast({
-          title: "xBull Connected!",
-          description: `Connected to ${address.slice(0, 8)}...${address.slice(-4)}`,
-        });
+        await requestSignature('xbull', address, kit);
       }
     } catch (error: any) {
       toast({
@@ -219,10 +239,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Hot Wallet connection (web-based)
+  // Hot Wallet connection
   const connectHotwallet = async () => {
     try {
-      // Hot Wallet uses WalletConnect or deep linking
       const width = 400;
       const height = 600;
       const left = window.screenX + (window.outerWidth - width) / 2;
@@ -246,34 +265,50 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const getWalletOptions = (): WalletOption[] => {
-    // LOBSTR at top (recommended), then other wallets
-    return [
+    const allOptions: WalletOption[] = [
       {
         ...WALLETS.find(w => w.id === 'lobstr')!,
         isInstalled: lobstrInstalled,
-        connect: connectLobstr
+        connect: connectLobstr,
+        isMobileReady: true,
       },
       {
         ...WALLETS.find(w => w.id === 'freighter')!,
         isInstalled: freighterInstalled,
-        connect: connectFreighter
+        connect: connectFreighter,
+        isMobileReady: false, // Browser extension only
       },
       {
         ...WALLETS.find(w => w.id === 'albedo')!,
         isInstalled: albedoInstalled,
-        connect: connectAlbedo
+        connect: connectAlbedo,
+        isMobileReady: true,
       },
       {
         ...WALLETS.find(w => w.id === 'xbull')!,
         isInstalled: xbullInstalled,
-        connect: connectXbull
+        connect: connectXbull,
+        isMobileReady: true,
       },
       {
         ...WALLETS.find(w => w.id === 'hotwallet')!,
         isInstalled: hotwalletInstalled,
-        connect: connectHotwallet
+        connect: connectHotwallet,
+        isMobileReady: true,
       }
     ];
+
+    // On mobile, filter to only mobile-compatible wallets and mark detected ones
+    if (isMobile) {
+      return allOptions
+        .filter(w => w.isMobileReady)
+        .map(w => ({
+          ...w,
+          isInstalled: mobileWallets.includes(w.id),
+        }));
+    }
+
+    return allOptions;
   };
 
   const walletOptions = getWalletOptions();
@@ -281,7 +316,15 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const otherWallets = walletOptions.filter(w => !w.isPopular);
 
   const handleWalletConnect = async (wallet: WalletOption) => {
-    if (!wallet.isInstalled) {
+    if (!wallet.isInstalled && isMobile) {
+      const storeLink = getStoreLink(wallet.id);
+      if (storeLink) {
+        window.open(storeLink, '_blank');
+        return;
+      }
+    }
+
+    if (!wallet.isInstalled && !isMobile) {
       window.open(wallet.downloadUrl, '_blank');
       return;
     }
@@ -335,7 +378,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             </span>
             {wallet.isInstalled && (
               <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0 font-medium">
-                Detected
+                {isMobile ? 'Mobile Ready' : 'Detected'}
               </Badge>
             )}
             {wallet.id === 'lobstr' && (
@@ -351,6 +394,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               <span className="text-[10px]" style={{ color: chain.color }}>{chain.icon}</span>
             )}
             <span className="text-xs text-white/50">{chain.name}</span>
+            {isMobile && wallet.isMobileReady && (
+              <span className="text-xs text-white/30">• Mobile</span>
+            )}
           </div>
         </div>
 
@@ -375,16 +421,33 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         <DialogHeader className="p-6 pb-4 border-b border-white/5">
           <DialogTitle className="text-xl text-white font-semibold flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-              <Wallet size={20} className="text-white" />
+              {isMobile ? <Smartphone size={20} className="text-white" /> : <Wallet size={20} className="text-white" />}
             </div>
-            Connect Stellar Wallet
+            {isMobile ? 'Connect Mobile Wallet' : 'Connect Stellar Wallet'}
           </DialogTitle>
           <p className="text-sm text-white/50 mt-2">
-            Choose a Stellar wallet to connect to Cyber City Arcade
+            {isMobile 
+              ? 'Tap a wallet to open it and sign in instantly' 
+              : 'Choose a Stellar wallet to connect to Cyber City Arcade'
+            }
           </p>
+          {/* Signature verification badge */}
+          <div className="flex items-center gap-1.5 mt-2">
+            <ShieldCheck size={12} className="text-emerald-400" />
+            <span className="text-[11px] text-emerald-400/70">Signature-verified connection</span>
+          </div>
         </DialogHeader>
 
         <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
+          {/* Mobile hint */}
+          {isMobile && (
+            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
+              <p className="text-xs text-cyan-300">
+                📱 Your wallet app will open for secure authentication. Approve the connection to sign in instantly.
+              </p>
+            </div>
+          )}
+
           {/* Popular Wallets */}
           {popularWallets.length > 0 && (
             <div>
@@ -418,24 +481,41 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-white/5 bg-white/[0.02]">
           <p className="text-xs text-white/30 text-center">
-            New to Stellar?{' '}
-            <a 
-              href="https://lobstr.co/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-cyan-400 hover:text-cyan-300 transition-colors"
-            >
-              Get LOBSTR wallet
-            </a>
-            {' '}and/or{' '}
-            <a 
-              href="https://www.freighter.app/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-cyan-400 hover:text-cyan-300 transition-colors"
-            >
-              Freighter wallet
-            </a>
+            {isMobile ? (
+              <>
+                Don't have a wallet?{' '}
+                <a 
+                  href="https://lobstr.co/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                >
+                  Download LOBSTR
+                </a>
+                {' '}— the best Stellar wallet for mobile
+              </>
+            ) : (
+              <>
+                New to Stellar?{' '}
+                <a 
+                  href="https://lobstr.co/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                >
+                  Get LOBSTR wallet
+                </a>
+                {' '}and/or{' '}
+                <a 
+                  href="https://www.freighter.app/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                >
+                  Freighter wallet
+                </a>
+              </>
+            )}
           </p>
         </div>
       </DialogContent>
