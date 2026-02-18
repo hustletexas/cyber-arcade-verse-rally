@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ArrowDownUp, Loader2, RefreshCw } from 'lucide-react';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useWalletBalances } from '@/hooks/useWalletBalances';
 import { useToast } from '@/hooks/use-toast';
 
 interface Token {
@@ -32,8 +33,19 @@ interface StellarSwapProps {
 }
 
 export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => {
-  const { primaryWallet, isWalletConnected } = useMultiWallet();
+  const { primaryWallet, isWalletConnected, connectedWallets } = useMultiWallet();
+  const { getStellarAssets, refreshBalances: refreshWalletBalances } = useWalletBalances(connectedWallets);
   const { toast } = useToast();
+
+  // Build tokens with real balances from connected wallet
+  const tokensWithBalances = useMemo(() => {
+    if (!primaryWallet?.address) return SUPPORTED_TOKENS;
+    const assets = getStellarAssets(primaryWallet.address);
+    return SUPPORTED_TOKENS.map(token => {
+      const match = assets.find(a => a.code === token.symbol);
+      return { ...token, balance: match?.balance ?? 0 };
+    });
+  }, [primaryWallet?.address, getStellarAssets]);
   
   const [fromToken, setFromToken] = useState<Token>(SUPPORTED_TOKENS[0]);
   const [toToken, setToToken] = useState<Token>(SUPPORTED_TOKENS[1]);
@@ -41,6 +53,14 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
   const [toAmount, setToAmount] = useState<string>('');
   const [isSwapping, setIsSwapping] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Keep fromToken/toToken balances in sync with wallet
+  useEffect(() => {
+    const updatedFrom = tokensWithBalances.find(t => t.symbol === fromToken.symbol);
+    const updatedTo = tokensWithBalances.find(t => t.symbol === toToken.symbol);
+    if (updatedFrom) setFromToken(updatedFrom);
+    if (updatedTo) setToToken(updatedTo);
+  }, [tokensWithBalances]);
 
   // Calculate output amount based on exchange rate
   useEffect(() => {
@@ -61,10 +81,9 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
   };
 
   const handleFromTokenChange = (symbol: string) => {
-    const token = SUPPORTED_TOKENS.find(t => t.symbol === symbol);
+    const token = tokensWithBalances.find(t => t.symbol === symbol);
     if (token) {
       if (token.symbol === toToken.symbol) {
-        // Swap if selecting same token
         setToToken(fromToken);
       }
       setFromToken(token);
@@ -72,10 +91,9 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
   };
 
   const handleToTokenChange = (symbol: string) => {
-    const token = SUPPORTED_TOKENS.find(t => t.symbol === symbol);
+    const token = tokensWithBalances.find(t => t.symbol === symbol);
     if (token) {
       if (token.symbol === fromToken.symbol) {
-        // Swap if selecting same token
         setFromToken(toToken);
       }
       setToToken(token);
@@ -84,12 +102,11 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
 
   const refreshRates = async () => {
     setIsRefreshing(true);
-    // Simulate rate refresh
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await refreshWalletBalances();
     setIsRefreshing(false);
     toast({
       title: "Rates Refreshed",
-      description: "Exchange rates have been updated.",
+      description: "Exchange rates and balances have been updated.",
     });
   };
 
