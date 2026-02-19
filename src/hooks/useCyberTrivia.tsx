@@ -126,6 +126,7 @@ export const useCyberTrivia = () => {
       const { data, error } = await supabase
         .from('trivia_daily_leaderboard')
         .select('*')
+        .order('score', { ascending: false })
         .limit(100);
 
       if (error) {
@@ -133,7 +134,16 @@ export const useCyberTrivia = () => {
         return;
       }
 
-      setDailyLeaderboard((data || []) as unknown as TriviaDailyLeaderboardEntry[]);
+      const formatted: TriviaDailyLeaderboardEntry[] = (data || []).map((entry: any, idx: number) => ({
+        user_id: entry.player_id || '',
+        score: entry.score || 0,
+        best_streak: entry.best_streak || 0,
+        correct_count: entry.correct_count || 0,
+        started_at: entry.started_at || '',
+        rank: entry.rank || idx + 1,
+      }));
+
+      setDailyLeaderboard(formatted);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
     }
@@ -167,6 +177,41 @@ export const useCyberTrivia = () => {
       console.error('Error loading all-time leaderboard:', error);
     }
   }, []);
+
+  // Subscribe to realtime trivia score updates (like CyberMatch)
+  useEffect(() => {
+    const channel = supabase
+      .channel('trivia_leaderboard_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'trivia_runs',
+        },
+        () => {
+          loadDailyLeaderboard();
+          loadAllTimeLeaderboard();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'trivia_runs',
+        },
+        () => {
+          loadDailyLeaderboard();
+          loadAllTimeLeaderboard();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadDailyLeaderboard, loadAllTimeLeaderboard]);
 
   // Fetch questions
   const fetchQuestions = useCallback(async (category?: string): Promise<TriviaQuestionV2[]> => {

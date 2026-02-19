@@ -139,6 +139,10 @@ export const CyberTriviaHome: React.FC<CyberTriviaHomeProps> = ({
         <Card className="cyber-glass-purple p-6">
           <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
             <Trophy className="w-5 h-5" /> Leaderboard
+            <span className="ml-auto text-xs text-neon-green flex items-center gap-1">
+              <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+              Live
+            </span>
           </h3>
           <Tabs defaultValue="today" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-black/30 mb-4">
