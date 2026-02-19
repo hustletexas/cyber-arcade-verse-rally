@@ -123,13 +123,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   // LOBSTR connection via Stellar Wallets Kit (works on both mobile and desktop)
   const connectLobstr = async () => {
     try {
-      const kit = getStellarKit();
-      
-      await kit.openModal({
-        onWalletSelected: async (option) => {
-          kit.setWallet(option.id);
-        }
-      });
+      const kit = getStellarKit(LOBSTR_ID);
+      // Set wallet directly — skip openModal so user isn't asked twice
+      kit.setWallet(LOBSTR_ID);
 
       const { address } = await kit.getAddress();
       
@@ -218,12 +214,8 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectXbull = async () => {
     try {
       const kit = getStellarKit(XBULL_ID);
-      
-      await kit.openModal({
-        onWalletSelected: async (option) => {
-          kit.setWallet(option.id);
-        }
-      });
+      // Set wallet directly — skip openModal so user isn't asked twice
+      kit.setWallet(XBULL_ID);
 
       const { address } = await kit.getAddress();
       
