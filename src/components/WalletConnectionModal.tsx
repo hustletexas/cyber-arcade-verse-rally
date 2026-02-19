@@ -124,14 +124,21 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectLobstr = async () => {
     try {
       const kit = getStellarKit(LOBSTR_ID);
-      // Set wallet directly — skip openModal so user isn't asked twice
-      kit.setWallet(LOBSTR_ID);
-
-      const { address } = await kit.getAddress();
-      
-      if (address) {
-        await requestSignature('lobstr', address, kit);
-      }
+      // openModal triggers the WalletConnect handshake properly on mobile
+      // The kit modal handles the WC session initiation
+      await kit.openModal({
+        onWalletSelected: async (option) => {
+          kit.setWallet(option.id);
+          const { address } = await kit.getAddress();
+          if (address) {
+            await requestSignature('lobstr', address, kit);
+          }
+        },
+        onClosed: () => {
+          setConnecting(null);
+        },
+        modalTitle: 'Connect with LOBSTR',
+      });
     } catch (error: any) {
       toast({
         title: "Connection Failed",
@@ -214,14 +221,19 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectXbull = async () => {
     try {
       const kit = getStellarKit(XBULL_ID);
-      // Set wallet directly — skip openModal so user isn't asked twice
-      kit.setWallet(XBULL_ID);
-
-      const { address } = await kit.getAddress();
-      
-      if (address) {
-        await requestSignature('xbull', address, kit);
-      }
+      await kit.openModal({
+        onWalletSelected: async (option) => {
+          kit.setWallet(option.id);
+          const { address } = await kit.getAddress();
+          if (address) {
+            await requestSignature('xbull', address, kit);
+          }
+        },
+        onClosed: () => {
+          setConnecting(null);
+        },
+        modalTitle: 'Connect with xBull',
+      });
     } catch (error: any) {
       toast({
         title: "Connection Failed",
