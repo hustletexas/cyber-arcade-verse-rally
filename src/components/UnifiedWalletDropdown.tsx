@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StellarSwap } from '@/components/dex/StellarSwap';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ProfileIdentityModal } from './ProfileIdentityModal';
 export const UnifiedWalletDropdown = () => {
   const {
     user,
@@ -68,6 +69,7 @@ export const UnifiedWalletDropdown = () => {
     fetchEligibility
   } = useWinnerChests();
   const [showWalletManager, setShowWalletManager] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showActionsModal, setShowActionsModal] = useState(false);
   const [showRewardsModal, setShowRewardsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -544,6 +546,17 @@ export const UnifiedWalletDropdown = () => {
 
           {/* Menu items - Rewards, Settings, Support */}
           <div className="p-2 space-y-1">
+            <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-green/10 cursor-pointer transition-all hover:scale-[1.02] group">
+              <div className="w-8 h-8 rounded-lg bg-neon-green/20 flex items-center justify-center group-hover:bg-neon-green/30 transition-all group-hover:scale-110">
+                <User size={16} className="text-neon-green" />
+              </div>
+              <div className="flex-1">
+                <span className="text-sm font-medium">Profile</span>
+                <span className="ml-2 text-xs text-muted-foreground">Identity & Stats</span>
+              </div>
+              <Sparkles size={14} className="text-neon-green" />
+            </DropdownMenuItem>
+
             <DropdownMenuItem onClick={() => setShowRewardsModal(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-pink/10 cursor-pointer transition-all hover:scale-[1.02] group">
               <div className="w-8 h-8 rounded-lg bg-neon-pink/20 flex items-center justify-center group-hover:bg-neon-pink/30 transition-all group-hover:scale-110">
                 <Gift size={16} className="text-neon-pink" />
@@ -608,6 +621,14 @@ export const UnifiedWalletDropdown = () => {
       connectWallet(walletType as any, address);
       setShowWalletManager(false);
     }} />
+
+      {/* Profile Identity Modal */}
+      <ProfileIdentityModal
+        open={showProfileModal}
+        onOpenChange={setShowProfileModal}
+        avatarUrl={avatarUrl}
+        onAvatarChange={(url) => setAvatarUrl(url)}
+      />
 
       {/* Rewards Modal */}
       <Dialog open={showRewardsModal} onOpenChange={setShowRewardsModal}>
