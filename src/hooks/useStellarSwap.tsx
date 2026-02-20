@@ -102,8 +102,24 @@ export const useStellarSwap = () => {
         return null;
       }
 
+      // Filter to only paths matching the requested destination asset
+      const matchingRecords = records.filter((r: any) => {
+        if (destAsset.isNative()) {
+          return r.destination_asset_type === 'native';
+        }
+        return (
+          r.destination_asset_code === destAsset.getCode() &&
+          r.destination_asset_issuer === destAsset.getIssuer()
+        );
+      });
+
+      if (matchingRecords.length === 0) {
+        setQuote(null);
+        return null;
+      }
+
       // Pick the best path (highest destination amount)
-      const best = records.reduce((a: any, b: any) =>
+      const best = matchingRecords.reduce((a: any, b: any) =>
         parseFloat(b.destination_amount) > parseFloat(a.destination_amount) ? b : a
       );
 
