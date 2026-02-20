@@ -8,10 +8,12 @@ import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingCart, Minus, Plus, Trash2, CreditCard, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
 
 export const CartDrawer = () => {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalItems, getTotalPrice, isOpen, setIsOpen } = useCart();
   const { toast } = useToast();
+  const { primaryWallet } = useMultiWallet();
   const [selectedPayment, setSelectedPayment] = useState<'card' | 'USDC' | 'PYUSD'>('card');
   const [processing, setProcessing] = useState(false);
 
@@ -43,13 +45,13 @@ export const CartDrawer = () => {
           price: totalCents,
           type: 'merchandise',
           quantity: 1,
+          wallet_address: primaryWallet?.address || '',
         },
       });
 
       if (error) throw error;
       
       if (data?.url) {
-        // Open Stripe checkout in new tab
         window.open(data.url, '_blank');
         toast({
           title: "Redirecting to Stripe",

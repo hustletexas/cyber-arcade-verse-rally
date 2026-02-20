@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +11,8 @@ interface CheckoutRequest {
   price: number; // in cents (e.g., 1999 = $19.99)
   type: string;
   quantity?: number;
+  customer_email?: string;
+  wallet_address?: string;
 }
 
 serve(async (req) => {
@@ -20,34 +21,6 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate user
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(
-      authHeader.replace("Bearer ", "")
-    );
-    if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const userId = claimsData.claims.sub;
-    const userEmail = claimsData.claims.email as string | undefined;
-
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       throw new Error("STRIPE_SECRET_KEY is not configured");
@@ -58,14 +31,14 @@ serve(async (req) => {
     });
 
     const body: CheckoutRequest = await req.json();
-    const { name, price, type, quantity = 1 } = body;
+    const { name, price, type, quantity = 1, customer_email, wallet_address } = body;
 
     // Strict input validation
     if (!name || typeof name !== "string" || name.length > 200) {
       throw new Error("Product name is required and must be under 200 characters");
     }
-    if (!price || typeof price !== "number" || price <= 0 || price > 1000000) {
-      throw new Error("Valid price required (1 cent to $10,000)");
+    if (!price || typeof price !== "number" || price <= 0 || price > 10000000) {
+      throw new Error("Valid price required (1 cent to $100,000)");
     }
     if (!type || typeof type !== "string" || type.length > 50) {
       throw new Error("Product type is required and must be under 50 characters");
@@ -74,11 +47,11 @@ serve(async (req) => {
       throw new Error("Quantity must be an integer between 1 and 100");
     }
 
-    console.log(`[CREATE-CHECKOUT] User ${userId} creating session for: ${name.slice(0, 50)} at $${(price / 100).toFixed(2)}`);
+    console.log(`[CREATE-CHECKOUT] Creating session for: ${name.slice(0, 50)} at $${(price / 100).toFixed(2)}`);
 
     const origin = req.headers.get("origin") || "https://cybercityarcade.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       mode: "payment",
       line_items: [
         {
@@ -94,9 +67,8 @@ serve(async (req) => {
       ],
       metadata: {
         type: type.slice(0, 50),
-        user_id: userId || "",
+        wallet_address: wallet_address ? wallet_address.slice(0, 100) : "",
       },
-      customer_email: userEmail || undefined,
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel`,
       custom_text: {
@@ -107,7 +79,14 @@ serve(async (req) => {
       consent_collection: {
         terms_of_service: "required",
       },
-    });
+    };
+
+    // Add customer email if provided
+    if (customer_email && typeof customer_email === "string" && customer_email.includes("@")) {
+      sessionParams.customer_email = customer_email.slice(0, 200);
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log(`[CREATE-CHECKOUT] Session created: ${session.id}`);
 
