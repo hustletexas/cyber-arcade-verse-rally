@@ -195,7 +195,7 @@ export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarCh
       <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-lg animate-scale-in p-0 gap-0 max-h-[90vh]">
         <DialogHeader className="p-5 pb-0">
           <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
-            <Zap className="text-neon-cyan" /> Player Identity
+            <Zap className="text-neon-cyan" /> Player Card
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Customize your arcade persona
