@@ -365,12 +365,17 @@ export const UnifiedWalletDropdown = () => {
                 if (stellarAssets.length > 0) {
                   return <div className="pt-3 border-t border-neon-cyan/10">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            Stellar Tokens
-                            <Badge variant="outline" className="text-[8px] border-neon-cyan/30 text-neon-cyan px-1 py-0">
-                              {getChainIcon()} STELLAR
-                            </Badge>
-                          </p>
+                      <div>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                              Stellar Tokens
+                              <Badge variant="outline" className="text-[8px] border-neon-cyan/30 text-neon-cyan px-1 py-0">
+                                {getChainIcon()} STELLAR
+                              </Badge>
+                            </p>
+                            <p className="text-sm font-bold text-white mt-0.5">
+                              {formatBalance(stellarAssets.find(a => a.code === 'XLM')?.balance || 0, 4)} XLM
+                            </p>
+                          </div>
                           <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
