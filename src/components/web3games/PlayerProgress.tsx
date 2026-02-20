@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { usePlayerProgress } from '@/hooks/usePlayerProgress';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
+import { TournamentStats } from './TournamentStats';
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -108,6 +109,9 @@ export const PlayerProgress = () => {
           <p className="text-xs text-muted-foreground">Weekly Best Total</p>
         </Card>
       </div>
+
+      {/* Tournament Stats */}
+      <TournamentStats />
 
       {/* Weekly Progress */}
       <Card className="arcade-frame">
