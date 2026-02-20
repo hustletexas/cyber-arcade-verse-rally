@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop, Scale, GraduationCap, Award, Swords } from 'lucide-react';
+import React from 'react';
+import { ShoppingCart, ChevronDown, Radio, ShoppingBag, Heart, Info, Scale, GraduationCap, Award, Swords, Trophy } from 'lucide-react';
 import { useSeasonPass, TIER_CONFIG } from '@/hooks/useSeasonPass';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -10,9 +10,7 @@ import {
    DropdownMenuItem,
    DropdownMenuTrigger,
  } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { UnifiedWalletDropdown } from './UnifiedWalletDropdown';
-import { AIGamingCoach } from './AIGamingCoach';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,7 +32,6 @@ const pageSections = [
 export const TopBar = () => {
   const { setIsOpen, items } = useCart();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const [showCoach, setShowCoach] = useState(false);
   const navigate = useNavigate();
   const { hasPass, tier } = useSeasonPass();
   const tierConfig = tier !== 'none' ? TIER_CONFIG[tier] : null;
@@ -61,36 +58,20 @@ export const TopBar = () => {
     <header className="border-b border-neon-cyan/20 bg-card/30 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between h-12">
-          {/* Foundation link */}
+          {/* Radio link */}
           <div className="flex-1 flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
-                >
-                  <Bot className="h-4 w-4" />
-                  AI Coach
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="start" 
-                className="w-64 bg-card/95 backdrop-blur-md border-neon-cyan/30 z-[100] p-3"
-              >
-                <div className="text-center mb-3">
-                  <p className="text-xs text-neon-cyan font-display">🤖 ASK AI ANYTHING ABOUT GAMING</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Strategies, tips, builds & more — totally free!</p>
-                </div>
-                <DropdownMenuItem
-                  onClick={() => setShowCoach(true)}
-                  className="cursor-pointer hover:bg-neon-cyan/10 focus:bg-neon-cyan/10 text-foreground justify-center"
-                >
-                  <Bot className="h-4 w-4 mr-2 text-neon-cyan" />
-                  Ask a Question
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                // Scroll to the bottom-right radio player
+                const player = document.querySelector('.fixed.bottom-4.right-4');
+                if (player) player.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
+            >
+              <Radio className="h-4 w-4" />
+              Radio
+            </Button>
           </div>
 
           {/* Right side actions */}
@@ -163,12 +144,6 @@ export const TopBar = () => {
           </div>
         </div>
       </div>
-      {/* AI Coach Dialog */}
-      <Dialog open={showCoach} onOpenChange={setShowCoach}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-card border-neon-cyan/30 p-0">
-          <AIGamingCoach />
-        </DialogContent>
-      </Dialog>
     </header>
   );
 };
