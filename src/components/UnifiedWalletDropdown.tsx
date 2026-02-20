@@ -890,8 +890,8 @@ export const UnifiedWalletDropdown = () => {
                   </div>
                 </div>
                 
-                <p className="text-xs text-center text-muted-foreground">
-                  Select a payment provider to purchase crypto with fiat
+                <p className="text-[9px] text-center text-muted-foreground/70 leading-tight mt-2">
+                  Crypto purchases are processed by MoonPay, a licensed third-party provider. Cyber City Arcade does not custody or process crypto transactions.
                 </p>
               </div>}
 
