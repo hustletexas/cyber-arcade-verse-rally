@@ -320,9 +320,6 @@ export const Marketplace = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-neon-cyan">​  </h3>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={toggleAutoplay} className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/20">
-                  {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
-                </Button>
                 <Button variant="outline" size="icon" onClick={scrollPrev} className="border-neon-pink/50 text-neon-pink hover:bg-neon-pink/20">
                   <ChevronLeft size={20} />
                 </Button>
