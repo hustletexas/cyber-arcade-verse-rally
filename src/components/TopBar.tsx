@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop, Scale, GraduationCap, Award, Swords } from 'lucide-react';
+import { useSeasonPass, TIER_CONFIG } from '@/hooks/useSeasonPass';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
    DropdownMenu,
@@ -33,6 +36,8 @@ export const TopBar = () => {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const [showCoach, setShowCoach] = useState(false);
   const navigate = useNavigate();
+  const { hasPass, tier } = useSeasonPass();
+  const tierConfig = tier !== 'none' ? TIER_CONFIG[tier] : null;
 
   const scrollToSection = (id: string) => {
     // If not on homepage, navigate first
@@ -90,6 +95,15 @@ export const TopBar = () => {
 
           {/* Right side actions */}
           <div className="flex items-center gap-3">
+            {/* Season Pass Badge */}
+            {hasPass && tierConfig && (
+              <Badge variant="outline" className={cn(
+                "text-xs px-3 py-1 hidden sm:flex",
+                tierConfig.borderColor, tierConfig.color, tierConfig.bgColor
+              )}>
+                {tierConfig.emoji} {tierConfig.label} Pass
+              </Badge>
+            )}
            {/* Explore Menu */}
            <DropdownMenu>
              <DropdownMenuTrigger asChild>

@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useSeasonPass } from '@/hooks/useSeasonPass';
+import { supabase } from '@/integrations/supabase/client';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useCart } from '@/contexts/CartContext';
 import { WalletStatusBar } from '@/components/WalletStatusBar';
@@ -116,6 +118,7 @@ export const Marketplace = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<'cctr' | 'xlm' | 'usdc' | 'pyusd'>('usdc');
   const [filter, setFilter] = useState('all');
   const [claimedFreePass, setClaimedFreePass] = useState(false);
+  const { hasPass, tier: currentTier, refetchPass } = useSeasonPass();
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -123,6 +126,13 @@ export const Marketplace = () => {
     slidesToScroll: 1
   });
   const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync claimed state from DB
+  useEffect(() => {
+    if (hasPass) {
+      setClaimedFreePass(true);
+    }
+  }, [hasPass]);
 
   // Custom autoplay implementation
   useEffect(() => {
@@ -192,6 +202,31 @@ export const Marketplace = () => {
         });
         return;
       }
+
+      // Store in nft_mints with tier metadata
+      if (primaryWallet?.address && user?.id) {
+        const { error: dbError } = await supabase
+          .from('nft_mints')
+          .insert({
+            user_id: user.id,
+            wallet_address: primaryWallet.address,
+            nft_name: nft.name,
+            mint_address: `SEASON_PASS_COMMON_${Date.now()}`,
+            transaction_hash: `FREE_CLAIM_${Date.now()}`,
+            status: 'completed',
+            metadata: {
+              type: 'season_pass',
+              tier: 'common',
+              price_usd: 0,
+              purchased_at: new Date().toISOString(),
+            }
+          });
+
+        if (dbError) {
+          console.error('Free claim DB error:', dbError);
+        }
+      }
+
       setClaimedFreePass(true);
       toast({
         title: "🎉 Free Pass Claimed!",

@@ -3,7 +3,7 @@ import { GameMode } from '@/types/cyber-sequence';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Gamepad2, Zap, Heart } from 'lucide-react';
-import { useSeasonPass } from '@/hooks/useSeasonPass';
+import { useSeasonPass, TIER_CONFIG } from '@/hooks/useSeasonPass';
 import { cn } from '@/lib/utils';
 
 interface CyberSequenceModeSelectProps {
@@ -16,7 +16,9 @@ interface CyberSequenceModeSelectProps {
 export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = ({
   onSelectMode,
 }) => {
-  const { hasPass } = useSeasonPass();
+  const { hasPass, tier, rewardMultiplier } = useSeasonPass();
+  const tierConfig = tier !== 'none' ? TIER_CONFIG[tier] : null;
+  const multiplierLabel = `${Math.round(rewardMultiplier * 100)}%`;
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -24,11 +26,13 @@ export const CyberSequenceModeSelect: React.FC<CyberSequenceModeSelectProps> = (
       <div className="text-center">
         <Badge variant="outline" className={cn(
           "text-sm px-4 py-1",
-          hasPass 
-            ? "border-amber-400/60 text-amber-400 bg-amber-400/10" 
+          hasPass && tierConfig
+            ? `${tierConfig.borderColor} ${tierConfig.color} ${tierConfig.bgColor}`
             : "border-muted-foreground/30 text-muted-foreground"
         )}>
-          {hasPass ? '🏆 Season Pass — Full Rewards' : '🎮 Free Play — 25% Rewards'}
+          {hasPass && tierConfig
+            ? `${tierConfig.emoji} ${tierConfig.label} Pass — ${multiplierLabel} Rewards`
+            : '🎮 Free Play — 25% Rewards'}
         </Badge>
       </div>
 
