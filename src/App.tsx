@@ -36,6 +36,7 @@ import CyberBreakerPage from "./pages/CyberBreakerPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
 import { CyberMusicPlayer } from "./components/CyberMusicPlayer";
 import { FloatingAICoach } from "./components/FloatingAICoach";
+import { RadioVisibilityProvider } from "./contexts/RadioVisibilityContext";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
       <TieredAuthProvider>
         <AuthProvider>
           <CartProvider>
+            <RadioVisibilityProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -84,6 +86,7 @@ const App = () => (
                 <FloatingAICoach />
               </BrowserRouter>
             </TooltipProvider>
+            </RadioVisibilityProvider>
           </CartProvider>
         </AuthProvider>
       </TieredAuthProvider>

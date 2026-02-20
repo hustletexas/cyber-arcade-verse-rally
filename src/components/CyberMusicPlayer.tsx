@@ -14,8 +14,10 @@ import { RadioRewards } from '@/components/music/RadioRewards';
 import { useRadioStreaks } from '@/hooks/useRadioStreaks';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { WalletConnectionModal } from '@/components/WalletConnectionModal';
+import { useRadioVisibility } from '@/contexts/RadioVisibilityContext';
 
 export const CyberMusicPlayer = () => {
+  const { isRadioVisible } = useRadioVisibility();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [volume, setVolume] = useState(70);
@@ -243,6 +245,14 @@ export const CyberMusicPlayer = () => {
 
   return (
     <>
+    {/* Audio always rendered so music keeps playing */}
+    <audio
+      ref={audioRef}
+      src={track.url}
+      preload="metadata"
+    />
+
+    {isRadioVisible && (
     <Card 
       ref={playerRef}
       className={`w-full max-w-2xl mx-auto overflow-hidden relative transition-all duration-300 ${
@@ -564,12 +574,6 @@ export const CyberMusicPlayer = () => {
         </>
         )}
 
-        {/* Hidden Audio Element */}
-        <audio
-          ref={audioRef}
-          src={track.url}
-          preload="metadata"
-        />
 
         {/* Enhanced Visual Effects */}
         <div 
@@ -606,6 +610,7 @@ export const CyberMusicPlayer = () => {
         )}
       </CardContent>
     </Card>
+    )}
 
     <WalletConnectionModal
       isOpen={showWalletModal}

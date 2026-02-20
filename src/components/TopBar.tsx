@@ -13,6 +13,7 @@ import {
 import { UnifiedWalletDropdown } from './UnifiedWalletDropdown';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { useRadioVisibility } from '@/contexts/RadioVisibilityContext';
 
 // Sections that scroll on homepage
 const scrollSections: { id: string; label: string; icon: any }[] = [];
@@ -35,6 +36,7 @@ export const TopBar = () => {
   const navigate = useNavigate();
   const { hasPass, tier } = useSeasonPass();
   const tierConfig = tier !== 'none' ? TIER_CONFIG[tier] : null;
+  const { isRadioVisible, toggleRadio } = useRadioVisibility();
 
   const scrollToSection = (id: string) => {
     // If not on homepage, navigate first
@@ -58,19 +60,18 @@ export const TopBar = () => {
     <header className="border-b border-neon-cyan/20 bg-card/30 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between h-12">
-          {/* Radio link */}
+          {/* Radio toggle */}
           <div className="flex-1 flex items-center gap-2">
             <Button
               variant="ghost"
-              onClick={() => {
-                // Scroll to the bottom-right radio player
-                const player = document.querySelector('.fixed.bottom-4.right-4');
-                if (player) player.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="hover:bg-neon-cyan/10 transition-colors text-neon-cyan gap-1 text-xs"
+              onClick={toggleRadio}
+              className={cn(
+                "hover:bg-neon-cyan/10 transition-colors gap-1 text-xs",
+                isRadioVisible ? "text-neon-pink" : "text-neon-cyan"
+              )}
             >
               <Radio className="h-4 w-4" />
-              Radio
+              Radio {isRadioVisible ? '▾' : '▸'}
             </Button>
           </div>
 
