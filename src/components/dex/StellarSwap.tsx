@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDownUp, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowDownUp, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletBalances } from '@/hooks/useWalletBalances';
+import { useStellarSwap } from '@/hooks/useStellarSwap';
 import { useToast } from '@/hooks/use-toast';
+import { getTransactionExplorerUrl } from '@/config/stellar';
 
 interface Token {
   symbol: string;
@@ -21,13 +23,6 @@ const SUPPORTED_TOKENS: Token[] = [
   { symbol: 'PYUSD', name: 'PayPal USD', icon: '🅿️', balance: 0 },
 ];
 
-// Mock exchange rates (in production, fetch from Stellar DEX or API)
-const EXCHANGE_RATES: Record<string, Record<string, number>> = {
-  XLM: { USDC: 0.09, PYUSD: 0.09, XLM: 1 },
-  USDC: { XLM: 11.11, PYUSD: 1, USDC: 1 },
-  PYUSD: { XLM: 11.11, USDC: 1, PYUSD: 1 },
-};
-
 interface StellarSwapProps {
   compact?: boolean;
 }
@@ -35,9 +30,9 @@ interface StellarSwapProps {
 export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => {
   const { primaryWallet, isWalletConnected, connectedWallets } = useMultiWallet();
   const { getStellarAssets, refreshBalances: refreshWalletBalances } = useWalletBalances(connectedWallets);
+  const { fetchQuote, executeSwap, quote, isFetchingQuote, isSwapping } = useStellarSwap();
   const { toast } = useToast();
 
-  // Build tokens with real balances from connected wallet
   const tokensWithBalances = useMemo(() => {
     if (!primaryWallet?.address) return SUPPORTED_TOKENS;
     const assets = getStellarAssets(primaryWallet.address);
@@ -46,15 +41,15 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
       return { ...token, balance: match?.balance ?? 0 };
     });
   }, [primaryWallet?.address, getStellarAssets]);
-  
+
   const [fromToken, setFromToken] = useState<Token>(SUPPORTED_TOKENS[0]);
   const [toToken, setToToken] = useState<Token>(SUPPORTED_TOKENS[1]);
   const [fromAmount, setFromAmount] = useState<string>('');
-  const [toAmount, setToAmount] = useState<string>('');
-  const [isSwapping, setIsSwapping] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastTxHash, setLastTxHash] = useState<string | null>(null);
+  const quoteTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Keep fromToken/toToken balances in sync with wallet
+  // Keep balances in sync
   useEffect(() => {
     const updatedFrom = tokensWithBalances.find(t => t.symbol === fromToken.symbol);
     const updatedTo = tokensWithBalances.find(t => t.symbol === toToken.symbol);
@@ -62,97 +57,113 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
     if (updatedTo) setToToken(updatedTo);
   }, [tokensWithBalances]);
 
-  // Calculate output amount based on exchange rate
+  // Debounced quote fetch from Stellar DEX
   useEffect(() => {
-    if (fromAmount && !isNaN(parseFloat(fromAmount))) {
-      const rate = EXCHANGE_RATES[fromToken.symbol][toToken.symbol];
-      const output = parseFloat(fromAmount) * rate;
-      setToAmount(output.toFixed(4));
-    } else {
-      setToAmount('');
+    if (quoteTimeout.current) clearTimeout(quoteTimeout.current);
+
+    if (!fromAmount || parseFloat(fromAmount) <= 0 || fromToken.symbol === toToken.symbol) {
+      return;
     }
-  }, [fromAmount, fromToken, toToken]);
+
+    quoteTimeout.current = setTimeout(() => {
+      fetchQuote(fromToken.symbol, toToken.symbol, fromAmount);
+    }, 500);
+
+    return () => {
+      if (quoteTimeout.current) clearTimeout(quoteTimeout.current);
+    };
+  }, [fromAmount, fromToken.symbol, toToken.symbol, fetchQuote]);
 
   const handleSwapTokens = () => {
     const temp = fromToken;
     setFromToken(toToken);
     setToToken(temp);
-    setFromAmount(toAmount);
+    setFromAmount('');
+    setLastTxHash(null);
   };
 
   const handleFromTokenChange = (symbol: string) => {
     const token = tokensWithBalances.find(t => t.symbol === symbol);
     if (token) {
-      if (token.symbol === toToken.symbol) {
-        setToToken(fromToken);
-      }
+      if (token.symbol === toToken.symbol) setToToken(fromToken);
       setFromToken(token);
+      setLastTxHash(null);
     }
   };
 
   const handleToTokenChange = (symbol: string) => {
     const token = tokensWithBalances.find(t => t.symbol === symbol);
     if (token) {
-      if (token.symbol === fromToken.symbol) {
-        setFromToken(toToken);
-      }
+      if (token.symbol === fromToken.symbol) setFromToken(toToken);
       setToToken(token);
+      setLastTxHash(null);
     }
   };
 
   const refreshRates = async () => {
     setIsRefreshing(true);
     await refreshWalletBalances();
+    if (fromAmount && parseFloat(fromAmount) > 0) {
+      await fetchQuote(fromToken.symbol, toToken.symbol, fromAmount);
+    }
     setIsRefreshing(false);
     toast({
-      title: "Rates Refreshed",
-      description: "Exchange rates and balances have been updated.",
+      title: "Refreshed",
+      description: "Balances and rates updated from network.",
     });
   };
 
   const handleSwap = async () => {
     if (!isWalletConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your Stellar wallet to swap tokens.",
-        variant: "destructive"
-      });
+      toast({ title: "Wallet Required", description: "Connect your Stellar wallet to swap.", variant: "destructive" });
       return;
     }
-
     if (!fromAmount || parseFloat(fromAmount) <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid amount to swap.",
-        variant: "destructive"
-      });
+      toast({ title: "Invalid Amount", description: "Enter a valid amount.", variant: "destructive" });
+      return;
+    }
+    if (!quote) {
+      toast({ title: "No Route", description: "No swap path found. Try a different pair or amount.", variant: "destructive" });
+      return;
+    }
+    if (parseFloat(fromAmount) > fromToken.balance) {
+      toast({ title: "Insufficient Balance", description: `You only have ${fromToken.balance.toFixed(4)} ${fromToken.symbol}.`, variant: "destructive" });
       return;
     }
 
-    setIsSwapping(true);
     try {
-      // Simulate swap transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const txHash = await executeSwap(
+        fromToken.symbol,
+        toToken.symbol,
+        fromAmount,
+        quote.destAmount,
+        quote.path,
+      );
+
+      setLastTxHash(txHash);
       toast({
         title: "Swap Successful! ✦",
-        description: `Swapped ${fromAmount} ${fromToken.symbol} for ${toAmount} ${toToken.symbol}`,
+        description: `Swapped ${fromAmount} ${fromToken.symbol} → ${parseFloat(quote.destAmount).toFixed(4)} ${toToken.symbol}`,
       });
-      
       setFromAmount('');
-      setToAmount('');
-    } catch (error) {
+      await refreshWalletBalances();
+    } catch (error: any) {
+      console.error('Swap failed:', error);
       toast({
         title: "Swap Failed",
-        description: "Transaction failed. Please try again.",
-        variant: "destructive"
+        description: error.message || "Transaction was rejected or failed.",
+        variant: "destructive",
       });
-    } finally {
-      setIsSwapping(false);
     }
   };
 
-  const rate = EXCHANGE_RATES[fromToken.symbol][toToken.symbol];
+  const displayDestAmount = quote?.destAmount
+    ? parseFloat(quote.destAmount).toFixed(4)
+    : '';
+
+  const displayRate = quote && fromAmount && parseFloat(fromAmount) > 0
+    ? (parseFloat(quote.destAmount) / parseFloat(fromAmount)).toFixed(6)
+    : null;
 
   return (
     <Card className={`arcade-frame ${compact ? '' : 'max-w-md mx-auto'}`}>
@@ -173,7 +184,7 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
             <Badge className="bg-neon-cyan text-black">
-              Stellar Network
+              ✦ On-Chain DEX
             </Badge>
           </div>
         </CardHeader>
@@ -182,11 +193,14 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
         {/* From Token */}
         <div className="bg-black/50 rounded-xl p-4 border border-neon-purple/30">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-muted-foreground">From</span>
+            <span className="text-sm text-muted-foreground">You send</span>
             {isWalletConnected && (
-              <span className="text-xs text-muted-foreground">
+              <button
+                onClick={() => setFromAmount(fromToken.balance.toFixed(7))}
+                className="text-xs text-muted-foreground hover:text-neon-cyan transition-colors"
+              >
                 Balance: {fromToken.balance.toFixed(2)} {fromToken.symbol}
-              </span>
+              </button>
             )}
           </div>
           <div className="flex gap-3">
@@ -194,7 +208,10 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
               type="number"
               placeholder="0.00"
               value={fromAmount}
-              onChange={(e) => setFromAmount(e.target.value)}
+              onChange={(e) => {
+                setFromAmount(e.target.value);
+                setLastTxHash(null);
+              }}
               className="flex-1 bg-transparent border-none text-2xl font-bold text-neon-cyan placeholder:text-neon-cyan/30 focus-visible:ring-0"
             />
             <select
@@ -211,7 +228,7 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
           </div>
         </div>
 
-        {/* Swap Button */}
+        {/* Swap Direction */}
         <div className="flex justify-center -my-2 relative z-10">
           <Button
             variant="outline"
@@ -226,7 +243,7 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
         {/* To Token */}
         <div className="bg-black/50 rounded-xl p-4 border border-neon-cyan/30">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-muted-foreground">To</span>
+            <span className="text-sm text-muted-foreground">You receive</span>
             {isWalletConnected && (
               <span className="text-xs text-muted-foreground">
                 Balance: {toToken.balance.toFixed(2)} {toToken.symbol}
@@ -234,13 +251,15 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
             )}
           </div>
           <div className="flex gap-3">
-            <Input
-              type="number"
-              placeholder="0.00"
-              value={toAmount}
-              readOnly
-              className="flex-1 bg-transparent border-none text-2xl font-bold text-neon-green placeholder:text-neon-green/30 focus-visible:ring-0"
-            />
+            <div className="flex-1 flex items-center">
+              {isFetchingQuote ? (
+                <Loader2 className="w-5 h-5 animate-spin text-neon-green/50" />
+              ) : (
+                <span className="text-2xl font-bold text-neon-green">
+                  {displayDestAmount || '0.00'}
+                </span>
+              )}
+            </div>
             <select
               value={toToken.symbol}
               onChange={(e) => handleToTokenChange(e.target.value)}
@@ -255,31 +274,55 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
           </div>
         </div>
 
-        {/* Exchange Rate */}
+        {/* Live Rate from DEX */}
         <div className="flex justify-between items-center text-sm text-muted-foreground px-2">
-          <span>Rate</span>
+          <span>Rate {isFetchingQuote && <Loader2 className="inline w-3 h-3 animate-spin ml-1" />}</span>
           <span className="font-mono">
-            1 {fromToken.symbol} = {rate.toFixed(4)} {toToken.symbol}
+            {displayRate
+              ? `1 ${fromToken.symbol} ≈ ${displayRate} ${toToken.symbol}`
+              : '—'
+            }
           </span>
+        </div>
+
+        {/* Slippage info */}
+        <div className="flex justify-between items-center text-xs text-muted-foreground/60 px-2">
+          <span>Slippage tolerance</span>
+          <span className="font-mono">1%</span>
         </div>
 
         {/* Swap Action Button */}
         <Button
           onClick={handleSwap}
-          disabled={isSwapping || !fromAmount || parseFloat(fromAmount) <= 0}
+          disabled={isSwapping || isFetchingQuote || !fromAmount || parseFloat(fromAmount) <= 0 || !quote}
           className="w-full h-12 bg-gradient-to-r from-neon-pink to-neon-purple hover:from-neon-pink/80 hover:to-neon-purple/80 text-white font-bold text-lg"
         >
           {isSwapping ? (
             <>
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Swapping...
+              Signing & Submitting...
             </>
           ) : !isWalletConnected ? (
             'Connect Wallet to Swap'
+          ) : !quote && fromAmount && parseFloat(fromAmount) > 0 ? (
+            'No Route Found'
           ) : (
-            `Swap ${fromToken.symbol} for ${toToken.symbol}`
+            `Swap ${fromToken.symbol} → ${toToken.symbol}`
           )}
         </Button>
+
+        {/* Last transaction link */}
+        {lastTxHash && (
+          <a
+            href={getTransactionExplorerUrl(lastTxHash)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1 text-xs text-neon-cyan hover:text-neon-cyan/80 transition-colors"
+          >
+            <ExternalLink className="w-3 h-3" />
+            View transaction on Stellar Expert
+          </a>
+        )}
 
         {/* Micro-protections */}
         <div className="space-y-1 mt-1">
