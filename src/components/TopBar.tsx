@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop, Scale, GraduationCap, Award } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Gamepad2, Trophy, Users, Bot, ShoppingBag, Gift, Ticket, Sparkles, Coins, Heart, Info, Laptop, Scale, GraduationCap, Award, Swords } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
    DropdownMenu,
@@ -22,6 +22,8 @@ const pageSections = [
   { path: '/tournaments', label: 'Tournament', icon: Trophy },
   { path: '/tournament-rules', label: 'Rules', icon: Scale },
   { path: '/rewards', label: 'Rewards', icon: Award },
+  { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
+  { path: '/esports', label: 'Cyber City Esports', icon: Swords },
   { path: '/foundation', label: 'Foundation', icon: Heart },
   { path: '/about', label: 'About Us', icon: Info },
 ];
