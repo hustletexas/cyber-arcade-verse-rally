@@ -6,7 +6,7 @@ import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
 import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { CreditsRewardsShowcase } from '@/components/CreditsRewardsShowcase';
-import { CyberMusicPlayer } from '@/components/CyberMusicPlayer';
+
 import { CommunityHub } from '@/components/CommunityHub';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
@@ -127,16 +127,6 @@ const Index = () => {
 
         {/* Mobile-Optimized Sections Layout */}
         <div className="space-y-8 sm:space-y-12 md:space-y-16">
-          {/* Music Player Section */}
-          <section className="px-2 sm:px-4">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neon-cyan mb-4 sm:mb-6 text-center">
-            </h2>
-            <div className="flex justify-center">
-              <div className="w-full max-w-4xl">
-                <CyberMusicPlayer />
-              </div>
-            </div>
-          </section>
 
           {/* Cyber Arcade Games Section */}
          <section id="arcade-hub" className="px-2 sm:px-4">

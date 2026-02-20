@@ -34,6 +34,7 @@ import EsportsPage from "./pages/EsportsPage";
 import DJBoothPage from "./pages/DJBoothPage";
 import CyberBreakerPage from "./pages/CyberBreakerPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
+import { CyberMusicPlayer } from "./components/CyberMusicPlayer";
 
 const queryClient = new QueryClient();
 
@@ -75,7 +76,10 @@ const App = () => (
                   <Route path="/success" element={<Success />} />
                   <Route path="/cancel" element={<Cancel />} />
                   <Route path="*" element={<NotFound />} />
-                </Routes>
+              </Routes>
+                <div className="fixed bottom-4 right-4 z-40 w-80">
+                  <CyberMusicPlayer />
+                </div>
               </BrowserRouter>
             </TooltipProvider>
           </CartProvider>
