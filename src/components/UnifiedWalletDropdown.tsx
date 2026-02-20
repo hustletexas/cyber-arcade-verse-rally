@@ -365,24 +365,47 @@ export const UnifiedWalletDropdown = () => {
                 if (stellarAssets.length > 0) {
                   return <div className="pt-3 border-t border-neon-cyan/10">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs text-muted-foreground">Stellar Tokens</p>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setTokensMinimized(!tokensMinimized)}
-                            className="h-5 w-5 p-0 text-muted-foreground hover:text-white hover:bg-white/10"
-                          >
-                            {tokensMinimized ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-                          </Button>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            Stellar Tokens
+                            <Badge variant="outline" className="text-[8px] border-neon-cyan/30 text-neon-cyan px-1 py-0">
+                              {getChainIcon()} STELLAR
+                            </Badge>
+                          </p>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => refreshBalances()}
+                              disabled={balancesLoading}
+                              className="h-5 w-5 p-0 hover:bg-neon-cyan/20"
+                            >
+                              {balancesLoading ? <Loader2 size={10} className="animate-spin text-neon-cyan" /> : <RefreshCw size={10} className="text-neon-cyan hover:rotate-180 transition-transform duration-500" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setTokensMinimized(!tokensMinimized)}
+                              className="h-5 w-5 p-0 text-muted-foreground hover:text-white hover:bg-white/10"
+                            >
+                              {tokensMinimized ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                            </Button>
+                          </div>
                         </div>
                         {!tokensMinimized && (
-                          <div className="grid grid-cols-2 gap-2">
-                            {stellarAssets.map((asset, idx) => <div key={`${asset.code}-${asset.issuer || 'native'}-${idx}`} className="flex items-center justify-between p-2 bg-black/30 rounded-lg border border-white/5">
-                                <span className="text-xs font-medium text-neon-cyan">
-                                  {asset.code === 'XLM' ? '✦' : '◆'} {asset.code}
-                                </span>
+                          <div className="space-y-1.5">
+                            {stellarAssets.map((asset, idx) => <div key={`${asset.code}-${asset.issuer || 'native'}-${idx}`} className="flex items-center justify-between p-2 bg-black/30 rounded-lg border border-white/5 hover:border-white/15 transition-all">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-neon-cyan">
+                                    {asset.code === 'XLM' ? '✦' : '◆'} {asset.code}
+                                  </span>
+                                  {asset.code === 'XLM' && (
+                                    <span className="text-[9px] text-muted-foreground">
+                                      {primaryWallet.address.slice(0, 4)}...{primaryWallet.address.slice(-4)}
+                                    </span>
+                                  )}
+                                </div>
                                 <span className="text-xs font-bold text-white">
-                                  {formatBalance(asset.balance, asset.code === 'XLM' ? 2 : 4)}
+                                  {formatBalance(asset.balance, asset.code === 'XLM' ? 4 : 4)}
                                 </span>
                               </div>)}
                           </div>
@@ -441,49 +464,7 @@ export const UnifiedWalletDropdown = () => {
 
           <Separator className="bg-gradient-to-r from-transparent via-neon-cyan/20 to-transparent" />
 
-          {/* Token balances - Multi-chain with real-time data */}
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Wallet Balances</span>
-              <div className="flex items-center gap-2">
-                {primaryWallet?.chain && <Badge variant="outline" className="text-[10px] border-neon-cyan/30 text-neon-cyan">
-                    {getChainIcon()} ✦ STELLAR
-                  </Badge>}
-                <Button variant="ghost" size="sm" onClick={() => refreshBalances()} disabled={balancesLoading} className="h-6 w-6 p-0 hover:bg-neon-cyan/20">
-                  {balancesLoading ? <Loader2 size={12} className="animate-spin text-neon-cyan" /> : <RefreshCw size={12} className="text-neon-cyan hover:rotate-180 transition-transform duration-500" />}
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {connectedWallets.map(wallet => {
-              const walletBalance = balances[wallet.address];
-              // Stellar-only styling
-              const style = {
-                color: 'text-cyan-400',
-                bg: 'bg-cyan-400/10',
-                icon: '✦'
-              };
-              return <div key={wallet.address} className={`flex items-center justify-between p-3 ${style.bg} rounded-xl border border-white/5 transition-all hover:scale-[1.02] hover:border-white/20`}>
-                    <div className="flex items-center gap-2">
-                      <span className={`${style.color} font-medium text-sm`}>
-                        {style.icon} {walletBalance?.symbol || wallet.symbol || 'XLM'}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {walletBalance?.isLoading ? <Loader2 size={12} className="animate-spin text-muted-foreground" /> : <span className={`font-bold ${style.color}`}>
-                          {walletBalance ? formatBalance(walletBalance.balance) : '—'}
-                        </span>}
-                    </div>
-                  </div>;
-            })}
-              {connectedWallets.length === 0 && <div className="text-center py-4 text-muted-foreground text-sm">
-                  No wallets connected
-                </div>}
-            </div>
-          </div>
+          {/* Wallet balances now integrated into Stellar Tokens above */}
 
           {/* Recent Transactions Preview */}
           <div className="p-4">
