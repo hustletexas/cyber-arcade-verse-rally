@@ -1019,6 +1019,57 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_claims: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          claim_reason: string | null
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          source_id: string
+          source_type: string
+          status: string
+          transaction_hash: string | null
+          updated_at: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount?: number
+          claim_reason?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          source_id: string
+          source_type: string
+          status?: string
+          transaction_hash?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          claim_reason?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          source_id?: string
+          source_type?: string
+          status?: string
+          transaction_hash?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       rewards_ledger: {
         Row: {
           claimed_at: string | null
