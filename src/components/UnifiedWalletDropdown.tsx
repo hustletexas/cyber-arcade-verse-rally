@@ -842,14 +842,8 @@ export const UnifiedWalletDropdown = () => {
 
             {/* Tab Buttons */}
             <div className="flex gap-2 p-1 bg-black/50 rounded-lg border border-border/30">
-              <button onClick={() => setActiveAction('buy')} className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${activeAction === 'buy' ? 'bg-neon-green/20 text-neon-green' : 'text-muted-foreground hover:text-foreground'}`}>
+              <button onClick={() => setActiveAction('buy')} className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors bg-neon-green/20 text-neon-green`}>
                 Buy
-              </button>
-              <button onClick={() => setActiveAction('send')} className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${activeAction === 'send' ? 'bg-neon-pink/20 text-neon-pink' : 'text-muted-foreground hover:text-foreground'}`}>
-                Send
-              </button>
-              <button onClick={() => setActiveAction('receive')} className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${activeAction === 'receive' ? 'bg-neon-cyan/20 text-neon-cyan' : 'text-muted-foreground hover:text-foreground'}`}>
-                Receive
               </button>
             </div>
 
