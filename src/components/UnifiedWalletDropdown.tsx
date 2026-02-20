@@ -12,7 +12,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { useWalletBalances, formatBalance, StellarAsset } from '@/hooks/useWalletBalances';
 import { useTransactionHistory, formatTxHash, getExplorerUrl, Transaction } from '@/hooks/useTransactionHistory';
 import { useWinnerChests } from '@/hooks/useWinnerChests';
-import { Wallet, LogOut, ChevronDown, ChevronUp, ArrowUpRight, ArrowDownLeft, CreditCard, Copy, Settings, QrCode, Gift, Headphones, User, Sparkles, ExternalLink, ArrowLeftRight, RefreshCw, Loader2, Clock, CheckCircle2, XCircle, History, Trophy, Package } from 'lucide-react';
+import { Wallet, LogOut, ChevronDown, ChevronUp, ArrowUpRight, ArrowDownLeft, CreditCard, Copy, Settings, QrCode, Gift, Headphones, User, Sparkles, ExternalLink, ArrowLeftRight, RefreshCw, Loader2, Clock, CheckCircle2, XCircle, History, Trophy, Package, HelpCircle } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { WalletConnectionModal } from './WalletConnectionModal';
@@ -79,6 +79,7 @@ export const UnifiedWalletDropdown = () => {
   const [sendAmount, setSendAmount] = useState('');
   const [sendAddress, setSendAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+  const [buyCurrency, setBuyCurrency] = useState<'usdc' | 'xlm'>('usdc');
   const [tokensMinimized, setTokensMinimized] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -854,17 +855,53 @@ export const UnifiedWalletDropdown = () => {
 
             {/* Content */}
             {activeAction === 'buy' && <div className="space-y-4">
+                {/* Currency Toggle */}
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Buy Currency</label>
+                  <div className="flex gap-2 p-1 bg-black/50 rounded-lg border border-border/30">
+                    <button onClick={() => setBuyCurrency('usdc')} className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${buyCurrency === 'usdc' ? 'bg-neon-green/20 text-neon-green' : 'text-muted-foreground hover:text-foreground'}`}>
+                      USDC <span className="text-[10px] opacity-70">(Recommended)</span>
+                    </button>
+                    <button onClick={() => setBuyCurrency('xlm')} className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${buyCurrency === 'xlm' ? 'bg-neon-cyan/20 text-neon-cyan' : 'text-muted-foreground hover:text-foreground'}`}>
+                      XLM
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground">Amount (USD)</label>
                   <Input type="number" placeholder="Enter amount" value={buyAmount} onChange={e => setBuyAmount(e.target.value)} className="bg-black/50 border-neon-green/30" />
                 </div>
+
                 <div className="p-4 bg-neon-green/10 rounded-lg border border-neon-green/30">
                   <p className="text-xs text-muted-foreground">You'll receive approximately</p>
                   <p className="text-xl font-bold text-neon-green">
-                    {buyAmount ? (parseFloat(buyAmount) * 10).toFixed(2) : '0'} XLM
+                    {buyAmount ? (buyCurrency === 'usdc' ? parseFloat(buyAmount).toFixed(2) : (parseFloat(buyAmount) * 10).toFixed(2)) : '0'} {buyCurrency.toUpperCase()}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-1">Includes provider fees and network costs.</p>
+                </div>
+
+                {/* Auto-filled wallet info */}
+                {primaryWallet?.address && (
+                  <div className="p-3 bg-black/40 rounded-lg border border-border/30 space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Destination Wallet</p>
+                    <p className="text-xs text-foreground font-mono">
+                      Wallet: {primaryWallet.address.slice(0, 6)}…{primaryWallet.address.slice(-4)}
+                    </p>
+                    <p className="text-[10px] text-neon-green">Network: Stellar Mainnet</p>
+                  </div>
+                )}
+
+                {/* Why buy tooltip */}
+                <div className="flex items-start gap-2 p-2.5 bg-neon-cyan/5 rounded-lg border border-neon-cyan/20">
+                  <HelpCircle className="h-3.5 w-3.5 text-neon-cyan shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    {buyCurrency === 'xlm'
+                      ? <>XLM is used for network fees and activating Stellar wallets. <button onClick={() => setBuyCurrency('usdc')} className="text-neon-green underline underline-offset-2 hover:text-neon-green/80">Want to enter tournaments? Buy USDC instead.</button></>
+                      : 'USDC is used for tournament entries, payouts, and marketplace purchases on Cyber City Arcade.'}
                   </p>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground">Payment Method</label>
                    <div className="grid grid-cols-1 gap-3">
@@ -877,11 +914,12 @@ export const UnifiedWalletDropdown = () => {
                     });
                     return;
                   }
-                  const moonPayUrl = `https://buy.moonpay.com?apiKey=pk_test_123&currencyCode=xlm&baseCurrencyAmount=${buyAmount}&baseCurrencyCode=usd`;
+                  const walletAddr = primaryWallet?.address || '';
+                  const moonPayUrl = `https://buy.moonpay.com?apiKey=pk_test_123&currencyCode=${buyCurrency}&baseCurrencyAmount=${buyAmount}&baseCurrencyCode=usd${walletAddr ? `&walletAddress=${walletAddr}` : ''}`;
                   window.open(moonPayUrl, '_blank');
                   toast({
                     title: "MoonPay",
-                    description: "Redirecting to MoonPay..."
+                    description: `Redirecting to MoonPay to buy ${buyCurrency.toUpperCase()}...`
                   });
                 }} variant="outline" className="h-14 bg-black/50 border-[#7D00FF]/50 hover:border-[#7D00FF] hover:bg-[#7D00FF]/10 flex flex-col items-center justify-center gap-1">
                       <span className="text-[#7D00FF] font-bold text-sm">MoonPay</span>
