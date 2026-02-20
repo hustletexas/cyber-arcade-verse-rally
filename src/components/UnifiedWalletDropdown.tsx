@@ -925,6 +925,9 @@ export const UnifiedWalletDropdown = () => {
                 <p className="text-[9px] text-center text-muted-foreground/70 leading-tight mt-2">
                   Crypto purchases are processed by MoonPay, a licensed third-party provider. Cyber City Arcade does not custody or process crypto transactions.
                 </p>
+                <p className="text-[9px] text-center text-muted-foreground/50 leading-tight mt-1">
+                  KYC required
+                </p>
               </div>}
 
             {activeAction === 'send' && <div className="space-y-4">
