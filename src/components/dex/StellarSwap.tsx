@@ -20,6 +20,7 @@ interface Token {
 const SUPPORTED_TOKENS: Token[] = [
   { symbol: 'XLM', name: 'Stellar Lumens', icon: '✦', balance: 0 },
   { symbol: 'USDC', name: 'USD Coin', icon: '💵', balance: 0 },
+  { symbol: 'AQUA', name: 'Aquarius', icon: '🌊', balance: 0 },
   { symbol: 'PYUSD', name: 'PayPal USD', icon: '🅿️', balance: 0 },
 ];
 

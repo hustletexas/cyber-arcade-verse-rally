@@ -21,6 +21,7 @@ const ASSETS: Record<string, Asset> = {
   XLM: Asset.native(),
   USDC: new Asset(STELLAR_NETWORK.assets.USDC.code, STELLAR_NETWORK.assets.USDC.issuer),
   PYUSD: new Asset(STELLAR_NETWORK.assets.PYUSD.code, STELLAR_NETWORK.assets.PYUSD.issuer),
+  AQUA: new Asset(STELLAR_NETWORK.assets.AQUA.code, STELLAR_NETWORK.assets.AQUA.issuer),
 };
 
 export interface SwapQuote {
