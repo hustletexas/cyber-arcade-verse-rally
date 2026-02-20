@@ -867,25 +867,7 @@ export const UnifiedWalletDropdown = () => {
                 
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground">Payment Method</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button onClick={() => {
-                  if (!buyAmount || parseFloat(buyAmount) <= 0) {
-                    toast({
-                      title: "Enter Amount",
-                      description: "Please enter a valid amount first",
-                      variant: "destructive"
-                    });
-                    return;
-                  }
-                  window.open(`https://www.paypal.com/checkoutnow?amount=${buyAmount}`, '_blank');
-                  toast({
-                    title: "PayPal",
-                    description: "Redirecting to PayPal checkout..."
-                  });
-                }} variant="outline" className="h-14 bg-black/50 border-[#0070ba]/50 hover:border-[#0070ba] hover:bg-[#0070ba]/10 flex flex-col items-center justify-center gap-1">
-                      <span className="text-[#0070ba] font-bold text-sm">PayPal</span>
-                      <span className="text-[10px] text-muted-foreground">Fiat to Crypto</span>
-                    </Button>
+                   <div className="grid grid-cols-1 gap-3">
                     <Button onClick={() => {
                   if (!buyAmount || parseFloat(buyAmount) <= 0) {
                     toast({
