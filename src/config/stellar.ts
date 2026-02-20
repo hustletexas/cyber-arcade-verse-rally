@@ -34,6 +34,12 @@ export const STELLAR_NETWORK = {
       issuer: 'GDGTVWSM4MGS4T7Z6W4RPWOCHE2I6RDFCIFZGS3DOA63LWQTRNZNTTFF',
       decimals: 7,
     },
+    AQUA: {
+      code: 'AQUA',
+      // Aquarius official issuer on Stellar Mainnet
+      issuer: 'GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA',
+      decimals: 7,
+    },
   },
 };
 
