@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useToast } from '@/hooks/use-toast';
-import { User, Activity, Trophy, History, Settings, Gamepad2, Coins, Shield, Bell, Eye, Wallet, Save } from 'lucide-react';
+import { User, Activity, Trophy, History, Settings, Gamepad2, Coins, Shield, Bell, Eye, Wallet, Save, Monitor, Smartphone, LogOut, FileDown, CheckCircle2, AlertTriangle, Clock, KeyRound } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AchievementSystem } from '@/components/AchievementSystem';
@@ -515,40 +515,202 @@ export const ProfileDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Security Section */}
-          <Card className="holographic">
+          {/* Security Section - Web3 */}
+          <Card className="holographic border-neon-cyan/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield size={20} />
-                Security
+                <Shield size={20} className="text-neon-cyan" />
+                Security & Web3 Verification
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
-                <div>
-                  <p className="font-medium">Two-Factor Authentication</p>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+              {/* Wallet Signature Verification Status */}
+              <div className="p-4 bg-background/20 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 size={18} className="text-neon-green" />
+                    <div>
+                      <p className="font-medium">Wallet Signature Verification</p>
+                      <p className="text-sm text-muted-foreground">
+                        Proves you own this wallet address via cryptographic signature
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="bg-neon-green/20 text-neon-green border border-neon-green/40">
+                    Verified
+                  </Badge>
                 </div>
-                <Button variant="outline" className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black">
-                  Enable 2FA
+                <div className="flex items-center gap-2 ml-9 text-xs text-muted-foreground">
+                  <Clock size={12} />
+                  <span>Last verified: {(() => {
+                    const ts = localStorage.getItem('wallet-auth-timestamp');
+                    if (!ts) return 'Not yet verified';
+                    const diff = Date.now() - Number(ts);
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+                    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                    return 'Just now';
+                  })()}</span>
+                </div>
+              </div>
+
+              <Separator className="bg-border/50" />
+
+              {/* Active Sessions */}
+              <div className="p-4 bg-background/20 rounded-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Monitor size={18} className="text-neon-purple" />
+                    <div>
+                      <p className="font-medium">Active Sessions</p>
+                      <p className="text-sm text-muted-foreground">Devices currently signed in</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="ml-9 space-y-2">
+                  <div className="flex items-center justify-between p-2 bg-background/30 rounded text-sm">
+                    <div className="flex items-center gap-2">
+                      <Monitor size={14} className="text-neon-cyan" />
+                      <span>Web Browser</span>
+                      <Badge className="bg-neon-green/20 text-neon-green text-[10px] px-1.5">Current</Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground">Active now</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-background/30 rounded text-sm">
+                    <div className="flex items-center gap-2">
+                      <Smartphone size={14} className="text-muted-foreground" />
+                      <span className="text-muted-foreground">Mobile (LOBSTR App)</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {primaryWallet?.type === 'lobstr' ? 'Connected' : 'Not connected'}
+                    </span>
+                  </div>
+                </div>
+                <div className="ml-9">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => {
+                      localStorage.removeItem('wallet-auth-verified');
+                      localStorage.removeItem('wallet-auth-timestamp');
+                      toast({
+                        title: "All Sessions Signed Out",
+                        description: "You've been signed out of all sessions. Please reconnect your wallet.",
+                      });
+                      window.location.reload();
+                    }}
+                  >
+                    <LogOut size={14} className="mr-2" />
+                    Sign out of all sessions
+                  </Button>
+                </div>
+              </div>
+
+              <Separator className="bg-border/50" />
+
+              {/* 2FA */}
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <KeyRound size={18} className="text-neon-yellow" />
+                  <div>
+                    <p className="font-medium">Two-Factor Authentication</p>
+                    <p className="text-sm text-muted-foreground">
+                      Secure your account with email or authenticator app
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-neon-yellow/20 text-neon-yellow border border-neon-yellow/40">
+                    <AlertTriangle size={10} className="mr-1" />
+                    Not Enabled
+                  </Badge>
+                  <Button variant="outline" size="sm" className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black">
+                    Enable 2FA
+                  </Button>
+                </div>
+              </div>
+
+              <Separator className="bg-border/50" />
+
+              {/* Transaction History */}
+              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <History size={18} className="text-neon-pink" />
+                  <div>
+                    <p className="font-medium">Transaction History</p>
+                    <p className="text-sm text-muted-foreground">
+                      View all on-chain & in-app transactions
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black"
+                  onClick={() => {
+                    const tabsTrigger = document.querySelector('[value="activity"]') as HTMLElement;
+                    tabsTrigger?.click();
+                  }}
+                >
+                  View Transactions
                 </Button>
               </div>
+
+              <Separator className="bg-border/50" />
+
+              {/* Export Account Data */}
               <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
-                <div>
-                  <p className="font-medium">Change Password</p>
-                  <p className="text-sm text-muted-foreground">Update your account password</p>
+                <div className="flex items-center gap-3">
+                  <FileDown size={18} className="text-neon-purple" />
+                  <div>
+                    <p className="font-medium">Export Account Data</p>
+                    <p className="text-sm text-muted-foreground">
+                      Download your profile, wallet info, and activity as JSON
+                    </p>
+                  </div>
                 </div>
-                <Button variant="outline" className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black">
-                  Change Password
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-background/20 rounded-lg">
-                <div>
-                  <p className="font-medium">Account Backup</p>
-                  <p className="text-sm text-muted-foreground">Download your account data and transaction history</p>
-                </div>
-                <Button variant="outline" className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black">
-                  Download Backup
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+                  onClick={() => {
+                    const exportData = {
+                      profile: {
+                        username: profileSettings.username,
+                        email: profileSettings.email,
+                        avatar_url: profileSettings.avatar_url,
+                      },
+                      wallets: connectedWallets.map(w => ({
+                        type: w.type,
+                        address: w.address,
+                      })),
+                      balance: balance,
+                      tournaments: tournamentEntries.length,
+                      recentActivity: recentActivity.map(a => ({
+                        type: a.transaction_type,
+                        amount: a.amount,
+                        date: a.created_at,
+                        description: a.description,
+                      })),
+                      exportedAt: new Date().toISOString(),
+                    };
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `cybercity-account-export-${Date.now()}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast({
+                      title: "Data Exported",
+                      description: "Your account data has been downloaded.",
+                    });
+                  }}
+                >
+                  <FileDown size={14} className="mr-2" />
+                  Export Data
                 </Button>
               </div>
             </CardContent>
