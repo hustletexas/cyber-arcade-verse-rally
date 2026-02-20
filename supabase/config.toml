@@ -29,5 +29,3 @@ verify_jwt = false
 [functions.stripe-webhook]
 verify_jwt = false
 
-[functions.distribute-weekly-rewards]
-verify_jwt = false
