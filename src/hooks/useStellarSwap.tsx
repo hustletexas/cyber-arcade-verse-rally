@@ -68,6 +68,12 @@ export const useStellarSwap = () => {
       return null;
     }
 
+    const address = primaryWallet?.address;
+    if (!address) {
+      setQuote(null);
+      return null;
+    }
+
     const sourceAsset = ASSETS[fromSymbol];
     const destAsset = ASSETS[toSymbol];
     if (!sourceAsset || !destAsset) return null;
@@ -78,10 +84,15 @@ export const useStellarSwap = () => {
         ...assetParams(sourceAsset, 'source'),
         ...assetParams(destAsset, 'destination'),
         source_amount: amount,
+        destination_account: address,
       });
 
       const res = await fetch(`${HORIZON_URL}/paths/strict-send?${params}`);
-      if (!res.ok) throw new Error('Failed to fetch swap paths');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error('Horizon paths error:', res.status, errData);
+        throw new Error(errData.detail || 'Failed to fetch swap paths');
+      }
 
       const data = await res.json();
       const records = data._embedded?.records;
@@ -113,7 +124,7 @@ export const useStellarSwap = () => {
     } finally {
       setIsFetchingQuote(false);
     }
-  }, []);
+  }, [primaryWallet?.address]);
 
   // Sign with Freighter
   const signWithFreighter = useCallback(async (txXdr: string): Promise<string> => {
