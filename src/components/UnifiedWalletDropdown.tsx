@@ -297,19 +297,10 @@ export const UnifiedWalletDropdown = () => {
                 <span className="text-xs text-neon-cyan font-medium transition-all group-hover:text-neon-green">
                   {primaryWallet?.address.slice(0, 4)}...{primaryWallet?.address.slice(-4)}
                 </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-neon-green font-bold flex items-center gap-1">
-                    <Sparkles size={8} className="animate-pulse" />
-                    {balance.cctr_balance.toLocaleString()} CCC
-                  </span>
-                  {primaryWallet && (() => {
-                    const xlm = getStellarAssets(primaryWallet.address).find(a => a.code === 'XLM');
-                    if (!xlm) return null;
-                    return <span className="text-[10px] text-neon-cyan font-bold flex items-center gap-0.5">
-                      ✦ {formatBalance(xlm.balance, 2)} XLM
-                    </span>;
-                  })()}
-                </div>
+                <span className="text-[10px] text-neon-green font-bold flex items-center gap-1">
+                  <Sparkles size={8} className="animate-pulse" />
+                  {balance.cctr_balance.toLocaleString()} CCC
+                </span>
               </div>
               <ChevronDown size={14} className="text-muted-foreground transition-transform duration-300 group-hover:rotate-180" />
             </div>
