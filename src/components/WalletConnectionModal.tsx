@@ -120,25 +120,17 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     });
   };
 
-  // LOBSTR connection via Stellar Wallets Kit (works on both mobile and desktop)
+  // LOBSTR connection via Stellar Wallets Kit
   const connectLobstr = async () => {
     try {
       const kit = getStellarKit(LOBSTR_ID);
-      // openModal triggers the WalletConnect handshake properly on mobile
-      // The kit modal handles the WC session initiation
-      await kit.openModal({
-        onWalletSelected: async (option) => {
-          kit.setWallet(option.id);
-          const { address } = await kit.getAddress();
-          if (address) {
-            await requestSignature('lobstr', address, kit);
-          }
-        },
-        onClosed: () => {
-          setConnecting(null);
-        },
-        modalTitle: 'Connect with LOBSTR',
-      });
+      kit.setWallet(LOBSTR_ID);
+      const { address } = await kit.getAddress();
+      if (address) {
+        await requestSignature('lobstr', address, kit);
+      } else {
+        throw new Error('No address returned from LOBSTR');
+      }
     } catch (error: any) {
       toast({
         title: "Connection Failed",
@@ -217,23 +209,17 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // xBull connection via Stellar Wallets Kit (works on mobile)
+  // xBull connection via Stellar Wallets Kit
   const connectXbull = async () => {
     try {
       const kit = getStellarKit(XBULL_ID);
-      await kit.openModal({
-        onWalletSelected: async (option) => {
-          kit.setWallet(option.id);
-          const { address } = await kit.getAddress();
-          if (address) {
-            await requestSignature('xbull', address, kit);
-          }
-        },
-        onClosed: () => {
-          setConnecting(null);
-        },
-        modalTitle: 'Connect with xBull',
-      });
+      kit.setWallet(XBULL_ID);
+      const { address } = await kit.getAddress();
+      if (address) {
+        await requestSignature('xbull', address, kit);
+      } else {
+        throw new Error('No address returned from xBull');
+      }
     } catch (error: any) {
       toast({
         title: "Connection Failed",
