@@ -281,10 +281,15 @@ export const StellarSwap: React.FC<StellarSwapProps> = ({ compact = false }) => 
           )}
         </Button>
 
-        {/* Info */}
-        <p className="text-xs text-center text-muted-foreground">
-          Swap between XLM, USDC, and PYUSD on the Stellar Network
-        </p>
+        {/* Micro-protections */}
+        <div className="space-y-1 mt-1">
+          <p className="text-[9px] text-center text-muted-foreground/70 leading-tight">
+            Swaps are executed directly on the Stellar network. Cyber City Arcade does not custody funds.
+          </p>
+          <p className="text-[9px] text-center text-muted-foreground/50 leading-tight">
+            Rates are determined by on-chain liquidity.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
