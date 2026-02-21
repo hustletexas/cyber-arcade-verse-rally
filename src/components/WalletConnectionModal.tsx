@@ -259,7 +259,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Albedo connection (web-based, works on mobile)
+  // Albedo connection (web-based, works on mobile and desktop)
   const connectAlbedo = async () => {
     try {
       const albedo = (window as any).albedo;
@@ -269,18 +269,23 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           await requestSignature('albedo', result.pubkey);
         }
       } else {
-        const width = 400;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        window.open(
-          'https://albedo.link/intent/public_key',
-          'albedo',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
+        // On mobile, open in same tab (popups are blocked on mobile browsers)
+        if (isMobile) {
+          window.location.href = 'https://albedo.link/intent/public_key?callback=' + encodeURIComponent(window.location.href);
+        } else {
+          const width = 400;
+          const height = 600;
+          const left = window.screenX + (window.outerWidth - width) / 2;
+          const top = window.screenY + (window.outerHeight - height) / 2;
+          window.open(
+            'https://albedo.link/intent/public_key',
+            'albedo',
+            `width=${width},height=${height},left=${left},top=${top}`
+          );
+        }
         toast({
           title: "Albedo Opened",
-          description: "Complete authentication in the Albedo popup window",
+          description: "Complete authentication in the Albedo window",
         });
       }
     } catch (error: any) {
@@ -292,16 +297,49 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // xBull connection via Stellar Wallets Kit
+  // xBull connection via Stellar Wallets Kit (WalletConnect on mobile, extension on desktop)
   const connectXbull = async () => {
     try {
-      const kit = getStellarKit(XBULL_ID);
-      kit.setWallet(XBULL_ID);
-      const { address } = await kit.getAddress();
-      if (address) {
-        await requestSignature('xbull', address, kit);
+      if (isMobile) {
+        // On mobile, use WalletConnect like LOBSTR
+        const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
+        if (!wcProjectId) {
+          throw new Error('WalletConnect not configured. Please contact support.');
+        }
+        
+        const wcModule = new WalletConnectModule({
+          url: window.location.origin,
+          projectId: wcProjectId,
+          method: WalletConnectAllowedMethods.SIGN,
+          description: 'Connect your Stellar wallet to Cyber City Arcade',
+          name: 'Cyber City Arcade',
+          icons: [`${window.location.origin}/favicon.ico`],
+          network: WalletNetwork.PUBLIC,
+        });
+        
+        const kit = new StellarWalletsKit({
+          network: WalletNetwork.PUBLIC,
+          selectedWalletId: WALLET_CONNECT_ID,
+          modules: [wcModule]
+        });
+        
+        kit.setWallet(WALLET_CONNECT_ID);
+        const { address } = await kit.getAddress();
+        if (address) {
+          await requestSignature('xbull', address, kit);
+        } else {
+          throw new Error('No address returned. Make sure xBull app is installed.');
+        }
       } else {
-        throw new Error('No address returned from xBull');
+        // Desktop: use xBull extension directly
+        const kit = getStellarKit(XBULL_ID);
+        kit.setWallet(XBULL_ID);
+        const { address } = await kit.getAddress();
+        if (address) {
+          await requestSignature('xbull', address, kit);
+        } else {
+          throw new Error('No address returned from xBull');
+        }
       }
     } catch (error: any) {
       toast({
@@ -312,18 +350,23 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Hot Wallet connection
+  // Hot Wallet connection (web-based, works on mobile and desktop)
   const connectHotwallet = async () => {
     try {
-      const width = 400;
-      const height = 600;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      window.open(
-        'https://hotwallet.app/',
-        'hotwallet',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
+      if (isMobile) {
+        // On mobile, open in a new tab (popups are blocked)
+        window.open('https://hotwallet.app/', '_blank');
+      } else {
+        const width = 400;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        window.open(
+          'https://hotwallet.app/',
+          'hotwallet',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+      }
       toast({
         title: "Hot Wallet",
         description: "Complete connection in the Hot Wallet window",
