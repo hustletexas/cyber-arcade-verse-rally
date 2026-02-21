@@ -113,15 +113,13 @@ const Index = () => {
         {/* Mobile-Enhanced Hero Section */}
         <div className="text-center mb-6 sm:mb-8 md:mb-12">
           {/* Mobile-Optimized Main Logo */}
-          <div className="flex justify-center mb-4 sm:mb-6">
+          <div className="relative flex justify-center mb-4 sm:mb-6">
             <img alt="Cyber City Arcade NFT" className="w-80 h-auto sm:w-[500px] md:w-[700px] lg:w-[900px] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" style={{
             filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
           }} src="/lovable-uploads/dd23db05-56ce-4fcd-8593-c174a3d2f9a7.png" />
-          </div>
-          <div className="flex justify-center mb-4">
             <button
               onClick={() => window.location.href = '/rewards'}
-              className="px-6 py-2.5 rounded-lg text-sm font-bold border border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,204,0.3)] transition-all duration-300 backdrop-blur-sm"
+              className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 px-5 py-2 rounded-lg text-xs sm:text-sm font-bold border border-neon-cyan/60 bg-black/60 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,204,0.4)] transition-all duration-300 backdrop-blur-md"
             >
               CLAIM REWARDS
             </button>
