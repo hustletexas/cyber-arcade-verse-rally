@@ -77,6 +77,15 @@ export const CyberMusicPlayer = () => {
     };
   }, [currentTrack]);
 
+  // Auto-play when track changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPlaying) {
+      audio.play().catch(() => {});
+    }
+  }, [currentTrack]);
+
   // Update volume
   useEffect(() => {
     if (audioRef.current) {
