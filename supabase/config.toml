@@ -32,3 +32,9 @@ verify_jwt = false
 [functions.claim-reward]
 verify_jwt = false
 
+[functions.verify-proof]
+verify_jwt = false
+
+[functions.ai-support]
+verify_jwt = false
+

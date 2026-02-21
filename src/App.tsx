@@ -35,7 +35,7 @@ import DJBoothPage from "./pages/DJBoothPage";
 import CyberBreakerPage from "./pages/CyberBreakerPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
 import { CyberMusicPlayer } from "./components/CyberMusicPlayer";
-import { FloatingAICoach } from "./components/FloatingAICoach";
+import { FloatingSupportAgent } from "./components/FloatingSupportAgent";
 import { RadioVisibilityProvider } from "./contexts/RadioVisibilityContext";
 
 const queryClient = new QueryClient();
@@ -83,7 +83,7 @@ const App = () => (
                 <div className="fixed bottom-4 right-4 z-40 w-80">
                   <CyberMusicPlayer />
                 </div>
-                <FloatingAICoach />
+                <FloatingSupportAgent />
               </BrowserRouter>
             </TooltipProvider>
             </RadioVisibilityProvider>

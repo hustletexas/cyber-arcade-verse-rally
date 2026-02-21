@@ -507,6 +507,92 @@ export type Database = {
         }
         Relationships: []
       }
+      match_submissions: {
+        Row: {
+          ai_confidence: number | null
+          ai_reasons: Json | null
+          clip_url: string | null
+          created_at: string
+          id: string
+          match_code: string | null
+          match_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          screenshot_url: string
+          session_token: string
+          tournament_id: string
+          updated_at: string
+          user_id: string
+          verification_status: string
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_reasons?: Json | null
+          clip_url?: string | null
+          created_at?: string
+          id?: string
+          match_code?: string | null
+          match_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          screenshot_url: string
+          session_token: string
+          tournament_id: string
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_reasons?: Json | null
+          clip_url?: string | null
+          created_at?: string
+          id?: string
+          match_code?: string | null
+          match_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          screenshot_url?: string
+          session_token?: string
+          tournament_id?: string
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_submissions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_bracket_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_submissions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_submissions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_matches_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_submissions_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "arcade_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nft_creation_orders: {
         Row: {
           artwork_url: string | null
@@ -1350,6 +1436,57 @@ export type Database = {
           release_date?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          admin_notes: string | null
+          ai_summary: string | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          priority: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_summary?: string | null
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_summary?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+          wallet_address?: string | null
         }
         Relationships: []
       }
