@@ -623,10 +623,6 @@ const PortalBreakerGame: React.FC = () => {
   const startGame = async () => {
     const s = stateRef.current;
     if (s.status === 'idle' || s.status === 'gameover') {
-      if (!isWalletConnected) {
-        toast.error('Connect your wallet to play');
-        return;
-      }
       Object.assign(s, initState(BASE_WIDTH, BASE_HEIGHT));
       s.status = 'running';
       scoreSubmittedRef.current = false;
@@ -640,10 +636,6 @@ const PortalBreakerGame: React.FC = () => {
   };
 
   const restartGame = async () => {
-    if (!isWalletConnected) {
-      toast.error('Connect your wallet to play');
-      return;
-    }
     Object.assign(stateRef.current, initState(BASE_WIDTH, BASE_HEIGHT));
     stateRef.current.status = 'running';
     particles = [];
