@@ -70,10 +70,8 @@ export const UnifiedWalletDropdown = () => {
   } = useWinnerChests();
   const [showWalletManager, setShowWalletManager] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [profileInitialSection, setProfileInitialSection] = useState<'profile' | 'account' | 'wallet' | 'support'>('profile');
   const [showActionsModal, setShowActionsModal] = useState(false);
   const [showRewardsModal, setShowRewardsModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [activeAction, setActiveAction] = useState<'buy' | 'send' | 'receive' | 'swap'>('buy');
   const [showSwapModal, setShowSwapModal] = useState(false);
@@ -534,7 +532,7 @@ export const UnifiedWalletDropdown = () => {
 
           {/* Menu items - Rewards, Settings, Support */}
           <div className="p-2 space-y-1">
-            <DropdownMenuItem onClick={() => { setProfileInitialSection('profile'); setShowProfileModal(true); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-green/10 cursor-pointer transition-all hover:scale-[1.02] group">
+            <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-green/10 cursor-pointer transition-all hover:scale-[1.02] group">
               <div className="w-8 h-8 rounded-lg bg-neon-green/20 flex items-center justify-center group-hover:bg-neon-green/30 transition-all group-hover:scale-110">
                 <User size={16} className="text-neon-green" />
               </div>
@@ -556,13 +554,6 @@ export const UnifiedWalletDropdown = () => {
                   </span>}
               </div>
               <Sparkles size={14} className="text-neon-pink animate-pulse" />
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem onClick={() => { setProfileInitialSection('account'); setShowProfileModal(true); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-cyan/10 cursor-pointer transition-all hover:scale-[1.02] group">
-              <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 flex items-center justify-center group-hover:bg-neon-cyan/30 transition-all group-hover:scale-110 group-hover:rotate-90 duration-300">
-                <Settings size={16} className="text-neon-cyan" />
-              </div>
-              <span className="text-sm font-medium">Account Settings</span>
             </DropdownMenuItem>
             
             <DropdownMenuItem onClick={handleSupport} className="flex items-center gap-3 p-3 rounded-xl hover:bg-yellow-500/10 cursor-pointer transition-all hover:scale-[1.02] group">
@@ -616,7 +607,7 @@ export const UnifiedWalletDropdown = () => {
         onOpenChange={setShowProfileModal}
         avatarUrl={avatarUrl}
         onAvatarChange={(url) => setAvatarUrl(url)}
-        initialSection={profileInitialSection}
+        
       />
 
       {/* Rewards Modal */}
@@ -748,74 +739,6 @@ export const UnifiedWalletDropdown = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Settings Modal */}
-      <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
-        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-cyan/30 max-w-md animate-scale-in">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-neon-cyan font-display flex items-center gap-2">
-              <Settings className="animate-spin" style={{
-              animationDuration: '3s'
-            }} /> Account Settings
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Manage your account preferences
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-center gap-4 p-4 bg-card/50 rounded-xl border border-white/10">
-              <input
-                ref={avatarInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarUpload}
-              />
-              <div className="relative group cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
-                <Avatar className="w-16 h-16 border-2 border-neon-cyan/50 group-hover:border-neon-cyan transition-colors">
-                  <AvatarImage src={avatarUrl || undefined} />
-                  <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-white text-xl font-bold">
-                    {primaryWallet?.address?.charAt(0)?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  {uploadingAvatar ? (
-                    <Loader2 size={20} className="text-white animate-spin" />
-                  ) : (
-                    <User size={20} className="text-white" />
-                  )}
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-lg">{primaryWallet?.address ? `${primaryWallet.address.slice(0, 6)}...${primaryWallet.address.slice(-4)}` : 'User'}</p>
-                <p className="text-sm text-muted-foreground">{primaryWallet?.type || 'No wallet'}</p>
-              </div>
-              <Button variant="outline" size="sm" className="border-neon-cyan/30 hover:border-neon-cyan hover:bg-neon-cyan/10" onClick={() => avatarInputRef.current?.click()} disabled={uploadingAvatar}>
-                {uploadingAvatar ? <Loader2 size={14} className="mr-1 animate-spin" /> : <User size={14} className="mr-1" />}
-                {uploadingAvatar ? 'Uploading…' : 'Edit'}
-              </Button>
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-neon-cyan">Display Name</Label>
-              <Input placeholder="Enter display name" defaultValue={user?.user_metadata?.username || ''} className="bg-card/50 border-neon-cyan/30 focus:border-neon-cyan" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-neon-cyan">Email Notifications</Label>
-              <div className="flex items-center justify-between p-3 bg-card/50 rounded-xl border border-white/10">
-                <span className="text-sm">Receive reward notifications</span>
-                <Button variant="outline" size="sm" className="h-7 px-3 border-neon-green/30 text-neon-green">On</Button>
-              </div>
-            </div>
-            
-            <Button className="w-full cyber-button">
-              Save Changes
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Actions Modal - Buy/Send/Receive */}
       <Dialog open={showActionsModal} onOpenChange={setShowActionsModal}>
         <DialogContent className="bg-transparent border-none shadow-none p-0 w-[360px] max-w-[95vw]">
           <div className="p-6 space-y-5 bg-black/80 backdrop-blur-xl rounded-2xl border border-neon-cyan/30">

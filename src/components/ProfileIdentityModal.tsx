@@ -66,7 +66,7 @@ interface ProfileIdentityModalProps {
 }
 
 export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarChange, initialSection }: ProfileIdentityModalProps) => {
-  const { primaryWallet } = useMultiWallet();
+  const { primaryWallet, connectedWallets } = useMultiWallet();
   const { balance } = useUserBalance();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -284,227 +284,335 @@ export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarCh
               <ScrollArea className="flex-1">
                 <div className="p-5 space-y-5">
                   
-                  {/* ─── Live Player Card Preview ─── */}
-                  <div className={cn(
-                    "relative rounded-xl overflow-hidden border border-neon-cyan/20",
-                    "bg-gradient-to-br", activeTheme.gradient
-                  )}>
-                    {/* Scanline overlay */}
-                    <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)] pointer-events-none" />
-                    
-                    <div className="relative flex items-start gap-4 p-4">
-                      {/* Avatar in card */}
-                      <div className="relative shrink-0">
-                        {activeFrame.gradient && <div className={`absolute -inset-1.5 rounded-xl bg-gradient-to-r ${activeFrame.gradient} blur-sm opacity-70 ${!reduceMotion ? 'animate-pulse' : ''}`} />}
-                        <Avatar className={`w-20 h-20 border-2 ${activeFrame.borderClass} relative z-10 rounded-xl shadow-2xl`}>
-                          <AvatarImage src={avatarUrl || undefined} className="object-cover" />
-                          <AvatarFallback className="bg-gradient-to-br from-neon-purple to-neon-cyan text-white font-bold text-2xl rounded-xl">
-                            {walletName.slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-lg font-display font-bold text-foreground truncate">{walletName}</h2>
-                          <div className="flex items-center gap-1">
-                            <Sparkles size={14} className="text-yellow-400" />
-                            <span className="text-sm font-bold text-yellow-400">{stats.ranking ? stats.ranking : 125}</span>
+                  {activeSection === 'profile' && (
+                    <>
+                    {/* ─── Live Player Card Preview ─── */}
+                    <div className={cn(
+                      "relative rounded-xl overflow-hidden border border-neon-cyan/20",
+                      "bg-gradient-to-br", activeTheme.gradient
+                    )}>
+                      <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)] pointer-events-none" />
+                      <div className="relative flex items-start gap-4 p-4">
+                        <div className="relative shrink-0">
+                          {activeFrame.gradient && <div className={`absolute -inset-1.5 rounded-xl bg-gradient-to-r ${activeFrame.gradient} blur-sm opacity-70 ${!reduceMotion ? 'animate-pulse' : ''}`} />}
+                          <Avatar className={`w-20 h-20 border-2 ${activeFrame.borderClass} relative z-10 rounded-xl shadow-2xl`}>
+                            <AvatarImage src={avatarUrl || undefined} className="object-cover" />
+                            <AvatarFallback className="bg-gradient-to-br from-neon-purple to-neon-cyan text-white font-bold text-2xl rounded-xl">
+                              {walletName.slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-display font-bold text-foreground truncate">{walletName}</h2>
+                            <div className="flex items-center gap-1">
+                              <Sparkles size={14} className="text-yellow-400" />
+                              <span className="text-sm font-bold text-yellow-400">{stats.ranking ? stats.ranking : 125}</span>
+                            </div>
                           </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground italic">{tagline || 'Grind Now, Shine Later'}</p>
-                        
-                        {/* Badges Row */}
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30 text-[10px] gap-1 px-2">
-                            <Zap size={10} /> {selectedTitle}
-                          </Badge>
-                          <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple/30 text-[10px] gap-1 px-2">
-                            🛡 Pro Pass
-                          </Badge>
-                          <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30 text-[10px] px-2">
-                            💲{balance.cctr_balance.toFixed(1)}
-                          </Badge>
-                        </div>
-
-                        {/* Level & XP */}
-                        <div className="flex items-center gap-3">
-                          <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink/30 text-[10px] font-bold px-2">
-                            Lv {Math.max(1, Math.floor(stats.totalMatches / 5) + 1)}
-                          </Badge>
-                          <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 rounded-full bg-neon-green/60" />
-                            <span className="text-xs text-muted-foreground">{(stats.totalMatches * 280).toLocaleString()}</span>
+                          <p className="text-xs text-muted-foreground italic">{tagline || 'Grind Now, Shine Later'}</p>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30 text-[10px] gap-1 px-2">
+                              <Zap size={10} /> {selectedTitle}
+                            </Badge>
+                            <Badge className="bg-neon-purple/20 text-neon-purple border-neon-purple/30 text-[10px] gap-1 px-2">
+                              🛡 Pro Pass
+                            </Badge>
+                            <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30 text-[10px] px-2">
+                              💲{balance.cctr_balance.toFixed(1)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink/30 text-[10px] font-bold px-2">
+                              Lv {Math.max(1, Math.floor(stats.totalMatches / 5) + 1)}
+                            </Badge>
+                            <div className="flex items-center gap-1">
+                              <div className="w-3 h-3 rounded-full bg-neon-green/60" />
+                              <span className="text-xs text-muted-foreground">{(stats.totalMatches * 280).toLocaleString()}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* ─── Avatar & Frame Gallery ─── */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-display font-bold text-foreground">Avatar & Frame</h3>
-                    <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                      {/* Upload button */}
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="shrink-0 w-16 h-16 rounded-xl border-2 border-dashed border-neon-cyan/30 flex flex-col items-center justify-center gap-1 hover:border-neon-cyan/60 hover:bg-neon-cyan/5 transition-all"
-                      >
-                        {uploading ? <Loader2 size={16} className="animate-spin text-neon-cyan" /> : <Camera size={16} className="text-neon-cyan" />}
-                        <span className="text-[9px] text-muted-foreground">Edit</span>
-                      </button>
-                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-
-                      {/* Preset avatars */}
-                      {AVATAR_PRESETS.map(preset => (
-                        <div key={preset.id} className="shrink-0 text-center">
-                          <div className="w-16 h-16 rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-2xl hover:border-neon-cyan/40 hover:bg-black/40 cursor-pointer transition-all">
-                            {preset.emoji}
+                    {/* ─── Avatar & Frame Gallery ─── */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-display font-bold text-foreground">Avatar & Frame</h3>
+                      <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="shrink-0 w-16 h-16 rounded-xl border-2 border-dashed border-neon-cyan/30 flex flex-col items-center justify-center gap-1 hover:border-neon-cyan/60 hover:bg-neon-cyan/5 transition-all"
+                        >
+                          {uploading ? <Loader2 size={16} className="animate-spin text-neon-cyan" /> : <Camera size={16} className="text-neon-cyan" />}
+                          <span className="text-[9px] text-muted-foreground">Edit</span>
+                        </button>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                        {AVATAR_PRESETS.map(preset => (
+                          <div key={preset.id} className="shrink-0 text-center">
+                            <div className="w-16 h-16 rounded-xl border border-white/10 bg-black/30 flex items-center justify-center text-2xl hover:border-neon-cyan/40 hover:bg-black/40 cursor-pointer transition-all">
+                              {preset.emoji}
+                            </div>
+                            <p className="text-[9px] text-muted-foreground mt-1 truncate w-16">{preset.name}</p>
                           </div>
-                          <p className="text-[9px] text-muted-foreground mt-1 truncate w-16">{preset.name}</p>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* ─── Display Identity ─── */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-display font-bold text-foreground">Display Identity</h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* ─── Display Identity ─── */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-display font-bold text-foreground">Display Identity</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Display Name</label>
+                          <input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="YourName" className="w-full mt-1 px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:border-neon-cyan/40 focus:outline-none focus:ring-1 focus:ring-neon-cyan/20 transition-all" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tagline</label>
+                          <input value={tagline} onChange={e => setTagline(e.target.value)} placeholder="Grind Now, Shine Later" className="w-full mt-1 px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:border-neon-cyan/40 focus:outline-none focus:ring-1 focus:ring-neon-cyan/20 transition-all" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Pronouns</label>
+                          <div className="relative mt-1">
+                            <select value={pronouns} onChange={e => setPronouns(e.target.value)} className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground appearance-none focus:border-neon-cyan/40 focus:outline-none cursor-pointer">
+                              <option value="He/Him">He/Him</option>
+                              <option value="She/Her">She/Her</option>
+                              <option value="They/Them">They/Them</option>
+                              <option value="Other">Other</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <MapPin size={10} /> Location
+                          </label>
+                          <input value={location} onChange={e => setLocation(e.target.value)} placeholder="City, State" className="w-full mt-1 px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:border-neon-cyan/40 focus:outline-none focus:ring-1 focus:ring-neon-cyan/20 transition-all" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Check size={10} /> Verified Competitor</span>
+                        <Switch checked={verifiedCompetitor} onCheckedChange={setVerifiedCompetitor} className="data-[state=checked]:bg-neon-green" />
+                      </div>
+                    </div>
+
+                    {/* ─── Title & Badges ─── */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-display font-bold text-foreground">Title & Badges</h3>
+                      <div className="flex items-center gap-3">
+                        <div className="relative flex-shrink-0">
+                          <select value={selectedTitle} onChange={e => setSelectedTitle(e.target.value)} className="px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground appearance-none pr-8 focus:border-neon-cyan/40 focus:outline-none cursor-pointer">
+                            {TITLE_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                          <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-x-auto">
+                          {DISPLAY_BADGES.map(badge => {
+                            const isSelected = selectedBadges.includes(badge.id);
+                            return (
+                              <button key={badge.id} onClick={() => toggleBadge(badge.id)} className={cn("relative w-9 h-9 rounded-lg flex items-center justify-center border transition-all shrink-0", isSelected ? `${badge.color} border-current` : "border-white/10 bg-black/20 text-muted-foreground hover:border-white/20")}>
+                                <badge.icon size={16} />
+                                {isSelected && (
+                                  <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-neon-green flex items-center justify-center">
+                                    <Check size={8} className="text-black" />
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ─── Theme ─── */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-display font-bold text-foreground">Theme</h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground">Reduce Motion</span>
+                          <Switch checked={reduceMotion} onCheckedChange={setReduceMotion} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {PROFILE_THEMES.map(theme => (
+                          <button key={theme.id} onClick={() => setSelectedTheme(theme.id)} className={cn("relative rounded-xl border overflow-hidden transition-all aspect-[4/3]", selectedTheme === theme.id ? "border-neon-cyan ring-1 ring-neon-cyan/30 scale-105" : "border-white/10 hover:border-white/30")}>
+                            <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient}`} />
+                            <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.05)_2px,rgba(0,0,0,0.05)_4px)]" />
+                            {selectedTheme === theme.id && (
+                              <div className="absolute top-1 left-1 w-4 h-4 rounded bg-neon-cyan flex items-center justify-center">
+                                <Check size={10} className="text-black" />
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {PROFILE_THEMES.map(theme => (
+                          <p key={theme.id} className="text-[9px] text-muted-foreground text-center">{theme.name}</p>
+                        ))}
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground/60 text-center leading-relaxed">
+                      Following Cyber City's community rules is required. Offensive avatars, names, or provocative content will be moderated.
+                    </p>
+                    </>
+                  )}
+
+                  {activeSection === 'account' && (
+                    <div className="space-y-5">
                       <div>
+                        <h3 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                          <Settings size={16} className="text-neon-cyan" /> Account Settings
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1">Manage your account preferences</p>
+                      </div>
+
+                      {/* Avatar & Identity */}
+                      <div className="flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-black/20">
+                        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                          <Avatar className="w-16 h-16 border-2 border-neon-cyan/50 group-hover:border-neon-cyan transition-colors">
+                            <AvatarImage src={avatarUrl || undefined} />
+                            <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-foreground text-xl font-bold">
+                              {primaryWallet?.address?.charAt(0)?.toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Camera size={20} className="text-foreground" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-lg">{primaryWallet?.address ? `${primaryWallet.address.slice(0, 6)}...${primaryWallet.address.slice(-4)}` : 'User'}</p>
+                          <p className="text-sm text-muted-foreground capitalize">{primaryWallet?.type || 'No wallet'}</p>
+                        </div>
+                      </div>
+
+                      {/* Display Name */}
+                      <div className="space-y-2">
                         <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Display Name</label>
                         <input
                           value={displayName}
                           onChange={e => setDisplayName(e.target.value)}
-                          placeholder="YourName"
-                          className="w-full mt-1 px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:border-neon-cyan/40 focus:outline-none focus:ring-1 focus:ring-neon-cyan/20 transition-all"
+                          placeholder="Enter display name"
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:border-neon-cyan/40 focus:outline-none focus:ring-1 focus:ring-neon-cyan/20 transition-all"
                         />
                       </div>
-                      <div>
-                        <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tagline</label>
-                        <input
-                          value={tagline}
-                          onChange={e => setTagline(e.target.value)}
-                          placeholder="Grind Now, Shine Later"
-                          className="w-full mt-1 px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:border-neon-cyan/40 focus:outline-none focus:ring-1 focus:ring-neon-cyan/20 transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Pronouns</label>
-                        <div className="relative mt-1">
-                          <select
-                            value={pronouns}
-                            onChange={e => setPronouns(e.target.value)}
-                            className="w-full px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground appearance-none focus:border-neon-cyan/40 focus:outline-none cursor-pointer"
-                          >
-                            <option value="He/Him">He/Him</option>
-                            <option value="She/Her">She/Her</option>
-                            <option value="They/Them">They/Them</option>
-                            <option value="Other">Other</option>
-                          </select>
-                          <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+
+                      {/* Notifications */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-display font-bold text-foreground">Notifications</h4>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/20">
+                            <span className="text-sm">Reward notifications</span>
+                            <Switch defaultChecked className="data-[state=checked]:bg-neon-green" />
+                          </div>
+                          <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/20">
+                            <span className="text-sm">Tournament updates</span>
+                            <Switch defaultChecked className="data-[state=checked]:bg-neon-green" />
+                          </div>
+                          <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/20">
+                            <span className="text-sm">Balance changes</span>
+                            <Switch className="data-[state=checked]:bg-neon-green" />
+                          </div>
                         </div>
                       </div>
+
+                      {/* Privacy */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-display font-bold text-foreground">Privacy</h4>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/20">
+                            <span className="text-sm">Show profile publicly</span>
+                            <Switch defaultChecked className="data-[state=checked]:bg-neon-cyan" />
+                          </div>
+                          <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/20">
+                            <span className="text-sm">Show balance</span>
+                            <Switch className="data-[state=checked]:bg-neon-cyan" />
+                          </div>
+                          <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/20">
+                            <span className="text-sm">Show activity</span>
+                            <Switch defaultChecked className="data-[state=checked]:bg-neon-cyan" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button
+                        className="w-full cyber-button"
+                        onClick={() => {
+                          toast({ title: 'Settings saved! ⚙️', description: 'Your account preferences have been updated.' });
+                        }}
+                      >
+                        Save Settings
+                      </Button>
+                    </div>
+                  )}
+
+                  {activeSection === 'wallet' && (
+                    <div className="space-y-5">
                       <div>
-                        <label className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                          <MapPin size={10} /> Location
-                        </label>
-                        <input
-                          value={location}
-                          onChange={e => setLocation(e.target.value)}
-                          placeholder="City, State"
-                          className="w-full mt-1 px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:border-neon-cyan/40 focus:outline-none focus:ring-1 focus:ring-neon-cyan/20 transition-all"
-                        />
+                        <h3 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                          <Wallet size={16} className="text-neon-green" /> Connected Wallets
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1">Manage your connected wallets</p>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-end gap-2">
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <Check size={10} /> Verified Competitor
-                      </span>
-                      <Switch checked={verifiedCompetitor} onCheckedChange={setVerifiedCompetitor} className="data-[state=checked]:bg-neon-green" />
-                    </div>
-                  </div>
 
-                  {/* ─── Title & Badges ─── */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-display font-bold text-foreground">Title & Badges</h3>
-                    <div className="flex items-center gap-3">
-                      <div className="relative flex-shrink-0">
-                        <select
-                          value={selectedTitle}
-                          onChange={e => setSelectedTitle(e.target.value)}
-                          className="px-3 py-2 text-sm rounded-lg bg-black/30 border border-white/10 text-foreground appearance-none pr-8 focus:border-neon-cyan/40 focus:outline-none cursor-pointer"
-                        >
-                          {TITLE_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                        <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                      </div>
-                      <div className="flex items-center gap-1.5 overflow-x-auto">
-                        {DISPLAY_BADGES.map(badge => {
-                          const isSelected = selectedBadges.includes(badge.id);
-                          return (
-                            <button
-                              key={badge.id}
-                              onClick={() => toggleBadge(badge.id)}
-                              className={cn(
-                                "relative w-9 h-9 rounded-lg flex items-center justify-center border transition-all shrink-0",
-                                isSelected ? `${badge.color} border-current` : "border-white/10 bg-black/20 text-muted-foreground hover:border-white/20"
-                              )}
-                            >
-                              <badge.icon size={16} />
-                              {isSelected && (
-                                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-neon-green flex items-center justify-center">
-                                  <Check size={8} className="text-black" />
+                      {connectedWallets.length > 0 ? (
+                        <div className="space-y-2">
+                          {connectedWallets.map(w => (
+                            <div key={`${w.type}-${w.address}`} className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/20">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-neon-green/20 flex items-center justify-center">
+                                  <Wallet size={14} className="text-neon-green" />
                                 </div>
+                                <div>
+                                  <p className="text-sm font-medium capitalize">{w.type}</p>
+                                  <p className="text-[10px] text-muted-foreground">{w.address.slice(0, 8)}...{w.address.slice(-6)}</p>
+                                </div>
+                              </div>
+                              {primaryWallet?.address === w.address && (
+                                <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30 text-[10px]">Active</Badge>
                               )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ─── Theme ─── */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-display font-bold text-foreground">Theme</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground">Reduce Motion</span>
-                        <Switch checked={reduceMotion} onCheckedChange={setReduceMotion} />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {PROFILE_THEMES.map(theme => (
-                        <button
-                          key={theme.id}
-                          onClick={() => setSelectedTheme(theme.id)}
-                          className={cn(
-                            "relative rounded-xl border overflow-hidden transition-all aspect-[4/3]",
-                            selectedTheme === theme.id ? "border-neon-cyan ring-1 ring-neon-cyan/30 scale-105" : "border-white/10 hover:border-white/30"
-                          )}
-                        >
-                          <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient}`} />
-                          <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.05)_2px,rgba(0,0,0,0.05)_4px)]" />
-                          {selectedTheme === theme.id && (
-                            <div className="absolute top-1 left-1 w-4 h-4 rounded bg-neon-cyan flex items-center justify-center">
-                              <Check size={10} className="text-black" />
                             </div>
-                          )}
-                        </button>
-                      ))}
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Wallet size={32} className="mx-auto mb-2 opacity-40" />
+                          <p className="text-sm">No wallets connected</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {PROFILE_THEMES.map(theme => (
-                        <p key={theme.id} className="text-[9px] text-muted-foreground text-center">{theme.name}</p>
-                      ))}
-                    </div>
-                  </div>
+                  )}
 
-                  {/* ─── Community Note ─── */}
-                  <p className="text-[10px] text-muted-foreground/60 text-center leading-relaxed">
-                    Following Cyber City's community rules is required. Offensive avatars, names, or provocative content will be moderated.
-                  </p>
+                  {activeSection === 'support' && (
+                    <div className="space-y-5">
+                      <div>
+                        <h3 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                          <LifeBuoy size={16} className="text-yellow-400" /> Support
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1">Get help or report issues</p>
+                      </div>
+                      <div className="space-y-2">
+                        <a href="https://discord.gg/cybercity" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 hover:border-neon-cyan/30 transition-all cursor-pointer">
+                          <div className="w-8 h-8 rounded-lg bg-neon-purple/20 flex items-center justify-center">
+                            <LifeBuoy size={14} className="text-neon-purple" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">Discord Community</p>
+                            <p className="text-[10px] text-muted-foreground">Join the community for support</p>
+                          </div>
+                        </a>
+                        <a href="mailto:support@cybercityarcade.com" className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 hover:border-neon-cyan/30 transition-all cursor-pointer">
+                          <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 flex items-center justify-center">
+                            <Settings size={14} className="text-neon-cyan" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">Email Support</p>
+                            <p className="text-[10px] text-muted-foreground">support@cybercityarcade.com</p>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Mobile save button */}
                   <Button
