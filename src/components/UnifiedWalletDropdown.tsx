@@ -268,7 +268,7 @@ export const UnifiedWalletDropdown = () => {
         <Button onClick={() => setShowWalletManager(true)} className="relative overflow-hidden group h-8 px-4 rounded-xl bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan text-white text-xs font-bold border-0 shadow-lg shadow-neon-pink/30 hover:shadow-neon-cyan/40 transition-all duration-500 hover:scale-105 active:scale-95">
           <span className="relative z-10 flex items-center gap-1.5">
             <Wallet size={14} className="animate-pulse" />
-            Connect Wallet
+            Connect
           </span>
           <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan via-neon-green to-neon-pink opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-shimmer" />
