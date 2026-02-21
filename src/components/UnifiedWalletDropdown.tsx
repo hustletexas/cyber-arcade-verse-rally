@@ -265,7 +265,7 @@ export const UnifiedWalletDropdown = () => {
   }];
   if (!isWalletConnected) {
     return <>
-        <Button onClick={() => setShowWalletManager(true)} className="relative overflow-hidden group h-8 px-4 rounded-xl bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan text-white text-xs font-bold border-0 shadow-lg shadow-neon-pink/30 hover:shadow-neon-cyan/40 transition-all duration-500 hover:scale-105 active:scale-95">
+        <Button onClick={() => setShowWalletManager(true)} className="relative overflow-hidden group h-8 px-4 rounded-xl bg-neon-cyan text-white text-xs font-bold border-0 shadow-lg shadow-neon-cyan/30 hover:shadow-neon-cyan/50 transition-all duration-500 hover:scale-105 active:scale-95">
           <span className="relative z-10 flex items-center gap-1.5">
             <Wallet size={14} className="animate-pulse" />
             Connect
