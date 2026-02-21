@@ -529,6 +529,12 @@ export const CommunityHub = () => {
                 <Button size="sm" variant="outline" className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs" onClick={() => navigate('/cyber-sequence')}>
                   🔢 Sequence
                 </Button>
+                <Button size="sm" variant="outline" className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black text-xs" onClick={() => navigate('/games/cyber-breaker')}>
+                  💥 Cyber Breaker
+                </Button>
+                <Button size="sm" variant="outline" className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black text-xs" onClick={() => navigate('/cyber-galaxy')}>
+                  🌌 Cyber Galaxy
+                </Button>
               </div>
             </div>
           )}
