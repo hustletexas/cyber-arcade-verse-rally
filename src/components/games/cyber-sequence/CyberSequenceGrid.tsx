@@ -27,19 +27,19 @@ export const CyberSequenceGrid: React.FC<CyberSequenceGridProps> = ({
   return (
     <div className={cn('sequence-glass-panel p-4', isShaking && 'sequence-shake')}>
       {/* Status indicator */}
-      <div className="text-center mb-4">
+      <div className="text-center mb-2 sm:mb-4">
         {isPlayingSequence && (
-          <span className="text-cyan-400 font-medium sequence-watching-pulse">
+          <span className="text-cyan-400 font-medium text-sm sm:text-base sequence-watching-pulse">
             👁️ Watch the sequence...
           </span>
         )}
         {isPlayerTurn && !isFinished && (
-          <span className="text-green-400 font-medium">
-            🎮 Your turn - repeat the sequence!
+          <span className="text-green-400 font-medium text-sm sm:text-base">
+            🎮 Your turn!
           </span>
         )}
         {isFinished && (
-          <span className="text-red-400 font-medium">
+          <span className="text-red-400 font-medium text-sm sm:text-base">
             Game Over
           </span>
         )}
