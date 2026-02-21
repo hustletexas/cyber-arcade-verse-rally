@@ -35,19 +35,30 @@ const EsportsPage = () => {
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Arcade
         </Button>
 
-        {/* Hero Header */}
-        <div className="arcade-frame text-center py-12 mb-10">
-          <h1 className="font-display text-4xl md:text-5xl text-accent mb-3">CYBER CITY ESPORTS</h1>
-          <p className="text-xl text-foreground/90 mb-2">All Ages Competitive Gaming Arena</p>
-          <Badge className="bg-primary text-primary-foreground text-sm px-4 py-1">Built on Stellar Blockchain</Badge>
-          
-          {/* Tier indicator */}
-          <div className="mt-4">
-            <Badge variant="outline" className="text-xs text-muted-foreground border-muted-foreground/30">
-              {tier === 'guest' && '👤 Browsing as Guest — sign up to compete!'}
-              {tier === 'magic_link' && '📧 Signed In — ready to compete!'}
-              {tier === 'wallet' && '🔗 Wallet Connected — full access!'}
-            </Badge>
+        {/* Hero Header with Banner */}
+        <div className="arcade-frame overflow-hidden mb-10">
+          <div className="relative">
+            <img 
+              alt="Cyber City Esports Arena" 
+              className="w-full h-auto rounded-t-lg" 
+              src="/lovable-uploads/b8a7ac8d-1113-4d55-ab57-c5cbf1182247.png" 
+            />
+            {/* Gradient blend overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+          </div>
+          <div className="relative -mt-16 text-center px-6 pb-8 pt-8 bg-gradient-to-b from-background/80 to-background">
+            <h1 className="font-display text-4xl md:text-5xl text-accent mb-3">CYBER CITY ESPORTS</h1>
+            <p className="text-xl text-foreground/90 mb-2">All Ages Competitive Gaming Arena</p>
+            <Badge className="bg-primary text-primary-foreground text-sm px-4 py-1">Built on Stellar Blockchain</Badge>
+            
+            {/* Tier indicator */}
+            <div className="mt-4">
+              <Badge variant="outline" className="text-xs text-muted-foreground border-muted-foreground/30">
+                {tier === 'guest' && '👤 Browsing as Guest — sign up to compete!'}
+                {tier === 'magic_link' && '📧 Signed In — ready to compete!'}
+                {tier === 'wallet' && '🔗 Wallet Connected — full access!'}
+              </Badge>
+            </div>
           </div>
         </div>
 
