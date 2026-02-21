@@ -103,12 +103,12 @@ const CyberSequence: React.FC = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
 
-      <div className="relative z-10 container mx-auto px-4 py-6 max-w-4xl">
-        <div className="relative z-20 mb-6">
-          <div className="flex items-center gap-3 mb-3">
+      <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
+        <div className="relative z-20 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
             <Button variant="ghost" size="sm" onClick={() => navigate('/')}
-              className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back to Arcade
+              className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10 text-xs sm:text-sm px-2 sm:px-3">
+              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Back
             </Button>
           </div>
           <CCCBalanceBar />
@@ -119,10 +119,10 @@ const CyberSequence: React.FC = () => {
             <motion.div key="mode-select"
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-              <div className="text-center py-8">
-                <h1 className="cyber-title font-display text-4xl md:text-5xl lg:text-6xl text-neon-cyan mb-4"
+              <div className="text-center py-4 sm:py-8">
+                <h1 className="cyber-title font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-neon-cyan mb-2 sm:mb-4"
                   data-text="CYBER SEQUENCE">CYBER SEQUENCE</h1>
-                <p className="text-lg text-gray-400 max-w-xl mx-auto">
+                <p className="text-sm sm:text-lg text-gray-400 max-w-xl mx-auto">
                   Watch • Remember • Repeat • Earn rewards
                 </p>
                 <div className="mt-6 py-2 border-y border-neon-cyan/20 overflow-hidden">
@@ -169,10 +169,10 @@ const CyberSequence: React.FC = () => {
                 onButtonPress={handleButtonPress}
               />
 
-              <div className="flex justify-center gap-3 mt-6">
-                <Button onClick={handleBackToMenu} variant="outline"
-                  className="border-gray-500/50 text-gray-400 hover:bg-gray-500/10">
-                  <ArrowLeft className="w-4 h-4 mr-2" /> Exit
+              <div className="flex justify-center gap-2 sm:gap-3 mt-4 sm:mt-6">
+                <Button onClick={handleBackToMenu} variant="outline" size="sm"
+                  className="border-gray-500/50 text-gray-400 hover:bg-gray-500/10 text-xs sm:text-sm">
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Exit
                 </Button>
                 {mode === 'free' && (
                   <Button onClick={() => { resetGame(); setTimeout(() => startGame(), 100); }}

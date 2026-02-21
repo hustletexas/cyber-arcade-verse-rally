@@ -77,7 +77,7 @@ export const CyberSequenceButton: React.FC<CyberSequenceButtonProps> = ({
       <div className="absolute inset-0 flex items-center justify-center">
         <div 
           className={cn(
-            'w-10 h-10 rounded-full transition-all duration-200 neon-center',
+            'w-6 h-6 sm:w-10 sm:h-10 rounded-full transition-all duration-200 neon-center',
             isActive ? 'bg-white/60 scale-150 shadow-[0_0_30px_rgba(255,255,255,0.8)]' : 'bg-white/20'
           )} 
         />
