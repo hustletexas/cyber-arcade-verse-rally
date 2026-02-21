@@ -348,10 +348,11 @@ export const CommunityHub = () => {
           {/* ============ LEADERBOARD TAB ============ */}
           {mainTab === 'leaderboard' && (
             <div className="space-y-4">
+              {/* Header */}
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-neon-cyan flex items-center gap-2">
-                  <Crown className="w-4 h-4 text-yellow-400" />
-                  Weekly Rankings
+                <h3 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-neon-cyan to-neon-pink flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-400" />
+                  Leaderboard
                 </h3>
                 <div className="flex items-center gap-2">
                   <Button
@@ -367,18 +368,18 @@ export const CommunityHub = () => {
                 </div>
               </div>
 
-              <p className="text-xs text-gray-400">
-                Top 3 earn rewards every Monday (min <span className="text-neon-cyan font-bold">5 players</span>)
-              </p>
-
-              {/* Column Headers */}
-              <div className="grid grid-cols-12 gap-2 text-[10px] text-gray-500 uppercase px-3">
-                <span className="col-span-1">#</span>
-                <span className="col-span-3">Player</span>
-                <span className="col-span-2 text-center">Match</span>
-                <span className="col-span-2 text-center">Seq</span>
-                <span className="col-span-2 text-center">Trivia</span>
-                <span className="col-span-2 text-right">Total</span>
+              {/* Time Period Tabs */}
+              <div className="flex gap-1 text-xs font-mono">
+                {['Weekly', 'All-time'].map((period) => (
+                  <button key={period} className={cn(
+                    "px-3 py-1 rounded-md transition-all",
+                    period === 'Weekly'
+                      ? "bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40"
+                      : "text-gray-500 hover:text-gray-300"
+                  )}>
+                    {period}
+                  </button>
+                ))}
               </div>
 
               {lbLoading ? (
@@ -391,57 +392,141 @@ export const CommunityHub = () => {
                   <p className="text-sm">No scores this week yet. Play to claim the top spot!</p>
                 </div>
               ) : (
-                <ScrollArea className="h-[260px]">
-                  <div className="space-y-2">
-                    {entries.slice(0, 10).map((entry) => {
-                      const isYou = walletAddress && entry.wallet_address === walletAddress;
-                      return (
-                        <div
-                          key={entry.wallet_address}
-                          className={cn(
-                            "grid grid-cols-12 gap-2 items-center p-2.5 rounded-lg transition-all",
-                            getRankStyle(entry.rank),
-                            isYou && "ring-1 ring-neon-cyan/50"
-                          )}
-                        >
-                          <span className={cn("col-span-1 font-bold text-sm",
-                            entry.rank === 1 ? "text-yellow-400" : entry.rank === 2 ? "text-gray-300" : entry.rank === 3 ? "text-orange-400" : "text-gray-500"
-                          )}>
-                            {getRankIcon(entry.rank)}
-                          </span>
-                          <span className="col-span-3 text-xs text-gray-300 truncate">
-                            {maskWallet(entry.wallet_address)}
-                            {isYou && <span className="ml-1 text-neon-cyan text-[10px]">(You)</span>}
-                          </span>
-                          <span className="col-span-2 text-center text-xs text-neon-pink font-medium">
-                            {entry.match_best_score > 0 ? entry.match_best_score.toLocaleString() : '-'}
-                          </span>
-                          <span className="col-span-2 text-center text-xs text-purple-400 font-medium">
-                            {entry.sequence_best_score > 0 ? entry.sequence_best_score.toLocaleString() : '-'}
-                          </span>
-                          <span className="col-span-2 text-center text-xs text-neon-cyan font-medium">
-                            {entry.trivia_best_score > 0 ? entry.trivia_best_score.toLocaleString() : '-'}
-                          </span>
-                          <span className="col-span-2 text-right text-xs text-white font-bold">
-                            {entry.total_score.toLocaleString()}
-                          </span>
+                <>
+                  {/* === TOP 3 PODIUM === */}
+                  <div className="flex items-end justify-center gap-2 sm:gap-3 py-4">
+                    {/* 2nd Place */}
+                    {entries.length >= 2 && (
+                      <div className="flex flex-col items-center w-[30%] max-w-[120px]">
+                        <div className="relative">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-gray-400 bg-gradient-to-br from-gray-600/30 to-gray-800/50 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(156,163,175,0.3)]">
+                            <span className="text-2xl sm:text-3xl">🥈</span>
+                          </div>
+                          <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs font-black shadow-lg">2</div>
                         </div>
-                      );
-                    })}
+                        <span className="text-[10px] sm:text-xs text-gray-300 mt-2 truncate w-full text-center font-medium">
+                          {maskWallet(entries[1].wallet_address)}
+                        </span>
+                        <span className="text-sm sm:text-base font-black text-white">{entries[1].total_score.toLocaleString()}</span>
+                        <span className="text-[9px] text-gray-500">pts</span>
+                      </div>
+                    )}
+
+                    {/* 1st Place */}
+                    {entries.length >= 1 && (
+                      <div className="flex flex-col items-center w-[34%] max-w-[140px] -mt-4">
+                        <div className="text-yellow-400 text-lg mb-1">👑</div>
+                        <div className="relative">
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg border-2 border-yellow-400 bg-gradient-to-br from-yellow-500/20 to-amber-700/30 flex items-center justify-center overflow-hidden shadow-[0_0_25px_rgba(250,204,21,0.4)] animate-pulse">
+                            <span className="text-3xl sm:text-4xl">🥇</span>
+                          </div>
+                          <div className="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center text-black text-xs font-black shadow-lg">1</div>
+                        </div>
+                        <span className="text-xs sm:text-sm text-yellow-300 mt-2 truncate w-full text-center font-bold">
+                          {maskWallet(entries[0].wallet_address)}
+                        </span>
+                        <span className="text-lg sm:text-xl font-black text-white">{entries[0].total_score.toLocaleString()}</span>
+                        <span className="text-[9px] text-gray-500">pts</span>
+                      </div>
+                    )}
+
+                    {/* 3rd Place */}
+                    {entries.length >= 3 && (
+                      <div className="flex flex-col items-center w-[30%] max-w-[120px]">
+                        <div className="relative">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-orange-500 bg-gradient-to-br from-orange-600/20 to-orange-900/30 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+                            <span className="text-2xl sm:text-3xl">🥉</span>
+                          </div>
+                          <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-white text-xs font-black shadow-lg">3</div>
+                        </div>
+                        <span className="text-[10px] sm:text-xs text-gray-300 mt-2 truncate w-full text-center font-medium">
+                          {maskWallet(entries[2].wallet_address)}
+                        </span>
+                        <span className="text-sm sm:text-base font-black text-white">{entries[2].total_score.toLocaleString()}</span>
+                        <span className="text-[9px] text-gray-500">pts</span>
+                      </div>
+                    )}
                   </div>
-                </ScrollArea>
+
+                  {/* === TABLE HEADER === */}
+                  <div className="grid grid-cols-12 gap-1 text-[10px] text-gray-500 uppercase px-3 py-2 border-y border-neon-cyan/10 font-mono">
+                    <span className="col-span-1">Rank</span>
+                    <span className="col-span-3">Player</span>
+                    <span className="col-span-2 text-center">Points</span>
+                    <span className="col-span-2 text-center">Match</span>
+                    <span className="col-span-2 text-center">Trivia</span>
+                    <span className="col-span-2 text-center">Seq</span>
+                  </div>
+
+                  {/* === PLAYER ROWS === */}
+                  <ScrollArea className="h-[220px]">
+                    <div className="space-y-1">
+                      {entries.slice(3, 15).map((entry) => {
+                        const isYou = walletAddress && entry.wallet_address === walletAddress;
+                        return (
+                          <div
+                            key={entry.wallet_address}
+                            className={cn(
+                              "grid grid-cols-12 gap-1 items-center px-3 py-2 rounded-lg transition-all hover:bg-white/5",
+                              isYou ? "bg-neon-cyan/10 ring-1 ring-neon-cyan/40" : "bg-black/20"
+                            )}
+                          >
+                            <span className={cn("col-span-1 font-black text-sm",
+                              entry.rank <= 5 ? "text-neon-pink" : "text-gray-500"
+                            )}>
+                              #{entry.rank}
+                            </span>
+                            <span className="col-span-3 text-xs text-gray-300 truncate font-medium">
+                              {maskWallet(entry.wallet_address)}
+                              {isYou && <span className="ml-1 text-neon-cyan text-[10px] font-bold">(You)</span>}
+                            </span>
+                            <span className="col-span-2 text-center text-xs text-white font-black">
+                              {entry.total_score.toLocaleString()}
+                            </span>
+                            <span className="col-span-2 text-center text-xs text-neon-pink font-medium">
+                              {entry.match_best_score > 0 ? entry.match_best_score.toLocaleString() : '-'}
+                            </span>
+                            <span className="col-span-2 text-center text-xs text-neon-cyan font-medium">
+                              {entry.trivia_best_score > 0 ? entry.trivia_best_score.toLocaleString() : '-'}
+                            </span>
+                            <span className="col-span-2 text-center text-xs text-purple-400 font-medium">
+                              {entry.sequence_best_score > 0 ? entry.sequence_best_score.toLocaleString() : '-'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+
+                  {/* === YOUR RANK (sticky footer) === */}
+                  {walletAddress && entries.find(e => e.wallet_address === walletAddress) && (() => {
+                    const you = entries.find(e => e.wallet_address === walletAddress)!;
+                    return (
+                      <div className="grid grid-cols-12 gap-1 items-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-neon-cyan/15 to-neon-pink/15 border border-neon-cyan/30 mt-1">
+                        <span className="col-span-1 font-black text-sm text-neon-cyan">#{you.rank}</span>
+                        <span className="col-span-3 text-xs text-neon-cyan font-bold truncate">
+                          {maskWallet(you.wallet_address)} (You)
+                        </span>
+                        <span className="col-span-2 text-center text-xs text-white font-black">{you.total_score.toLocaleString()}</span>
+                        <span className="col-span-2 text-center text-xs text-neon-pink">{you.match_best_score > 0 ? you.match_best_score.toLocaleString() : '-'}</span>
+                        <span className="col-span-2 text-center text-xs text-neon-cyan">{you.trivia_best_score > 0 ? you.trivia_best_score.toLocaleString() : '-'}</span>
+                        <span className="col-span-2 text-center text-xs text-purple-400">{you.sequence_best_score > 0 ? you.sequence_best_score.toLocaleString() : '-'}</span>
+                      </div>
+                    );
+                  })()}
+                </>
               )}
 
               {/* Reward Tiers */}
               <div className="grid grid-cols-3 gap-3 pt-3 border-t border-neon-cyan/10">
                 {[
-                  { place: '1st', emoji: '🥇', reward: '50 CCC' },
-                  { place: '2nd', emoji: '🥈', reward: '25 CCC' },
-                  { place: '3rd', emoji: '🥉', reward: '10 CCC' },
+                  { place: '1st', emoji: '🥇', reward: '50 CCC', color: 'from-yellow-500/20 to-yellow-700/10 border-yellow-500/30' },
+                  { place: '2nd', emoji: '🥈', reward: '25 CCC', color: 'from-gray-400/20 to-gray-600/10 border-gray-400/30' },
+                  { place: '3rd', emoji: '🥉', reward: '10 CCC', color: 'from-orange-500/20 to-orange-700/10 border-orange-500/30' },
                 ].map((tier) => (
-                  <div key={tier.place} className="text-center p-2 rounded-lg bg-black/20">
+                  <div key={tier.place} className={cn("text-center p-2.5 rounded-lg bg-gradient-to-br border", tier.color)}>
                     <div className="text-lg">{tier.emoji}</div>
-                    <div className="text-xs text-gray-400 mt-1">{tier.reward}</div>
+                    <div className="text-xs text-white font-bold mt-1">{tier.reward}</div>
                   </div>
                 ))}
               </div>
