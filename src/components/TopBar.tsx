@@ -22,8 +22,8 @@ const scrollSections: { id: string; label: string; icon: any }[] = [];
 const pageSections = [
   { path: '/store', label: 'Merch', icon: ShoppingBag },
   { path: '/tournaments', label: 'Tournament', icon: Trophy },
-  { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
   { path: '/esports', label: 'Cyber City Esports', icon: Swords },
+  { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
   { path: '/foundation', label: 'Foundation', icon: Heart },
   { path: '/tournament-rules', label: 'Rules', icon: Scale },
   { path: '/about', label: 'About Us', icon: Info },
