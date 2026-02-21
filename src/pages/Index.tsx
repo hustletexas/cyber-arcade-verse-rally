@@ -118,6 +118,14 @@ const Index = () => {
             filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
           }} src="/lovable-uploads/dd23db05-56ce-4fcd-8593-c174a3d2f9a7.png" />
           </div>
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={() => window.location.href = '/rewards'}
+              className="px-6 py-2.5 rounded-lg text-sm font-bold border border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,204,0.3)] transition-all duration-300 backdrop-blur-sm"
+            >
+              CLAIM REWARDS
+            </button>
+          </div>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
             ​Cyber City Arcade blends gaming and esports with education, skill-building, community engagement, and responsible technology use.                 
