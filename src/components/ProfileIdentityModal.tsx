@@ -175,8 +175,6 @@ export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarCh
   const sidebarItems: { id: Section; label: string; icon: React.ElementType }[] = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Settings },
-    { id: 'wallet', label: 'Wallet', icon: Wallet },
-    { id: 'support', label: 'Support', icon: LifeBuoy },
   ];
 
   return (
