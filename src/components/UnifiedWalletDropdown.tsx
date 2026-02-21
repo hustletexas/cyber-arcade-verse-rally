@@ -81,7 +81,7 @@ export const UnifiedWalletDropdown = () => {
   const [sendAddress, setSendAddress] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
   const [buyCurrency, setBuyCurrency] = useState<'usdc' | 'xlm'>('usdc');
-  const [tokensMinimized, setTokensMinimized] = useState(false);
+  const [tokensMinimized, setTokensMinimized] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
