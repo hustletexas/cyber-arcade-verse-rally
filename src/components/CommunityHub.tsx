@@ -28,6 +28,23 @@ interface WeeklyEntry {
   rank: number;
 }
 
+interface GameLeaderboardEntry {
+  user_id: string;
+  score: number;
+  rank: number;
+}
+
+type GameFilter = 'all' | 'match' | 'trivia' | 'sequence' | 'breaker' | 'galaxy';
+
+const gameFilterConfig: Record<GameFilter, { label: string; emoji: string; activeClass: string; scoreClass: string }> = {
+  all: { label: 'All Games', emoji: '🏆', activeClass: 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan/50', scoreClass: 'text-neon-cyan' },
+  match: { label: 'Cyber Match', emoji: '🃏', activeClass: 'bg-neon-pink/20 text-neon-pink border-neon-pink/50', scoreClass: 'text-neon-pink' },
+  trivia: { label: 'Trivia', emoji: '🧠', activeClass: 'bg-purple-500/20 text-purple-400 border-purple-500/50', scoreClass: 'text-purple-400' },
+  sequence: { label: 'Sequence', emoji: '🔢', activeClass: 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan/50', scoreClass: 'text-neon-cyan' },
+  breaker: { label: 'Cyber Breaker', emoji: '💥', activeClass: 'bg-neon-pink/20 text-neon-pink border-neon-pink/50', scoreClass: 'text-neon-pink' },
+  galaxy: { label: 'Cyber Galaxy', emoji: '🌌', activeClass: 'bg-neon-green/20 text-neon-green border-neon-green/50', scoreClass: 'text-neon-green' },
+};
+
 interface SharedItem {
   id: string;
   type: 'mix' | 'achievement' | 'tournament' | 'score';
@@ -70,6 +87,9 @@ export const CommunityHub = () => {
 
   // Leaderboard state
   const [entries, setEntries] = useState<WeeklyEntry[]>([]);
+  const [gameFilter, setGameFilter] = useState<GameFilter>('all');
+  const [gameEntries, setGameEntries] = useState<GameLeaderboardEntry[]>([]);
+  const [gameLbLoading, setGameLbLoading] = useState(false);
   const [lbLoading, setLbLoading] = useState(true);
 
   const {
@@ -110,6 +130,31 @@ export const CommunityHub = () => {
     } catch (err) { console.error('Failed to fetch weekly leaderboard:', err); }
     finally { setLbLoading(false); }
   }, []);
+
+  const fetchGameLeaderboard = useCallback(async (game: GameFilter) => {
+    if (game === 'all') return;
+    setGameLbLoading(true);
+    try {
+      let data: any[] = [];
+      if (game === 'match') {
+        const res = await supabase.from('match_scores').select('user_id, score').order('score', { ascending: false }).limit(20);
+        data = res.data || [];
+      } else if (game === 'trivia') {
+        const res = await supabase.from('trivia_runs').select('user_id, score').eq('is_active', false).order('score', { ascending: false }).limit(20);
+        data = res.data || [];
+      } else if (game === 'sequence') {
+        const res = await supabase.from('sequence_scores').select('user_id, score').order('score', { ascending: false }).limit(20);
+        data = res.data || [];
+      } else if (game === 'breaker') {
+        const res = await supabase.from('portal_breaker_scores').select('user_id, score').order('score', { ascending: false }).limit(20);
+        data = res.data || [];
+      }
+      setGameEntries(data.map((e: any, i: number) => ({ user_id: e.user_id, score: e.score, rank: i + 1 })));
+    } catch (err) { console.error('Game leaderboard error:', err); }
+    finally { setGameLbLoading(false); }
+  }, []);
+
+  useEffect(() => { if (gameFilter !== 'all') fetchGameLeaderboard(gameFilter); }, [gameFilter, fetchGameLeaderboard]);
 
   useEffect(() => { fetchLeaderboard(); const iv = setInterval(fetchLeaderboard, 60000); return () => clearInterval(iv); }, [fetchLeaderboard]);
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatMessages]);
@@ -518,24 +563,97 @@ export const CommunityHub = () => {
               )}
 
 
-              {/* Quick Play Buttons */}
-              <div className="flex flex-wrap gap-2 justify-center pt-2 border-t border-neon-cyan/10">
-                <Button size="sm" className="cyber-button text-xs" onClick={() => navigate('/cyber-match')}>
-                  🃏 Cyber Match
-                </Button>
-                <Button size="sm" variant="outline" className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black text-xs" onClick={() => navigate('/cyber-trivia')}>
-                  🧠 Trivia
-                </Button>
-                <Button size="sm" variant="outline" className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs" onClick={() => navigate('/cyber-sequence')}>
-                  🔢 Sequence
-                </Button>
-                <Button size="sm" variant="outline" className="border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black text-xs" onClick={() => navigate('/games/cyber-breaker')}>
-                  💥 Cyber Breaker
-                </Button>
-                <Button size="sm" variant="outline" className="border-neon-green text-neon-green hover:bg-neon-green hover:text-black text-xs" onClick={() => navigate('/cyber-galaxy')}>
-                  🌌 Cyber Galaxy
-                </Button>
+              {/* Game Filter Buttons */}
+              <div className="flex flex-wrap gap-1.5 justify-center pt-2 border-t border-neon-cyan/10">
+                {(Object.keys(gameFilterConfig) as GameFilter[]).map((key) => {
+                  const cfg = gameFilterConfig[key];
+                  const isActive = gameFilter === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setGameFilter(key)}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border",
+                        isActive
+                          ? `${cfg.activeClass} shadow-[0_0_10px_rgba(0,255,204,0.15)]`
+                          : "bg-black/20 text-gray-500 border-transparent hover:text-gray-300 hover:border-gray-600"
+                      )}
+                    >
+                      {cfg.emoji} {cfg.label}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Per-Game Leaderboard */}
+              {gameFilter !== 'all' && (
+                <div className="mt-3 p-3 rounded-lg bg-black/30 border border-neon-cyan/10">
+                  <h4 className="text-sm font-bold text-center mb-3 flex items-center justify-center gap-2">
+                    <span>{gameFilterConfig[gameFilter].emoji}</span>
+                    <span className={gameFilterConfig[gameFilter].scoreClass}>
+                      {gameFilterConfig[gameFilter].label} Leaderboard
+                    </span>
+                  </h4>
+
+                  {gameFilter === 'galaxy' ? (
+                    <div className="text-center py-6 text-gray-500">
+                      <span className="text-2xl mb-2 block">🌌</span>
+                      <p className="text-xs">Leaderboard coming soon!</p>
+                    </div>
+                  ) : gameLbLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="w-5 h-5 animate-spin text-neon-cyan" />
+                    </div>
+                  ) : gameEntries.length === 0 ? (
+                    <div className="text-center py-6 text-gray-500">
+                      <Trophy className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                      <p className="text-xs">No scores yet. Be the first!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {/* Header */}
+                      <div className="grid grid-cols-12 gap-1 text-[10px] text-gray-500 uppercase px-3 py-1.5 border-b border-neon-cyan/10 font-mono">
+                        <span className="col-span-2">Rank</span>
+                        <span className="col-span-6">Player</span>
+                        <span className="col-span-4 text-right">Score</span>
+                      </div>
+                      {/* Rows */}
+                      <ScrollArea className="h-[200px]">
+                        <div className="space-y-1">
+                          {gameEntries.map((entry) => {
+                            const isYou = walletAddress && entry.user_id === walletAddress;
+                            return (
+                              <div
+                                key={`${entry.rank}-${entry.user_id}`}
+                                className={cn(
+                                  "grid grid-cols-12 gap-1 items-center px-3 py-2 rounded-lg transition-all hover:bg-white/5",
+                                  entry.rank <= 3 ? getRankStyle(entry.rank) : "bg-black/20",
+                                  isYou && "ring-1 ring-neon-cyan/40 bg-neon-cyan/10"
+                                )}
+                              >
+                                <span className={cn("col-span-2 font-black text-sm",
+                                  entry.rank === 1 ? "text-yellow-400" :
+                                  entry.rank === 2 ? "text-gray-300" :
+                                  entry.rank === 3 ? "text-orange-400" : "text-gray-500"
+                                )}>
+                                  {entry.rank <= 3 ? getRankIcon(entry.rank) : `#${entry.rank}`}
+                                </span>
+                                <span className="col-span-6 text-xs text-gray-300 truncate font-medium">
+                                  {maskWallet(entry.user_id)}
+                                  {isYou && <span className="ml-1 text-neon-cyan text-[10px] font-bold">(You)</span>}
+                                </span>
+                                <span className={cn("col-span-4 text-right text-sm font-black", gameFilterConfig[gameFilter].scoreClass)}>
+                                  {entry.score.toLocaleString()}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </CardContent>
