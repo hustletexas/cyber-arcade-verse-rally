@@ -51,15 +51,22 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
       // Check Freighter (works on both desktop extension and mobile app)
       try {
-        if (typeof window !== 'undefined' && (window as any).freighter) {
+        // Freighter v6+ injects window.freighterApi, older versions use window.freighter
+        const hasFreighterGlobal = typeof window !== 'undefined' && 
+          ((window as any).freighter || (window as any).freighterApi);
+        
+        if (hasFreighterGlobal) {
           setFreighterInstalled(true);
         } else {
+          // Try the API - requestAccess availability means extension is present
           const result = await freighterApi.isConnected();
-          setFreighterInstalled(result.isConnected === true || result.error === undefined);
+          // Extension is installed even if not yet connected to this site
+          setFreighterInstalled(true);
         }
       } catch (e) {
         // On mobile, Freighter may not be detectable but still works via its app
-        setFreighterInstalled(mobile || !!(window as any).freighter);
+        // On desktop, if the API threw, the extension isn't installed
+        setFreighterInstalled(mobile);
       }
     };
 
@@ -227,15 +234,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         return;
       }
 
-      const freighterWindow = (window as any).freighter;
-      
-      if (!freighterWindow) {
-        const connectedResult = await freighterApi.isConnected();
-        if (!connectedResult.isConnected && connectedResult.error) {
-          throw new Error('Freighter not found. Please install the Freighter browser extension.');
-        }
-      }
-
+      // Request access directly - this will prompt the user if extension is installed
       const accessResult = await freighterApi.requestAccess();
       if (accessResult.error) {
         throw new Error(accessResult.error.message || 'User denied access to Freighter');
