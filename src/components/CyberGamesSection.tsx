@@ -56,10 +56,6 @@ export const CyberGamesSection: React.FC = () => {
   const navigate = useNavigate();
   return <Card className="arcade-frame">
       <CardContent className="p-6 space-y-6">
-      {/* Section Banner */}
-      <div className="w-full">
-        <img alt="Cyber City Arcade Games" className="w-full h-auto rounded-lg" src="/lovable-uploads/b8a7ac8d-1113-4d55-ab57-c5cbf1182247.png" />
-      </div>
 
       {/* Games Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
