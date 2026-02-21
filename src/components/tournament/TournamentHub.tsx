@@ -35,11 +35,6 @@ export const TournamentHub: React.FC = () => {
     }
   }, [activeTournaments, selectedTournamentId]);
   return <div>
-      {/* Banner */}
-      <div className="w-full mt-16 sm:mt-20 md:mt-24">
-        <img alt="Tournament Hub" className="w-full h-auto object-contain" src="/lovable-uploads/4d056629-874a-482c-a00e-1c4833a2ba63.png" />
-      </div>
-
       {/* Badges */}
       <div className="flex items-center justify-end gap-2">
         <Badge className="bg-neon-cyan text-black">
@@ -134,6 +129,11 @@ export const TournamentHub: React.FC = () => {
           <TournamentAdminDashboard />
         </TabsContent>
       </Tabs>
+
+      {/* Banner */}
+      <div className="w-full mt-8">
+        <img alt="Tournament Hub" className="w-full h-auto object-contain" src="/lovable-uploads/4d056629-874a-482c-a00e-1c4833a2ba63.png" />
+      </div>
     </div>;
 };
 export default TournamentHub;
