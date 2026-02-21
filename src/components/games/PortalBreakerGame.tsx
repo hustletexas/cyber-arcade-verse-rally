@@ -209,7 +209,7 @@ const PortalBreakerGame: React.FC = () => {
     const resize = () => {
       const c = containerRef.current;
       if (!c) return;
-      const maxW = c.clientWidth;
+      const maxW = Math.min(c.clientWidth, 800);
       const scale = maxW / BASE_WIDTH;
       scaleRef.current = scale;
       const canvas = canvasRef.current;
