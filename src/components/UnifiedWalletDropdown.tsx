@@ -482,7 +482,7 @@ export const UnifiedWalletDropdown = () => {
             <div className="space-y-2">
               {txLoading ? <div className="flex items-center justify-center py-3">
                   <Loader2 size={16} className="animate-spin text-neon-cyan" />
-                </div> : transactions.length > 0 ? transactions.slice(0, 3).map(tx => <a key={tx.id} href={getExplorerUrl(tx.hash, tx.chain)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer group">
+                </div> : transactions.length > 0 ? transactions.slice(0, 2).map(tx => <a key={tx.id} href={getExplorerUrl(tx.hash, tx.chain)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer group">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.type === 'receive' ? 'bg-neon-green/20' : tx.type === 'send' ? 'bg-neon-pink/20' : 'bg-white/10'}`}>
                       {tx.type === 'receive' ? <ArrowDownLeft size={14} className="text-neon-green" /> : tx.type === 'send' ? <ArrowUpRight size={14} className="text-neon-pink" /> : <ArrowLeftRight size={14} className="text-muted-foreground" />}
                     </div>
