@@ -73,11 +73,9 @@ const DJBoothPage = () => {
 
       <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 relative z-10 max-w-7xl">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <Button variant="ghost" size="sm" asChild className="text-neon-cyan hover:bg-neon-cyan/10">
-            <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back
-            </Link>
+        <div className="flex items-center gap-3 mb-4 relative z-20">
+          <Button variant="ghost" size="sm" className="text-neon-cyan hover:bg-neon-cyan/10" onClick={() => { navigate('/'); window.scrollTo(0, 0); }}>
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Arcade
           </Button>
         </div>
 
