@@ -23,7 +23,7 @@ const pageSections = [
   { path: '/store', label: 'Merch', icon: ShoppingBag },
   { path: '/tournaments', label: 'Tournament', icon: Trophy },
   { path: '/tournament-rules', label: 'Rules', icon: Scale },
-  { path: '/rewards', label: 'Rewards', icon: Award },
+  { path: '/rewards', label: 'Reawards', icon: Award },
   { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
   { path: '/esports', label: 'Cyber City Esports', icon: Swords },
   { path: '/foundation', label: 'Foundation', icon: Heart },
