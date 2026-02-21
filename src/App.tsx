@@ -20,7 +20,6 @@ import CyberTrivia from "./pages/CyberTrivia";
 import Success from "./pages/Success";
 import Cancel from "./pages/Cancel";
 
-import CyberChestPage from "./pages/CyberChestPage";
 import StorePage from "./pages/StorePage";
 import TournamentsPage from "./pages/TournamentsPage";
 
@@ -64,7 +63,7 @@ const App = () => (
                   <Route path="/games/cyber-trivia" element={<CyberTrivia />} />
                   
                   <Route path="/cyber-galaxy" element={<CyberGalaxyPage />} />
-                  <Route path="/cyber-chest" element={<CyberChestPage />} />
+                  
                   <Route path="/store" element={<StorePage />} />
                   <Route path="/tournaments" element={<TournamentsPage />} />
                   
