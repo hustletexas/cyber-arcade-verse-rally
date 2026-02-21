@@ -41,7 +41,7 @@ export const TournamentHub: React.FC = () => {
       </div>
 
       {/* Badges */}
-      <div className="flex items-center justify-end gap-2 py-1">
+      <div className="flex items-center justify-end gap-2">
         <Badge className="bg-neon-cyan text-black">
           {upcomingTournaments.length} Upcoming
         </Badge>
@@ -51,7 +51,7 @@ export const TournamentHub: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full -mt-1">
         <TabsList className="grid w-full grid-cols-5 bg-background/50 border border-border">
           <TabsTrigger value="browse" className="flex items-center gap-2">
             <Gamepad2 className="w-4 h-4" />
@@ -76,12 +76,12 @@ export const TournamentHub: React.FC = () => {
         </TabsList>
 
         {/* Tournament Cards - Browse tab content moved above live bracket */}
-        <TabsContent value="browse" className="mt-2">
+        <TabsContent value="browse" className="mt-0">
           <TournamentList tournaments={tournaments.filter((t) => t.status !== 'draft')} loading={loading} />
         </TabsContent>
 
         {/* Live Bracket Preview - Show when there are active tournaments */}
-        {activeTournaments.length > 0 && activeTab === 'browse' && <Card className="arcade-frame border-neon-green/50 mt-2">
+        {activeTournaments.length > 0 && activeTab === 'browse' && <Card className="arcade-frame border-neon-green/50 mt-0">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="font-display text-xl text-neon-green flex items-center gap-2">
