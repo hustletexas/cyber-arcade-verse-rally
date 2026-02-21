@@ -317,7 +317,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         ...WALLETS.find(w => w.id === 'freighter')!,
         isInstalled: freighterInstalled,
         connect: connectFreighter,
-        isMobileReady: false, // Browser extension only
+        isMobileReady: true,
       },
       {
         ...WALLETS.find(w => w.id === 'albedo')!,
