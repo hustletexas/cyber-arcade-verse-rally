@@ -244,9 +244,6 @@ export const Marketplace = () => {
                 <Button size="sm" variant={filter === 'rare' ? 'default' : 'outline'} onClick={() => setFilter('rare')} className={filter === 'rare' ? 'cyber-button' : 'border-neon-green text-neon-green'}>
                   Rare
                 </Button>
-                <Button size="sm" variant={filter === 'common' ? 'default' : 'outline'} onClick={() => setFilter('common')} className={filter === 'common' ? 'cyber-button' : 'border-gray-400 text-gray-400'}>
-                  Common
-                </Button>
               </div>
             </div>
 
