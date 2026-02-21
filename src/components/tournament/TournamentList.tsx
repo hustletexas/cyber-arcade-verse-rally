@@ -126,15 +126,6 @@ export const TournamentList: React.FC<TournamentListProps> = ({
               </div>
             </div>
 
-            {/* Pass Requirement */}
-            {tournament.requires_pass && (
-              <div className="flex items-center gap-2 p-2 bg-neon-purple/10 rounded-lg border border-neon-purple/30">
-                <Shield className="w-4 h-4 text-neon-purple" />
-                <span className="text-sm">
-                  Requires {tournament.required_pass_tier || 'Any'} Pass
-                </span>
-              </div>
-            )}
 
             {/* Format & Payout */}
             <div className="flex items-center justify-between text-xs text-muted-foreground">
