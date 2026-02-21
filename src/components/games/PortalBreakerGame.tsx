@@ -7,8 +7,8 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { toast } from 'sonner';
 
 // ─── Constants ───────────────────────────────────────────────────────
-const BASE_WIDTH = 480;
-const BASE_HEIGHT = 640;
+const BASE_WIDTH = 720;
+const BASE_HEIGHT = 780;
 const PADDLE_HEIGHT = 14;
 const BALL_RADIUS = 7;
 const BRICK_ROWS = 5;
@@ -209,7 +209,7 @@ const PortalBreakerGame: React.FC = () => {
     const resize = () => {
       const c = containerRef.current;
       if (!c) return;
-      const maxW = Math.min(c.clientWidth, 520);
+      const maxW = Math.min(c.clientWidth, 800);
       const scale = maxW / BASE_WIDTH;
       scaleRef.current = scale;
       const canvas = canvasRef.current;
@@ -653,7 +653,7 @@ const PortalBreakerGame: React.FC = () => {
   const maskWallet = (w: string) => w.length > 10 ? `${w.slice(0, 4)}...${w.slice(-4)}` : w;
 
   return (
-    <div className="w-full max-w-lg mx-auto flex flex-col items-center gap-4">
+    <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
       {/* HUD */}
       <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
         <div className="bg-black/30 backdrop-blur-sm border border-purple-500/30 rounded-lg px-3 py-2 text-center">
