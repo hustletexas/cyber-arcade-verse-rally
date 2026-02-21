@@ -517,19 +517,6 @@ export const CommunityHub = () => {
                 </>
               )}
 
-              {/* Reward Tiers */}
-              <div className="grid grid-cols-3 gap-3 pt-3 border-t border-neon-cyan/10">
-                {[
-                  { place: '1st', emoji: '🥇', reward: '50 CCC', color: 'from-yellow-500/20 to-yellow-700/10 border-yellow-500/30' },
-                  { place: '2nd', emoji: '🥈', reward: '25 CCC', color: 'from-gray-400/20 to-gray-600/10 border-gray-400/30' },
-                  { place: '3rd', emoji: '🥉', reward: '10 CCC', color: 'from-orange-500/20 to-orange-700/10 border-orange-500/30' },
-                ].map((tier) => (
-                  <div key={tier.place} className={cn("text-center p-2.5 rounded-lg bg-gradient-to-br border", tier.color)}>
-                    <div className="text-lg">{tier.emoji}</div>
-                    <div className="text-xs text-white font-bold mt-1">{tier.reward}</div>
-                  </div>
-                ))}
-              </div>
 
               {/* Quick Play Buttons */}
               <div className="flex flex-wrap gap-2 justify-center pt-2 border-t border-neon-cyan/10">
