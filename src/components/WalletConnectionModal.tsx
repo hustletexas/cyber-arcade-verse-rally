@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles, Smartphone, ShieldCheck } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
 import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID, XBULL_ID } from '@creit.tech/stellar-wallets-kit';
+import { WALLET_CONNECT_ID } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import { WalletConnectModule, WalletConnectAllowedMethods } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import freighterApi from '@stellar/freighter-api';
 import { isMobileDevice, detectMobileWallets, getStoreLink, generateSignatureNonce, buildSignatureMessage } from '@/utils/mobileWalletDetection';
@@ -48,18 +49,17 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         setMobileWallets(detected);
       }
 
-      // Check Freighter (desktop extension)
-      if (!mobile) {
-        try {
-          if (typeof window !== 'undefined' && (window as any).freighter) {
-            setFreighterInstalled(true);
-          } else {
-            const result = await freighterApi.isConnected();
-            setFreighterInstalled(result.isConnected === true || result.error === undefined);
-          }
-        } catch (e) {
-          setFreighterInstalled(!!(window as any).freighter);
+      // Check Freighter (works on both desktop extension and mobile app)
+      try {
+        if (typeof window !== 'undefined' && (window as any).freighter) {
+          setFreighterInstalled(true);
+        } else {
+          const result = await freighterApi.isConnected();
+          setFreighterInstalled(result.isConnected === true || result.error === undefined);
         }
+      } catch (e) {
+        // On mobile, Freighter may not be detectable but still works via its app
+        setFreighterInstalled(mobile || !!(window as any).freighter);
       }
     };
 
@@ -145,34 +145,39 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   // LOBSTR connection via Stellar Wallets Kit (WalletConnect on mobile, extension on desktop)
   const connectLobstr = async () => {
     try {
-      const kit = getStellarKit(LOBSTR_ID);
-      
       if (isMobile) {
-        // On mobile, use openModal to trigger WalletConnect QR/deep link flow
-        await kit.openModal({
-          onWalletSelected: async (option) => {
-            kit.setWallet(option.id);
-            try {
-              const { address } = await kit.getAddress();
-              if (address) {
-                await requestSignature('lobstr', address, kit);
-              } else {
-                throw new Error('No address returned from LOBSTR');
-              }
-            } catch (innerError: any) {
-              toast({
-                title: "Connection Failed",
-                description: innerError?.message || "Failed to get address from LOBSTR",
-                variant: "destructive",
-              });
-            }
-          },
-          onClosed: () => {
-            setConnecting(null);
-          }
+        // On mobile, use WalletConnect module directly - no redundant modal
+        const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
+        if (!wcProjectId) {
+          throw new Error('WalletConnect not configured. Please contact support.');
+        }
+        
+        const wcModule = new WalletConnectModule({
+          url: window.location.origin,
+          projectId: wcProjectId,
+          method: WalletConnectAllowedMethods.SIGN,
+          description: 'Connect your Stellar wallet to Cyber City Arcade',
+          name: 'Cyber City Arcade',
+          icons: [`${window.location.origin}/favicon.ico`],
+          network: WalletNetwork.PUBLIC,
         });
+        
+        const kit = new StellarWalletsKit({
+          network: WalletNetwork.PUBLIC,
+          selectedWalletId: WALLET_CONNECT_ID,
+          modules: [wcModule]
+        });
+        
+        kit.setWallet(WALLET_CONNECT_ID);
+        const { address } = await kit.getAddress();
+        if (address) {
+          await requestSignature('lobstr', address, kit);
+        } else {
+          throw new Error('No address returned. Make sure LOBSTR app is installed.');
+        }
       } else {
-        // On desktop, use direct extension connection
+        // On desktop, use LOBSTR extension directly
+        const kit = getStellarKit(LOBSTR_ID);
         kit.setWallet(LOBSTR_ID);
         const { address } = await kit.getAddress();
         if (address) {
@@ -191,9 +196,37 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // Freighter connection (desktop browser extension)
+  // Freighter connection (desktop extension + mobile app)
   const connectFreighter = async () => {
     try {
+      if (isMobile) {
+        // On mobile, try to open Freighter app via deep link
+        // Freighter mobile app handles connection via its API
+        const freighterWindow = (window as any).freighter;
+        if (freighterWindow) {
+          const accessResult = await freighterApi.requestAccess();
+          if (accessResult.error) {
+            throw new Error(accessResult.error.message || 'User denied access to Freighter');
+          }
+          const addressResult = await freighterApi.getAddress();
+          if (addressResult.error) {
+            throw new Error(addressResult.error.message || 'Failed to get address');
+          }
+          if (addressResult.address) {
+            await requestSignature('freighter', addressResult.address);
+          }
+        } else {
+          // Freighter not available in mobile browser - redirect to app store
+          const storeLink = getStoreLink('freighter');
+          if (storeLink) {
+            window.open(storeLink, '_blank');
+          } else {
+            throw new Error('Freighter mobile app not detected. Please install it from your app store.');
+          }
+        }
+        return;
+      }
+
       const freighterWindow = (window as any).freighter;
       
       if (!freighterWindow) {
