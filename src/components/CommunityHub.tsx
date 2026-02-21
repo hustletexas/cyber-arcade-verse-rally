@@ -185,20 +185,13 @@ export const CommunityHub = () => {
         {/* Main Tabs */}
         <CardHeader className="pb-2">
           <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
+            <TabsList className="grid w-full grid-cols-2 bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
               <TabsTrigger
                 value="feed"
                 className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green data-[state=active]:shadow-neon-glow font-mono text-xs sm:text-sm"
               >
                 <Share2 className="w-3 h-3 mr-1 sm:mr-2" />
-                Feed
-              </TabsTrigger>
-              <TabsTrigger
-                value="chat"
-                className="data-[state=active]:bg-neon-pink/20 data-[state=active]:text-neon-pink data-[state=active]:shadow-neon-glow font-mono text-xs sm:text-sm"
-              >
-                <Send className="w-3 h-3 mr-1 sm:mr-2" />
-                Chat
+                Feed & Chat
               </TabsTrigger>
               <TabsTrigger
                 value="leaderboard"
@@ -264,91 +257,91 @@ export const CommunityHub = () => {
                 </div>
               </ScrollArea>
 
+              {/* Chat Section under Feed */}
+              <div className="pt-3 border-t border-neon-cyan/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-neon-pink flex items-center gap-2">
+                    <Send className="w-3 h-3" />
+                    Live Chat
+                  </h3>
+                  <div className="flex gap-1">
+                    {chatRooms.map((room) => (
+                      <button
+                        key={room.id}
+                        onClick={() => setChatRoom(room.id)}
+                        className={cn(
+                          "py-1 px-2 rounded text-[10px] font-medium transition-all",
+                          chatRoom === room.id
+                            ? "bg-neon-pink/20 text-neon-pink border border-neon-pink/30"
+                            : "text-gray-500 hover:text-gray-300"
+                        )}
+                      >
+                        {room.emoji} {room.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recent Messages (compact) */}
+                <ScrollArea className="h-[140px] pr-2">
+                  {messagesLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-neon-cyan text-xs">Loading messages...</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {chatMessages?.slice(-10).map((message) => (
+                        <div
+                          key={message.id}
+                          className="px-2 py-1.5 rounded bg-black/30 hover:bg-black/50 transition-all duration-200"
+                        >
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-bold text-[10px] text-neon-cyan flex-shrink-0">{message.username}</span>
+                            <p className="text-gray-200 text-xs truncate flex-1">{message.message}</p>
+                            <span className="text-gray-600 text-[9px] flex-shrink-0">{formatTime(message.created_at)}</span>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  )}
+                </ScrollArea>
+
+                {/* Chat Input */}
+                {!isAuthenticatedForChat ? (
+                  <Button
+                    onClick={() => toast({ title: "Connect Wallet", description: "Use the wallet button in the header to connect your Stellar wallet" })}
+                    className="w-full h-8 text-xs hover:scale-105 transition-all duration-200"
+                    style={{ background: 'linear-gradient(45deg, #14b9ff, #00d4aa)', color: 'black', fontWeight: 'bold' }}
+                    disabled={loading}
+                  >
+                    CONNECT WALLET TO CHAT
+                  </Button>
+                ) : (
+                  <div className="space-y-1">
+                    <VoiceChat onVoiceMessage={handleVoiceMessage} isConnected={!!isAuthenticatedForChat} />
+                    <div className="flex gap-2">
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder={`Message ${chatRooms.find(r => r.id === chatRoom)?.name}...`}
+                        className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400 h-8 text-xs"
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      />
+                      <Button onClick={handleSendMessage} className="cyber-button px-3 h-8" disabled={!newMessage.trim()}>
+                        <Send size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Quick Actions */}
               <div className="flex flex-wrap gap-2 justify-center pt-3 border-t border-neon-cyan/10">
                 <Button size="sm" variant="outline" className="border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 text-xs" onClick={() => navigate('/tournaments')}>
                   <Swords className="w-3 h-3 mr-1" /> Tournaments
                 </Button>
               </div>
-            </div>
-          )}
-
-          {/* ============ CHAT TAB ============ */}
-          {mainTab === 'chat' && (
-            <div className="space-y-3">
-              {/* Room Selector */}
-              <div className="flex gap-1 bg-black/30 rounded-lg p-1">
-                {chatRooms.map((room) => (
-                  <button
-                    key={room.id}
-                    onClick={() => setChatRoom(room.id)}
-                    className={cn(
-                      "flex-1 py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition-all",
-                      chatRoom === room.id
-                        ? "bg-neon-pink/20 text-neon-pink border border-neon-pink/30"
-                        : "text-gray-400 hover:text-gray-300 hover:bg-black/20"
-                    )}
-                  >
-                    {room.emoji} {room.name}
-                  </button>
-                ))}
-              </div>
-
-              {/* Messages */}
-              <ScrollArea className="h-[320px] pr-2">
-                {messagesLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-neon-cyan text-sm">Loading messages...</div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {chatMessages?.map((message) => (
-                      <div
-                        key={message.id}
-                        className="p-2 rounded-lg border border-neon-cyan/20 bg-black/30 hover:bg-black/50 transition-all duration-200"
-                      >
-                        <div className="flex items-start justify-between mb-1">
-                          <span className="font-bold text-xs text-neon-cyan">{message.username}</span>
-                          <span className="text-gray-500 text-[10px]">{formatTime(message.created_at)}</span>
-                        </div>
-                        <p className="text-gray-200 text-xs">{message.message}</p>
-                      </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-                )}
-              </ScrollArea>
-
-              {/* Chat Input */}
-              {!isAuthenticatedForChat ? (
-                <div className="text-center p-4">
-                  <Button
-                    onClick={() => toast({ title: "Connect Wallet", description: "Use the wallet button in the header to connect your Stellar wallet" })}
-                    className="w-full h-10 text-sm hover:scale-105 transition-all duration-200"
-                    style={{ background: 'linear-gradient(45deg, #14b9ff, #00d4aa)', color: 'black', fontWeight: 'bold' }}
-                    disabled={loading}
-                  >
-                    CONNECT WALLET TO CHAT
-                  </Button>
-                  <p className="text-xs text-gray-400 mt-2">Connect your Stellar wallet to join the conversation</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <VoiceChat onVoiceMessage={handleVoiceMessage} isConnected={!!isAuthenticatedForChat} />
-                  <div className="flex gap-2">
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder={`Message ${chatRooms.find(r => r.id === chatRoom)?.name}...`}
-                      className="bg-black/30 border-neon-cyan/30 text-white placeholder:text-gray-400 h-8 text-xs"
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    />
-                    <Button onClick={handleSendMessage} className="cyber-button px-3 h-8" disabled={!newMessage.trim()}>
-                      <Send size={14} />
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
