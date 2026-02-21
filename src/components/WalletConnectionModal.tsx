@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles, Smartphone, ShieldCheck } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
 import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID, XBULL_ID } from '@creit.tech/stellar-wallets-kit';
+import { WalletConnectModule, WalletConnectAllowedMethods } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import freighterApi from '@stellar/freighter-api';
 import { isMobileDevice, detectMobileWallets, getStoreLink, generateSignatureNonce, buildSignatureMessage } from '@/utils/mobileWalletDetection';
 
@@ -68,12 +69,33 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   }, [isOpen]);
 
-  // Initialize Stellar Wallets Kit
+  // Initialize Stellar Wallets Kit with WalletConnect support for mobile
   const getStellarKit = (walletId: string = LOBSTR_ID) => {
+    const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
+    
+    const modules = [
+      ...allowAllModules(),
+    ];
+
+    // Add WalletConnect module for mobile LOBSTR support
+    if (wcProjectId) {
+      modules.push(
+        new WalletConnectModule({
+          url: window.location.origin,
+          projectId: wcProjectId,
+          method: WalletConnectAllowedMethods.SIGN,
+          description: 'Connect your Stellar wallet to Cyber City Arcade',
+          name: 'Cyber City Arcade',
+          icons: [`${window.location.origin}/favicon.ico`],
+          network: WalletNetwork.PUBLIC,
+        })
+      );
+    }
+
     return new StellarWalletsKit({
       network: WalletNetwork.PUBLIC,
       selectedWalletId: walletId,
-      modules: allowAllModules()
+      modules
     });
   };
 
@@ -120,21 +142,50 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     });
   };
 
-  // LOBSTR connection via Stellar Wallets Kit
+  // LOBSTR connection via Stellar Wallets Kit (WalletConnect on mobile, extension on desktop)
   const connectLobstr = async () => {
     try {
       const kit = getStellarKit(LOBSTR_ID);
-      kit.setWallet(LOBSTR_ID);
-      const { address } = await kit.getAddress();
-      if (address) {
-        await requestSignature('lobstr', address, kit);
+      
+      if (isMobile) {
+        // On mobile, use openModal to trigger WalletConnect QR/deep link flow
+        await kit.openModal({
+          onWalletSelected: async (option) => {
+            kit.setWallet(option.id);
+            try {
+              const { address } = await kit.getAddress();
+              if (address) {
+                await requestSignature('lobstr', address, kit);
+              } else {
+                throw new Error('No address returned from LOBSTR');
+              }
+            } catch (innerError: any) {
+              toast({
+                title: "Connection Failed",
+                description: innerError?.message || "Failed to get address from LOBSTR",
+                variant: "destructive",
+              });
+            }
+          },
+          onClosed: () => {
+            setConnecting(null);
+          }
+        });
       } else {
-        throw new Error('No address returned from LOBSTR');
+        // On desktop, use direct extension connection
+        kit.setWallet(LOBSTR_ID);
+        const { address } = await kit.getAddress();
+        if (address) {
+          await requestSignature('lobstr', address, kit);
+        } else {
+          throw new Error('No address returned from LOBSTR');
+        }
       }
     } catch (error: any) {
+      console.error('LOBSTR connection error:', error);
       toast({
         title: "Connection Failed",
-        description: error?.message || "Failed to connect to LOBSTR wallet",
+        description: error?.message || "Failed to connect to LOBSTR wallet. Make sure you have the LOBSTR app installed.",
         variant: "destructive",
       });
     }
