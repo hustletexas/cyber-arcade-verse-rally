@@ -173,8 +173,6 @@ const PortalBreakerGame: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loadingLb, setLoadingLb] = useState(false);
   const scaleRef = useRef(1);
-  const startGameRef = useRef<() => void>(() => {});
-  const togglePauseRef = useRef<() => void>(() => {});
 
   const { primaryWallet, isWalletConnected } = useMultiWallet();
   const walletAddress = primaryWallet?.address || '';
@@ -239,32 +237,13 @@ const PortalBreakerGame: React.FC = () => {
     };
     const onMouse = (e: MouseEvent) => handleMove(e.clientX);
     const onTouch = (e: TouchEvent) => { e.preventDefault(); handleMove(e.touches[0].clientX); };
-    const onClick = (e: MouseEvent) => {
-      const s = stateRef.current;
-      if (s.status === 'idle' || s.status === 'gameover') {
-        startGameRef.current();
-      } else if (s.status === 'running' || s.status === 'paused') {
-        togglePauseRef.current();
-      }
-    };
-    const onTapStart = (e: TouchEvent) => {
-      const s = stateRef.current;
-      if (s.status === 'idle' || s.status === 'gameover') {
-        e.preventDefault();
-        startGameRef.current();
-      }
-    };
     canvas.addEventListener('mousemove', onMouse);
     canvas.addEventListener('touchmove', onTouch, { passive: false });
     canvas.addEventListener('touchstart', onTouch, { passive: false });
-    canvas.addEventListener('click', onClick);
-    canvas.addEventListener('touchend', onTapStart, { passive: false });
     return () => {
       canvas.removeEventListener('mousemove', onMouse);
       canvas.removeEventListener('touchmove', onTouch);
       canvas.removeEventListener('touchstart', onTouch);
-      canvas.removeEventListener('click', onClick);
-      canvas.removeEventListener('touchend', onTapStart);
     };
   }, []);
 
@@ -659,9 +638,6 @@ const PortalBreakerGame: React.FC = () => {
     if (s.status === 'running') s.status = 'paused';
     else if (s.status === 'paused') s.status = 'running';
   };
-
-  startGameRef.current = startGame;
-  togglePauseRef.current = togglePause;
 
   const restartGame = async () => {
     if (!isWalletConnected) {
