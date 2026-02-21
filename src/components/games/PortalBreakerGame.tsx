@@ -15,7 +15,7 @@ const BRICK_ROWS = 5;
 const BRICK_COLS = 11;
 const BRICK_PAD = 4;
 const BRICK_TOP_OFFSET = 100;
-const POWER_UP_CHANCE = 0.10;
+const POWER_UP_CHANCE = 0.25;
 const COMBO_WINDOW = 2000;
 const STAR_COUNT = 120;
 
@@ -44,12 +44,16 @@ function getTheme(level: number): ColorTheme {
   return LEVEL_THEMES[(level - 1) % LEVEL_THEMES.length];
 }
 
-type PowerUpType = 'widen' | 'slow' | 'split' | 'phase';
+type PowerUpType = 'widen' | 'slow' | 'split' | 'phase' | 'laser' | 'fireball' | 'magnet' | 'nuke';
 const POWER_UP_META: Record<PowerUpType, { label: string; color: string; duration: number }> = {
-  widen: { label: 'WIDEN GATE', color: '#00ffcc', duration: 10000 },
-  slow:  { label: 'TIME DILATION', color: '#8b5cf6', duration: 8000 },
-  split: { label: 'ORBIT SPLIT', color: '#f59e0b', duration: 0 },
-  phase: { label: 'PHASE ORB', color: '#ec4899', duration: 8000 },
+  widen:    { label: 'WIDEN GATE', color: '#00ffcc', duration: 10000 },
+  slow:     { label: 'TIME DILATION', color: '#8b5cf6', duration: 8000 },
+  split:    { label: 'ORBIT SPLIT', color: '#f59e0b', duration: 0 },
+  phase:    { label: 'PHASE ORB', color: '#ec4899', duration: 8000 },
+  laser:    { label: 'LASER BEAM', color: '#ff0000', duration: 6000 },
+  fireball: { label: 'FIREBALL', color: '#ff6600', duration: 7000 },
+  magnet:   { label: 'MAGNET PULL', color: '#00ccff', duration: 8000 },
+  nuke:     { label: 'NUKE BLAST', color: '#ffff00', duration: 0 },
 };
 
 interface Ball { x: number; y: number; vx: number; vy: number; trail: { x: number; y: number }[]; }
@@ -295,7 +299,7 @@ const PortalBreakerGame: React.FC = () => {
         ball.y = paddleY - BALL_RADIUS;
       }
 
-      const isPhase = s.activePower?.type === 'phase';
+      const isPhase = s.activePower?.type === 'phase' || s.activePower?.type === 'fireball';
       for (const brick of s.bricks) {
         if (!brick.alive) continue;
         const bx = brick.x + Math.sin(brick.wobble) * 2;
@@ -320,7 +324,7 @@ const PortalBreakerGame: React.FC = () => {
             const brickHue = theme.brickHues[brick.maxHp - 1] ?? theme.brickHues[0];
             spawnParticles(bx + brick.w / 2, brick.y + brick.h / 2, `hsl(${brickHue}, 100%, 65%)`, 10);
             if (Math.random() < POWER_UP_CHANCE) {
-              const types: PowerUpType[] = ['widen', 'slow', 'split', 'phase'];
+              const types: PowerUpType[] = ['widen', 'slow', 'split', 'phase', 'laser', 'fireball', 'magnet', 'nuke'];
               s.powerUps.push({ type: types[Math.floor(Math.random() * types.length)], x: bx + brick.w / 2, y: brick.y + brick.h, vy: 2 });
             }
           }
@@ -367,6 +371,41 @@ const PortalBreakerGame: React.FC = () => {
         } else if (pu.type === 'widen') {
           s.paddleW = s.basePaddleW * 1.5;
           s.activePower = { type: 'widen', end: now + meta.duration };
+        } else if (pu.type === 'nuke') {
+          // Destroy all bricks in a 3-row radius around the paddle
+          let nuked = 0;
+          for (const brick of s.bricks) {
+            if (brick.alive && brick.y > s.canvasH * 0.3) {
+              brick.alive = false;
+              brick.hp = 0;
+              s.bricksDestroyed++;
+              nuked++;
+              spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#ffff00', 6);
+            }
+          }
+          s.score += nuked * 15;
+          s.shakeEnd = now + 400;
+          s.overlayText = `NUKE! ×${nuked}`;
+          s.overlayEnd = now + 1000;
+        } else if (pu.type === 'laser') {
+          // Destroy entire column above paddle center
+          const pcx = s.paddleX + s.paddleW / 2;
+          for (const brick of s.bricks) {
+            if (brick.alive && pcx >= brick.x && pcx <= brick.x + brick.w) {
+              brick.alive = false;
+              brick.hp = 0;
+              s.bricksDestroyed++;
+              s.score += 15;
+              spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#ff0000', 8);
+            }
+          }
+          s.activePower = { type: 'laser', end: now + meta.duration };
+        } else if (pu.type === 'fireball') {
+          // Ball destroys bricks without bouncing for duration
+          s.activePower = { type: 'fireball', end: now + meta.duration };
+        } else if (pu.type === 'magnet') {
+          // Attract power-ups and slow ball loss
+          s.activePower = { type: 'magnet', end: now + meta.duration };
         } else {
           s.activePower = { type: pu.type, end: now + meta.duration };
         }
