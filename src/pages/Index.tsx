@@ -118,10 +118,10 @@ const Index = () => {
             filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
           }} src="/lovable-uploads/dd23db05-56ce-4fcd-8593-c174a3d2f9a7.png" />
             <button
-              onClick={() => window.location.href = '/rewards'}
-              className="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 px-5 py-2 rounded-lg text-xs sm:text-sm font-bold border border-neon-cyan/60 bg-black/60 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,204,0.4)] transition-all duration-300 backdrop-blur-md"
-            >
-              CLAIM REWARDS
+            onClick={() => window.location.href = '/rewards'}
+            className="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 px-5 py-2 rounded-lg text-xs sm:text-sm font-bold border border-neon-cyan/60 bg-black/60 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,204,0.4)] transition-all duration-300 backdrop-blur-md">
+
+              CLAIM PASS 
             </button>
           </div>
 
@@ -180,7 +180,7 @@ const Index = () => {
               <h3 className="font-display text-xl sm:text-2xl text-neon-cyan mb-2">CYBER CITY ARCADE</h3>
               <p className="text-muted-foreground text-xs sm:text-sm mb-3">The Ultimate Web3 Gaming Experience</p>
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <img src="/lovable-uploads/stellar.png" alt="Stellar" className="w-5 h-5 opacity-80" onError={e => e.currentTarget.style.display = 'none'} />
+                <img src="/lovable-uploads/stellar.png" alt="Stellar" className="w-5 h-5 opacity-80" onError={(e) => e.currentTarget.style.display = 'none'} />
                 <span className="text-neon-purple text-xs sm:text-sm font-mono">Powered by Stellar Blockchain</span>
               </div>
             </div>
