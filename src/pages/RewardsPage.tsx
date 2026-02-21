@@ -10,6 +10,8 @@ import { ArrowLeft, Gift, Trophy, Zap, Star, Clock, CheckCircle2, Wallet, Loader
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { WalletConnectionModal } from '@/components/WalletConnectionModal';
 
 interface Reward {
   id: string;
@@ -29,6 +31,8 @@ interface Reward {
 const RewardsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { connectWallet, isWalletConnected } = useMultiWallet();
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
   const [claimState, setClaimState] = useState<'idle' | 'claiming' | 'claimed'>('idle');
@@ -200,7 +204,7 @@ const RewardsPage = () => {
                 {!user && (
                   <Button
                     variant="outline"
-                    onClick={() => toast({ title: 'Wallet connection coming soon' })}
+                    onClick={() => setShowWalletModal(true)}
                     className="border-accent/30 text-accent hover:bg-accent/10"
                   >
                     <Wallet className="w-4 h-4 mr-2" />
@@ -346,6 +350,15 @@ const RewardsPage = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <WalletConnectionModal
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onWalletConnected={(walletType, address) => {
+          connectWallet(walletType as any, address);
+          setShowWalletModal(false);
+        }}
+      />
     </div>
   );
 };
