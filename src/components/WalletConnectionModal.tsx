@@ -153,7 +153,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectLobstr = async () => {
     try {
       if (isMobile) {
-        // On mobile, use WalletConnect module directly - no redundant modal
+        // On mobile, use WalletConnect module - must open modal to establish session first
         const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
         if (!wcProjectId) {
           throw new Error('WalletConnect not configured. Please contact support.');
@@ -175,13 +175,27 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           modules: [wcModule]
         });
         
-        kit.setWallet(WALLET_CONNECT_ID);
-        const { address } = await kit.getAddress();
-        if (address) {
-          await requestSignature('lobstr', address, kit);
-        } else {
-          throw new Error('No address returned. Make sure LOBSTR app is installed.');
-        }
+        // Open modal to establish WalletConnect session, then get address via callback
+        await kit.openModal({
+          onWalletSelected: async (option: { id: string; name: string; type: string; isAvailable: boolean }) => {
+            kit.setWallet(option.id);
+            try {
+              const { address } = await kit.getAddress();
+              if (address) {
+                await requestSignature('lobstr', address, kit);
+              } else {
+                throw new Error('No address returned. Make sure LOBSTR app is installed.');
+              }
+            } catch (err: any) {
+              console.error('LOBSTR mobile address error:', err);
+              toast({
+                title: "Connection Failed",
+                description: err?.message || "Failed to get address from LOBSTR",
+                variant: "destructive",
+              });
+            }
+          }
+        });
       } else {
         // On desktop, use LOBSTR extension directly
         const kit = getStellarKit(LOBSTR_ID);
@@ -301,7 +315,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectXbull = async () => {
     try {
       if (isMobile) {
-        // On mobile, use WalletConnect like LOBSTR
         const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
         if (!wcProjectId) {
           throw new Error('WalletConnect not configured. Please contact support.');
@@ -323,13 +336,26 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           modules: [wcModule]
         });
         
-        kit.setWallet(WALLET_CONNECT_ID);
-        const { address } = await kit.getAddress();
-        if (address) {
-          await requestSignature('xbull', address, kit);
-        } else {
-          throw new Error('No address returned. Make sure xBull app is installed.');
-        }
+        await kit.openModal({
+          onWalletSelected: async (option: { id: string; name: string; type: string; isAvailable: boolean }) => {
+            kit.setWallet(option.id);
+            try {
+              const { address } = await kit.getAddress();
+              if (address) {
+                await requestSignature('xbull', address, kit);
+              } else {
+                throw new Error('No address returned. Make sure xBull app is installed.');
+              }
+            } catch (err: any) {
+              console.error('xBull mobile address error:', err);
+              toast({
+                title: "Connection Failed",
+                description: err?.message || "Failed to get address from xBull",
+                variant: "destructive",
+              });
+            }
+          }
+        });
       } else {
         // Desktop: use xBull extension directly
         const kit = getStellarKit(XBULL_ID);
