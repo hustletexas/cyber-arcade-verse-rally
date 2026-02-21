@@ -119,7 +119,7 @@ const Index = () => {
           }} src="/lovable-uploads/dd23db05-56ce-4fcd-8593-c174a3d2f9a7.png" />
             <button
               onClick={() => window.location.href = '/rewards'}
-              className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 px-5 py-2 rounded-lg text-xs sm:text-sm font-bold border border-neon-cyan/60 bg-black/60 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,204,0.4)] transition-all duration-300 backdrop-blur-md"
+              className="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 px-5 py-2 rounded-lg text-xs sm:text-sm font-bold border border-neon-cyan/60 bg-black/60 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_20px_rgba(0,255,204,0.4)] transition-all duration-300 backdrop-blur-md"
             >
               CLAIM REWARDS
             </button>
