@@ -31,8 +31,12 @@ interface Reward {
 const RewardsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { connectWallet, isWalletConnected } = useMultiWallet();
+  const { connectWallet, isWalletConnected, primaryWallet } = useMultiWallet();
   const [showWalletModal, setShowWalletModal] = useState(false);
+
+  // Consider user "authenticated" if either Supabase auth or wallet is connected
+  const isAuthenticated = !!user || isWalletConnected;
+  const userId = user?.id || primaryWallet?.address || null;
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
   const [claimState, setClaimState] = useState<'idle' | 'claiming' | 'claimed'>('idle');
@@ -44,10 +48,10 @@ const RewardsPage = () => {
 
   useEffect(() => {
     fetchRewards();
-  }, [user]);
+  }, [user, isWalletConnected, primaryWallet]);
 
   const fetchRewards = async () => {
-    if (!user) {
+    if (!isAuthenticated || !userId) {
       setRewards([]);
       setLoading(false);
       return;
@@ -58,7 +62,7 @@ const RewardsPage = () => {
       const { data, error: fetchError } = await supabase
         .from('rewards_ledger')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
@@ -179,8 +183,8 @@ const RewardsPage = () => {
                     <p className="text-muted-foreground text-sm">Loading rewards…</p>
                   ) : error ? (
                     <p className="text-destructive text-sm">{error}</p>
-                  ) : !user ? (
-                    <p className="text-muted-foreground text-sm">Sign in to view your rewards.</p>
+                  ) : !isAuthenticated ? (
+                    <p className="text-muted-foreground text-sm">Sign in or connect wallet to view your rewards.</p>
                   ) : claimable.length === 0 ? (
                     <p className="text-muted-foreground text-sm">No rewards available right now. Check back after weekly reset.</p>
                   ) : (
@@ -193,7 +197,7 @@ const RewardsPage = () => {
               <div className="flex gap-3 sm:shrink-0">
                 <Button
                   onClick={handleClaimAll}
-                  disabled={claimable.length === 0 || claimState !== 'idle' || !user}
+                  disabled={claimable.length === 0 || claimState !== 'idle' || !isAuthenticated}
                   className="bg-accent text-accent-foreground hover:bg-accent/90 font-display tracking-wider px-6"
                 >
                   {claimState === 'claiming' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -201,7 +205,7 @@ const RewardsPage = () => {
                   {claimState === 'claiming' && 'CLAIMING…'}
                   {claimState === 'claimed' && 'CLAIMED ✅'}
                 </Button>
-                {!user && (
+                {!isAuthenticated && (
                   <Button
                     variant="outline"
                     onClick={() => setShowWalletModal(true)}
