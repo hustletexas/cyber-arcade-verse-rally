@@ -378,25 +378,27 @@ const CyberGalaxyGame: React.FC = () => {
       if (!e.isDiving) return;
       e.diveT += dtMs * 0.001;
       const t = e.diveT;
-      if (t < 1.2) {
+
+      // Already teleported above screen — glide back to formation
+      if (e.y < 0) {
+        e.y += (e.formY - e.y) * 0.045;
+        e.x += (e.formX + swayX - e.x) * 0.045;
+        if (Math.abs(e.y - e.formY) < 3) {
+          e.y = e.formY;
+          e.x = e.formX + swayX;
+          e.isDiving = false;
+        }
+      } else if (t < 1.2) {
         // Phase 1: Dive downward with a sine curve
         e.x = e.diveStartX + Math.sin(t * 2) * 80 * e.diveCurveDir;
         e.y = e.diveStartY + t * (s.ch * 0.6);
       } else if (e.y < s.ch + e.h + 40) {
-        // Phase 2: Continue moving off the bottom of the screen
+        // Phase 2: Continue off the bottom
         e.y += 4;
       } else {
-        // Phase 3: Teleport above the screen (invisible) then glide back to formation
-        if (e.y > 0) {
-          e.x = e.formX + swayX;
-          e.y = -e.h - 60;
-        }
-        e.y += (e.formY - e.y) * 0.04;
-        e.x += (e.formX + swayX - e.x) * 0.04;
-        if (Math.abs(e.y - e.formY) < 3) {
-          e.y = e.formY;
-          e.isDiving = false;
-        }
+        // Phase 3: Teleport above screen
+        e.x = e.formX + swayX;
+        e.y = -e.h - 60;
       }
     });
 
