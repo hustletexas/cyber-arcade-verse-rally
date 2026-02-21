@@ -20,11 +20,11 @@ const scrollSections: { id: string; label: string; icon: any }[] = [];
 
 // Sections that navigate to dedicated pages
 const pageSections = [
+  { path: '/wallet', label: 'Wallet', icon: Wallet },
   { path: '/store', label: 'Merch', icon: ShoppingBag },
   { path: '/tournaments', label: 'Tournament', icon: Trophy },
   { path: '/esports', label: 'Cyber City Esports', icon: Swords },
   { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
-  { path: '/wallet', label: 'Wallet', icon: Wallet },
   { path: '/sponsorships', label: 'Sponsorships', icon: Handshake },
   { path: '/foundation', label: 'Foundation', icon: Heart },
   { path: '/tournament-rules', label: 'Rules', icon: Scale },
