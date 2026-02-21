@@ -115,7 +115,7 @@ export const ClaimPassButton: React.FC = () => {
     if (!isWalletConnected) return '🔗 CONNECT TO CLAIM';
     if (isSoldOut) return '❌ SOLD OUT';
     if (claiming) return 'CLAIMING...';
-    return '🎮 CLAIM PASS';
+    return 'CLAIM PASS';
   };
 
   const isDisabled = loading || hasPass || isSoldOut || claiming;
