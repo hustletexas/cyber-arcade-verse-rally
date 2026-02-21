@@ -221,9 +221,8 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectFreighter = async () => {
     try {
       if (isMobile) {
-        // On mobile, try to open Freighter app via deep link
-        // Freighter mobile app handles connection via its API
-        const freighterWindow = (window as any).freighter;
+        // On mobile, first check if Freighter API is available in-browser
+        const freighterWindow = (window as any).freighter || (window as any).freighterApi;
         if (freighterWindow) {
           const accessResult = await freighterApi.requestAccess();
           if (accessResult.error) {
@@ -237,13 +236,48 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             await requestSignature('freighter', addressResult.address);
           }
         } else {
-          // Freighter not available in mobile browser - redirect to app store
-          const storeLink = getStoreLink('freighter');
-          if (storeLink) {
-            window.open(storeLink, '_blank');
-          } else {
-            throw new Error('Freighter mobile app not detected. Please install it from your app store.');
+          // Freighter not injected — use WalletConnect to connect via deep link
+          const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
+          if (!wcProjectId) {
+            throw new Error('WalletConnect not configured. Please contact support.');
           }
+
+          const wcModule = new WalletConnectModule({
+            url: window.location.origin,
+            projectId: wcProjectId,
+            method: WalletConnectAllowedMethods.SIGN,
+            description: 'Connect your Stellar wallet to Cyber City Arcade',
+            name: 'Cyber City Arcade',
+            icons: [`${window.location.origin}/favicon.ico`],
+            network: WalletNetwork.PUBLIC,
+          });
+
+          const kit = new StellarWalletsKit({
+            network: WalletNetwork.PUBLIC,
+            selectedWalletId: WALLET_CONNECT_ID,
+            modules: [wcModule]
+          });
+
+          await kit.openModal({
+            onWalletSelected: async (option: { id: string; name: string; type: string; isAvailable: boolean }) => {
+              kit.setWallet(option.id);
+              try {
+                const { address } = await kit.getAddress();
+                if (address) {
+                  await requestSignature('freighter', address, kit);
+                } else {
+                  throw new Error('No address returned from Freighter.');
+                }
+              } catch (err: any) {
+                console.error('Freighter mobile WC error:', err);
+                toast({
+                  title: "Connection Failed",
+                  description: err?.message || "Failed to get address from Freighter",
+                  variant: "destructive",
+                });
+              }
+            }
+          });
         }
         return;
       }
