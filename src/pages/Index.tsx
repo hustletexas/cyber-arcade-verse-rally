@@ -118,7 +118,7 @@ const Index = () => {
             <img alt="Cyber City Arcade NFT" className="w-80 h-auto sm:w-[500px] md:w-[700px] lg:w-[900px] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" style={{
             filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
           }} src="/lovable-uploads/dd23db05-56ce-4fcd-8593-c174a3d2f9a7.png" />
-            <div className="absolute bottom-12 sm:bottom-16 md:bottom-20 left-1/2 -translate-x-1/2">
+            <div className="absolute bottom-16 sm:bottom-20 md:bottom-24 left-1/2 -translate-x-1/2">
               <ClaimPassButton />
             </div>
           </div>
