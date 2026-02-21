@@ -51,6 +51,7 @@ interface Enemy {
   diveCurveDir: number;
   shootTimer: number;
   wobble: number;
+  reformTimer: number; // cooldown in ms before enemy can dive again after returning
 }
 
 interface PowerUp { type: PowerUpType; x: number; y: number; vy: number; }
@@ -127,6 +128,7 @@ function spawnWave(wave: number, cw: number): Enemy[] {
         diveStartX: 0, diveStartY: 0, diveCurveDir: 1,
         shootTimer: Math.random() * 4000 + 2000,
         wobble: Math.random() * Math.PI * 2,
+        reformTimer: 0,
       });
     }
   }
@@ -348,6 +350,10 @@ const CyberGalaxyGame: React.FC = () => {
     // ── Enemy formation sway ──
     const swayX = Math.sin(now * 0.0005) * 25;
     s.enemies.forEach(e => {
+      // Tick down reform cooldown for non-diving enemies
+      if (!e.isDiving && e.reformTimer > 0) {
+        e.reformTimer -= dtMs;
+      }
       if (!e.isDiving) {
         e.x = e.formX + swayX + Math.sin(e.wobble + now * 0.002) * 3;
         e.y = e.formY + Math.sin(e.wobble + now * 0.0015) * 4;
@@ -359,11 +365,11 @@ const CyberGalaxyGame: React.FC = () => {
     s.diveTimer -= dtMs;
     if (s.diveTimer <= 0) {
       s.diveTimer = diveInterval;
-      const nonDiving = s.enemies.filter(e => !e.isDiving);
+      const nonDiving = s.enemies.filter(e => !e.isDiving && e.reformTimer <= 0);
       const diveCount = Math.min(1 + Math.floor(s.wave / 2), 3, nonDiving.length);
       for (let i = 0; i < diveCount; i++) {
         const e = nonDiving[Math.floor(Math.random() * nonDiving.length)];
-        if (e && !e.isDiving) {
+        if (e && !e.isDiving && e.reformTimer <= 0) {
           e.isDiving = true;
           e.diveT = 0;
           e.diveStartX = e.x;
@@ -387,6 +393,7 @@ const CyberGalaxyGame: React.FC = () => {
           e.y = e.formY;
           e.x = e.formX + swayX;
           e.isDiving = false;
+          e.reformTimer = 2000 + Math.random() * 2000; // hold in formation 2-4s before diving again
         }
       } else if (t < 1.2) {
         // Phase 1: Dive downward with a sine curve
