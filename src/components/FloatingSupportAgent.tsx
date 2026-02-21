@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Headphones, Send, X, Ticket, Loader2, BadgeQuestionMark } from 'lucide-react';
+import { Headphones, Send, X, Ticket, Loader2, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -112,7 +112,7 @@ export const FloatingSupportAgent = () => {
         {isOpen ?
         <X className="h-6 w-6 text-neon-pink" /> :
 
-        <BadgeQuestionMark className="h-6 w-6 text-neon-pink group-hover:animate-pulse" />
+        <HelpCircle className="h-6 w-6 text-neon-pink group-hover:animate-pulse" />
         }
       </Button>
 
