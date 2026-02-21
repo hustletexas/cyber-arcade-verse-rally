@@ -41,7 +41,7 @@ export const TournamentHub: React.FC = () => {
       </div>
 
       {/* Badges */}
-      <div className="flex items-center justify-end gap-2 py-2">
+      <div className="flex items-center justify-end gap-2 py-1">
         <Badge className="bg-neon-cyan text-black">
           {upcomingTournaments.length} Upcoming
         </Badge>
@@ -76,12 +76,12 @@ export const TournamentHub: React.FC = () => {
         </TabsList>
 
         {/* Tournament Cards - Browse tab content moved above live bracket */}
-        <TabsContent value="browse" className="mt-6">
+        <TabsContent value="browse" className="mt-2">
           <TournamentList tournaments={tournaments.filter((t) => t.status !== 'draft')} loading={loading} />
         </TabsContent>
 
         {/* Live Bracket Preview - Show when there are active tournaments */}
-        {activeTournaments.length > 0 && activeTab === 'browse' && <Card className="arcade-frame border-neon-green/50 mt-6">
+        {activeTournaments.length > 0 && activeTab === 'browse' && <Card className="arcade-frame border-neon-green/50 mt-2">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="font-display text-xl text-neon-green flex items-center gap-2">
@@ -103,15 +103,15 @@ export const TournamentHub: React.FC = () => {
             </CardContent>
           </Card>}
 
-        <TabsContent value="vote" className="mt-6">
+        <TabsContent value="vote" className="mt-2">
           <TournamentVoting />
         </TabsContent>
 
-        <TabsContent value="my-tournaments" className="mt-6">
+        <TabsContent value="my-tournaments" className="mt-2">
           <MyTournaments />
         </TabsContent>
 
-        <TabsContent value="calendar" className="mt-6">
+        <TabsContent value="calendar" className="mt-2">
           <div className="arcade-frame p-6">
             <h2 className="font-display text-xl text-neon-cyan mb-4">Upcoming Events</h2>
             <div className="space-y-3">
@@ -130,7 +130,7 @@ export const TournamentHub: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="admin" className="mt-6">
+        <TabsContent value="admin" className="mt-2">
           <TournamentAdminDashboard />
         </TabsContent>
       </Tabs>
