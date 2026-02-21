@@ -25,8 +25,8 @@ export const TournamentHub: React.FC = () => {
   useEffect(() => {
     fetchTournaments();
   }, [fetchTournaments]);
-  const upcomingTournaments = tournaments.filter(t => ['published', 'registration_open'].includes(t.status));
-  const activeTournaments = tournaments.filter(t => t.status === 'in_progress');
+  const upcomingTournaments = tournaments.filter((t) => ['published', 'registration_open'].includes(t.status));
+  const activeTournaments = tournaments.filter((t) => t.status === 'in_progress');
 
   // Select first active tournament for bracket preview
   useEffect(() => {
@@ -37,7 +37,7 @@ export const TournamentHub: React.FC = () => {
   return <div>
       {/* Banner */}
       <div className="w-full mt-16 sm:mt-20 md:mt-24">
-        <img alt="Tournament Hub" className="w-full h-auto object-contain" src="/lovable-uploads/257e83f9-7eb8-4485-b196-5f22a2212406.png" />
+        <img alt="Tournament Hub" className="w-full h-auto object-contain" src="/lovable-uploads/4d056629-874a-482c-a00e-1c4833a2ba63.png" />
       </div>
 
       {/* Badges */}
@@ -77,7 +77,7 @@ export const TournamentHub: React.FC = () => {
 
         {/* Tournament Cards - Browse tab content moved above live bracket */}
         <TabsContent value="browse" className="mt-6">
-          <TournamentList tournaments={tournaments.filter(t => t.status !== 'draft')} loading={loading} />
+          <TournamentList tournaments={tournaments.filter((t) => t.status !== 'draft')} loading={loading} />
         </TabsContent>
 
         {/* Live Bracket Preview - Show when there are active tournaments */}
@@ -89,13 +89,13 @@ export const TournamentHub: React.FC = () => {
                   LIVE BRACKET
                 </CardTitle>
                 {activeTournaments.length > 1 && <div className="flex gap-2">
-                    {activeTournaments.map(t => <Badge key={t.id} className={`cursor-pointer transition-all ${selectedTournamentId === t.id ? 'bg-neon-green text-black' : 'bg-muted hover:bg-neon-green/20'}`} onClick={() => setSelectedTournamentId(t.id)}>
+                    {activeTournaments.map((t) => <Badge key={t.id} className={`cursor-pointer transition-all ${selectedTournamentId === t.id ? 'bg-neon-green text-black' : 'bg-muted hover:bg-neon-green/20'}`} onClick={() => setSelectedTournamentId(t.id)}>
                         {t.title}
                       </Badge>)}
                   </div>}
               </div>
               {selectedTournamentId && <p className="text-sm text-muted-foreground">
-                  {activeTournaments.find(t => t.id === selectedTournamentId)?.title} — {activeTournaments.find(t => t.id === selectedTournamentId)?.game}
+                  {activeTournaments.find((t) => t.id === selectedTournamentId)?.title} — {activeTournaments.find((t) => t.id === selectedTournamentId)?.game}
                 </p>}
             </CardHeader>
             <CardContent>
@@ -117,7 +117,7 @@ export const TournamentHub: React.FC = () => {
             <div className="space-y-3">
               {upcomingTournaments.length === 0 ? <p className="text-muted-foreground text-center py-8">
                   No upcoming tournaments scheduled
-                </p> : upcomingTournaments.map(t => <div key={t.id} className="flex items-center justify-between p-4 bg-background/30 rounded-lg border border-border">
+                </p> : upcomingTournaments.map((t) => <div key={t.id} className="flex items-center justify-between p-4 bg-background/30 rounded-lg border border-border">
                     <div>
                       <h3 className="font-semibold">{t.title}</h3>
                       <p className="text-sm text-muted-foreground">
