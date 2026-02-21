@@ -72,26 +72,7 @@ const mockNFTs = [
     remaining: 756
   }
 },
-// Common NFT - FREE (1 per player)
-{
-  id: 4,
-  name: "Cyber City Pass",
-  price: {
-    cctr: 0,
-    xlm: 0,
-    usdc: 0,
-    pyusd: 0
-  },
-  image: "/lovable-uploads/common-arcade-nft.png",
-  rarity: "Common",
-  seller: "CyberCityArcade",
-  description: "FREE Cyber City Arcade Pass - your entry ticket to the neon-lit world of retro gaming. Limited to 1 per player!",
-  supply: {
-    total: 5000,
-    remaining: 4200
-  },
-  isFree: true
-}];
+];
 export const Marketplace = () => {
   const {
     toast
@@ -119,7 +100,7 @@ export const Marketplace = () => {
   const [filter, setFilter] = useState('all');
   const [claimedFreePass, setClaimedFreePass] = useState(false);
   const { hasPass, tier: currentTier, refetchPass } = useSeasonPass();
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: 'start',
@@ -191,49 +172,6 @@ export const Marketplace = () => {
     }
     const isAuthenticated = await ensureAuthenticated();
     if (!isAuthenticated) return;
-
-    // Handle free pass claim (1 per player)
-    if (nft.isFree) {
-      if (claimedFreePass) {
-        toast({
-          title: "Already Claimed",
-          description: "You've already claimed your free Cyber City Pass (limit 1 per player)",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Store in nft_mints with tier metadata
-      if (primaryWallet?.address && user?.id) {
-        const { error: dbError } = await supabase
-          .from('nft_mints')
-          .insert({
-            user_id: user.id,
-            wallet_address: primaryWallet.address,
-            nft_name: nft.name,
-            mint_address: `SEASON_PASS_COMMON_${Date.now()}`,
-            transaction_hash: `FREE_CLAIM_${Date.now()}`,
-            status: 'completed',
-            metadata: {
-              type: 'season_pass',
-              tier: 'common',
-              price_usd: 0,
-              purchased_at: new Date().toISOString(),
-            }
-          });
-
-        if (dbError) {
-          console.error('Free claim DB error:', dbError);
-        }
-      }
-
-      setClaimedFreePass(true);
-      toast({
-        title: "🎉 Free Pass Claimed!",
-        description: `${nft.name} has been claimed! Welcome to Cyber City Arcade!`
-      });
-      return;
-    }
 
     // Add NFT to cart with selected currency price
     const price = nft.price[selectedCurrency];
@@ -348,9 +286,8 @@ export const Marketplace = () => {
                               </Badge>
                             </div>
                             <p className="text-neon-pink font-bold">
-                              {nft.isFree ? 'FREE' : `${nft.price[selectedCurrency]} ${selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}`}
+                              {`${nft.price[selectedCurrency]} ${selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}`}
                             </p>
-                            {nft.isFree && <p className="text-xs text-neon-green font-semibold">🎁 1 per player</p>}
                             <p className="text-xs text-muted-foreground">Hover to see details →</p>
                           </div>
                         </CardContent>
@@ -381,14 +318,14 @@ export const Marketplace = () => {
                               <div className="flex justify-between">
                                 <span className="text-neon-pink">Price:</span>
                                 <span className="text-neon-green font-bold">
-                                  {nft.isFree ? 'FREE (1 per player)' : `${nft.price[selectedCurrency]} ${selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}`}
+                                  {`${nft.price[selectedCurrency]} ${selectedCurrency === 'cctr' ? '$CCTR' : selectedCurrency.toUpperCase()}`}
                                 </span>
                               </div>
                             </div>
                           </div>
                           
-                          <Button onClick={() => handleAddToCartOrConnect(nft)} disabled={nft.isFree && claimedFreePass} className="w-full cyber-button mt-4">
-                            {!isWalletConnected ? "🔗 CONNECT WALLET" : nft.isFree ? (claimedFreePass ? "✅ CLAIMED" : "🎁 CLAIM FREE PASS") : <div className="flex items-center gap-2">
+                          <Button onClick={() => handleAddToCartOrConnect(nft)} className="w-full cyber-button mt-4">
+                            {!isWalletConnected ? "🔗 CONNECT WALLET" : <div className="flex items-center gap-2">
                                 <ShoppingCart size={16} />
                                 ADD TO CART
                               </div>}
