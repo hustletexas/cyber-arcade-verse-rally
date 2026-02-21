@@ -385,27 +385,30 @@ const CyberGalaxyGame: React.FC = () => {
       e.diveT += dtMs * 0.001;
       const t = e.diveT;
 
-      // Already teleported above screen — glide back to formation
-      if (e.y < 0) {
-        e.y += (e.formY - e.y) * 0.045;
-        e.x += (e.formX + swayX - e.x) * 0.045;
-        if (Math.abs(e.y - e.formY) < 3) {
+      // Phase A: Already teleported above screen — glide back to formation
+      if (e.y < -5) {
+        const lerpSpeed = 0.06;
+        e.y += (e.formY - e.y) * lerpSpeed;
+        e.x += (e.formX + swayX - e.x) * lerpSpeed;
+        if (Math.abs(e.y - e.formY) < 2 && Math.abs(e.x - (e.formX + swayX)) < 2) {
           e.y = e.formY;
           e.x = e.formX + swayX;
           e.isDiving = false;
+          e.diveT = 0;
           e.reformTimer = 2000 + Math.random() * 2000; // hold in formation 2-4s before diving again
         }
       } else if (t < 1.2) {
-        // Phase 1: Dive downward with a sine curve
+        // Phase B: Dive downward with a sine curve
         e.x = e.diveStartX + Math.sin(t * 2) * 80 * e.diveCurveDir;
         e.y = e.diveStartY + t * (s.ch * 0.6);
-      } else if (e.y < s.ch + e.h + 40) {
-        // Phase 2: Continue off the bottom
-        e.y += 4;
       } else {
-        // Phase 3: Teleport above screen
-        e.x = e.formX + swayX;
-        e.y = -e.h - 60;
+        // Phase C: Once past the dive phase, immediately move off-screen fast and teleport
+        e.y += 8;
+        if (e.y > s.ch + 20) {
+          // Teleport above screen
+          e.x = e.formX + swayX;
+          e.y = -e.h - 80;
+        }
       }
     });
 
