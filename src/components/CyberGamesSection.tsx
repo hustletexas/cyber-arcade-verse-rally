@@ -1,9 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Gamepad2, Brain, Zap, Trophy, ArrowRight, Gift } from 'lucide-react';
+import { Gamepad2, Brain, Zap, ArrowRight } from 'lucide-react';
 interface GameCardProps {
   title: string;
   description: string;
@@ -102,7 +101,7 @@ export const CyberGamesSection: React.FC = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
         {/* Cyber Breaker - Left */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-yellow-500/30" onClick={() => navigate('/games/cyber-breaker')}>
           <img src="/images/games/cyber-breaker-card.png" alt="Cyber Breaker" className="w-full h-auto object-cover" />
@@ -113,17 +112,6 @@ export const CyberGamesSection: React.FC = () => {
             </div>
           </div>
         </Card>
-
-        {/* Rewards - Center */}
-        <div className="flex justify-center">
-          <Button
-            onClick={() => navigate('/rewards')}
-            className="bg-transparent border border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 backdrop-blur-sm text-yellow-400 hover:text-yellow-300 px-8 py-3 text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-            <Trophy className="w-5 h-5 mr-2" />
-            Rewards
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
 
         {/* Cyber Galaxy - Right */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-purple-500/30" onClick={() => navigate('/cyber-galaxy')}>
