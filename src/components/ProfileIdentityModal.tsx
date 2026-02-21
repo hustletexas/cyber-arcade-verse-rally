@@ -62,16 +62,17 @@ interface ProfileIdentityModalProps {
   onOpenChange: (open: boolean) => void;
   avatarUrl: string | null;
   onAvatarChange: (url: string) => void;
+  initialSection?: Section;
 }
 
-export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarChange }: ProfileIdentityModalProps) => {
+export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarChange, initialSection }: ProfileIdentityModalProps) => {
   const { primaryWallet } = useMultiWallet();
   const { balance } = useUserBalance();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [uploading, setUploading] = useState(false);
-  const [activeSection, setActiveSection] = useState<Section>('profile');
+  const [activeSection, setActiveSection] = useState<Section>(initialSection || 'profile');
   const [selectedFrame, setSelectedFrame] = useState('none');
   const [selectedBadges, setSelectedBadges] = useState<string[]>(['founder', 'og-player']);
   const [selectedTheme, setSelectedTheme] = useState('cyber-grid');
@@ -85,6 +86,12 @@ export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarCh
   const [playerTier, setPlayerTier] = useState('guest');
   const [stats, setStats] = useState({ totalMatches: 0, tournamentsWon: 0, winRate: 0, totalUSDCWon: 0, currentStreak: 0, ranking: null as number | null });
   const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    if (open && initialSection) {
+      setActiveSection(initialSection);
+    }
+  }, [open, initialSection]);
 
   const loadProfile = useCallback(async () => {
     if (!primaryWallet?.address) return;

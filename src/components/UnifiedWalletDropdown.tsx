@@ -70,6 +70,7 @@ export const UnifiedWalletDropdown = () => {
   } = useWinnerChests();
   const [showWalletManager, setShowWalletManager] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileInitialSection, setProfileInitialSection] = useState<'profile' | 'account' | 'wallet' | 'support'>('profile');
   const [showActionsModal, setShowActionsModal] = useState(false);
   const [showRewardsModal, setShowRewardsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -533,7 +534,7 @@ export const UnifiedWalletDropdown = () => {
 
           {/* Menu items - Rewards, Settings, Support */}
           <div className="p-2 space-y-1">
-            <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-green/10 cursor-pointer transition-all hover:scale-[1.02] group">
+            <DropdownMenuItem onClick={() => { setProfileInitialSection('profile'); setShowProfileModal(true); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-green/10 cursor-pointer transition-all hover:scale-[1.02] group">
               <div className="w-8 h-8 rounded-lg bg-neon-green/20 flex items-center justify-center group-hover:bg-neon-green/30 transition-all group-hover:scale-110">
                 <User size={16} className="text-neon-green" />
               </div>
@@ -557,7 +558,7 @@ export const UnifiedWalletDropdown = () => {
               <Sparkles size={14} className="text-neon-pink animate-pulse" />
             </DropdownMenuItem>
             
-            <DropdownMenuItem onClick={() => setShowSettingsModal(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-cyan/10 cursor-pointer transition-all hover:scale-[1.02] group">
+            <DropdownMenuItem onClick={() => { setProfileInitialSection('account'); setShowProfileModal(true); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-cyan/10 cursor-pointer transition-all hover:scale-[1.02] group">
               <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 flex items-center justify-center group-hover:bg-neon-cyan/30 transition-all group-hover:scale-110 group-hover:rotate-90 duration-300">
                 <Settings size={16} className="text-neon-cyan" />
               </div>
@@ -615,6 +616,7 @@ export const UnifiedWalletDropdown = () => {
         onOpenChange={setShowProfileModal}
         avatarUrl={avatarUrl}
         onAvatarChange={(url) => setAvatarUrl(url)}
+        initialSection={profileInitialSection}
       />
 
       {/* Rewards Modal */}
