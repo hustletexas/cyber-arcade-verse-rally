@@ -161,10 +161,8 @@ const Index = () => {
 
 
 
-          {/* Sponsorships & Partnerships */}
-          <section id="sponsorships" className="px-2 sm:px-4">
-            <SponsorshipSection />
-          </section>
+
+
 
         </div>
       </main>
