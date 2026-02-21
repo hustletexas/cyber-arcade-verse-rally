@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart, ChevronDown, Radio, ShoppingBag, Heart, Info, Scale, GraduationCap, Award, Swords, Trophy, Handshake } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Radio, ShoppingBag, Heart, Info, Scale, GraduationCap, Award, Swords, Trophy, Handshake, Wallet } from 'lucide-react';
 import { useSeasonPass, TIER_CONFIG } from '@/hooks/useSeasonPass';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ const pageSections = [
   { path: '/tournaments', label: 'Tournament', icon: Trophy },
   { path: '/esports', label: 'Cyber City Esports', icon: Swords },
   { path: '/after-school', label: 'After-School Program', icon: GraduationCap },
+  { path: '/wallet', label: 'Wallet', icon: Wallet },
   { path: '/sponsorships', label: 'Sponsorships', icon: Handshake },
   { path: '/foundation', label: 'Foundation', icon: Heart },
   { path: '/tournament-rules', label: 'Rules', icon: Scale },
