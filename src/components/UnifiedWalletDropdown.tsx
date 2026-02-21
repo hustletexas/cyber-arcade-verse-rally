@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,6 +32,7 @@ export const UnifiedWalletDropdown = () => {
   const {
     toast
   } = useToast();
+  const navigate = useNavigate();
   const {
     balance
   } = useUserBalance();
@@ -71,7 +73,7 @@ export const UnifiedWalletDropdown = () => {
   const [showWalletManager, setShowWalletManager] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showActionsModal, setShowActionsModal] = useState(false);
-  const [showRewardsModal, setShowRewardsModal] = useState(false);
+  
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [activeAction, setActiveAction] = useState<'buy' | 'send' | 'receive' | 'swap'>('buy');
   const [showSwapModal, setShowSwapModal] = useState(false);
@@ -211,7 +213,7 @@ export const UnifiedWalletDropdown = () => {
       title: "Claiming Rewards",
       description: `Claiming ${balance.claimable_rewards.toLocaleString()} CCC...`
     });
-    setShowRewardsModal(false);
+    
   };
   const handleSupport = () => {
     window.open('https://discord.gg/cybercityarcade', '_blank');
@@ -352,7 +354,7 @@ export const UnifiedWalletDropdown = () => {
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground mb-1">Claimable</p>
                     <p className="text-xl font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
-                    {balance.claimable_rewards > 0 && <Button size="sm" onClick={() => setShowRewardsModal(true)} className="mt-1 h-6 px-2 text-[10px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105">
+                    {balance.claimable_rewards > 0 && <Button size="sm" onClick={() => navigate('/rewards')} className="mt-1 h-6 px-2 text-[10px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105">
                         Claim
                       </Button>}
                   </div>
@@ -543,7 +545,7 @@ export const UnifiedWalletDropdown = () => {
               <Sparkles size={14} className="text-neon-green" />
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={() => setShowRewardsModal(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-pink/10 cursor-pointer transition-all hover:scale-[1.02] group">
+            <DropdownMenuItem onClick={() => navigate('/rewards')} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-pink/10 cursor-pointer transition-all hover:scale-[1.02] group">
               <div className="w-8 h-8 rounded-lg bg-neon-pink/20 flex items-center justify-center group-hover:bg-neon-pink/30 transition-all group-hover:scale-110">
                 <Gift size={16} className="text-neon-pink" />
               </div>
@@ -610,134 +612,6 @@ export const UnifiedWalletDropdown = () => {
         
       />
 
-      {/* Rewards Modal */}
-      <Dialog open={showRewardsModal} onOpenChange={setShowRewardsModal}>
-        <DialogContent className="arcade-frame bg-background/98 backdrop-blur-xl border-neon-pink/30 max-w-md animate-scale-in">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-neon-pink font-display flex items-center gap-2">
-              <Gift className="animate-bounce" /> Rewards
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Prizes & chests earned from tournaments
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {/* Token Balances */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* CCC Balance */}
-              <div className="p-4 bg-gradient-to-br from-neon-pink/20 via-neon-purple/10 to-neon-cyan/20 rounded-xl border border-neon-pink/30 text-center">
-                <p className="text-xs text-muted-foreground mb-1">CCC Balance</p>
-                <p className="text-2xl font-bold bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan bg-clip-text text-transparent">
-                  {balance.cctr_balance.toLocaleString()}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">Cyber City Credits</p>
-              </div>
-              
-              {/* Claimable Rewards */}
-              <div className="p-4 bg-gradient-to-br from-neon-green/20 via-neon-cyan/10 to-neon-green/20 rounded-xl border border-neon-green/30 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Claimable</p>
-                <p className="text-2xl font-bold text-neon-green">
-                  +{balance.claimable_rewards.toLocaleString()}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">CCC Rewards</p>
-              </div>
-            </div>
-
-            {/* Winner Chests Section */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium flex items-center gap-2">
-                  <Package className="w-4 h-4 text-neon-cyan" />
-                  Winner Chests
-                </p>
-                {hasUnclaimedChests && (
-                  <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30 text-xs">
-                    {unclaimedCount} Available
-                  </Badge>
-                )}
-              </div>
-              
-              <ScrollArea className="h-[180px]">
-                {chestsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-neon-cyan" />
-                  </div>
-                ) : eligibleChests.length > 0 ? (
-                  <div className="space-y-2 pr-2">
-                    {eligibleChests.map((chest) => (
-                      <div 
-                        key={chest.id}
-                        className="flex items-center justify-between p-3 bg-card/50 rounded-xl border border-neon-cyan/20 hover:border-neon-cyan/40 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-cyan/20 to-neon-purple/20 flex items-center justify-center">
-                            {chest.source_type === 'tournament' ? (
-                              <Trophy className="w-5 h-5 text-neon-cyan" />
-                            ) : (
-                              <Package className="w-5 h-5 text-neon-purple" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium capitalize">
-                              {chest.source_type} Chest
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Earned {new Date(chest.earned_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="cyber-button h-8 text-xs"
-                          onClick={async () => {
-                            // Random reward generation for demo
-                            const rewardTypes = ['CCC', 'NFT', 'XP'];
-                            const rewardType = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
-                            const rewardValue = rewardType === 'CCC' 
-                              ? String(Math.floor(Math.random() * 500) + 100)
-                              : rewardType === 'XP'
-                              ? String(Math.floor(Math.random() * 1000) + 250)
-                              : 'Rare NFT';
-                            
-                            const success = await claimChest(chest.id, rewardType, rewardValue);
-                            if (success) {
-                              toast({
-                                title: "🎁 Chest Claimed!",
-                                description: `You received ${rewardValue} ${rewardType}!`,
-                              });
-                            }
-                          }}
-                        >
-                          <Gift className="w-3 h-3 mr-1" />
-                          Claim
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Package className="w-10 h-10 text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground">No chests available</p>
-                    <p className="text-xs text-muted-foreground/70 mt-1">
-                      Win tournaments to earn chests!
-                    </p>
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-
-            {/* Claim CCC Button */}
-            <Button 
-              onClick={handleClaimRewards} 
-              disabled={balance.claimable_rewards <= 0} 
-              className="w-full h-12 cyber-button text-lg font-bold transition-all hover:scale-105 active:scale-95"
-            >
-              <Sparkles className="mr-2 animate-spin" size={18} />
-              Claim {balance.claimable_rewards.toLocaleString()} CCC
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={showActionsModal} onOpenChange={setShowActionsModal}>
         <DialogContent className="bg-transparent border-none shadow-none p-0 w-[360px] max-w-[95vw]">
