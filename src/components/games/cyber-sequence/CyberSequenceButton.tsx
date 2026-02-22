@@ -78,8 +78,16 @@ export const CyberSequenceButton: React.FC<CyberSequenceButtonProps> = ({
         <div 
           className={cn(
             'w-6 h-6 sm:w-10 sm:h-10 rounded-full transition-all duration-200 neon-center',
-            isActive ? 'bg-white/60 scale-150 shadow-[0_0_30px_rgba(255,255,255,0.8)]' : 'bg-white/20'
-          )} 
+            isActive ? 'scale-150' : ''
+          )}
+          style={{
+            backgroundColor: isActive 
+              ? `hsla(${BUTTON_CONFIG[color].hue}, 100%, 70%, 0.6)` 
+              : `hsla(${BUTTON_CONFIG[color].hue}, 100%, 60%, 0.25)`,
+            boxShadow: isActive 
+              ? `0 0 30px hsla(${BUTTON_CONFIG[color].hue}, 100%, 60%, 0.8)` 
+              : 'none',
+          }}
         />
       </div>
       
