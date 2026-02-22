@@ -1,0 +1,1 @@
+UPDATE arcade_tournaments SET status = 'completed' WHERE id = '11111111-1111-1111-1111-111111111111';
