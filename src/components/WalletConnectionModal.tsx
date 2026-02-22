@@ -57,21 +57,16 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
       // Check Freighter (works on both desktop extension and mobile app)
       try {
-        // Freighter v6+ injects window.freighterApi, older versions use window.freighter
         const hasFreighterGlobal = typeof window !== 'undefined' && 
           ((window as any).freighter || (window as any).freighterApi);
         
         if (hasFreighterGlobal) {
           setFreighterInstalled(true);
         } else {
-          // Try the API - requestAccess availability means extension is present
           const result = await freighterApi.isConnected();
-          // Extension is installed even if not yet connected to this site
           setFreighterInstalled(true);
         }
       } catch (e) {
-        // On mobile, Freighter may not be detectable but still works via its app
-        // On desktop, if the API threw, the extension isn't installed
         setFreighterInstalled(mobile);
       }
     };
@@ -123,7 +118,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       ...allowAllModules(),
     ];
 
-    // Add WalletConnect module for mobile LOBSTR support
     if (wcProjectId) {
       modules.push(
         new WalletConnectModule({
@@ -152,22 +146,15 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
     try {
       if (walletType === 'freighter') {
-        // Freighter signs arbitrary data via its API
-        // For now, we trust the connection as proof of ownership
-        // since Freighter requires explicit user approval
         completeConnection(walletType, address);
         return;
       }
 
       if (kit) {
-        // For Stellar Wallets Kit wallets (LOBSTR, xBull), 
-        // the WalletConnect handshake itself is proof of ownership
-        // The user explicitly approved the connection in their wallet app
         completeConnection(walletType, address);
         return;
       }
 
-      // For web-based wallets (Albedo, Hot Wallet), connection is implicit auth
       completeConnection(walletType, address);
     } catch (error: any) {
       console.error('Signature verification failed:', error);
@@ -192,8 +179,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectLobstr = async () => {
     try {
       if (isMobile) {
-        // On mobile, use WalletConnect module and directly initiate connection
-        // This triggers the LOBSTR deep link immediately without showing an intermediate modal
         const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
         if (!wcProjectId) {
           throw new Error('WalletConnect not configured. Please contact support.');
@@ -215,8 +200,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           modules: [wcModule]
         });
         
-        // Set wallet to WalletConnect and call getAddress directly
-        // This initiates the WC pairing which triggers the LOBSTR deep link on mobile
         kit.setWallet(WALLET_CONNECT_ID);
         
         toast({
@@ -231,7 +214,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           throw new Error('No address returned. Make sure LOBSTR app is installed.');
         }
       } else {
-        // On desktop, use LOBSTR extension directly
         const kit = getStellarKit(LOBSTR_ID);
         kit.setWallet(LOBSTR_ID);
         const { address } = await kit.getAddress();
@@ -255,7 +237,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectFreighter = async () => {
     try {
       if (isMobile) {
-        // On mobile, first check if Freighter API is available in-browser
         const freighterWindow = (window as any).freighter || (window as any).freighterApi;
         if (freighterWindow) {
           const accessResult = await freighterApi.requestAccess();
@@ -270,7 +251,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             await requestSignature('freighter', addressResult.address);
           }
         } else {
-          // Freighter not injected — use WalletConnect to connect via deep link
           const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
           if (!wcProjectId) {
             throw new Error('WalletConnect not configured. Please contact support.');
@@ -316,7 +296,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         return;
       }
 
-      // Request access directly - this will prompt the user if extension is installed
       const accessResult = await freighterApi.requestAccess();
       if (accessResult.error) {
         throw new Error(accessResult.error.message || 'User denied access to Freighter');
@@ -351,7 +330,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           await requestSignature('albedo', result.pubkey);
         }
       } else {
-        // On mobile, open in same tab (popups are blocked on mobile browsers)
         if (isMobile) {
           window.location.href = 'https://albedo.link/intent/public_key?callback=' + encodeURIComponent(window.location.href);
         } else {
@@ -425,7 +403,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           }
         });
       } else {
-        // Desktop: use xBull extension directly
         const kit = getStellarKit(XBULL_ID);
         kit.setWallet(XBULL_ID);
         const { address } = await kit.getAddress();
@@ -448,7 +425,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const connectHotwallet = async () => {
     try {
       if (isMobile) {
-        // On mobile, open in a new tab (popups are blocked)
         window.open('https://hotwallet.app/', '_blank');
       } else {
         const width = 400;
@@ -508,7 +484,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       }
     ];
 
-    // On mobile, filter to only mobile-compatible wallets and mark detected ones
     if (isMobile) {
       return allOptions
         .filter(w => w.isMobileReady)
@@ -716,8 +691,52 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               </button>
             </div>
           ) : (
-            /* Wallet Options + Alternative Auth */
+            /* Quick Start + Wallet Options */
             <>
+              {/* Quick Start Options */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Quick Start</span>
+                </div>
+
+                {/* Guest */}
+                <button
+                  onClick={handleGuestLogin}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                    <User size={20} className="text-white/60" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <span className="font-semibold text-white/80 text-sm">Play as Guest</span>
+                    <p className="text-xs text-white/40 mt-0.5">Jump in instantly — free play, no sign-up</p>
+                  </div>
+                  <ChevronRight size={18} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                </button>
+
+                {/* Magic Link */}
+                <button
+                  onClick={() => setAuthMode('magic_link')}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Mail size={20} className="text-white" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <span className="font-semibold text-white text-sm">Magic Link</span>
+                    <p className="text-xs text-white/50 mt-0.5">Sign in with email — no password needed</p>
+                  </div>
+                  <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 px-1">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs text-white/30 uppercase tracking-wider">or connect wallet</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+
               {/* Mobile hint */}
               {isMobile && (
                 <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
@@ -755,50 +774,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                   </div>
                 </div>
               )}
-
-              {/* Divider */}
-              <div className="flex items-center gap-3 px-1">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-xs text-white/30 uppercase tracking-wider">or</span>
-                <div className="flex-1 h-px bg-white/10" />
-              </div>
-
-              {/* Alternative Auth Options */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 mb-2 px-1">
-                  <span className="text-xs font-medium text-white/40 uppercase tracking-wider">No wallet? No problem</span>
-                </div>
-
-                {/* Magic Link */}
-                <button
-                  onClick={() => setAuthMode('magic_link')}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                    <Mail size={20} className="text-white" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <span className="font-semibold text-white text-sm">Magic Link</span>
-                    <p className="text-xs text-white/50 mt-0.5">Sign in with email — no password needed</p>
-                  </div>
-                  <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-                </button>
-
-                {/* Guest */}
-                <button
-                  onClick={handleGuestLogin}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                    <User size={20} className="text-white/60" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <span className="font-semibold text-white/80 text-sm">Play as Guest</span>
-                    <p className="text-xs text-white/40 mt-0.5">Jump in instantly — free play, no sign-up</p>
-                  </div>
-                  <ChevronRight size={18} className="text-white/20 group-hover:text-white/40 transition-colors" />
-                </button>
-              </div>
             </>
           )}
         </div>
