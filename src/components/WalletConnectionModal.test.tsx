@@ -96,13 +96,11 @@ describe('WalletConnectionModal', () => {
     expect(screen.getByText('Magic Link')).toBeInTheDocument();
   });
 
-  it('renders all 5 wallet buttons', async () => {
+  it('renders all 3 wallet buttons', async () => {
     renderModal();
     await waitFor(() => {
       expect(screen.getByText('LOBSTR')).toBeInTheDocument();
       expect(screen.getByText('Freighter')).toBeInTheDocument();
-      expect(screen.getByText('Albedo')).toBeInTheDocument();
-      expect(screen.getByText('xBull')).toBeInTheDocument();
       expect(screen.getByText('Hot Wallet')).toBeInTheDocument();
     });
   });

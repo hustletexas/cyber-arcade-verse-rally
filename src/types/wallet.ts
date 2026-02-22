@@ -5,8 +5,6 @@ export type ChainType = 'stellar';
 export type WalletType = 
   | 'lobstr'
   | 'freighter'
-  | 'albedo'
-  | 'xbull'
   | 'hotwallet'
   | 'created';
 
@@ -72,24 +70,6 @@ export const WALLETS: WalletInfo[] = [
     chain: 'stellar',
     downloadUrl: 'https://www.freighter.app/',
     description: 'Stellar wallet browser extension'
-  },
-  {
-    id: 'albedo',
-    name: 'Albedo',
-    icon: '🔐',
-    logoUrl: '/images/wallets/albedo.png?v=2',
-    chain: 'stellar',
-    downloadUrl: 'https://albedo.link/',
-    description: 'Web-based Stellar authentication'
-  },
-  {
-    id: 'xbull',
-    name: 'xBull',
-    icon: '🐂',
-    logoUrl: '/images/wallets/xbull.png?v=2',
-    chain: 'stellar',
-    downloadUrl: 'https://xbull.app/',
-    description: 'Feature-rich Stellar wallet extension'
   },
   {
     id: 'hotwallet',
