@@ -439,12 +439,13 @@ const CyberGalaxyGame: React.FC = () => {
         e.diveShots = (e.diveShots || 0) + 1;
         e.shootTimer = 400 + Math.random() * 200;
         const dx = (p.x + p.w / 2) - (e.x + e.w / 2);
-        const dy = (p.y) - (e.y + e.h);
+        const dy = (p.y + p.h / 2) - (e.y + e.h);
         const mag = Math.sqrt(dx * dx + dy * dy) || 1;
+        // Aim directly at player with full directional tracking
         s.enemyBullets.push({
           x: e.x + e.w / 2, y: e.y + e.h,
-          vx: (dx / mag) * enemyBulletSpeed * 0.3,
-          vy: enemyBulletSpeed,
+          vx: (dx / mag) * enemyBulletSpeed,
+          vy: (dy / mag) * enemyBulletSpeed,
         });
       }
     });
