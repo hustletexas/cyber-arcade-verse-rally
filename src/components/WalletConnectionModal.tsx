@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet, ExternalLink, ChevronRight, Sparkles, Smartphone, ShieldCheck } from 'lucide-react';
+import { Wallet, ExternalLink, ChevronRight, Sparkles, Smartphone, ShieldCheck, Mail, User, Loader2 } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
 import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID, XBULL_ID } from '@creit.tech/stellar-wallets-kit';
 import { WALLET_CONNECT_ID } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import { WalletConnectModule, WalletConnectAllowedMethods } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import freighterApi from '@stellar/freighter-api';
 import { isMobileDevice, detectMobileWallets, getStoreLink, generateSignatureNonce, buildSignatureMessage } from '@/utils/mobileWalletDetection';
+import { useTieredAuth } from '@/contexts/AuthContext';
 
 interface WalletOption extends WalletInfo {
   isInstalled: boolean;
@@ -28,6 +29,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   onWalletConnected
 }) => {
   const { toast } = useToast();
+  const { signInWithMagicLink } = useTieredAuth();
   const [connecting, setConnecting] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileWallets, setMobileWallets] = useState<string[]>([]);
@@ -37,6 +39,10 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const [xbullInstalled] = useState(true);
   const [hotwalletInstalled] = useState(true);
   const [signatureStep, setSignatureStep] = useState<{ walletType: WalletType; address: string } | null>(null);
+  const [magicLinkEmail, setMagicLinkEmail] = useState('');
+  const [magicLinkSending, setMagicLinkSending] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [authMode, setAuthMode] = useState<'wallets' | 'magic_link'>('wallets');
 
   // Detect mobile and available wallets
   useEffect(() => {
@@ -73,8 +79,41 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     if (isOpen) {
       detect();
       setSignatureStep(null);
+      setAuthMode('wallets');
+      setMagicLinkSent(false);
+      setMagicLinkEmail('');
     }
   }, [isOpen]);
+
+  // Handle magic link submission
+  const handleMagicLink = async () => {
+    if (!magicLinkEmail.trim()) return;
+    setMagicLinkSending(true);
+    const result = await signInWithMagicLink(magicLinkEmail.trim());
+    setMagicLinkSending(false);
+    if (result.success) {
+      setMagicLinkSent(true);
+      toast({
+        title: "Magic Link Sent ✨",
+        description: `Check ${magicLinkEmail} for your login link`,
+      });
+    } else {
+      toast({
+        title: "Failed to send",
+        description: result.error || "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle guest login
+  const handleGuestLogin = () => {
+    onClose();
+    toast({
+      title: "Playing as Guest 🎮",
+      description: "Free play enabled! Sign in anytime to save progress.",
+    });
+  };
 
   // Initialize Stellar Wallets Kit with WalletConnect support for mobile
   const getStellarKit = (walletId: string = LOBSTR_ID) => {
@@ -592,103 +631,220 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         <DialogHeader className="p-6 pb-4 border-b border-white/5">
           <DialogTitle className="text-xl text-white font-semibold flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-              {isMobile ? <Smartphone size={20} className="text-white" /> : <Wallet size={20} className="text-white" />}
+              {authMode === 'magic_link' 
+                ? <Mail size={20} className="text-white" />
+                : isMobile ? <Smartphone size={20} className="text-white" /> : <Wallet size={20} className="text-white" />
+              }
             </div>
-            {isMobile ? 'Connect Mobile Wallet' : 'Connect Stellar Wallet'}
+            {authMode === 'magic_link' 
+              ? 'Sign In with Email'
+              : isMobile ? 'Connect Mobile Wallet' : 'Connect Stellar Wallet'
+            }
           </DialogTitle>
           <p className="text-sm text-white/50 mt-2">
-            {isMobile 
-              ? 'Tap a wallet to open it and sign in instantly' 
-              : 'Choose a Stellar wallet to connect to Cyber City Arcade'
+            {authMode === 'magic_link'
+              ? "We'll send you a magic link to sign in — no password needed"
+              : isMobile 
+                ? 'Tap a wallet to open it and sign in instantly' 
+                : 'Choose a Stellar wallet to connect to Cyber City Arcade'
             }
           </p>
-          {/* Signature verification badge */}
-          <div className="flex items-center gap-1.5 mt-2">
-            <ShieldCheck size={12} className="text-emerald-400" />
-            <span className="text-[11px] text-emerald-400/70">Signature-verified connection</span>
-          </div>
+          {authMode === 'wallets' && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <ShieldCheck size={12} className="text-emerald-400" />
+              <span className="text-[11px] text-emerald-400/70">Signature-verified connection</span>
+            </div>
+          )}
         </DialogHeader>
 
         <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
-          {/* Mobile hint */}
-          {isMobile && (
-            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
-              <p className="text-xs text-cyan-300">
-                📱 Your wallet app will open for secure authentication. Approve the connection to sign in instantly.
-              </p>
-            </div>
-          )}
+          {authMode === 'magic_link' ? (
+            /* Magic Link Form */
+            <div className="space-y-4">
+              {magicLinkSent ? (
+                <div className="text-center space-y-3 py-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <Mail size={28} className="text-emerald-400" />
+                  </div>
+                  <h3 className="text-white font-semibold">Check your inbox!</h3>
+                  <p className="text-white/50 text-sm">
+                    We sent a magic link to <span className="text-cyan-400">{magicLinkEmail}</span>. Click the link to sign in.
+                  </p>
+                  <button
+                    onClick={() => { setMagicLinkSent(false); setMagicLinkEmail(''); }}
+                    className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    Use a different email
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/60 font-medium">Email address</label>
+                    <input
+                      type="email"
+                      value={magicLinkEmail}
+                      onChange={(e) => setMagicLinkEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleMagicLink()}
+                      placeholder="you@example.com"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all text-sm"
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    onClick={handleMagicLink}
+                    disabled={magicLinkSending || !magicLinkEmail.trim()}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {magicLinkSending ? (
+                      <><Loader2 size={16} className="animate-spin" /> Sending...</>
+                    ) : (
+                      <><Mail size={16} /> Send Magic Link</>
+                    )}
+                  </button>
+                  <p className="text-xs text-white/30 text-center">
+                    Unlocks ranked play, tournaments, saved stats & more
+                  </p>
+                </>
+              )}
 
-          {/* Popular Wallets */}
-          {popularWallets.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4 px-1">
-                <Sparkles size={14} className="text-yellow-500" />
-                <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Recommended</span>
-              </div>
-              <div className="space-y-3">
-                {popularWallets.map(wallet => (
-                  <WalletButton key={wallet.id} wallet={wallet} />
-                ))}
-              </div>
+              <button
+                onClick={() => setAuthMode('wallets')}
+                className="w-full text-sm text-white/40 hover:text-white/60 transition-colors py-2"
+              >
+                ← Back to wallet options
+              </button>
             </div>
-          )}
+          ) : (
+            /* Wallet Options + Alternative Auth */
+            <>
+              {/* Mobile hint */}
+              {isMobile && (
+                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
+                  <p className="text-xs text-cyan-300">
+                    📱 Your wallet app will open for secure authentication. Approve the connection to sign in instantly.
+                  </p>
+                </div>
+              )}
 
-          {/* Other Wallets */}
-          {otherWallets.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4 px-1">
-                <span className="text-xs font-medium text-white/40 uppercase tracking-wider">More Wallets</span>
+              {/* Popular Wallets */}
+              {popularWallets.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4 px-1">
+                    <Sparkles size={14} className="text-yellow-500" />
+                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Recommended</span>
+                  </div>
+                  <div className="space-y-3">
+                    {popularWallets.map(wallet => (
+                      <WalletButton key={wallet.id} wallet={wallet} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Other Wallets */}
+              {otherWallets.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4 px-1">
+                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">More Wallets</span>
+                  </div>
+                  <div className="space-y-3">
+                    {otherWallets.map(wallet => (
+                      <WalletButton key={wallet.id} wallet={wallet} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 px-1">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs text-white/30 uppercase tracking-wider">or</span>
+                <div className="flex-1 h-px bg-white/10" />
               </div>
+
+              {/* Alternative Auth Options */}
               <div className="space-y-3">
-                {otherWallets.map(wallet => (
-                  <WalletButton key={wallet.id} wallet={wallet} />
-                ))}
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <span className="text-xs font-medium text-white/40 uppercase tracking-wider">No wallet? No problem</span>
+                </div>
+
+                {/* Magic Link */}
+                <button
+                  onClick={() => setAuthMode('magic_link')}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Mail size={20} className="text-white" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <span className="font-semibold text-white text-sm">Magic Link</span>
+                    <p className="text-xs text-white/50 mt-0.5">Sign in with email — no password needed</p>
+                  </div>
+                  <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                </button>
+
+                {/* Guest */}
+                <button
+                  onClick={handleGuestLogin}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                    <User size={20} className="text-white/60" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <span className="font-semibold text-white/80 text-sm">Play as Guest</span>
+                    <p className="text-xs text-white/40 mt-0.5">Jump in instantly — free play, no sign-up</p>
+                  </div>
+                  <ChevronRight size={18} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                </button>
               </div>
-            </div>
+            </>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/5 bg-white/[0.02]">
-          <p className="text-xs text-white/30 text-center">
-            {isMobile ? (
-              <>
-                Don't have a wallet?{' '}
-                <a 
-                  href="https://lobstr.co/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                >
-                  Download LOBSTR
-                </a>
-                {' '}— the best Stellar wallet for mobile
-              </>
-            ) : (
-              <>
-                New to Stellar?{' '}
-                <a 
-                  href="https://lobstr.co/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                >
-                  Get LOBSTR wallet
-                </a>
-                {' '}and/or{' '}
-                <a 
-                  href="https://www.freighter.app/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                >
-                  Freighter wallet
-                </a>
-              </>
-            )}
-          </p>
-        </div>
+        {authMode === 'wallets' && (
+          <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+            <p className="text-xs text-white/30 text-center">
+              {isMobile ? (
+                <>
+                  Don't have a wallet?{' '}
+                  <a 
+                    href="https://lobstr.co/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    Download LOBSTR
+                  </a>
+                  {' '}— the best Stellar wallet for mobile
+                </>
+              ) : (
+                <>
+                  New to Stellar?{' '}
+                  <a 
+                    href="https://lobstr.co/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    Get LOBSTR wallet
+                  </a>
+                  {' '}and/or{' '}
+                  <a 
+                    href="https://www.freighter.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    Freighter wallet
+                  </a>
+                </>
+              )}
+            </p>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
