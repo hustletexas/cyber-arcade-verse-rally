@@ -54,14 +54,6 @@ export const MOBILE_WALLET_DEEP_LINKS: Record<string, MobileWalletInfo> = {
     playStoreUrl: 'https://play.google.com/store/apps/details?id=com.nicholasgasior.freighter',
     isLikelyInstalled: false,
   },
-  xbull: {
-    id: 'xbull',
-    name: 'xBull',
-    deepLinkScheme: 'xbull://',
-    appStoreUrl: 'https://apps.apple.com/app/xbull-wallet/id1614686498',
-    playStoreUrl: 'https://play.google.com/store/apps/details?id=app.xbull.wallet',
-    isLikelyInstalled: false,
-  },
 };
 
 // Attempt to detect installed mobile wallets by trying deep links
@@ -71,18 +63,9 @@ export const detectMobileWallets = async (): Promise<string[]> => {
   
   const detected: string[] = [];
   
-  // On mobile, LOBSTR and xBull work via WalletConnect through Stellar Wallets Kit
-  // LOBSTR is always available via WalletConnect on mobile
+  // On mobile, LOBSTR and Freighter work via WalletConnect to open native apps
   detected.push('lobstr');
-  
-  // Freighter has a mobile app and works via its API
   detected.push('freighter');
-  
-  // xBull also supports WalletConnect
-  detected.push('xbull');
-  
-  // Albedo works in mobile browsers (web-based)
-  detected.push('albedo');
   
   // Hot Wallet works in mobile browsers
   detected.push('hotwallet');

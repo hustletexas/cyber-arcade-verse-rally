@@ -41,14 +41,10 @@ vi.mock('@creit.tech/stellar-wallets-kit', () => {
     allowAllModules: () => [
       { ...mockModule, productId: 'lobstr' },
       { ...mockModule, productId: 'freighter' },
-      { ...mockModule, productId: 'albedo' },
-      { ...mockModule, productId: 'xbull' },
       { ...mockModule, productId: 'hot-wallet' },
     ],
     LOBSTR_ID: 'lobstr',
-    XBULL_ID: 'xbull',
     FREIGHTER_ID: 'freighter',
-    ALBEDO_ID: 'albedo',
     HOTWALLET_ID: 'hot-wallet',
   };
 });
