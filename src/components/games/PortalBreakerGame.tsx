@@ -200,8 +200,8 @@ function buildBricks(level: number, cw: number): Brick[] {
 
 function makeBall(cx: number, py: number): Ball {
   const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.6;
-  const speed = 4;
-  return { x: cx, y: py - BALL_RADIUS - 2, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, trail: [], pierceLeft: 0 };
+   const speed = 5;
+   return { x: cx, y: py - BALL_RADIUS - 2, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, trail: [], pierceLeft: 0 };
 }
 
 function initState(cw: number, ch: number): GameState {
@@ -464,8 +464,8 @@ const PortalBreakerGame: React.FC = () => {
   };
 
   const ballSpeed = useCallback((level: number, destroyed: number) => {
-    const sp = 4 + (level - 1) * 0.3 + Math.floor(destroyed / 10) * 0.15;
-    return Math.min(sp, 8);
+     const sp = 5 + (level - 1) * 0.3 + Math.floor(destroyed / 10) * 0.15;
+     return Math.min(sp, 9);
   }, []);
 
   // ─── Power-up drop table ──────────────────────────────────────────
