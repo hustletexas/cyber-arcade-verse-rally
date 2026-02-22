@@ -9,9 +9,7 @@ import {
   WalletNetwork,
   allowAllModules,
   LOBSTR_ID,
-  XBULL_ID,
   FREIGHTER_ID,
-  ALBEDO_ID,
   HOTWALLET_ID,
 } from '@creit.tech/stellar-wallets-kit';
 import { WALLET_CONNECT_ID } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
@@ -36,8 +34,6 @@ interface WalletConnectionModalProps {
 const WALLET_KIT_IDS: Record<string, string> = {
   lobstr: LOBSTR_ID,
   freighter: FREIGHTER_ID,
-  albedo: ALBEDO_ID,
-  xbull: XBULL_ID,
   hotwallet: HOTWALLET_ID,
 };
 
@@ -61,8 +57,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const [walletAvailability, setWalletAvailability] = useState<Record<string, boolean>>({
     lobstr: false,
     freighter: false,
-    albedo: false,
-    xbull: false,
     hotwallet: false,
   });
 
@@ -105,20 +99,12 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         setWalletAvailability({
           lobstr: true,
           freighter: true,
-          albedo: true,
-          xbull: true,
           hotwallet: true,
         });
       } else {
-        // On desktop, mark all wallets as available and let the kit handle
-        // connection attempts. Detection via isAvailable() is unreliable in
-        // iframe environments (like Lovable preview) because browser extensions
-        // don't inject globals into iframes.
         setWalletAvailability({
           lobstr: true,
           freighter: true,
-          albedo: true,
-          xbull: true,
           hotwallet: true,
         });
       }
@@ -179,7 +165,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       throw new Error(`Unknown wallet type: ${walletType}`);
     }
 
-    if (isMobile && (walletType === 'lobstr' || walletType === 'xbull' || walletType === 'freighter')) {
+    if (isMobile && (walletType === 'lobstr' || walletType === 'freighter')) {
       // On mobile, use WalletConnect for native app wallets
       const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
       if (!wcProjectId) {
@@ -205,7 +191,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       kit.setWallet(WALLET_CONNECT_ID);
 
       toast({
-        title: `Opening ${walletType === 'lobstr' ? 'LOBSTR' : walletType === 'xbull' ? 'xBull' : 'Freighter'}...`,
+        title: `Opening ${walletType === 'lobstr' ? 'LOBSTR' : 'Freighter'}...`,
         description: "Approve the connection in your wallet app",
       });
 
@@ -261,7 +247,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const getWalletOptions = (): WalletOption[] => {
-    const walletIds: WalletType[] = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet'];
+    const walletIds: WalletType[] = ['lobstr', 'freighter', 'hotwallet'];
 
     const allOptions: WalletOption[] = walletIds.map(id => ({
       ...WALLETS.find(w => w.id === id)!,
