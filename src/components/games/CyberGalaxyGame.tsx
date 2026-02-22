@@ -372,41 +372,45 @@ const CyberGalaxyGame: React.FC = () => {
       const nonDiving = s.enemies.filter(e => !e.isDiving && e.reformTimer <= 0);
       const wantCount = Math.max(2 - currentlyDiving, 1 + Math.floor(s.wave / 2));
       const diveCount = Math.min(wantCount, 3, nonDiving.length);
-      // Pick enemies spread across the stage (sort by x, pick evenly spaced)
-      const sorted = [...nonDiving].sort((a, b) => a.x - b.x);
-      const picks: typeof sorted = [];
-      if (sorted.length > 0 && diveCount > 0) {
-        const step = Math.max(1, Math.floor(sorted.length / diveCount));
-        for (let i = 0; i < diveCount && picks.length < diveCount; i++) {
-          const idx = Math.min(i * step, sorted.length - 1);
-          if (!picks.includes(sorted[idx])) picks.push(sorted[idx]);
-        }
+      // Pick one from the left half and one from the right half of the stage
+      const midX = s.cw / 2;
+      const leftPool = nonDiving.filter(e => e.formX < midX);
+      const rightPool = nonDiving.filter(e => e.formX >= midX);
+      const picks: typeof nonDiving = [];
+      if (leftPool.length > 0) picks.push(leftPool[Math.floor(Math.random() * leftPool.length)]);
+      if (rightPool.length > 0 && picks.length < diveCount) picks.push(rightPool[Math.floor(Math.random() * rightPool.length)]);
+      // Fill remaining from any pool if needed
+      while (picks.length < diveCount && nonDiving.length > picks.length) {
+        const remaining = nonDiving.filter(e => !picks.includes(e));
+        if (remaining.length === 0) break;
+        picks.push(remaining[Math.floor(Math.random() * remaining.length)]);
       }
       for (const e of picks) {
         e.isDiving = true;
         e.diveT = 0;
         e.diveShots = 0;
         e.diveShotsMax = 2 + Math.floor(Math.random() * 2);
-        e.shootTimer = 150 + Math.random() * 150; // shoot very early into dive
+        e.shootTimer = 150 + Math.random() * 150;
         e.diveStartX = e.x;
         e.diveStartY = e.y;
-        e.diveCurveDir = Math.random() > 0.5 ? 1 : -1;
+        // Left-side enemies curve right, right-side enemies curve left
+        e.diveCurveDir = e.formX < midX ? 1 : -1;
       }
     }
 
     // ── Update diving enemies ──
     s.enemies.forEach(e => {
       if (!e.isDiving) return;
-      e.diveT += dtMs * 0.001;
+      e.diveT += dtMs * 0.0007; // slowed down from 0.001
       const t = e.diveT;
 
       if (t < 1.2) {
-        // Dive downward with a sine curve
+        // Dive downward with a sine curve (slower descent)
         e.x = e.diveStartX + Math.sin(t * 2) * 80 * e.diveCurveDir;
-        e.y = e.diveStartY + t * (s.ch * 0.6);
+        e.y = e.diveStartY + t * (s.ch * 0.45);
       } else {
-        // Past dive phase — accelerate downward
-        e.y += 8;
+        // Past dive phase — descend at moderate speed
+        e.y += 5;
         if (e.y > s.ch + 20) {
           // Snap directly back into formation and start cooldown
           e.x = e.formX + swayX;
