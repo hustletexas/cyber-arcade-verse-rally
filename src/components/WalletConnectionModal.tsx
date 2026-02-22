@@ -536,17 +536,12 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                 </div>
               )}
 
-              {/* Other Wallets */}
+              {/* Other Wallets - no header */}
               {otherWallets.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-4 px-1">
-                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">More Wallets</span>
-                  </div>
-                  <div className="space-y-3">
-                    {otherWallets.map(wallet => (
-                      <WalletButton key={wallet.id} wallet={wallet} />
-                    ))}
-                  </div>
+                <div className="space-y-3">
+                  {otherWallets.map(wallet => (
+                    <WalletButton key={wallet.id} wallet={wallet} />
+                  ))}
                 </div>
               )}
             </>
