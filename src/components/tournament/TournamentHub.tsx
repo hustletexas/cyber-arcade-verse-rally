@@ -75,8 +75,8 @@ export const TournamentHub: React.FC = () => {
           <TournamentList tournaments={tournaments.filter((t) => t.status !== 'draft')} loading={loading} />
         </TabsContent>
 
-        {/* Live Bracket Preview - Show when there are active tournaments */}
-        {activeTournaments.length > 0 && activeTab === 'browse' && <Card className="arcade-frame border-neon-green/50 mt-0">
+        {/* Live Bracket Preview - Always show on Browse tab */}
+        {activeTab === 'browse' && <Card className="arcade-frame border-neon-green/50 mt-0">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="font-display text-xl text-neon-green flex items-center gap-2">
@@ -89,12 +89,20 @@ export const TournamentHub: React.FC = () => {
                       </Badge>)}
                   </div>}
               </div>
-              {selectedTournamentId && <p className="text-sm text-muted-foreground">
+              {activeTournaments.length > 0 && selectedTournamentId && <p className="text-sm text-muted-foreground">
                   {activeTournaments.find((t) => t.id === selectedTournamentId)?.title} — {activeTournaments.find((t) => t.id === selectedTournamentId)?.game}
                 </p>}
             </CardHeader>
             <CardContent>
-              {selectedTournamentId && <BracketPreview tournamentId={selectedTournamentId} isAdmin={isAdmin} />}
+              {activeTournaments.length > 0 && selectedTournamentId ? (
+                <BracketPreview tournamentId={selectedTournamentId} isAdmin={isAdmin} />
+              ) : (
+                <div className="text-center py-8">
+                  <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground font-display">No active tournament</p>
+                  <p className="text-sm text-muted-foreground mt-1">The bracket will appear here when a tournament is in progress</p>
+                </div>
+              )}
             </CardContent>
           </Card>}
 
