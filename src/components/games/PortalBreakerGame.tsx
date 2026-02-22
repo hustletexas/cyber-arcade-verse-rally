@@ -1279,27 +1279,6 @@ const PortalBreakerGame: React.FC = () => {
         </div>
       </div>
 
-      {/* Tactical buttons */}
-      <div className="flex gap-2">
-        {(['timeslow', 'targetlock'] as TacticalType[]).map((t, i) => {
-          const meta = TACTICAL_META[t];
-          const ready = uiTacticals[t];
-          return (
-            <button
-              key={t}
-              onClick={() => handleTacticalClick(t)}
-              disabled={!ready || uiStatus !== 'running'}
-              className={`text-xs font-mono px-2 py-1 rounded border transition-all ${
-                ready && uiStatus === 'running'
-                  ? 'border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/20'
-                  : 'border-gray-700 text-gray-600 cursor-not-allowed'
-              }`}
-            >
-              [{i + 1}] {meta.icon} {meta.label}
-            </button>
-          );
-        })}
-      </div>
 
       {/* Canvas */}
       <div ref={containerRef} className="w-full flex justify-center">
