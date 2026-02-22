@@ -1,0 +1,3 @@
+UPDATE arcade_tournaments 
+SET start_time = '2026-03-14 22:27:59.862173+00' 
+WHERE id = '33333333-3333-3333-3333-333333333333';
