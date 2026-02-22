@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 // Stellar-only wallet types
-export type WalletType = 'lobstr' | 'freighter' | 'albedo' | 'xbull' | 'hotwallet' | 'created';
+export type WalletType = 'lobstr' | 'freighter' | 'hotwallet' | 'created';
 
 export interface ConnectedWallet {
   type: WalletType;
@@ -35,7 +35,7 @@ export const useMultiWallet = () => {
       if (stored) {
         const wallets = JSON.parse(stored);
         // Filter to only Stellar wallets
-        const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
+        const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
         return wallets.filter((w: any) => 
           stellarWalletTypes.includes(w.type)
         ).map((w: any) => ({
@@ -56,7 +56,7 @@ export const useMultiWallet = () => {
       if (stored) {
         const wallet = JSON.parse(stored);
         // Only return if it's a Stellar wallet
-        const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
+        const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
         if (stellarWalletTypes.includes(wallet.type)) {
           return {
             ...wallet,
@@ -91,7 +91,7 @@ export const useMultiWallet = () => {
       if (e.key === WALLET_STORAGE_KEY && e.newValue) {
         try {
           const wallets = JSON.parse(e.newValue);
-          const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
+          const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
           setConnectedWallets(wallets.filter((w: any) => 
             stellarWalletTypes.includes(w.type)
           ));
@@ -102,7 +102,7 @@ export const useMultiWallet = () => {
       if (e.key === PRIMARY_WALLET_KEY && e.newValue) {
         try {
           const primary = JSON.parse(e.newValue);
-          const stellarWalletTypes = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet', 'created'];
+          const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
           if (stellarWalletTypes.includes(primary.type)) {
             setPrimaryWallet(primary);
           }
@@ -360,8 +360,6 @@ export const useMultiWallet = () => {
     switch (type) {
       case 'lobstr': return '🌟';
       case 'freighter': return '🚀';
-      case 'albedo': return '🔐';
-      case 'xbull': return '🐂';
       case 'hotwallet': return '🔥';
       case 'created': return '💰';
       default: return '🔗';
