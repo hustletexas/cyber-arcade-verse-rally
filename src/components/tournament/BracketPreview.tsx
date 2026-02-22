@@ -26,23 +26,23 @@ const demoBracket = {
       {
         title: 'ROUND 1',
         matches: [
-          { id: 'l1-1', teamA: { name: 'Astralis', seed: 1 }, teamB: { name: 'Gambit', seed: 16 } },
-          { id: 'l1-2', teamA: { name: 'Cloud9', seed: 8 }, teamB: { name: 'NAVI', seed: 9 } },
-          { id: 'l1-3', teamA: { name: 'FaZe', seed: 5 }, teamB: { name: 'North', seed: 12 } },
-          { id: 'l1-4', teamA: { name: 'Virtus.pro', seed: 4 }, teamB: { name: 'Liquid', seed: 13 } },
+          { id: 'l1-1', teamA: { name: 'TBD', seed: 1 }, teamB: { name: 'TBD', seed: 16 }, isGhost: true },
+          { id: 'l1-2', teamA: { name: 'TBD', seed: 8 }, teamB: { name: 'TBD', seed: 9 }, isGhost: true },
+          { id: 'l1-3', teamA: { name: 'TBD', seed: 5 }, teamB: { name: 'TBD', seed: 12 }, isGhost: true },
+          { id: 'l1-4', teamA: { name: 'TBD', seed: 4 }, teamB: { name: 'TBD', seed: 13 }, isGhost: true },
         ]
       },
       {
         title: 'ROUND 2',
         matches: [
-          { id: 'l2-1', teamA: { name: 'Winner M1', seed: 'W' }, teamB: { name: 'Winner M2', seed: 'W' }, isGhost: true },
-          { id: 'l2-2', teamA: { name: 'Winner M3', seed: 'W' }, teamB: { name: 'Winner M4', seed: 'W' }, isGhost: true },
+          { id: 'l2-1', teamA: { name: '—', seed: 'W' }, teamB: { name: '—', seed: 'W' }, isGhost: true },
+          { id: 'l2-2', teamA: { name: '—', seed: 'W' }, teamB: { name: '—', seed: 'W' }, isGhost: true },
         ]
       },
       {
         title: 'CONF. FINALS',
         matches: [
-          { id: 'l3-1', teamA: { name: 'Winner M9', seed: 'W' }, teamB: { name: 'Winner M10', seed: 'W' }, isGhost: true },
+          { id: 'l3-1', teamA: { name: '—', seed: 'W' }, teamB: { name: '—', seed: 'W' }, isGhost: true },
         ]
       }
     ]
@@ -53,30 +53,30 @@ const demoBracket = {
       {
         title: 'ROUND 1',
         matches: [
-          { id: 'r1-1', teamA: { name: 'G2', seed: 2 }, teamB: { name: 'FNATIC', seed: 15 } },
-          { id: 'r1-2', teamA: { name: 'NiP', seed: 7 }, teamB: { name: 'MIBR', seed: 10 } },
-          { id: 'r1-3', teamA: { name: 'ENCE', seed: 6 }, teamB: { name: 'Vitality', seed: 11 } },
-          { id: 'r1-4', teamA: { name: 'OG', seed: 3 }, teamB: { name: 'BIG', seed: 14 } },
+          { id: 'r1-1', teamA: { name: 'TBD', seed: 2 }, teamB: { name: 'TBD', seed: 15 }, isGhost: true },
+          { id: 'r1-2', teamA: { name: 'TBD', seed: 7 }, teamB: { name: 'TBD', seed: 10 }, isGhost: true },
+          { id: 'r1-3', teamA: { name: 'TBD', seed: 6 }, teamB: { name: 'TBD', seed: 11 }, isGhost: true },
+          { id: 'r1-4', teamA: { name: 'TBD', seed: 3 }, teamB: { name: 'TBD', seed: 14 }, isGhost: true },
         ]
       },
       {
         title: 'ROUND 2',
         matches: [
-          { id: 'r2-1', teamA: { name: 'Winner M5', seed: 'W' }, teamB: { name: 'Winner M6', seed: 'W' }, isGhost: true },
-          { id: 'r2-2', teamA: { name: 'Winner M7', seed: 'W' }, teamB: { name: 'Winner M8', seed: 'W' }, isGhost: true },
+          { id: 'r2-1', teamA: { name: '—', seed: 'W' }, teamB: { name: '—', seed: 'W' }, isGhost: true },
+          { id: 'r2-2', teamA: { name: '—', seed: 'W' }, teamB: { name: '—', seed: 'W' }, isGhost: true },
         ]
       },
       {
         title: 'CONF. FINALS',
         matches: [
-          { id: 'r3-1', teamA: { name: 'Winner M11', seed: 'W' }, teamB: { name: 'Winner M12', seed: 'W' }, isGhost: true },
+          { id: 'r3-1', teamA: { name: '—', seed: 'W' }, teamB: { name: '—', seed: 'W' }, isGhost: true },
         ]
       }
     ]
   },
   finals: {
-    teamA: { name: 'Left Champ', seed: 'W' },
-    teamB: { name: 'Right Champ', seed: 'W' },
+    teamA: { name: '—', seed: 'W' },
+    teamB: { name: '—', seed: 'W' },
     champion: 'TBD'
   }
 };

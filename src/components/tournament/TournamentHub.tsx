@@ -94,15 +94,7 @@ export const TournamentHub: React.FC = () => {
                 </p>}
             </CardHeader>
             <CardContent>
-              {activeTournaments.length > 0 && selectedTournamentId ? (
-                <BracketPreview tournamentId={selectedTournamentId} isAdmin={isAdmin} />
-              ) : (
-                <div className="text-center py-8">
-                  <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground font-display">No active tournament</p>
-                  <p className="text-sm text-muted-foreground mt-1">The bracket will appear here when a tournament is in progress</p>
-                </div>
-              )}
+              <BracketPreview tournamentId={selectedTournamentId || 'empty'} isAdmin={isAdmin} />
             </CardContent>
           </Card>}
 
