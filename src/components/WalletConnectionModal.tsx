@@ -110,8 +110,8 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         });
       } else {
         // On desktop, use each kit module's isAvailable() to detect extensions
+        // Also check window globals as fallback for newer extension versions
         try {
-          const kit = buildKit();
           const modules = allowAllModules();
           const availability: Record<string, boolean> = {};
 
@@ -128,6 +128,25 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             }
           }
 
+          // Freighter fallback: newer versions use window.freighterApi
+          if (!availability.freighter) {
+            availability.freighter = !!(
+              (window as any).freighter || 
+              (window as any).freighterApi ||
+              (window as any).stellar?.freighter
+            );
+          }
+
+          // LOBSTR fallback: check window global  
+          if (!availability.lobstr) {
+            availability.lobstr = !!(window as any).lobstr;
+          }
+
+          // xBull fallback
+          if (!availability.xbull) {
+            availability.xbull = !!(window as any).xBullSDK;
+          }
+
           // Albedo is always available (web-based popup)
           availability.albedo = true;
           // Hot Wallet is always available (web-based)
@@ -136,12 +155,12 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           setWalletAvailability(availability);
         } catch (e) {
           console.error('Wallet detection error:', e);
-          // Default: mark web-based wallets as available
+          // Default: mark all as available so users can attempt connection
           setWalletAvailability({
-            lobstr: false,
-            freighter: false,
+            lobstr: true,
+            freighter: true,
             albedo: true,
-            xbull: false,
+            xbull: true,
             hotwallet: true,
           });
         }
@@ -303,16 +322,16 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       }
     }
 
-    if (!wallet.isInstalled && !isMobile) {
-      window.open(wallet.downloadUrl, '_blank');
-      return;
-    }
-
+    // On desktop, always attempt connection first — detection can be unreliable
     setConnecting(wallet.id);
     try {
       await wallet.connect();
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Failed to connect to ${wallet.name}:`, error);
+      // If connection fails and wallet wasn't detected, suggest installing
+      if (!wallet.isInstalled) {
+        window.open(wallet.downloadUrl, '_blank');
+      }
     } finally {
       setConnecting(null);
     }
