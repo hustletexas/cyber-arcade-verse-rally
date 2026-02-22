@@ -51,7 +51,8 @@ interface Enemy {
   diveCurveDir: number;
   shootTimer: number;
   wobble: number;
-  reformTimer: number; // cooldown in ms before enemy can dive again after returning
+  reformTimer: number;
+  diveShots: number; diveShotsMax: number;
 }
 
 interface PowerUp { type: PowerUpType; x: number; y: number; vy: number; }
@@ -129,6 +130,7 @@ function spawnWave(wave: number, cw: number): Enemy[] {
         shootTimer: Math.random() * 4000 + 2000,
         wobble: Math.random() * Math.PI * 2,
         reformTimer: 0,
+        diveShots: 0, diveShotsMax: 2,
       });
     }
   }
@@ -372,6 +374,9 @@ const CyberGalaxyGame: React.FC = () => {
         if (e && !e.isDiving && e.reformTimer <= 0) {
           e.isDiving = true;
           e.diveT = 0;
+          e.diveShots = 0;
+          e.diveShotsMax = 2 + Math.floor(Math.random() * 2); // 2 or 3 shots
+          e.shootTimer = 300 + Math.random() * 200; // fire quickly after starting dive
           e.diveStartX = e.x;
           e.diveStartY = e.y;
           e.diveCurveDir = Math.random() > 0.5 ? 1 : -1;
@@ -415,19 +420,18 @@ const CyberGalaxyGame: React.FC = () => {
       e.shootTimer -= dtMs;
       // Only diving enemies can shoot
       if (!e.isDiving) return;
-      const interval = baseInterval * 0.5;
-      if (e.shootTimer <= 0) {
-        e.shootTimer = interval + Math.random() * 1500;
-        if (Math.random() < shootChance) {
-          const dx = (p.x + p.w / 2) - (e.x + e.w / 2);
-          const dy = (p.y) - (e.y + e.h);
-          const mag = Math.sqrt(dx * dx + dy * dy) || 1;
-          s.enemyBullets.push({
-            x: e.x + e.w / 2, y: e.y + e.h,
-            vx: (dx / mag) * enemyBulletSpeed * 0.3,
-            vy: enemyBulletSpeed,
-          });
-        }
+      // Guarantee 2-3 shots per dive with short intervals (~400-600ms apart)
+      if (e.shootTimer <= 0 && (!e.diveShots || e.diveShots < (e.diveShotsMax || 2))) {
+        e.diveShots = (e.diveShots || 0) + 1;
+        e.shootTimer = 400 + Math.random() * 200;
+        const dx = (p.x + p.w / 2) - (e.x + e.w / 2);
+        const dy = (p.y) - (e.y + e.h);
+        const mag = Math.sqrt(dx * dx + dy * dy) || 1;
+        s.enemyBullets.push({
+          x: e.x + e.w / 2, y: e.y + e.h,
+          vx: (dx / mag) * enemyBulletSpeed * 0.3,
+          vy: enemyBulletSpeed,
+        });
       }
     });
 
