@@ -119,10 +119,13 @@ function spawnWave(wave: number, cw: number): Enemy[] {
       else if (r < 2 && (wave >= 2 && Math.random() < 0.2 + wave * 0.04)) type = 'striker';
 
       const meta = ENEMY_META[type];
+      // Scale HP with waves: +1 HP every 3 waves
+      const bonusHp = Math.floor(wave / 3);
+      const totalHp = meta.hp + bonusHp;
       const fx = startX + c * gapX;
       const fy = startY + r * gapY;
       enemies.push({
-        type, hp: meta.hp, maxHp: meta.hp,
+        type, hp: totalHp, maxHp: totalHp,
         x: fx, y: fy, w: meta.w, h: meta.h,
         formX: fx, formY: fy,
         isDiving: false, diveT: 0,
