@@ -18,6 +18,7 @@ import { WALLET_CONNECT_ID } from '@creit.tech/stellar-wallets-kit/modules/walle
 import { WalletConnectModule, WalletConnectAllowedMethods } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import { isMobileDevice, detectMobileWallets, getStoreLink, generateSignatureNonce, buildSignatureMessage } from '@/utils/mobileWalletDetection';
 import { useTieredAuth } from '@/contexts/AuthContext';
+import freighterApi from '@stellar/freighter-api';
 
 interface WalletOption extends WalletInfo {
   isInstalled: boolean;
@@ -109,61 +110,17 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           hotwallet: true,
         });
       } else {
-        // On desktop, use each kit module's isAvailable() to detect extensions
-        // Also check window globals as fallback for newer extension versions
-        try {
-          const modules = allowAllModules();
-          const availability: Record<string, boolean> = {};
-
-          for (const mod of modules) {
-            const walletKey = Object.entries(WALLET_KIT_IDS).find(
-              ([, kitId]) => kitId === mod.productId
-            )?.[0];
-            if (walletKey) {
-              try {
-                availability[walletKey] = await mod.isAvailable();
-              } catch {
-                availability[walletKey] = false;
-              }
-            }
-          }
-
-          // Freighter fallback: newer versions use window.freighterApi
-          if (!availability.freighter) {
-            availability.freighter = !!(
-              (window as any).freighter || 
-              (window as any).freighterApi ||
-              (window as any).stellar?.freighter
-            );
-          }
-
-          // LOBSTR fallback: check window global  
-          if (!availability.lobstr) {
-            availability.lobstr = !!(window as any).lobstr;
-          }
-
-          // xBull fallback
-          if (!availability.xbull) {
-            availability.xbull = !!(window as any).xBullSDK;
-          }
-
-          // Albedo is always available (web-based popup)
-          availability.albedo = true;
-          // Hot Wallet is always available (web-based)
-          availability.hotwallet = true;
-
-          setWalletAvailability(availability);
-        } catch (e) {
-          console.error('Wallet detection error:', e);
-          // Default: mark all as available so users can attempt connection
-          setWalletAvailability({
-            lobstr: true,
-            freighter: true,
-            albedo: true,
-            xbull: true,
-            hotwallet: true,
-          });
-        }
+        // On desktop, mark all wallets as available and let the kit handle
+        // connection attempts. Detection via isAvailable() is unreliable in
+        // iframe environments (like Lovable preview) because browser extensions
+        // don't inject globals into iframes.
+        setWalletAvailability({
+          lobstr: true,
+          freighter: true,
+          albedo: true,
+          xbull: true,
+          hotwallet: true,
+        });
       }
     };
 
@@ -258,8 +215,24 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       } else {
         throw new Error('No address returned. Make sure the wallet app is installed.');
       }
+    } else if (walletType === 'freighter') {
+      // Freighter: bypass kit's isAvailable check which fails in iframes
+      // Use the Freighter API directly — it communicates via postMessage
+      const accessResult = await freighterApi.requestAccess();
+      if (accessResult.error) {
+        throw new Error(accessResult.error);
+      }
+      const addrResult = await freighterApi.getAddress();
+      if (addrResult.error) {
+        throw new Error(addrResult.error);
+      }
+      if (addrResult.address) {
+        completeConnection(walletType, addrResult.address);
+      } else {
+        throw new Error('No address returned from Freighter. Make sure the extension is unlocked.');
+      }
     } else {
-      // Desktop: use the native kit module for each wallet
+      // Desktop: use the native kit module for other wallets
       const kit = buildKit(kitId);
       kit.setWallet(kitId);
 
