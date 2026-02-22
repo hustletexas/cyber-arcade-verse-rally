@@ -362,25 +362,35 @@ const CyberGalaxyGame: React.FC = () => {
       }
     });
 
-    // ── Dive timer ──
-    const diveInterval = Math.max(1200, DIVE_INTERVAL_BASE - s.wave * 120);
+    // ── Dive timer — ensure at least 2 enemies are always diving ──
+    const diveInterval = Math.max(800, DIVE_INTERVAL_BASE - s.wave * 150);
+    const currentlyDiving = s.enemies.filter(e => e.isDiving).length;
     s.diveTimer -= dtMs;
-    if (s.diveTimer <= 0) {
+    const needMore = currentlyDiving < 2;
+    if (s.diveTimer <= 0 || needMore) {
       s.diveTimer = diveInterval;
       const nonDiving = s.enemies.filter(e => !e.isDiving && e.reformTimer <= 0);
-      const diveCount = Math.min(1 + Math.floor(s.wave / 2), 3, nonDiving.length);
-      for (let i = 0; i < diveCount; i++) {
-        const e = nonDiving[Math.floor(Math.random() * nonDiving.length)];
-        if (e && !e.isDiving && e.reformTimer <= 0) {
-          e.isDiving = true;
-          e.diveT = 0;
-          e.diveShots = 0;
-          e.diveShotsMax = 2 + Math.floor(Math.random() * 2); // 2 or 3 shots
-          e.shootTimer = 300 + Math.random() * 200; // fire quickly after starting dive
-          e.diveStartX = e.x;
-          e.diveStartY = e.y;
-          e.diveCurveDir = Math.random() > 0.5 ? 1 : -1;
+      const wantCount = Math.max(2 - currentlyDiving, 1 + Math.floor(s.wave / 2));
+      const diveCount = Math.min(wantCount, 3, nonDiving.length);
+      // Pick enemies spread across the stage (sort by x, pick evenly spaced)
+      const sorted = [...nonDiving].sort((a, b) => a.x - b.x);
+      const picks: typeof sorted = [];
+      if (sorted.length > 0 && diveCount > 0) {
+        const step = Math.max(1, Math.floor(sorted.length / diveCount));
+        for (let i = 0; i < diveCount && picks.length < diveCount; i++) {
+          const idx = Math.min(i * step, sorted.length - 1);
+          if (!picks.includes(sorted[idx])) picks.push(sorted[idx]);
         }
+      }
+      for (const e of picks) {
+        e.isDiving = true;
+        e.diveT = 0;
+        e.diveShots = 0;
+        e.diveShotsMax = 2 + Math.floor(Math.random() * 2);
+        e.shootTimer = 150 + Math.random() * 150; // shoot very early into dive
+        e.diveStartX = e.x;
+        e.diveStartY = e.y;
+        e.diveCurveDir = Math.random() > 0.5 ? 1 : -1;
       }
     }
 
