@@ -18,11 +18,12 @@ const BRICK_TOP_OFFSET = 100;
 const POWER_UP_CHANCE = 0.25;
 const COMBO_WINDOW = 2000;
 const STAR_COUNT = 120;
+const ULTIMATE_MAX = 100;
 
 // ─── Color Themes per Level ──────────────────────────────────────────
 interface ColorTheme {
   bgTop: string; bgMid: string; bgBot: string;
-  brickHues: [number, number, number]; // 1-hit, 2-hit, 3-hit
+  brickHues: [number, number, number];
   portalHue: number;
   paddleA: string; paddleB: string;
   orbColor: string; trailColor: string;
@@ -44,22 +45,75 @@ function getTheme(level: number): ColorTheme {
   return LEVEL_THEMES[(level - 1) % LEVEL_THEMES.length];
 }
 
-type PowerUpType = 'widen' | 'slow' | 'split' | 'phase' | 'laser' | 'fireball' | 'magnet' | 'nuke';
-const POWER_UP_META: Record<PowerUpType, { label: string; color: string; duration: number }> = {
-  widen:    { label: 'WIDEN GATE', color: '#00ffcc', duration: 10000 },
-  slow:     { label: 'TIME DILATION', color: '#8b5cf6', duration: 8000 },
-  split:    { label: 'ORBIT SPLIT', color: '#f59e0b', duration: 0 },
-  phase:    { label: 'PHASE ORB', color: '#ec4899', duration: 8000 },
-  laser:    { label: 'LASER BEAM', color: '#ff0000', duration: 6000 },
-  fireball: { label: 'FIREBALL', color: '#ff6600', duration: 7000 },
-  magnet:   { label: 'MAGNET PULL', color: '#00ccff', duration: 8000 },
-  nuke:     { label: 'NUKE BLAST', color: '#ffff00', duration: 0 },
+// ─── Power-up & Brick Types ─────────────────────────────────────────
+type PowerUpType =
+  // Ball Modifiers
+  | 'plasma' | 'split' | 'phase' | 'powersurge'
+  // Paddle Abilities
+  | 'shield' | 'magnetcatch' | 'boostslide' | 'gravityfield'
+  // Legacy
+  | 'widen' | 'slow' | 'laser' | 'fireball' | 'magnet' | 'nuke';
+
+type TacticalType = 'shockwave' | 'timeslow' | 'targetlock';
+type UltimateType = 'overdrive' | 'blackhole' | 'lasersweep';
+
+// Special brick types
+type BrickSpecial = 'normal' | 'explosive' | 'charge' | 'freeze' | 'combo';
+
+const POWER_UP_META: Record<PowerUpType, { label: string; color: string; duration: number; category: string }> = {
+  // Ball Modifiers
+  plasma:      { label: 'PLASMA BALL',   color: '#ff4444', duration: 5000,  category: 'ball' },
+  split:       { label: 'SPLIT SHOT',    color: '#f59e0b', duration: 0,     category: 'ball' },
+  phase:       { label: 'PHASE BALL',    color: '#ec4899', duration: 8000,  category: 'ball' },
+  powersurge:  { label: 'POWER SURGE',   color: '#00ff88', duration: 4000,  category: 'ball' },
+  // Paddle Abilities
+  shield:      { label: 'ENERGY SHIELD', color: '#00ddff', duration: 0,     category: 'paddle' },
+  magnetcatch: { label: 'MAGNET CATCH',  color: '#ff66ff', duration: 8000,  category: 'paddle' },
+  boostslide:  { label: 'BOOST SLIDE',   color: '#ffaa00', duration: 5000,  category: 'paddle' },
+  gravityfield:{ label: 'GRAVITY FIELD', color: '#8888ff', duration: 3000,  category: 'paddle' },
+  // Legacy
+  widen:       { label: 'WIDEN GATE',    color: '#00ffcc', duration: 10000, category: 'paddle' },
+  slow:        { label: 'TIME DILATION', color: '#8b5cf6', duration: 8000,  category: 'ball' },
+  laser:       { label: 'LASER BEAM',    color: '#ff0000', duration: 6000,  category: 'ball' },
+  fireball:    { label: 'FIREBALL',      color: '#ff6600', duration: 7000,  category: 'ball' },
+  magnet:      { label: 'MAGNET PULL',   color: '#00ccff', duration: 8000,  category: 'paddle' },
+  nuke:        { label: 'NUKE BLAST',    color: '#ffff00', duration: 0,     category: 'tactical' },
 };
 
-interface Ball { x: number; y: number; vx: number; vy: number; trail: { x: number; y: number }[]; }
-interface Brick { x: number; y: number; w: number; h: number; hp: number; maxHp: number; wobble: number; wobbleSpeed: number; alive: boolean; }
+const TACTICAL_META: Record<TacticalType, { label: string; color: string; cooldown: number; icon: string }> = {
+  shockwave:  { label: 'SHOCKWAVE',   color: '#ffff00', cooldown: 15000, icon: '⚡' },
+  timeslow:   { label: 'TIME SLOW',   color: '#8b5cf6', cooldown: 12000, icon: '🌀' },
+  targetlock: { label: 'TARGET LOCK', color: '#ff4444', cooldown: 10000, icon: '🎯' },
+};
+
+const ULTIMATE_META: Record<UltimateType, { label: string; color: string; icon: string; cost: number }> = {
+  overdrive:  { label: 'GALACTIC OVERDRIVE', color: '#ffdd00', icon: '🌠', cost: 100 },
+  blackhole:  { label: 'BLACK HOLE',         color: '#8800ff', icon: '🌀', cost: 100 },
+  lasersweep: { label: 'LASER SWEEP',        color: '#ff0044', icon: '⚡', cost: 100 },
+};
+
+interface Ball {
+  x: number; y: number; vx: number; vy: number;
+  trail: { x: number; y: number }[];
+  pierceLeft: number; // how many bricks to pierce through (plasma)
+}
+
+interface Brick {
+  x: number; y: number; w: number; h: number;
+  hp: number; maxHp: number;
+  wobble: number; wobbleSpeed: number;
+  alive: boolean;
+  special: BrickSpecial;
+}
+
 interface PowerUp { type: PowerUpType; x: number; y: number; vy: number; }
 interface Star { x: number; y: number; r: number; a: number; speed: number; }
+
+interface TacticalState {
+  cooldowns: Record<TacticalType, number>; // timestamp when available again
+  activeTimeSlow: number; // end timestamp
+  activeTargetLock: number; // end timestamp
+}
 
 interface GameState {
   status: 'idle' | 'running' | 'paused' | 'gameover' | 'levelcomplete';
@@ -70,11 +124,12 @@ interface GameState {
   paddleX: number;
   paddleW: number;
   basePaddleW: number;
+  paddleSpeedMult: number;
   balls: Ball[];
   bricks: Brick[];
   powerUps: PowerUp[];
-  activePower: { type: PowerUpType; end: number } | null;
-  combo: { count: number; lastTime: number; display: string; displayEnd: number };
+  activePowers: Map<string, number>; // type -> end timestamp
+  combo: { count: number; lastTime: number; display: string; displayEnd: number; multiplier: number };
   stars: Star[];
   portalAngle: number;
   shakeEnd: number;
@@ -83,6 +138,21 @@ interface GameState {
   bricksDestroyed: number;
   canvasW: number;
   canvasH: number;
+  // Shield
+  shieldActive: boolean;
+  // Magnet catch
+  caughtBall: Ball | null;
+  // Ultimate
+  ultimateMeter: number;
+  selectedUltimate: UltimateType;
+  ultimateActive: { type: UltimateType; end: number; data?: any } | null;
+  // Tactical
+  tactical: TacticalState;
+  // Score multiplier from combo bricks
+  scoreMultiplier: number;
+  scoreMultiplierEnd: number;
+  // Combo brick timer
+  lastComboBrickTime: number;
 }
 
 function createStars(w: number, h: number): Star[] {
@@ -103,6 +173,17 @@ function buildBricks(level: number, cw: number): Brick[] {
       let hp = 1;
       if (level >= 2 && Math.random() < 0.3 + level * 0.05) hp = 2;
       if (level >= 4 && Math.random() < 0.1 + (level - 4) * 0.03) hp = 3;
+
+      // Assign special brick types based on level
+      let special: BrickSpecial = 'normal';
+      if (level >= 2) {
+        const roll = Math.random();
+        if (roll < 0.08) special = 'explosive';
+        else if (roll < 0.14) special = 'charge';
+        else if (roll < 0.19) special = 'freeze';
+        else if (roll < 0.24) special = 'combo';
+      }
+
       bricks.push({
         x: totalPadX + c * (bw + BRICK_PAD),
         y: BRICK_TOP_OFFSET + r * (bh + BRICK_PAD),
@@ -110,6 +191,7 @@ function buildBricks(level: number, cw: number): Brick[] {
         wobble: Math.random() * Math.PI * 2,
         wobbleSpeed: 0.3 + Math.random() * 0.4,
         alive: true,
+        special,
       });
     }
   }
@@ -119,7 +201,7 @@ function buildBricks(level: number, cw: number): Brick[] {
 function makeBall(cx: number, py: number): Ball {
   const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.6;
   const speed = 4;
-  return { x: cx, y: py - BALL_RADIUS - 2, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, trail: [] };
+  return { x: cx, y: py - BALL_RADIUS - 2, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, trail: [], pierceLeft: 0 };
 }
 
 function initState(cw: number, ch: number): GameState {
@@ -128,13 +210,28 @@ function initState(cw: number, ch: number): GameState {
   return {
     status: 'idle', score: 0, bestScore: best, lives: 3, level: 1,
     paddleX: cw / 2 - pw / 2, paddleW: pw, basePaddleW: pw,
+    paddleSpeedMult: 1,
     balls: [makeBall(cw / 2, ch - 40)],
     bricks: buildBricks(1, cw),
-    powerUps: [], activePower: null,
-    combo: { count: 0, lastTime: 0, display: '', displayEnd: 0 },
+    powerUps: [],
+    activePowers: new Map(),
+    combo: { count: 0, lastTime: 0, display: '', displayEnd: 0, multiplier: 1 },
     stars: createStars(cw, ch), portalAngle: 0, shakeEnd: 0,
     overlayText: '', overlayEnd: 0, bricksDestroyed: 0,
     canvasW: cw, canvasH: ch,
+    shieldActive: false,
+    caughtBall: null,
+    ultimateMeter: 0,
+    selectedUltimate: 'overdrive',
+    ultimateActive: null,
+    tactical: {
+      cooldowns: { shockwave: 0, timeslow: 0, targetlock: 0 },
+      activeTimeSlow: 0,
+      activeTargetLock: 0,
+    },
+    scoreMultiplier: 1,
+    scoreMultiplierEnd: 0,
+    lastComboBrickTime: 0,
   };
 }
 
@@ -158,6 +255,16 @@ interface LeaderboardEntry {
   created_at: string;
 }
 
+// ─── Helper: check if power is active ────────────────────────────────
+function hasPower(s: GameState, type: string, now: number): boolean {
+  const end = s.activePowers.get(type);
+  return end !== undefined && now < end;
+}
+
+function activatePower(s: GameState, type: string, duration: number, now: number) {
+  s.activePowers.set(type, now + duration);
+}
+
 // ─── Component ───────────────────────────────────────────────────────
 const PortalBreakerGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -173,6 +280,9 @@ const PortalBreakerGame: React.FC = () => {
   const [uiLevel, setUiLevel] = useState(1);
   const [uiPower, setUiPower] = useState('');
   const [uiCombo, setUiCombo] = useState('');
+  const [uiUltimate, setUiUltimate] = useState(0);
+  const [uiShield, setUiShield] = useState(false);
+  const [uiTacticals, setUiTacticals] = useState<Record<TacticalType, boolean>>({ shockwave: true, timeslow: true, targetlock: true });
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loadingLb, setLoadingLb] = useState(false);
@@ -198,11 +308,7 @@ const PortalBreakerGame: React.FC = () => {
   const submitScore = useCallback(async (score: number, level: number) => {
     if (!walletAddress || score <= 0 || scoreSubmittedRef.current) return;
     scoreSubmittedRef.current = true;
-    await supabase.from('portal_breaker_scores').insert({
-      user_id: walletAddress,
-      score,
-      level,
-    });
+    await supabase.from('portal_breaker_scores').insert({ user_id: walletAddress, score, level });
     fetchLeaderboard();
   }, [walletAddress, fetchLeaderboard]);
 
@@ -238,23 +344,175 @@ const PortalBreakerGame: React.FC = () => {
       const x = (clientX - rect.left) / scaleRef.current;
       const s = stateRef.current;
       s.paddleX = Math.max(0, Math.min(s.canvasW - s.paddleW, x - s.paddleW / 2));
+
+      // Magnet catch: release ball on move after catch
+      if (s.caughtBall) {
+        s.caughtBall.x = s.paddleX + s.paddleW / 2;
+      }
+    };
+    const onClick = () => {
+      const s = stateRef.current;
+      if (s.caughtBall) {
+        // Release caught ball
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.4;
+        const sp = 4;
+        s.caughtBall.vx = Math.cos(angle) * sp;
+        s.caughtBall.vy = Math.sin(angle) * sp;
+        s.caughtBall = null;
+      }
     };
     const onMouse = (e: MouseEvent) => handleMove(e.clientX);
     const onTouch = (e: TouchEvent) => { e.preventDefault(); handleMove(e.touches[0].clientX); };
     canvas.addEventListener('mousemove', onMouse);
+    canvas.addEventListener('click', onClick);
     canvas.addEventListener('touchmove', onTouch, { passive: false });
     canvas.addEventListener('touchstart', onTouch, { passive: false });
+    canvas.addEventListener('touchend', onClick);
     return () => {
       canvas.removeEventListener('mousemove', onMouse);
+      canvas.removeEventListener('click', onClick);
       canvas.removeEventListener('touchmove', onTouch);
       canvas.removeEventListener('touchstart', onTouch);
+      canvas.removeEventListener('touchend', onClick);
     };
   }, []);
+
+  // Keyboard for tacticals & ultimate
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const s = stateRef.current;
+      const now = performance.now();
+      if (s.status !== 'running') return;
+
+      if (e.key === '1') useTactical(s, 'shockwave', now);
+      if (e.key === '2') useTactical(s, 'timeslow', now);
+      if (e.key === '3') useTactical(s, 'targetlock', now);
+      if (e.key === ' ' || e.key === 'q' || e.key === 'Q') {
+        e.preventDefault();
+        useUltimate(s, now);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // ─── Tactical abilities ───────────────────────────────────────────
+  const useTactical = (s: GameState, type: TacticalType, now: number) => {
+    if (now < s.tactical.cooldowns[type]) return;
+    const meta = TACTICAL_META[type];
+    s.tactical.cooldowns[type] = now + meta.cooldown;
+
+    if (type === 'shockwave') {
+      // Destroy lowest row of alive bricks
+      let maxY = 0;
+      for (const b of s.bricks) if (b.alive && b.y > maxY) maxY = b.y;
+      let destroyed = 0;
+      for (const b of s.bricks) {
+        if (b.alive && b.y >= maxY - 2) {
+          b.alive = false; b.hp = 0;
+          s.bricksDestroyed++;
+          destroyed++;
+          spawnParticles(b.x + b.w / 2, b.y + b.h / 2, '#ffff00', 8);
+        }
+      }
+      s.score += destroyed * 15;
+      s.shakeEnd = now + 300;
+      s.overlayText = `⚡ SHOCKWAVE ×${destroyed}`;
+      s.overlayEnd = now + 1000;
+    } else if (type === 'timeslow') {
+      s.tactical.activeTimeSlow = now + 3000;
+      s.overlayText = '🌀 TIME SLOW';
+      s.overlayEnd = now + 800;
+    } else if (type === 'targetlock') {
+      s.tactical.activeTargetLock = now + 5000;
+      s.overlayText = '🎯 TARGET LOCK';
+      s.overlayEnd = now + 800;
+    }
+  };
+
+  // ─── Ultimate abilities ───────────────────────────────────────────
+  const useUltimate = (s: GameState, now: number) => {
+    if (s.ultimateMeter < ULTIMATE_MAX || s.ultimateActive) return;
+    s.ultimateMeter = 0;
+    const type = s.selectedUltimate;
+
+    if (type === 'overdrive') {
+      // Clear 40% of bricks
+      const alive = s.bricks.filter(b => b.alive);
+      const toDestroy = Math.ceil(alive.length * 0.4);
+      const shuffled = alive.sort(() => Math.random() - 0.5).slice(0, toDestroy);
+      for (const b of shuffled) {
+        b.alive = false; b.hp = 0;
+        s.bricksDestroyed++;
+        spawnParticles(b.x + b.w / 2, b.y + b.h / 2, '#ffdd00', 12);
+      }
+      s.score += toDestroy * 20;
+      s.shakeEnd = now + 500;
+      s.overlayText = '🌠 GALACTIC OVERDRIVE';
+      s.overlayEnd = now + 1500;
+    } else if (type === 'blackhole') {
+      // Black hole effect - pull bricks inward then explode
+      s.ultimateActive = { type: 'blackhole', end: now + 2000, data: { cx: s.canvasW / 2, cy: s.canvasH / 2 - 50 } };
+      s.overlayText = '🌀 BLACK HOLE COLLAPSE';
+      s.overlayEnd = now + 1500;
+    } else if (type === 'lasersweep') {
+      // Horizontal beam sweep
+      s.ultimateActive = { type: 'lasersweep', end: now + 1500, data: { y: BRICK_TOP_OFFSET } };
+      s.overlayText = '⚡ LASER SWEEP';
+      s.overlayEnd = now + 1200;
+    }
+  };
 
   const ballSpeed = useCallback((level: number, destroyed: number) => {
     const sp = 4 + (level - 1) * 0.3 + Math.floor(destroyed / 10) * 0.15;
     return Math.min(sp, 8);
   }, []);
+
+  // ─── Power-up drop table ──────────────────────────────────────────
+  const getRandomPowerUp = (): PowerUpType => {
+    const types: PowerUpType[] = [
+      'plasma', 'split', 'phase', 'powersurge',
+      'shield', 'magnetcatch', 'boostslide', 'gravityfield',
+      'widen', 'slow', 'laser', 'fireball', 'magnet', 'nuke',
+    ];
+    return types[Math.floor(Math.random() * types.length)];
+  };
+
+  // ─── Handle special brick destruction ─────────────────────────────
+  const handleSpecialBrick = (s: GameState, brick: Brick, now: number, theme: ColorTheme) => {
+    if (brick.special === 'explosive') {
+      // Destroy surrounding bricks
+      for (const other of s.bricks) {
+        if (!other.alive || other === brick) continue;
+        const dx = (other.x + other.w / 2) - (brick.x + brick.w / 2);
+        const dy = (other.y + other.h / 2) - (brick.y + brick.h / 2);
+        if (Math.abs(dx) < brick.w * 1.6 && Math.abs(dy) < brick.h * 1.6) {
+          other.hp--;
+          if (other.hp <= 0) {
+            other.alive = false;
+            s.bricksDestroyed++;
+            s.score += 15;
+            spawnParticles(other.x + other.w / 2, other.y + other.h / 2, '#ff6600', 8);
+            if (other.special !== 'normal') handleSpecialBrick(s, other, now, theme);
+          }
+        }
+      }
+      s.shakeEnd = now + 200;
+      spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#ff4400', 16);
+    } else if (brick.special === 'charge') {
+      s.ultimateMeter = Math.min(ULTIMATE_MAX, s.ultimateMeter + 20);
+      spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#00ffcc', 10);
+    } else if (brick.special === 'freeze') {
+      // Apply slow to all balls for 3s
+      activatePower(s, 'freeze_brick', 3000, now);
+    } else if (brick.special === 'combo') {
+      if (now - s.lastComboBrickTime < 2000) {
+        s.scoreMultiplier = Math.min(s.scoreMultiplier + 0.5, 4);
+        s.scoreMultiplierEnd = now + 5000;
+      }
+      s.lastComboBrickTime = now;
+    }
+  };
 
   // ─── Game loop ─────────────────────────────────────────────────────
   const update = useCallback((dt: number) => {
@@ -265,10 +523,17 @@ const PortalBreakerGame: React.FC = () => {
     s.stars.forEach(st => { st.a = 0.4 + Math.sin(now * 0.001 * st.speed + st.x) * 0.6; });
     particles = particles.filter(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt * 1.5; return p.life > 0; });
 
-    if (s.activePower && now > s.activePower.end) {
-      if (s.activePower.type === 'widen') s.paddleW = s.basePaddleW;
-      s.activePower = null;
+    // Clean expired powers
+    for (const [key, end] of s.activePowers) {
+      if (now > end) {
+        if (key === 'widen' || key === 'gravityfield') s.paddleW = s.basePaddleW;
+        if (key === 'boostslide') s.paddleSpeedMult = 1;
+        s.activePowers.delete(key);
+      }
     }
+
+    // Score multiplier expiry
+    if (now > s.scoreMultiplierEnd) s.scoreMultiplier = 1;
 
     if (s.status !== 'running') return;
 
@@ -276,9 +541,61 @@ const PortalBreakerGame: React.FC = () => {
     const sp = ballSpeed(s.level, s.bricksDestroyed);
     const theme = getTheme(s.level);
 
+    // Ultimate updates
+    if (s.ultimateActive) {
+      if (now > s.ultimateActive.end) {
+        if (s.ultimateActive.type === 'blackhole') {
+          // Explode all bricks
+          for (const b of s.bricks) {
+            if (b.alive) {
+              b.alive = false; b.hp = 0;
+              s.bricksDestroyed++;
+              s.score += 10;
+              spawnParticles(b.x + b.w / 2, b.y + b.h / 2, '#aa00ff', 6);
+            }
+          }
+          s.shakeEnd = now + 500;
+        }
+        s.ultimateActive = null;
+      } else if (s.ultimateActive.type === 'lasersweep') {
+        // Sweep beam downward
+        const progress = 1 - (s.ultimateActive.end - now) / 1500;
+        const beamY = BRICK_TOP_OFFSET + progress * (BRICK_ROWS * 22 + 20);
+        s.ultimateActive.data.y = beamY;
+        for (const b of s.bricks) {
+          if (b.alive && Math.abs(b.y + b.h / 2 - beamY) < 12) {
+            b.alive = false; b.hp = 0;
+            s.bricksDestroyed++;
+            s.score += 15;
+            spawnParticles(b.x + b.w / 2, b.y + b.h / 2, '#ff0044', 6);
+          }
+        }
+      } else if (s.ultimateActive.type === 'blackhole') {
+        // Pull bricks toward center
+        const cx = s.ultimateActive.data.cx;
+        const cy = s.ultimateActive.data.cy;
+        for (const b of s.bricks) {
+          if (!b.alive) continue;
+          const bx = b.x + b.w / 2;
+          const by = b.y + b.h / 2;
+          const dx = cx - bx;
+          const dy = cy - by;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          b.x += (dx / dist) * 2 * dt * 60;
+          b.y += (dy / dist) * 2 * dt * 60;
+        }
+      }
+    }
+
+    // Time slow (tactical or power-up)
+    const isTimeSlow = now < s.tactical.activeTimeSlow || hasPower(s, 'slow', now) || hasPower(s, 'freeze_brick', now);
+    const speedMult = isTimeSlow ? 0.55 : (hasPower(s, 'powersurge', now) ? 1.2 : 1);
+
     const deadBalls: number[] = [];
     s.balls.forEach((ball, bi) => {
-      const speedMult = s.activePower?.type === 'slow' ? 0.55 : 1;
+      // Skip caught balls
+      if (s.caughtBall === ball) return;
+
       ball.x += ball.vx * dt * 60 * speedMult;
       ball.y += ball.vy * dt * 60 * speedMult;
 
@@ -289,8 +606,18 @@ const PortalBreakerGame: React.FC = () => {
       if (ball.x + BALL_RADIUS > s.canvasW) { ball.x = s.canvasW - BALL_RADIUS; ball.vx = -Math.abs(ball.vx); }
       if (ball.y - BALL_RADIUS < 0) { ball.y = BALL_RADIUS; ball.vy = Math.abs(ball.vy); }
 
+      // Paddle collision
       if (ball.vy > 0 && ball.y + BALL_RADIUS >= paddleY && ball.y + BALL_RADIUS <= paddleY + PADDLE_HEIGHT + 4
           && ball.x >= s.paddleX && ball.x <= s.paddleX + s.paddleW) {
+        // Magnet catch
+        if (hasPower(s, 'magnetcatch', now) && !s.caughtBall) {
+          ball.vx = 0;
+          ball.vy = 0;
+          ball.y = paddleY - BALL_RADIUS;
+          s.caughtBall = ball;
+          return;
+        }
+
         const hitPos = (ball.x - s.paddleX) / s.paddleW;
         const angle = -Math.PI * (0.15 + hitPos * 0.7);
         const mag = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
@@ -299,7 +626,10 @@ const PortalBreakerGame: React.FC = () => {
         ball.y = paddleY - BALL_RADIUS;
       }
 
-      const isPhase = s.activePower?.type === 'phase' || s.activePower?.type === 'fireball';
+      // Brick collision
+      const isPhase = hasPower(s, 'phase', now) || hasPower(s, 'fireball', now);
+      const isPlasma = hasPower(s, 'plasma', now);
+
       for (const brick of s.bricks) {
         if (!brick.alive) continue;
         const bx = brick.x + Math.sin(brick.wobble) * 2;
@@ -309,7 +639,8 @@ const PortalBreakerGame: React.FC = () => {
           if (brick.hp <= 0) {
             brick.alive = false;
             s.bricksDestroyed++;
-            const pts = brick.maxHp === 1 ? 10 : brick.maxHp === 2 ? 25 : 40;
+            const basePts = brick.maxHp === 1 ? 10 : brick.maxHp === 2 ? 25 : 40;
+            const pts = Math.round(basePts * s.scoreMultiplier);
             if (now - s.combo.lastTime < COMBO_WINDOW) {
               s.combo.count++;
               s.score += pts + s.combo.count * 5;
@@ -321,14 +652,27 @@ const PortalBreakerGame: React.FC = () => {
               s.score += pts;
             }
             s.combo.lastTime = now;
+
+            // Ultimate meter from normal play
+            s.ultimateMeter = Math.min(ULTIMATE_MAX, s.ultimateMeter + 3);
+
             const brickHue = theme.brickHues[brick.maxHp - 1] ?? theme.brickHues[0];
             spawnParticles(bx + brick.w / 2, brick.y + brick.h / 2, `hsl(${brickHue}, 100%, 65%)`, 10);
+
+            // Handle special brick effects
+            if (brick.special !== 'normal') handleSpecialBrick(s, brick, now, theme);
+
+            // Drop power-up
             if (Math.random() < POWER_UP_CHANCE) {
-              const types: PowerUpType[] = ['widen', 'slow', 'split', 'phase', 'laser', 'fireball', 'magnet', 'nuke'];
-              s.powerUps.push({ type: types[Math.floor(Math.random() * types.length)], x: bx + brick.w / 2, y: brick.y + brick.h, vy: 2 });
+              s.powerUps.push({ type: getRandomPowerUp(), x: bx + brick.w / 2, y: brick.y + brick.h, vy: 2 });
             }
           }
-          if (!isPhase) {
+
+          // Piercing logic
+          if (isPlasma && ball.pierceLeft > 0) {
+            ball.pierceLeft--;
+            // Don't bounce, continue through
+          } else if (!isPhase) {
             const overlapLeft = ball.x + BALL_RADIUS - bx;
             const overlapRight = bx + brick.w - (ball.x - BALL_RADIUS);
             const overlapTop = ball.y + BALL_RADIUS - brick.y;
@@ -337,14 +681,27 @@ const PortalBreakerGame: React.FC = () => {
             if (minOverlap === overlapLeft || minOverlap === overlapRight) ball.vx = -ball.vx;
             else ball.vy = -ball.vy;
           }
-          break;
+          if (!isPlasma || ball.pierceLeft <= 0) break;
         }
       }
 
+      // Normalize speed
       const curMag = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
       if (curMag > 0) { ball.vx = (ball.vx / curMag) * sp; ball.vy = (ball.vy / curMag) * sp; }
 
-      if (ball.y > s.canvasH + 20) deadBalls.push(bi);
+      if (ball.y > s.canvasH + 20) {
+        // Shield check
+        if (s.shieldActive) {
+          s.shieldActive = false;
+          ball.y = paddleY - BALL_RADIUS;
+          ball.vy = -Math.abs(ball.vy);
+          spawnParticles(ball.x, s.canvasH - 10, '#00ddff', 12);
+          s.overlayText = '🛡 SHIELD ABSORBED';
+          s.overlayEnd = now + 800;
+        } else {
+          deadBalls.push(bi);
+        }
+      }
     });
 
     for (let i = deadBalls.length - 1; i >= 0; i--) s.balls.splice(deadBalls[i], 1);
@@ -357,27 +714,30 @@ const PortalBreakerGame: React.FC = () => {
       } else {
         s.balls = [makeBall(s.canvasW / 2, s.canvasH - 40)];
         s.paddleX = s.canvasW / 2 - s.paddleW / 2;
+        s.caughtBall = null;
       }
     }
 
+    // Power-up collection
     s.powerUps = s.powerUps.filter(pu => {
       pu.y += pu.vy * dt * 60;
       if (pu.y > s.canvasH + 20) return false;
       if (pu.y + 10 >= paddleY && pu.x >= s.paddleX && pu.x <= s.paddleX + s.paddleW) {
         const meta = POWER_UP_META[pu.type];
+
         if (pu.type === 'split') {
-          s.balls.push(makeBall(s.balls[0]?.x ?? s.canvasW / 2, s.balls[0]?.y ?? s.canvasH / 2));
-          s.balls.push(makeBall(s.balls[0]?.x ?? s.canvasW / 2, s.balls[0]?.y ?? s.canvasH / 2));
-        } else if (pu.type === 'widen') {
-          s.paddleW = s.basePaddleW * 1.5;
-          s.activePower = { type: 'widen', end: now + meta.duration };
+          const ref = s.balls[0];
+          if (ref) {
+            s.balls.push(makeBall(ref.x, ref.y));
+            s.balls.push(makeBall(ref.x, ref.y));
+          }
+        } else if (pu.type === 'shield') {
+          s.shieldActive = true;
         } else if (pu.type === 'nuke') {
-          // Destroy all bricks in a 3-row radius around the paddle
           let nuked = 0;
           for (const brick of s.bricks) {
             if (brick.alive && brick.y > s.canvasH * 0.3) {
-              brick.alive = false;
-              brick.hp = 0;
+              brick.alive = false; brick.hp = 0;
               s.bricksDestroyed++;
               nuked++;
               spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#ffff00', 6);
@@ -388,26 +748,35 @@ const PortalBreakerGame: React.FC = () => {
           s.overlayText = `NUKE! ×${nuked}`;
           s.overlayEnd = now + 1000;
         } else if (pu.type === 'laser') {
-          // Destroy entire column above paddle center
           const pcx = s.paddleX + s.paddleW / 2;
           for (const brick of s.bricks) {
             if (brick.alive && pcx >= brick.x && pcx <= brick.x + brick.w) {
-              brick.alive = false;
-              brick.hp = 0;
+              brick.alive = false; brick.hp = 0;
               s.bricksDestroyed++;
               s.score += 15;
               spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#ff0000', 8);
             }
           }
-          s.activePower = { type: 'laser', end: now + meta.duration };
-        } else if (pu.type === 'fireball') {
-          // Ball destroys bricks without bouncing for duration
-          s.activePower = { type: 'fireball', end: now + meta.duration };
-        } else if (pu.type === 'magnet') {
-          // Attract power-ups and slow ball loss
-          s.activePower = { type: 'magnet', end: now + meta.duration };
-        } else {
-          s.activePower = { type: pu.type, end: now + meta.duration };
+          activatePower(s, 'laser', meta.duration, now);
+        } else if (pu.type === 'widen') {
+          s.paddleW = s.basePaddleW * 1.5;
+          activatePower(s, 'widen', meta.duration, now);
+        } else if (pu.type === 'gravityfield') {
+          s.paddleW = s.basePaddleW * 1.4;
+          activatePower(s, 'gravityfield', meta.duration, now);
+        } else if (pu.type === 'boostslide') {
+          s.paddleSpeedMult = 1.6;
+          activatePower(s, 'boostslide', meta.duration, now);
+        } else if (pu.type === 'plasma') {
+          activatePower(s, 'plasma', meta.duration, now);
+          // Give all balls pierce
+          for (const b of s.balls) b.pierceLeft = 2;
+        } else if (pu.type === 'powersurge') {
+          activatePower(s, 'powersurge', meta.duration, now);
+        } else if (pu.type === 'magnetcatch') {
+          activatePower(s, 'magnetcatch', meta.duration, now);
+        } else if (meta.duration > 0) {
+          activatePower(s, pu.type, meta.duration, now);
         }
         return false;
       }
@@ -416,6 +785,7 @@ const PortalBreakerGame: React.FC = () => {
 
     s.bricks.forEach(b => { if (b.alive) b.wobble += b.wobbleSpeed * dt; });
 
+    // Level complete
     if (s.bricks.every(b => !b.alive)) {
       s.status = 'levelcomplete';
       s.overlayText = 'PORTAL STABILIZED';
@@ -430,6 +800,7 @@ const PortalBreakerGame: React.FC = () => {
         ns.paddleX = ns.canvasW / 2 - ns.paddleW / 2;
         ns.powerUps = [];
         ns.bricksDestroyed = 0;
+        ns.caughtBall = null;
         ns.status = 'running';
         ns.overlayText = '';
       }, 1600);
@@ -449,7 +820,7 @@ const PortalBreakerGame: React.FC = () => {
       ctx.translate((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
     }
 
-    // BG gradient - themed
+    // BG gradient
     const bg = ctx.createLinearGradient(0, 0, 0, ch);
     bg.addColorStop(0, theme.bgTop);
     bg.addColorStop(0.5, theme.bgMid);
@@ -457,7 +828,7 @@ const PortalBreakerGame: React.FC = () => {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, cw, ch);
 
-    // Stars - themed tint
+    // Stars
     s.stars.forEach(st => {
       ctx.globalAlpha = st.a;
       ctx.fillStyle = theme.starTint;
@@ -467,7 +838,7 @@ const PortalBreakerGame: React.FC = () => {
     });
     ctx.globalAlpha = 1;
 
-    // Portal ring - themed
+    // Portal ring
     const portalCx = cw / 2;
     const portalCy = BRICK_TOP_OFFSET + (BRICK_ROWS * 22) / 2;
     const portalR = Math.min(cw * 0.35, 150);
@@ -488,16 +859,57 @@ const PortalBreakerGame: React.FC = () => {
     ctx.fillStyle = portalGlow;
     ctx.fillRect(0, 0, cw, ch);
 
-    // Bricks - themed hues
+    // Black hole effect
+    if (s.ultimateActive?.type === 'blackhole') {
+      const cx = s.ultimateActive.data.cx;
+      const cy = s.ultimateActive.data.cy;
+      const bhGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 120);
+      bhGlow.addColorStop(0, 'rgba(100,0,200,0.4)');
+      bhGlow.addColorStop(0.5, 'rgba(50,0,150,0.2)');
+      bhGlow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = bhGlow;
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.strokeStyle = 'rgba(180,0,255,0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 30 + Math.sin(now * 0.01) * 10, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Laser sweep effect
+    if (s.ultimateActive?.type === 'lasersweep') {
+      const beamY = s.ultimateActive.data.y;
+      ctx.fillStyle = 'rgba(255,0,68,0.3)';
+      ctx.fillRect(0, beamY - 8, cw, 16);
+      ctx.fillStyle = 'rgba(255,100,150,0.8)';
+      ctx.fillRect(0, beamY - 2, cw, 4);
+      ctx.shadowColor = '#ff0044';
+      ctx.shadowBlur = 20;
+      ctx.fillRect(0, beamY - 1, cw, 2);
+      ctx.shadowBlur = 0;
+    }
+
+    // Bricks
     s.bricks.forEach(b => {
       if (!b.alive) return;
       const bx = b.x + Math.sin(b.wobble) * 2;
       const hpRatio = b.hp / b.maxHp;
-      const hue = theme.brickHues[(b.maxHp - 1) % 3];
-      const lightness = 40 + hpRatio * 25;
+      let hue = theme.brickHues[(b.maxHp - 1) % 3];
+      let lightness = 40 + hpRatio * 25;
+      let borderExtra = '';
+
+      // Special brick visuals
+      if (b.special === 'explosive') { hue = 20; lightness = 55; borderExtra = '#ff4400'; }
+      else if (b.special === 'charge') { hue = 160; lightness = 60; borderExtra = '#00ffcc'; }
+      else if (b.special === 'freeze') { hue = 200; lightness = 70; borderExtra = '#88ddff'; }
+      else if (b.special === 'combo') { hue = 50; lightness = 60; borderExtra = '#ffdd00'; }
+
+      // Target lock highlight
+      const isTargeted = now < s.tactical.activeTargetLock && b.hp === 1;
+
       ctx.fillStyle = `hsl(${hue}, 90%, ${lightness}%)`;
-      ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${0.5 + hpRatio * 0.5})`;
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = borderExtra || `hsla(${hue}, 100%, 70%, ${0.5 + hpRatio * 0.5})`;
+      ctx.lineWidth = isTargeted ? 2.5 : 1.5;
       ctx.beginPath();
       const r = 3;
       ctx.moveTo(bx + r, b.y);
@@ -512,6 +924,24 @@ const PortalBreakerGame: React.FC = () => {
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+
+      if (isTargeted) {
+        ctx.strokeStyle = 'rgba(255,68,68,0.8)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeRect(bx - 2, b.y - 2, b.w + 4, b.h + 4);
+        ctx.setLineDash([]);
+      }
+
+      // Special brick icons
+      if (b.special !== 'normal') {
+        ctx.fillStyle = '#fff';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        const icon = b.special === 'explosive' ? '💣' : b.special === 'charge' ? '🔋' : b.special === 'freeze' ? '🧊' : '🔥';
+        ctx.fillText(icon, bx + b.w / 2, b.y + b.h / 2 + 3);
+      }
+
       ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
       ctx.shadowBlur = 6 * hpRatio;
       ctx.stroke();
@@ -534,7 +964,20 @@ const PortalBreakerGame: React.FC = () => {
       ctx.fillText(meta.label.charAt(0), pu.x, pu.y + 2.5);
     });
 
-    // Paddle - themed
+    // Shield indicator at bottom
+    if (s.shieldActive) {
+      ctx.strokeStyle = 'rgba(0,221,255,0.5)';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00ddff';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.moveTo(0, ch - 4);
+      ctx.lineTo(cw, ch - 4);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // Paddle
     const paddleY = ch - 36;
     const padGrad = ctx.createLinearGradient(s.paddleX, paddleY, s.paddleX + s.paddleW, paddleY);
     padGrad.addColorStop(0, theme.paddleA);
@@ -547,8 +990,18 @@ const PortalBreakerGame: React.FC = () => {
     ctx.roundRect(s.paddleX, paddleY, s.paddleW, PADDLE_HEIGHT, 7);
     ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = theme.paddleA.replace(')', ',0.25)').replace('rgb', 'rgba').replace('#', '');
-    // Simpler field effect
+
+    // Boost slide visual
+    if (hasPower(s, 'boostslide', now)) {
+      ctx.strokeStyle = 'rgba(255,170,0,0.6)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.roundRect(s.paddleX - 2, paddleY - 2, s.paddleW + 4, PADDLE_HEIGHT + 4, 9);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
     ctx.globalAlpha = 0.25;
     ctx.strokeStyle = theme.paddleA;
     ctx.lineWidth = 1;
@@ -557,19 +1010,25 @@ const PortalBreakerGame: React.FC = () => {
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // Balls - themed
+    // Balls
     s.balls.forEach(ball => {
+      const isPlasmaActive = hasPower(s, 'plasma', now);
+      const isPowerSurge = hasPower(s, 'powersurge', now);
+
       ball.trail.forEach((t, i) => {
         const alpha = (i / ball.trail.length) * 0.35;
-        ctx.fillStyle = theme.trailColor + `${alpha})`;
+        const trailCol = isPlasmaActive ? 'rgba(255,68,68,' : isPowerSurge ? 'rgba(0,255,136,' : theme.trailColor;
+        ctx.fillStyle = trailCol + `${alpha})`;
         ctx.beginPath();
         ctx.arc(t.x, t.y, BALL_RADIUS * (i / ball.trail.length) * 0.8, 0, Math.PI * 2);
         ctx.fill();
       });
+
+      const orbCol = isPlasmaActive ? '#ff4444' : isPowerSurge ? '#00ff88' : theme.orbColor;
       const orbGrad = ctx.createRadialGradient(ball.x, ball.y, 0, ball.x, ball.y, BALL_RADIUS * 2);
       orbGrad.addColorStop(0, '#fff');
-      orbGrad.addColorStop(0.3, theme.orbColor);
-      orbGrad.addColorStop(1, theme.trailColor + '0)');
+      orbGrad.addColorStop(0.3, orbCol);
+      orbGrad.addColorStop(1, (isPlasmaActive ? 'rgba(255,68,68,' : isPowerSurge ? 'rgba(0,255,136,' : theme.trailColor) + '0)');
       ctx.fillStyle = orbGrad;
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, BALL_RADIUS * 2, 0, Math.PI * 2);
@@ -590,6 +1049,47 @@ const PortalBreakerGame: React.FC = () => {
     });
     ctx.globalAlpha = 1;
 
+    // Ultimate meter bar
+    const meterW = 120;
+    const meterH = 6;
+    const meterX = cw - meterW - 10;
+    const meterY = 12;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(meterX, meterY, meterW, meterH);
+    const fill = (s.ultimateMeter / ULTIMATE_MAX) * meterW;
+    const meterGrad = ctx.createLinearGradient(meterX, 0, meterX + meterW, 0);
+    meterGrad.addColorStop(0, '#8800ff');
+    meterGrad.addColorStop(1, '#ff00ff');
+    ctx.fillStyle = meterGrad;
+    ctx.fillRect(meterX, meterY, fill, meterH);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(meterX, meterY, meterW, meterH);
+    if (s.ultimateMeter >= ULTIMATE_MAX) {
+      ctx.fillStyle = '#fff';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('Q/SPACE: ULTIMATE', meterX + meterW, meterY + meterH + 12);
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = '7px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`ULT ${Math.floor(s.ultimateMeter)}%`, meterX + meterW, meterY + meterH + 10);
+    }
+
+    // Tactical cooldowns display
+    ctx.textAlign = 'left';
+    let ty = 14;
+    (['shockwave', 'timeslow', 'targetlock'] as TacticalType[]).forEach((t, i) => {
+      const meta = TACTICAL_META[t];
+      const ready = now >= s.tactical.cooldowns[t];
+      ctx.fillStyle = ready ? meta.color : 'rgba(255,255,255,0.3)';
+      ctx.font = '9px monospace';
+      const label = ready ? `[${i + 1}] ${meta.icon} ${meta.label}` : `[${i + 1}] ${meta.icon} ${Math.ceil((s.tactical.cooldowns[t] - now) / 1000)}s`;
+      ctx.fillText(label, 10, ty);
+      ty += 14;
+    });
+
     // Overlay
     if (s.overlayText && now < s.overlayEnd) {
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -601,6 +1101,14 @@ const PortalBreakerGame: React.FC = () => {
       ctx.shadowBlur = 20;
       ctx.fillText(s.overlayText, cw / 2, ch / 2 + 8);
       ctx.shadowBlur = 0;
+    }
+
+    // Score multiplier display
+    if (s.scoreMultiplier > 1 && now < s.scoreMultiplierEnd) {
+      ctx.fillStyle = '#ffdd00';
+      ctx.font = 'bold 14px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`SCORE ×${s.scoreMultiplier.toFixed(1)}`, cw / 2, 85);
     }
 
     // Game over
@@ -635,18 +1143,33 @@ const PortalBreakerGame: React.FC = () => {
     if (ctx) render(ctx);
 
     const s = stateRef.current;
+    const now = performance.now();
     setUiStatus(s.status);
     setUiScore(s.score);
     setUiBest(s.bestScore);
     setUiLives(s.lives);
     setUiLevel(s.level);
-    const now = performance.now();
-    if (s.activePower && now < s.activePower.end) {
-      const remaining = Math.ceil((s.activePower.end - now) / 1000);
-      setUiPower(`${POWER_UP_META[s.activePower.type].label} (${remaining}s)`);
-    } else {
-      setUiPower('');
+    setUiUltimate(s.ultimateMeter);
+    setUiShield(s.shieldActive);
+
+    // Active power display
+    const activePowerLabels: string[] = [];
+    for (const [key, end] of s.activePowers) {
+      if (now < end) {
+        const remaining = Math.ceil((end - now) / 1000);
+        const meta = POWER_UP_META[key as PowerUpType];
+        if (meta) activePowerLabels.push(`${meta.label} (${remaining}s)`);
+      }
     }
+    setUiPower(activePowerLabels.join(' | '));
+
+    // Tactical readiness
+    setUiTacticals({
+      shockwave: now >= s.tactical.cooldowns.shockwave,
+      timeslow: now >= s.tactical.cooldowns.timeslow,
+      targetlock: now >= s.tactical.cooldowns.targetlock,
+    });
+
     setUiCombo(now < s.combo.displayEnd ? s.combo.display : '');
 
     rafRef.current = requestAnimationFrame(loop);
@@ -658,11 +1181,11 @@ const PortalBreakerGame: React.FC = () => {
     return () => cancelAnimationFrame(rafRef.current);
   }, [loop]);
 
-  // All games are now free to play unlimited
   const startGame = async () => {
     const s = stateRef.current;
     if (s.status === 'idle' || s.status === 'gameover') {
       Object.assign(s, initState(BASE_WIDTH, BASE_HEIGHT));
+      s.activePowers = new Map();
       s.status = 'running';
       scoreSubmittedRef.current = false;
     }
@@ -675,13 +1198,37 @@ const PortalBreakerGame: React.FC = () => {
   };
 
   const restartGame = async () => {
-    Object.assign(stateRef.current, initState(BASE_WIDTH, BASE_HEIGHT));
+    const ns = initState(BASE_WIDTH, BASE_HEIGHT);
+    ns.activePowers = new Map();
+    Object.assign(stateRef.current, ns);
     stateRef.current.status = 'running';
     particles = [];
     scoreSubmittedRef.current = false;
   };
 
+  const handleTacticalClick = (type: TacticalType) => {
+    const s = stateRef.current;
+    if (s.status !== 'running') return;
+    useTactical(s, type, performance.now());
+  };
+
+  const handleUltimateClick = () => {
+    const s = stateRef.current;
+    if (s.status !== 'running') return;
+    useUltimate(s, performance.now());
+  };
+
+  const cycleUltimate = () => {
+    const s = stateRef.current;
+    const types: UltimateType[] = ['overdrive', 'blackhole', 'lasersweep'];
+    const idx = types.indexOf(s.selectedUltimate);
+    s.selectedUltimate = types[(idx + 1) % types.length];
+  };
+
   const maskWallet = (w: string) => w.length > 10 ? `${w.slice(0, 4)}...${w.slice(-4)}` : w;
+
+  const selUlt = stateRef.current.selectedUltimate;
+  const ultMeta = ULTIMATE_META[selUlt];
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
@@ -693,7 +1240,7 @@ const PortalBreakerGame: React.FC = () => {
         </div>
         <div className="bg-black/30 backdrop-blur-sm border border-purple-500/30 rounded-lg px-3 py-2 text-center">
           <span className="text-muted-foreground">Lives</span>
-          <p className="text-pink-400 text-base font-bold">{'♥'.repeat(Math.max(0, uiLives))}</p>
+          <p className="text-pink-400 text-base font-bold">{'♥'.repeat(Math.max(0, uiLives))} {uiShield && '🛡'}</p>
         </div>
         <div className="bg-black/30 backdrop-blur-sm border border-purple-500/30 rounded-lg px-3 py-2 text-center">
           <span className="text-muted-foreground">Level</span>
@@ -705,10 +1252,53 @@ const PortalBreakerGame: React.FC = () => {
         </div>
       </div>
 
-      {/* Active power / combo */}
-      <div className="h-6 flex items-center gap-3">
-        {uiPower && <span className="text-xs font-mono text-neon-cyan animate-pulse">{uiPower}</span>}
-        {uiCombo && <span className="text-xs font-mono text-amber-400 animate-bounce">{uiCombo}</span>}
+      {/* Active powers / combo / ultimate */}
+      <div className="w-full flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-3 min-h-[24px]">
+          {uiPower && <span className="text-xs font-mono text-neon-cyan animate-pulse">{uiPower}</span>}
+          {uiCombo && <span className="text-xs font-mono text-amber-400 animate-bounce">{uiCombo}</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={cycleUltimate}
+            className="text-xs font-mono px-2 py-1 rounded border border-purple-500/40 text-purple-300 hover:bg-purple-500/20 transition-colors"
+          >
+            {ultMeta.icon} {ultMeta.label}
+          </button>
+          <button
+            onClick={handleUltimateClick}
+            disabled={uiUltimate < ULTIMATE_MAX}
+            className={`text-xs font-mono px-3 py-1 rounded font-bold transition-all ${
+              uiUltimate >= ULTIMATE_MAX
+                ? 'bg-purple-600 text-white animate-pulse shadow-lg shadow-purple-500/50'
+                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            ULT {Math.floor(uiUltimate)}%
+          </button>
+        </div>
+      </div>
+
+      {/* Tactical buttons */}
+      <div className="flex gap-2">
+        {(['shockwave', 'timeslow', 'targetlock'] as TacticalType[]).map((t, i) => {
+          const meta = TACTICAL_META[t];
+          const ready = uiTacticals[t];
+          return (
+            <button
+              key={t}
+              onClick={() => handleTacticalClick(t)}
+              disabled={!ready || uiStatus !== 'running'}
+              className={`text-xs font-mono px-2 py-1 rounded border transition-all ${
+                ready && uiStatus === 'running'
+                  ? 'border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/20'
+                  : 'border-gray-700 text-gray-600 cursor-not-allowed'
+              }`}
+            >
+              [{i + 1}] {meta.icon} {meta.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Canvas */}
@@ -782,9 +1372,11 @@ const PortalBreakerGame: React.FC = () => {
       )}
 
       {/* Instructions */}
-      <p className="text-xs text-muted-foreground text-center font-mono max-w-sm">
-        Move paddle. Break shards. Catch drops. Don't let the orb fall.
-      </p>
+      <div className="text-xs text-muted-foreground text-center font-mono max-w-md space-y-1">
+        <p>Move paddle · Break bricks · Catch power-ups · Don't let the orb fall</p>
+        <p className="text-purple-400">[1] Shockwave · [2] Time Slow · [3] Target Lock · [Q/Space] Ultimate</p>
+        <p className="text-purple-400">💣 Explosive · 🔋 Charge · 🧊 Freeze · 🔥 Combo bricks</p>
+      </div>
     </div>
   );
 };
