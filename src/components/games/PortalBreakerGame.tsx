@@ -1281,7 +1281,7 @@ const PortalBreakerGame: React.FC = () => {
 
       {/* Tactical buttons */}
       <div className="flex gap-2">
-        {(['shockwave', 'timeslow', 'targetlock'] as TacticalType[]).map((t, i) => {
+        {(['timeslow', 'targetlock'] as TacticalType[]).map((t, i) => {
           const meta = TACTICAL_META[t];
           const ready = uiTacticals[t];
           return (
