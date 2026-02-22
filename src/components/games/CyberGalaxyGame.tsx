@@ -27,7 +27,7 @@ const ENEMY_SHOOT_INTERVAL_BASE = 2200;
 
 // ─── Types ───────────────────────────────────────────────────────────
 type EnemyType = 'scout' | 'striker' | 'core';
-type PowerUpType = 'overcharge' | 'shield' | 'bomb' | 'rapidfire' | 'extralife' | 'photonburst' | 'rapidpulse' | 'missileswarm';
+type PowerUpType = 'overcharge' | 'shield' | 'bomb' | 'rapidfire' | 'extralife' | 'photonburst' | 'rapidpulse' | 'missileswarm' | 'guardiandrone';
 type GameStatus = 'idle' | 'running' | 'paused' | 'gameover';
 
 interface Star { x: number; y: number; r: number; a: number; speed: number; }
@@ -41,6 +41,7 @@ interface Player {
   photonBurst: boolean; photonBurstEnd: number;
   rapidPulse: boolean; rapidPulseEnd: number;
   missileSwarm: boolean; missileSwarmEnd: number;
+  guardianDrone: boolean; guardianDroneEnd: number;
 }
 
 interface Bullet { x: number; y: number; vx: number; vy: number; piercing?: boolean; weak?: boolean; }
@@ -157,6 +158,7 @@ function initPlayer(cw: number, ch: number): Player {
     photonBurst: false, photonBurstEnd: 0,
     rapidPulse: false, rapidPulseEnd: 0,
     missileSwarm: false, missileSwarmEnd: 0,
+    guardianDrone: false, guardianDroneEnd: 0,
   };
 }
 
@@ -356,6 +358,7 @@ const CyberGalaxyGame: React.FC = () => {
       p.photonBurst = false;
       p.rapidPulse = false;
       p.missileSwarm = false;
+      p.guardianDrone = false;
     }
 
     // Photon burst timer
@@ -364,6 +367,8 @@ const CyberGalaxyGame: React.FC = () => {
     if (p.rapidPulse && now > p.rapidPulseEnd) p.rapidPulse = false;
     // Missile swarm timer
     if (p.missileSwarm && now > p.missileSwarmEnd) p.missileSwarm = false;
+    // Guardian drone timer
+    if (p.guardianDrone && now > p.guardianDroneEnd) p.guardianDrone = false;
 
     // Invulnerability
     if (p.invulnTimer > 0) p.invulnTimer -= dtMs;
@@ -500,7 +505,19 @@ const CyberGalaxyGame: React.FC = () => {
     // ── Update enemy bullets ──
     s.enemyBullets = s.enemyBullets.filter(b => {
       b.x += b.vx; b.y += b.vy;
-      return b.y < s.ch + 20;
+      if (b.y >= s.ch + 20) return false;
+      // Guardian drone intercepts nearby enemy bullets
+      if (p.guardianDrone) {
+        const droneAngle = now * 0.003;
+        const droneX = p.x + p.w / 2 + Math.cos(droneAngle) * 40;
+        const droneY = p.y + p.h / 2 + Math.sin(droneAngle) * 40;
+        const dx = b.x - droneX, dy = b.y - droneY;
+        if (dx * dx + dy * dy < 625) {
+          spawnParticles(s.particles, b.x, b.y, '#00ddff', 4);
+          return false;
+        }
+      }
+      return true;
     });
 
     // ── Update power-ups ──
@@ -532,8 +549,8 @@ const CyberGalaxyGame: React.FC = () => {
             s.score += meta.score + bonus;
             spawnParticles(s.particles, e.x + e.w / 2, e.y + e.h / 2, meta.color, 15);
             if (Math.random() < POWER_UP_DROP_CHANCE) {
-              const types: PowerUpType[] = ['overcharge', 'shield', 'bomb', 'rapidfire', 'extralife', 'photonburst', 'rapidpulse', 'missileswarm'];
-              const weights = [0.2, 0.18, 0.15, 0.12, 0.08, 0.1, 0.1, 0.07];
+              const types: PowerUpType[] = ['overcharge', 'shield', 'bomb', 'rapidfire', 'extralife', 'photonburst', 'rapidpulse', 'missileswarm', 'guardiandrone'];
+              const weights = [0.18, 0.16, 0.13, 0.11, 0.07, 0.1, 0.09, 0.07, 0.09];
               let r = Math.random();
               let selectedType: PowerUpType = 'overcharge';
               for (let ti = 0; ti < types.length; ti++) {
@@ -673,6 +690,12 @@ const CyberGalaxyGame: React.FC = () => {
       s.activePowerLabel = 'MISSILE SWARM';
       s.activePowerEnd = now + 7000;
       spawnParticles(s.particles, p.x + p.w / 2, p.y, '#ff6600', 12);
+    } else if (type === 'guardiandrone') {
+      p.guardianDrone = true;
+      p.guardianDroneEnd = now + 10000;
+      s.activePowerLabel = 'GUARDIAN DRONE';
+      s.activePowerEnd = now + 10000;
+      spawnParticles(s.particles, p.x + p.w / 2, p.y, '#00ddff', 12);
     }
   }
 
@@ -916,8 +939,8 @@ const CyberGalaxyGame: React.FC = () => {
     ctx.shadowBlur = 0;
 
     // Power-ups
-    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', bomb: '#ff3d7f', rapidfire: '#00ff88', extralife: '#ff69b4', photonburst: '#aa66ff', rapidpulse: '#ffee00', missileswarm: '#ff6600' };
-    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', bomb: 'B', rapidfire: 'R', extralife: '♥', photonburst: 'P', rapidpulse: 'Z', missileswarm: 'M' };
+    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', bomb: '#ff3d7f', rapidfire: '#00ff88', extralife: '#ff69b4', photonburst: '#aa66ff', rapidpulse: '#ffee00', missileswarm: '#ff6600', guardiandrone: '#00ddff' };
+    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', bomb: 'B', rapidfire: 'R', extralife: '♥', photonburst: 'P', rapidpulse: 'Z', missileswarm: 'M', guardiandrone: 'D' };
     s.powerUps.forEach(pu => {
       ctx.fillStyle = puColors[pu.type];
       ctx.shadowColor = puColors[pu.type];
@@ -975,6 +998,34 @@ const CyberGalaxyGame: React.FC = () => {
         ctx.arc(p.x + p.w / 2, p.y + p.h / 2, p.w * 0.8, 0, Math.PI * 2);
         ctx.stroke();
         ctx.shadowBlur = 0;
+      }
+
+      // Guardian drone orbiting player
+      if (p.guardianDrone) {
+        const droneAngle = now * 0.003;
+        const droneX = p.x + p.w / 2 + Math.cos(droneAngle) * 40;
+        const droneY = p.y + p.h / 2 + Math.sin(droneAngle) * 40;
+        ctx.save();
+        ctx.translate(droneX, droneY);
+        ctx.fillStyle = '#00ddff';
+        ctx.shadowColor = '#00ddff';
+        ctx.shadowBlur = 10;
+        // Small diamond shape
+        ctx.beginPath();
+        ctx.moveTo(0, -6);
+        ctx.lineTo(5, 0);
+        ctx.lineTo(0, 6);
+        ctx.lineTo(-5, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // Detection radius indicator
+        ctx.strokeStyle = 'rgba(0,221,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, 25, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
       }
     }
 
