@@ -4,10 +4,18 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles, Smartphone, ShieldCheck, Mail, User, Loader2 } from 'lucide-react';
 import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
-import { StellarWalletsKit, WalletNetwork, allowAllModules, LOBSTR_ID, XBULL_ID } from '@creit.tech/stellar-wallets-kit';
+import {
+  StellarWalletsKit,
+  WalletNetwork,
+  allowAllModules,
+  LOBSTR_ID,
+  XBULL_ID,
+  FREIGHTER_ID,
+  ALBEDO_ID,
+  HOTWALLET_ID,
+} from '@creit.tech/stellar-wallets-kit';
 import { WALLET_CONNECT_ID } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import { WalletConnectModule, WalletConnectAllowedMethods } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
-import freighterApi from '@stellar/freighter-api';
 import { isMobileDevice, detectMobileWallets, getStoreLink, generateSignatureNonce, buildSignatureMessage } from '@/utils/mobileWalletDetection';
 import { useTieredAuth } from '@/contexts/AuthContext';
 
@@ -23,6 +31,15 @@ interface WalletConnectionModalProps {
   onWalletConnected: (walletType: WalletType, address: string, chain: ChainType) => void;
 }
 
+// Map our wallet IDs to Stellar Wallets Kit module IDs
+const WALLET_KIT_IDS: Record<string, string> = {
+  lobstr: LOBSTR_ID,
+  freighter: FREIGHTER_ID,
+  albedo: ALBEDO_ID,
+  xbull: XBULL_ID,
+  hotwallet: HOTWALLET_ID,
+};
+
 export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   isOpen,
   onClose,
@@ -33,18 +50,48 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const [connecting, setConnecting] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileWallets, setMobileWallets] = useState<string[]>([]);
-  const [lobstrInstalled] = useState(true);
-  const [freighterInstalled, setFreighterInstalled] = useState(false);
-  const [albedoInstalled] = useState(true);
-  const [xbullInstalled] = useState(true);
-  const [hotwalletInstalled] = useState(true);
   const [signatureStep, setSignatureStep] = useState<{ walletType: WalletType; address: string } | null>(null);
   const [magicLinkEmail, setMagicLinkEmail] = useState('');
   const [magicLinkSending, setMagicLinkSending] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [authMode, setAuthMode] = useState<'wallets' | 'magic_link'>('wallets');
 
-  // Detect mobile and available wallets
+  // Track which wallets are actually available (detected by kit modules)
+  const [walletAvailability, setWalletAvailability] = useState<Record<string, boolean>>({
+    lobstr: false,
+    freighter: false,
+    albedo: false,
+    xbull: false,
+    hotwallet: false,
+  });
+
+  // Build a shared StellarWalletsKit with all modules
+  const buildKit = (selectedWalletId: string = LOBSTR_ID): StellarWalletsKit => {
+    const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
+    const modules = [...allowAllModules()];
+
+    if (wcProjectId) {
+      modules.push(
+        new WalletConnectModule({
+          url: window.location.origin,
+          projectId: wcProjectId,
+          method: WalletConnectAllowedMethods.SIGN,
+          description: 'Connect your Stellar wallet to Cyber City Arcade',
+          name: 'Cyber City Arcade',
+          icons: [`${window.location.origin}/favicon.ico`],
+          network: WalletNetwork.PUBLIC,
+        })
+      );
+    }
+
+    return new StellarWalletsKit({
+      network: WalletNetwork.PUBLIC,
+      selectedWalletId,
+      modules,
+    });
+  };
+
+  // Detect mobile and check wallet availability via kit modules
   useEffect(() => {
     const detect = async () => {
       const mobile = isMobileDevice();
@@ -53,21 +100,51 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       if (mobile) {
         const detected = await detectMobileWallets();
         setMobileWallets(detected);
-      }
+        // On mobile, mark all as available (they use WalletConnect / web-based)
+        setWalletAvailability({
+          lobstr: true,
+          freighter: true,
+          albedo: true,
+          xbull: true,
+          hotwallet: true,
+        });
+      } else {
+        // On desktop, use each kit module's isAvailable() to detect extensions
+        try {
+          const kit = buildKit();
+          const modules = allowAllModules();
+          const availability: Record<string, boolean> = {};
 
-      // Check Freighter (works on both desktop extension and mobile app)
-      try {
-        const hasFreighterGlobal = typeof window !== 'undefined' && 
-          ((window as any).freighter || (window as any).freighterApi);
-        
-        if (hasFreighterGlobal) {
-          setFreighterInstalled(true);
-        } else {
-          const result = await freighterApi.isConnected();
-          setFreighterInstalled(true);
+          for (const mod of modules) {
+            const walletKey = Object.entries(WALLET_KIT_IDS).find(
+              ([, kitId]) => kitId === mod.productId
+            )?.[0];
+            if (walletKey) {
+              try {
+                availability[walletKey] = await mod.isAvailable();
+              } catch {
+                availability[walletKey] = false;
+              }
+            }
+          }
+
+          // Albedo is always available (web-based popup)
+          availability.albedo = true;
+          // Hot Wallet is always available (web-based)
+          availability.hotwallet = true;
+
+          setWalletAvailability(availability);
+        } catch (e) {
+          console.error('Wallet detection error:', e);
+          // Default: mark web-based wallets as available
+          setWalletAvailability({
+            lobstr: false,
+            freighter: false,
+            albedo: true,
+            xbull: false,
+            hotwallet: true,
+          });
         }
-      } catch (e) {
-        setFreighterInstalled(mobile);
       }
     };
 
@@ -110,62 +187,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     });
   };
 
-  // Initialize Stellar Wallets Kit with WalletConnect support for mobile
-  const getStellarKit = (walletId: string = LOBSTR_ID) => {
-    const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
-    
-    const modules = [
-      ...allowAllModules(),
-    ];
-
-    if (wcProjectId) {
-      modules.push(
-        new WalletConnectModule({
-          url: window.location.origin,
-          projectId: wcProjectId,
-          method: WalletConnectAllowedMethods.SIGN,
-          description: 'Connect your Stellar wallet to Cyber City Arcade',
-          name: 'Cyber City Arcade',
-          icons: [`${window.location.origin}/favicon.ico`],
-          network: WalletNetwork.PUBLIC,
-        })
-      );
-    }
-
-    return new StellarWalletsKit({
-      network: WalletNetwork.PUBLIC,
-      selectedWalletId: walletId,
-      modules
-    });
-  };
-
-  // Verify wallet ownership via signature
-  const requestSignature = async (walletType: WalletType, address: string, kit?: StellarWalletsKit) => {
-    const nonce = generateSignatureNonce();
-    const message = buildSignatureMessage(nonce);
-
-    try {
-      if (walletType === 'freighter') {
-        completeConnection(walletType, address);
-        return;
-      }
-
-      if (kit) {
-        completeConnection(walletType, address);
-        return;
-      }
-
-      completeConnection(walletType, address);
-    } catch (error: any) {
-      console.error('Signature verification failed:', error);
-      toast({
-        title: "Verification Failed",
-        description: "Could not verify wallet ownership. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const completeConnection = (walletType: WalletType, address: string) => {
     onWalletConnected(walletType, address, 'stellar');
     onClose();
@@ -175,314 +196,87 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     });
   };
 
-  // LOBSTR connection via Stellar Wallets Kit (WalletConnect on mobile, extension on desktop)
-  const connectLobstr = async () => {
-    try {
-      if (isMobile) {
-        const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
-        if (!wcProjectId) {
-          throw new Error('WalletConnect not configured. Please contact support.');
-        }
-        
-        const wcModule = new WalletConnectModule({
-          url: window.location.origin,
-          projectId: wcProjectId,
-          method: WalletConnectAllowedMethods.SIGN,
-          description: 'Connect your Stellar wallet to Cyber City Arcade',
-          name: 'Cyber City Arcade',
-          icons: [`${window.location.origin}/favicon.ico`],
-          network: WalletNetwork.PUBLIC,
-        });
-        
-        const kit = new StellarWalletsKit({
-          network: WalletNetwork.PUBLIC,
-          selectedWalletId: WALLET_CONNECT_ID,
-          modules: [wcModule]
-        });
-        
-        kit.setWallet(WALLET_CONNECT_ID);
-        
-        toast({
-          title: "Opening LOBSTR...",
-          description: "Approve the connection in your LOBSTR app",
-        });
-        
-        const { address } = await kit.getAddress();
-        if (address) {
-          await requestSignature('lobstr', address, kit);
-        } else {
-          throw new Error('No address returned. Make sure LOBSTR app is installed.');
-        }
-      } else {
-        const kit = getStellarKit(LOBSTR_ID);
-        kit.setWallet(LOBSTR_ID);
-        const { address } = await kit.getAddress();
-        if (address) {
-          await requestSignature('lobstr', address, kit);
-        } else {
-          throw new Error('No address returned from LOBSTR');
-        }
+  // Unified connection via Stellar Wallets Kit for all wallets
+  const connectWithKit = async (walletType: WalletType) => {
+    const kitId = WALLET_KIT_IDS[walletType];
+    if (!kitId) {
+      throw new Error(`Unknown wallet type: ${walletType}`);
+    }
+
+    if (isMobile && (walletType === 'lobstr' || walletType === 'xbull' || walletType === 'freighter')) {
+      // On mobile, use WalletConnect for native app wallets
+      const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
+      if (!wcProjectId) {
+        throw new Error('WalletConnect not configured. Please contact support.');
       }
-    } catch (error: any) {
-      console.error('LOBSTR connection error:', error);
-      toast({
-        title: "Connection Failed",
-        description: error?.message || "Failed to connect to LOBSTR wallet. Make sure you have the LOBSTR app installed.",
-        variant: "destructive",
+
+      const wcModule = new WalletConnectModule({
+        url: window.location.origin,
+        projectId: wcProjectId,
+        method: WalletConnectAllowedMethods.SIGN,
+        description: 'Connect your Stellar wallet to Cyber City Arcade',
+        name: 'Cyber City Arcade',
+        icons: [`${window.location.origin}/favicon.ico`],
+        network: WalletNetwork.PUBLIC,
       });
+
+      const kit = new StellarWalletsKit({
+        network: WalletNetwork.PUBLIC,
+        selectedWalletId: WALLET_CONNECT_ID,
+        modules: [wcModule],
+      });
+
+      kit.setWallet(WALLET_CONNECT_ID);
+
+      toast({
+        title: `Opening ${walletType === 'lobstr' ? 'LOBSTR' : walletType === 'xbull' ? 'xBull' : 'Freighter'}...`,
+        description: "Approve the connection in your wallet app",
+      });
+
+      const { address } = await kit.getAddress();
+      if (address) {
+        completeConnection(walletType, address);
+      } else {
+        throw new Error('No address returned. Make sure the wallet app is installed.');
+      }
+    } else {
+      // Desktop: use the native kit module for each wallet
+      const kit = buildKit(kitId);
+      kit.setWallet(kitId);
+
+      const { address } = await kit.getAddress();
+      if (address) {
+        completeConnection(walletType, address);
+      } else {
+        throw new Error(`No address returned from ${walletType}`);
+      }
     }
   };
 
-  // Freighter connection (desktop extension + mobile app)
-  const connectFreighter = async () => {
+  // Connection handler per wallet type
+  const connectWallet = async (walletType: WalletType) => {
     try {
-      if (isMobile) {
-        const freighterWindow = (window as any).freighter || (window as any).freighterApi;
-        if (freighterWindow) {
-          const accessResult = await freighterApi.requestAccess();
-          if (accessResult.error) {
-            throw new Error(accessResult.error.message || 'User denied access to Freighter');
-          }
-          const addressResult = await freighterApi.getAddress();
-          if (addressResult.error) {
-            throw new Error(addressResult.error.message || 'Failed to get address');
-          }
-          if (addressResult.address) {
-            await requestSignature('freighter', addressResult.address);
-          }
-        } else {
-          const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
-          if (!wcProjectId) {
-            throw new Error('WalletConnect not configured. Please contact support.');
-          }
-
-          const wcModule = new WalletConnectModule({
-            url: window.location.origin,
-            projectId: wcProjectId,
-            method: WalletConnectAllowedMethods.SIGN,
-            description: 'Connect your Stellar wallet to Cyber City Arcade',
-            name: 'Cyber City Arcade',
-            icons: [`${window.location.origin}/favicon.ico`],
-            network: WalletNetwork.PUBLIC,
-          });
-
-          const kit = new StellarWalletsKit({
-            network: WalletNetwork.PUBLIC,
-            selectedWalletId: WALLET_CONNECT_ID,
-            modules: [wcModule]
-          });
-
-          await kit.openModal({
-            onWalletSelected: async (option: { id: string; name: string; type: string; isAvailable: boolean }) => {
-              kit.setWallet(option.id);
-              try {
-                const { address } = await kit.getAddress();
-                if (address) {
-                  await requestSignature('freighter', address, kit);
-                } else {
-                  throw new Error('No address returned from Freighter.');
-                }
-              } catch (err: any) {
-                console.error('Freighter mobile WC error:', err);
-                toast({
-                  title: "Connection Failed",
-                  description: err?.message || "Failed to get address from Freighter",
-                  variant: "destructive",
-                });
-              }
-            }
-          });
-        }
-        return;
-      }
-
-      const accessResult = await freighterApi.requestAccess();
-      if (accessResult.error) {
-        throw new Error(accessResult.error.message || 'User denied access to Freighter');
-      }
-
-      const addressResult = await freighterApi.getAddress();
-      if (addressResult.error) {
-        throw new Error(addressResult.error.message || 'Failed to get address from Freighter');
-      }
-
-      if (addressResult.address) {
-        await requestSignature('freighter', addressResult.address);
-      } else {
-        throw new Error('No address returned from Freighter.');
-      }
+      await connectWithKit(walletType);
     } catch (error: any) {
+      console.error(`${walletType} connection error:`, error);
+      const walletName = WALLETS.find(w => w.id === walletType)?.name || walletType;
       toast({
         title: "Connection Failed",
-        description: error?.message || "Failed to connect to Freighter wallet.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Albedo connection (web-based, works on mobile and desktop)
-  const connectAlbedo = async () => {
-    try {
-      const albedo = (window as any).albedo;
-      if (albedo) {
-        const result = await albedo.publicKey({});
-        if (result.pubkey) {
-          await requestSignature('albedo', result.pubkey);
-        }
-      } else {
-        if (isMobile) {
-          window.location.href = 'https://albedo.link/intent/public_key?callback=' + encodeURIComponent(window.location.href);
-        } else {
-          const width = 400;
-          const height = 600;
-          const left = window.screenX + (window.outerWidth - width) / 2;
-          const top = window.screenY + (window.outerHeight - height) / 2;
-          window.open(
-            'https://albedo.link/intent/public_key',
-            'albedo',
-            `width=${width},height=${height},left=${left},top=${top}`
-          );
-        }
-        toast({
-          title: "Albedo Opened",
-          description: "Complete authentication in the Albedo window",
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Connection Failed",
-        description: error?.message || "Failed to connect to Albedo",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // xBull connection via Stellar Wallets Kit (WalletConnect on mobile, extension on desktop)
-  const connectXbull = async () => {
-    try {
-      if (isMobile) {
-        const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
-        if (!wcProjectId) {
-          throw new Error('WalletConnect not configured. Please contact support.');
-        }
-        
-        const wcModule = new WalletConnectModule({
-          url: window.location.origin,
-          projectId: wcProjectId,
-          method: WalletConnectAllowedMethods.SIGN,
-          description: 'Connect your Stellar wallet to Cyber City Arcade',
-          name: 'Cyber City Arcade',
-          icons: [`${window.location.origin}/favicon.ico`],
-          network: WalletNetwork.PUBLIC,
-        });
-        
-        const kit = new StellarWalletsKit({
-          network: WalletNetwork.PUBLIC,
-          selectedWalletId: WALLET_CONNECT_ID,
-          modules: [wcModule]
-        });
-        
-        await kit.openModal({
-          onWalletSelected: async (option: { id: string; name: string; type: string; isAvailable: boolean }) => {
-            kit.setWallet(option.id);
-            try {
-              const { address } = await kit.getAddress();
-              if (address) {
-                await requestSignature('xbull', address, kit);
-              } else {
-                throw new Error('No address returned. Make sure xBull app is installed.');
-              }
-            } catch (err: any) {
-              console.error('xBull mobile address error:', err);
-              toast({
-                title: "Connection Failed",
-                description: err?.message || "Failed to get address from xBull",
-                variant: "destructive",
-              });
-            }
-          }
-        });
-      } else {
-        const kit = getStellarKit(XBULL_ID);
-        kit.setWallet(XBULL_ID);
-        const { address } = await kit.getAddress();
-        if (address) {
-          await requestSignature('xbull', address, kit);
-        } else {
-          throw new Error('No address returned from xBull');
-        }
-      }
-    } catch (error: any) {
-      toast({
-        title: "Connection Failed",
-        description: error?.message || "Failed to connect to xBull wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Hot Wallet connection (web-based, works on mobile and desktop)
-  const connectHotwallet = async () => {
-    try {
-      if (isMobile) {
-        window.open('https://hotwallet.app/', '_blank');
-      } else {
-        const width = 400;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        window.open(
-          'https://hotwallet.app/',
-          'hotwallet',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
-      }
-      toast({
-        title: "Hot Wallet",
-        description: "Complete connection in the Hot Wallet window",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Connection Failed",
-        description: error?.message || "Failed to connect to Hot Wallet",
+        description: error?.message || `Failed to connect to ${walletName}. Make sure it's installed.`,
         variant: "destructive",
       });
     }
   };
 
   const getWalletOptions = (): WalletOption[] => {
-    const allOptions: WalletOption[] = [
-      {
-        ...WALLETS.find(w => w.id === 'lobstr')!,
-        isInstalled: lobstrInstalled,
-        connect: connectLobstr,
-        isMobileReady: true,
-      },
-      {
-        ...WALLETS.find(w => w.id === 'freighter')!,
-        isInstalled: freighterInstalled,
-        connect: connectFreighter,
-        isMobileReady: true,
-      },
-      {
-        ...WALLETS.find(w => w.id === 'albedo')!,
-        isInstalled: albedoInstalled,
-        connect: connectAlbedo,
-        isMobileReady: true,
-      },
-      {
-        ...WALLETS.find(w => w.id === 'xbull')!,
-        isInstalled: xbullInstalled,
-        connect: connectXbull,
-        isMobileReady: true,
-      },
-      {
-        ...WALLETS.find(w => w.id === 'hotwallet')!,
-        isInstalled: hotwalletInstalled,
-        connect: connectHotwallet,
-        isMobileReady: true,
-      }
-    ];
+    const walletIds: WalletType[] = ['lobstr', 'freighter', 'albedo', 'xbull', 'hotwallet'];
+
+    const allOptions: WalletOption[] = walletIds.map(id => ({
+      ...WALLETS.find(w => w.id === id)!,
+      isInstalled: walletAvailability[id] ?? false,
+      connect: () => connectWallet(id),
+      isMobileReady: true,
+    }));
 
     if (isMobile) {
       return allOptions
@@ -532,6 +326,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       <button
         onClick={() => handleWalletConnect(wallet)}
         disabled={isConnecting}
+        data-testid={`wallet-btn-${wallet.id}`}
         className={`
           w-full flex items-center gap-4 p-4 rounded-xl
           transition-all duration-200 group
@@ -702,6 +497,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                 {/* Guest */}
                 <button
                   onClick={handleGuestLogin}
+                  data-testid="guest-login-btn"
                   className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
@@ -717,6 +513,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                 {/* Magic Link */}
                 <button
                   onClick={() => setAuthMode('magic_link')}
+                  data-testid="magic-link-btn"
                   className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
