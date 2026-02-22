@@ -27,7 +27,7 @@ const ENEMY_SHOOT_INTERVAL_BASE = 2200;
 
 // ─── Types ───────────────────────────────────────────────────────────
 type EnemyType = 'scout' | 'striker' | 'core';
-type PowerUpType = 'overcharge' | 'shield' | 'bomb' | 'rapidfire' | 'extralife';
+type PowerUpType = 'overcharge' | 'shield' | 'bomb' | 'rapidfire' | 'extralife' | 'photonburst' | 'rapidpulse' | 'missileswarm';
 type GameStatus = 'idle' | 'running' | 'paused' | 'gameover';
 
 interface Star { x: number; y: number; r: number; a: number; speed: number; }
@@ -38,9 +38,14 @@ interface Player {
   shieldActive: boolean; shieldHits: number;
   invulnTimer: number; lives: number;
   rapidFire: boolean; rapidFireEnd: number;
+  photonBurst: boolean; photonBurstEnd: number;
+  rapidPulse: boolean; rapidPulseEnd: number;
+  missileSwarm: boolean; missileSwarmEnd: number;
 }
 
-interface Bullet { x: number; y: number; vx: number; vy: number; }
+interface Bullet { x: number; y: number; vx: number; vy: number; piercing?: boolean; weak?: boolean; }
+
+interface Missile { x: number; y: number; vx: number; vy: number; targetIdx: number; life: number; }
 
 interface Enemy {
   type: EnemyType; hp: number; maxHp: number;
@@ -72,6 +77,7 @@ interface GameState {
   enemies: Enemy[];
   powerUps: PowerUp[];
   particles: Particle[];
+  missiles: Missile[];
   stars: Star[];
   portalAngle: number;
   shootCooldown: number;
@@ -148,6 +154,9 @@ function initPlayer(cw: number, ch: number): Player {
     shieldActive: false, shieldHits: 0,
     invulnTimer: 0, lives: 3,
     rapidFire: false, rapidFireEnd: 0,
+    photonBurst: false, photonBurstEnd: 0,
+    rapidPulse: false, rapidPulseEnd: 0,
+    missileSwarm: false, missileSwarmEnd: 0,
   };
 }
 
@@ -160,7 +169,7 @@ function initGame(cw: number, ch: number): GameState {
     player: initPlayer(cw, ch),
     playerBullets: [], enemyBullets: [],
     enemies: spawnWave(1, cw),
-    powerUps: [], particles: [],
+    powerUps: [], particles: [], missiles: [],
     stars: createStars(cw, ch),
     portalAngle: 0, shootCooldown: 0,
     diveTimer: DIVE_INTERVAL_BASE,
@@ -282,7 +291,13 @@ const CyberGalaxyGame: React.FC = () => {
     const by = p.y - 4;
     s.shotsFired++;
 
-    if (p.weaponLevel >= 3) {
+    // Photon Burst: piercing beam
+    if (p.photonBurst) {
+      s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -10, piercing: true });
+    } else if (p.rapidPulse) {
+      // Rapid Pulse: faster weaker shots
+      s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -10, weak: true });
+    } else if (p.weaponLevel >= 3) {
       s.playerBullets.push({ x: cx, y: by, vx: -1.5, vy: -8 });
       s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -8 });
       s.playerBullets.push({ x: cx, y: by, vx: 1.5, vy: -8 });
@@ -292,8 +307,21 @@ const CyberGalaxyGame: React.FC = () => {
     } else {
       s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -8 });
     }
-    const cooldown = p.rapidFire ? SHOOT_COOLDOWN * 0.5 : SHOOT_COOLDOWN;
+    // Rapid Pulse fires faster
+    const cooldown = (p.rapidPulse || p.rapidFire) ? SHOOT_COOLDOWN * 0.35 : SHOOT_COOLDOWN;
     s.shootCooldown = cooldown;
+
+    // Missile Swarm: launch homing missiles on each shot
+    if (p.missileSwarm && s.enemies.length > 0) {
+      for (let i = 0; i < 2; i++) {
+        const targetIdx = Math.floor(Math.random() * s.enemies.length);
+        s.missiles.push({
+          x: cx + (i === 0 ? -10 : 10), y: by,
+          vx: (i === 0 ? -2 : 2), vy: -3,
+          targetIdx, life: 3000,
+        });
+      }
+    }
   }, []);
 
   // ─── Update ──────────────────────────────────────────────────────
@@ -325,7 +353,17 @@ const CyberGalaxyGame: React.FC = () => {
       s.activePowerEnd = 0;
       if (p.weaponLevel > 1) p.weaponLevel = 1;
       p.rapidFire = false;
+      p.photonBurst = false;
+      p.rapidPulse = false;
+      p.missileSwarm = false;
     }
+
+    // Photon burst timer
+    if (p.photonBurst && now > p.photonBurstEnd) p.photonBurst = false;
+    // Rapid pulse timer
+    if (p.rapidPulse && now > p.rapidPulseEnd) p.rapidPulse = false;
+    // Missile swarm timer
+    if (p.missileSwarm && now > p.missileSwarmEnd) p.missileSwarm = false;
 
     // Invulnerability
     if (p.invulnTimer > 0) p.invulnTimer -= dtMs;
@@ -480,12 +518,13 @@ const CyberGalaxyGame: React.FC = () => {
     // ── Collisions: player bullets vs enemies ──
     for (let bi = s.playerBullets.length - 1; bi >= 0; bi--) {
       const b = s.playerBullets[bi];
+      let bulletConsumed = false;
       for (let ei = s.enemies.length - 1; ei >= 0; ei--) {
         const e = s.enemies[ei];
         if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
-          s.playerBullets.splice(bi, 1);
           s.shotsHit++;
-          e.hp--;
+          const dmg = b.weak ? 0.5 : 1;
+          e.hp -= dmg;
           spawnParticles(s.particles, b.x, b.y, ENEMY_META[e.type].color, 5);
           if (e.hp <= 0) {
             const meta = ENEMY_META[e.type];
@@ -493,8 +532,8 @@ const CyberGalaxyGame: React.FC = () => {
             s.score += meta.score + bonus;
             spawnParticles(s.particles, e.x + e.w / 2, e.y + e.h / 2, meta.color, 15);
             if (Math.random() < POWER_UP_DROP_CHANCE) {
-              const types: PowerUpType[] = ['overcharge', 'shield', 'bomb', 'rapidfire', 'extralife'];
-              const weights = [0.3, 0.25, 0.2, 0.15, 0.1];
+              const types: PowerUpType[] = ['overcharge', 'shield', 'bomb', 'rapidfire', 'extralife', 'photonburst', 'rapidpulse', 'missileswarm'];
+              const weights = [0.2, 0.18, 0.15, 0.12, 0.08, 0.1, 0.1, 0.07];
               let r = Math.random();
               let selectedType: PowerUpType = 'overcharge';
               for (let ti = 0; ti < types.length; ti++) {
@@ -508,10 +547,43 @@ const CyberGalaxyGame: React.FC = () => {
             }
             s.enemies.splice(ei, 1);
           }
-          break;
+          // Piercing bullets pass through, others are consumed
+          if (!b.piercing) { bulletConsumed = true; break; }
         }
       }
+      if (bulletConsumed) s.playerBullets.splice(bi, 1);
     }
+
+    // ── Update missiles (homing) ──
+    s.missiles = s.missiles.filter(m => {
+      m.life -= dtMs;
+      if (m.life <= 0 || s.enemies.length === 0) return false;
+      // Re-acquire target if out of range
+      if (m.targetIdx >= s.enemies.length) m.targetIdx = Math.floor(Math.random() * s.enemies.length);
+      const target = s.enemies[m.targetIdx];
+      const dx = (target.x + target.w / 2) - m.x;
+      const dy = (target.y + target.h / 2) - m.y;
+      const mag = Math.sqrt(dx * dx + dy * dy) || 1;
+      const speed = 5;
+      m.vx += (dx / mag) * 0.5; m.vy += (dy / mag) * 0.5;
+      const vmag = Math.sqrt(m.vx * m.vx + m.vy * m.vy) || 1;
+      m.vx = (m.vx / vmag) * speed; m.vy = (m.vy / vmag) * speed;
+      m.x += m.vx; m.y += m.vy;
+      // Check collision with target
+      if (m.x > target.x && m.x < target.x + target.w && m.y > target.y && m.y < target.y + target.h) {
+        target.hp -= 2;
+        spawnParticles(s.particles, m.x, m.y, '#ff6600', 8);
+        if (target.hp <= 0) {
+          const meta = ENEMY_META[target.type];
+          s.score += meta.score;
+          spawnParticles(s.particles, target.x + target.w / 2, target.y + target.h / 2, meta.color, 15);
+          const idx = s.enemies.indexOf(target);
+          if (idx >= 0) s.enemies.splice(idx, 1);
+        }
+        return false;
+      }
+      return m.y > -50 && m.y < s.ch + 50 && m.x > -50 && m.x < s.cw + 50;
+    });
 
     // ── Collisions: enemy bullets vs player ──
     if (p.invulnTimer <= 0) {
@@ -583,6 +655,24 @@ const CyberGalaxyGame: React.FC = () => {
       s.activePowerLabel = '+1 LIFE';
       s.activePowerEnd = now + 1500;
       spawnParticles(s.particles, p.x + p.w / 2, p.y, '#00ff88', 15);
+    } else if (type === 'photonburst') {
+      p.photonBurst = true;
+      p.photonBurstEnd = now + 6000;
+      s.activePowerLabel = 'PHOTON BURST';
+      s.activePowerEnd = now + 6000;
+      spawnParticles(s.particles, p.x + p.w / 2, p.y, '#aa66ff', 12);
+    } else if (type === 'rapidpulse') {
+      p.rapidPulse = true;
+      p.rapidPulseEnd = now + 5000;
+      s.activePowerLabel = 'RAPID PULSE';
+      s.activePowerEnd = now + 5000;
+      spawnParticles(s.particles, p.x + p.w / 2, p.y, '#ffee00', 12);
+    } else if (type === 'missileswarm') {
+      p.missileSwarm = true;
+      p.missileSwarmEnd = now + 7000;
+      s.activePowerLabel = 'MISSILE SWARM';
+      s.activePowerEnd = now + 7000;
+      spawnParticles(s.particles, p.x + p.w / 2, p.y, '#ff6600', 12);
     }
   }
 
@@ -777,10 +867,40 @@ const CyberGalaxyGame: React.FC = () => {
 
     // Player bullets
     s.playerBullets.forEach(b => {
-      ctx.fillStyle = '#00ffcc';
-      ctx.shadowColor = '#00ffcc';
-      ctx.shadowBlur = 6;
-      ctx.fillRect(b.x - BULLET_W / 2, b.y - BULLET_H / 2, BULLET_W, BULLET_H);
+      if (b.piercing) {
+        // Photon burst beam — taller, purple
+        ctx.fillStyle = '#aa66ff';
+        ctx.shadowColor = '#aa66ff';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(b.x - 3, b.y - 12, 6, 24);
+      } else if (b.weak) {
+        // Rapid pulse — small yellow
+        ctx.fillStyle = '#ffee00';
+        ctx.shadowColor = '#ffee00';
+        ctx.shadowBlur = 4;
+        ctx.fillRect(b.x - 1.5, b.y - 4, 3, 8);
+      } else {
+        ctx.fillStyle = '#00ffcc';
+        ctx.shadowColor = '#00ffcc';
+        ctx.shadowBlur = 6;
+        ctx.fillRect(b.x - BULLET_W / 2, b.y - BULLET_H / 2, BULLET_W, BULLET_H);
+      }
+    });
+    ctx.shadowBlur = 0;
+
+    // Missiles
+    s.missiles.forEach(m => {
+      ctx.fillStyle = '#ff6600';
+      ctx.shadowColor = '#ff6600';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Trail
+      ctx.fillStyle = 'rgba(255,102,0,0.3)';
+      ctx.beginPath();
+      ctx.arc(m.x - m.vx * 2, m.y - m.vy * 2, 2, 0, Math.PI * 2);
+      ctx.fill();
     });
     ctx.shadowBlur = 0;
 
@@ -796,8 +916,8 @@ const CyberGalaxyGame: React.FC = () => {
     ctx.shadowBlur = 0;
 
     // Power-ups
-    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', bomb: '#ff3d7f', rapidfire: '#00ff88', extralife: '#ff69b4' };
-    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', bomb: 'B', rapidfire: 'R', extralife: '♥' };
+    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', bomb: '#ff3d7f', rapidfire: '#00ff88', extralife: '#ff69b4', photonburst: '#aa66ff', rapidpulse: '#ffee00', missileswarm: '#ff6600' };
+    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', bomb: 'B', rapidfire: 'R', extralife: '♥', photonburst: 'P', rapidpulse: 'Z', missileswarm: 'M' };
     s.powerUps.forEach(pu => {
       ctx.fillStyle = puColors[pu.type];
       ctx.shadowColor = puColors[pu.type];
