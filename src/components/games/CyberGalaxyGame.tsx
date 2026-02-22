@@ -413,7 +413,9 @@ const CyberGalaxyGame: React.FC = () => {
     
     s.enemies.forEach(e => {
       e.shootTimer -= dtMs;
-      const interval = e.isDiving ? baseInterval * 0.5 : baseInterval;
+      // Only diving enemies can shoot
+      if (!e.isDiving) return;
+      const interval = baseInterval * 0.5;
       if (e.shootTimer <= 0) {
         e.shootTimer = interval + Math.random() * 1500;
         if (Math.random() < shootChance) {
