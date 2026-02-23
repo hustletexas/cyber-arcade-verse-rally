@@ -68,7 +68,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     if (wcProjectId) {
       modules.push(
         new WalletConnectModule({
-          url: 'https://cybercityarcade.com',
+          url: window.location.origin,
           projectId: wcProjectId,
           method: WalletConnectAllowedMethods.SIGN,
           description: 'Connect your Stellar wallet to Cyber City Arcade',
@@ -173,7 +173,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       }
 
       const wcModule = new WalletConnectModule({
-        url: 'https://cybercityarcade.com',
+        url: window.location.origin,
         projectId: wcProjectId,
         method: WalletConnectAllowedMethods.SIGN,
         description: 'Connect your Stellar wallet to Cyber City Arcade',
