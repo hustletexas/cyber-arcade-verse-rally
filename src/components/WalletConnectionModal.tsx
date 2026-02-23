@@ -68,12 +68,12 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     if (wcProjectId) {
       modules.push(
         new WalletConnectModule({
-          url: window.location.origin,
+          url: 'https://cybercityarcade.com',
           projectId: wcProjectId,
           method: WalletConnectAllowedMethods.SIGN,
           description: 'Connect your Stellar wallet to Cyber City Arcade',
           name: 'Cyber City Arcade',
-          icons: [`${window.location.origin}/favicon.ico`],
+          icons: ['https://cybercityarcade.com/favicon.ico'],
           network: WalletNetwork.PUBLIC,
         })
       );
@@ -173,12 +173,12 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       }
 
       const wcModule = new WalletConnectModule({
-        url: window.location.origin,
+        url: 'https://cybercityarcade.com',
         projectId: wcProjectId,
         method: WalletConnectAllowedMethods.SIGN,
         description: 'Connect your Stellar wallet to Cyber City Arcade',
         name: 'Cyber City Arcade',
-        icons: [`${window.location.origin}/favicon.ico`],
+        icons: ['https://cybercityarcade.com/favicon.ico'],
         network: WalletNetwork.PUBLIC,
       });
 
