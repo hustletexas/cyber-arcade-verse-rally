@@ -60,8 +60,8 @@ export const useWalletAuth = () => {
       let isStillConnected = false;
       
       if (primaryWallet?.type === 'freighter') {
-        const result = await freighterApi.isConnected();
-        isStillConnected = result.isConnected === true;
+        const connResult = await freighterApi.isConnected();
+        isStillConnected = connResult.isConnected === true;
       } else if (primaryWallet?.type === 'lobstr') {
         // LOBSTR connection is maintained via Stellar Wallets Kit
         isStillConnected = true;

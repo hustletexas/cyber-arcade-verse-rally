@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import freighterApi from '@stellar/freighter-api';
 
 // Stellar-only wallet types
 export type WalletType = 'lobstr' | 'freighter' | 'hotwallet' | 'created';
@@ -123,24 +124,30 @@ export const useMultiWallet = () => {
 
   const autoConnectFreighter = async (): Promise<ConnectedWallet | null> => {
     try {
-      const freighterApi = (window as any).freighter;
-      if (!freighterApi) {
-        console.log('Freighter extension not detected');
+      // Use the official @stellar/freighter-api package (same as cyberbrawl.io pattern)
+      const connResult = await freighterApi.isConnected();
+      if (!connResult.isConnected) {
+        console.log('Freighter not detected or not connected');
         return null;
       }
 
-      const isConnected = await freighterApi.isConnected();
-      if (!isConnected) {
+      // Check if we were previously allowed (don't prompt on auto-connect)
+      const allowedResult = await freighterApi.isAllowed();
+      if (!allowedResult.isAllowed) {
         console.log('Freighter not previously approved');
         return null;
       }
 
-      const publicKey = await freighterApi.getPublicKey();
-      if (publicKey) {
-        console.log('Freighter auto-connected:', publicKey.substring(0, 8) + '...');
+      const addrResult = await freighterApi.getAddress();
+      if (addrResult.error) {
+        console.log('Freighter getAddress error:', addrResult.error);
+        return null;
+      }
+      if (addrResult.address) {
+        console.log('Freighter auto-connected:', addrResult.address.substring(0, 8) + '...');
         return {
           type: 'freighter',
-          address: publicKey,
+          address: addrResult.address,
           isConnected: true,
           chain: 'stellar',
           symbol: 'XLM'

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import freighterApi from '@stellar/freighter-api';
 import { 
   WalletType, 
   ChainType, 
@@ -50,18 +51,18 @@ export const useMultiChainWallet = () => {
       console.error('Error loading stored wallets:', error);
     }
 
-    // Auto-connect Freighter if available
+    // Auto-connect Freighter if available (using @stellar/freighter-api)
     try {
-      const freighterApi = (window as any).freighter;
-      if (freighterApi) {
-        const isConnected = await freighterApi.isConnected();
-        if (isConnected) {
-          const publicKey = await freighterApi.getPublicKey();
-          if (publicKey && !wallets.find(w => w.type === 'freighter')) {
+      const connResult = await freighterApi.isConnected();
+      if (connResult.isConnected) {
+        const allowedResult = await freighterApi.isAllowed();
+        if (allowedResult.isAllowed) {
+          const addrResult = await freighterApi.getAddress();
+          if (addrResult.address && !wallets.find(w => w.type === 'freighter')) {
             wallets.push({
               type: 'freighter',
               chain: 'stellar',
-              address: publicKey,
+              address: addrResult.address,
               isConnected: true,
               symbol: 'XLM'
             });
