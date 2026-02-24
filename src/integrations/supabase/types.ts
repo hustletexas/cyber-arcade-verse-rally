@@ -477,6 +477,30 @@ export type Database = {
         }
         Relationships: []
       }
+      galaxy_scores: {
+        Row: {
+          created_at: string
+          id: string
+          score: number
+          user_id: string
+          wave: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          score?: number
+          user_id: string
+          wave?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          score?: number
+          user_id?: string
+          wave?: number
+        }
+        Relationships: []
+      }
       match_scores: {
         Row: {
           created_at: string

@@ -66,9 +66,12 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
         triviaWeekRes,
         seqAllRes,
         seqWeekRes,
+        galaxyAllRes,
+        galaxyWeekRes,
         recentMatchRes,
         recentTriviaRes,
         recentSeqRes,
+        recentGalaxyRes,
       ] = await Promise.all([
         // CCC Balance
         supabase
@@ -117,6 +120,19 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
           .gte('created_at', weekStartISO)
           .order('score', { ascending: false })
           .limit(1),
+        // Galaxy scores - all time
+        supabase
+          .from('galaxy_scores')
+          .select('id, score', { count: 'exact', head: true })
+          .eq('user_id', walletAddress),
+        // Galaxy scores - this week
+        supabase
+          .from('galaxy_scores')
+          .select('score')
+          .eq('user_id', walletAddress)
+          .gte('created_at', weekStartISO)
+          .order('score', { ascending: false })
+          .limit(1),
         // Recent match games
         supabase
           .from('match_scores')
@@ -139,6 +155,13 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
           .eq('user_id', walletAddress)
           .order('created_at', { ascending: false })
           .limit(3),
+        // Recent galaxy games
+        supabase
+          .from('galaxy_scores')
+          .select('score, created_at')
+          .eq('user_id', walletAddress)
+          .order('created_at', { ascending: false })
+          .limit(3),
       ]);
 
       const cccBalance = balanceRes.data?.cctr_balance ?? 0;
@@ -146,18 +169,19 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
       const matchCount = matchAllRes.count ?? 0;
       const triviaCount = triviaAllRes.count ?? 0;
       const seqCount = seqAllRes.count ?? 0;
-      const totalGamesPlayed = matchCount + triviaCount + seqCount;
+      const galaxyCount = galaxyAllRes.count ?? 0;
+      const totalGamesPlayed = matchCount + triviaCount + seqCount + galaxyCount;
 
-      // Weekly counts (use data length for a rough count from limited queries)
+      // Weekly counts
       const matchWeekCount = matchWeekRes.data?.length ?? 0;
       const triviaWeekCount = triviaWeekRes.data?.length ?? 0;
       const seqWeekCount = seqWeekRes.data?.length ?? 0;
+      const galaxyWeekCount = galaxyWeekRes.data?.length ?? 0;
 
-      // For accurate weekly counts, we'd need count queries too, but the best scores are enough
-      // We'll count from the recent queries filtered by date
       const matchWeekBest = matchWeekRes.data?.[0]?.score ?? 0;
       const triviaWeekBest = triviaWeekRes.data?.[0]?.score ?? 0;
       const seqWeekBest = seqWeekRes.data?.[0]?.score ?? 0;
+      const galaxyWeekBest = galaxyWeekRes.data?.[0]?.score ?? 0;
 
       const gameStats: GameStats[] = [
         {
@@ -177,6 +201,12 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
           gamesPlayed: seqCount,
           bestScore: seqWeekBest,
           gamesThisWeek: seqWeekCount,
+        },
+        {
+          name: 'Cyber Galaxy',
+          gamesPlayed: galaxyCount,
+          bestScore: galaxyWeekBest,
+          gamesThisWeek: galaxyWeekCount,
         },
       ];
 
@@ -204,6 +234,13 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
           playedAt: r.created_at,
         });
       });
+      recentGalaxyRes.data?.forEach(r => {
+        recentGames.push({
+          game: 'Cyber Galaxy',
+          score: r.score,
+          playedAt: r.created_at,
+        });
+      });
 
       // Sort by most recent
       recentGames.sort((a, b) => new Date(b.playedAt).getTime() - new Date(a.playedAt).getTime());
@@ -211,8 +248,8 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
       setData({
         cccBalance,
         totalGamesPlayed,
-        totalGamesThisWeek: matchWeekCount + triviaWeekCount + seqWeekCount,
-        weeklyBestTotal: matchWeekBest + triviaWeekBest + seqWeekBest,
+        totalGamesThisWeek: matchWeekCount + triviaWeekCount + seqWeekCount + galaxyWeekCount,
+        weeklyBestTotal: matchWeekBest + triviaWeekBest + seqWeekBest + galaxyWeekBest,
         gameStats,
         recentGames: recentGames.slice(0, 5),
         isLoading: false,
@@ -236,6 +273,7 @@ export const usePlayerProgress = (): PlayerProgressData & { refetch: () => void 
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_scores' }, () => fetchProgress())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'trivia_runs' }, () => fetchProgress())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sequence_scores' }, () => fetchProgress())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'galaxy_scores' }, () => fetchProgress())
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_balances' }, () => fetchProgress())
       .subscribe();
 
