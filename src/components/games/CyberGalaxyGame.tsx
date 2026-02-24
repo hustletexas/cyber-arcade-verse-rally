@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Trophy } from 'lucide-react';
 import { useUserBalance } from '@/hooks/useUserBalance';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // ─── Constants ───────────────────────────────────────────────────────
@@ -208,6 +210,8 @@ const CyberGalaxyGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { deductBalance } = useUserBalance();
+  const { primaryWallet } = useMultiWallet();
+  const scoreSubmittedRef = useRef(false);
   const stateRef = useRef<GameState>(initGame(BASE_W, BASE_H));
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
@@ -736,6 +740,18 @@ const CyberGalaxyGame: React.FC = () => {
     }
     saveToLeaderboard(s.score, s.wave);
     setLeaderboard(getLeaderboard());
+
+    // Submit score to Supabase
+    const wallet = primaryWallet?.address;
+    if (wallet && s.score > 0 && !scoreSubmittedRef.current) {
+      scoreSubmittedRef.current = true;
+      supabase
+        .from('galaxy_scores')
+        .insert({ user_id: wallet, score: s.score, wave: s.wave })
+        .then(({ error }) => {
+          if (error) console.error('[CyberGalaxy] Score submit error:', error);
+        });
+    }
   }
 
   // ─── Render ──────────────────────────────────────────────────────
@@ -1128,6 +1144,7 @@ const CyberGalaxyGame: React.FC = () => {
       Object.assign(s, initGame(BASE_W, BASE_H));
       s.status = 'running';
       s.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
+      scoreSubmittedRef.current = false;
     }
   };
 
@@ -1141,6 +1158,7 @@ const CyberGalaxyGame: React.FC = () => {
     Object.assign(stateRef.current, initGame(BASE_W, BASE_H));
     stateRef.current.status = 'running';
     stateRef.current.waveOverlayEnd = performance.now() + WAVE_OVERLAY_TIME;
+    scoreSubmittedRef.current = false;
   };
 
   const fireButton = () => {

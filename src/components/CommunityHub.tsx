@@ -148,6 +148,9 @@ export const CommunityHub = () => {
       } else if (game === 'breaker') {
         const res = await supabase.from('portal_breaker_scores').select('user_id, score').order('score', { ascending: false }).limit(20);
         data = res.data || [];
+      } else if (game === 'galaxy') {
+        const res = await supabase.from('galaxy_scores').select('user_id, score').order('score', { ascending: false }).limit(20);
+        data = res.data || [];
       }
       setGameEntries(data.map((e: any, i: number) => ({ user_id: e.user_id, score: e.score, rank: i + 1 })));
     } catch (err) { console.error('Game leaderboard error:', err); }
@@ -595,10 +598,10 @@ export const CommunityHub = () => {
                     </span>
                   </h4>
 
-                  {gameFilter === 'galaxy' ? (
+                  {gameFilter === 'galaxy' && !gameLbLoading && gameEntries.length === 0 ? (
                     <div className="text-center py-6 text-gray-500">
                       <span className="text-2xl mb-2 block">🌌</span>
-                      <p className="text-xs">Leaderboard coming soon!</p>
+                      <p className="text-xs">No scores yet. Be the first!</p>
                     </div>
                   ) : gameLbLoading ? (
                     <div className="flex items-center justify-center py-6">
