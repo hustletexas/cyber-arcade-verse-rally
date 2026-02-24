@@ -223,7 +223,7 @@ const Index = () => {
           {/* Partners Row */}
           <div className="border-t border-neon-purple/20 pt-4 mb-4">
             <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 text-xs text-muted-foreground">
-              <span className="text-neon-purple/60">Partners:</span>
+              <span className="text-neon-purple/60">​Connected to </span>
               <span className="hover:text-neon-cyan transition-colors">Stellar</span>
               <span>•</span>
               <button onClick={() => window.open('https://aqua.network/', '_blank')} className="hover:text-neon-cyan transition-colors cursor-pointer">
