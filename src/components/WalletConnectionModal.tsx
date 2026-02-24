@@ -201,6 +201,32 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       } else {
         throw new Error('No address returned. Make sure the wallet app is installed.');
       }
+    } else if (isMobile && walletType === 'hotwallet') {
+      // Hot Wallet on mobile: use deep link redirect to open the app/web wallet
+      toast({
+        title: "Opening Hot Wallet...",
+        description: "Connecting via Hot Wallet mobile",
+      });
+
+      // Try the kit module first with a timeout — Hot Wallet is web-based so it 
+      // should work on mobile, but if the popup is blocked we fall back to redirect
+      try {
+        const kit = buildKit(HOTWALLET_ID);
+        kit.setWallet(HOTWALLET_ID);
+        const { address } = await kit.getAddress();
+        if (address) {
+          completeConnection(walletType, address);
+          return;
+        }
+      } catch (kitError) {
+        console.warn('Hot Wallet kit module failed on mobile, trying deep link redirect...', kitError);
+      }
+
+      // Fallback: redirect to Hot Wallet web app directly
+      // Hot Wallet uses its web interface — open it so the user can authorize
+      const callbackUrl = encodeURIComponent(window.location.href);
+      const hotWalletUrl = `https://hotwallet.app/connect?callback=${callbackUrl}&app=Cyber+City+Arcade`;
+      window.location.href = hotWalletUrl;
     } else if (walletType === 'freighter') {
       // Freighter: bypass kit's isAvailable check which fails in iframes
       // Use the Freighter API directly — it communicates via postMessage
