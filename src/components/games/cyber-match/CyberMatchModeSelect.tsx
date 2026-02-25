@@ -49,7 +49,7 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
         <p className="text-muted-foreground mt-2">Free to play • Unlimited games</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
         {difficulties.map(diff => {
           const config = DIFFICULTY_CONFIGS[diff];
           const isSelected = selectedDifficulty === diff;
