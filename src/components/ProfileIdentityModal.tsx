@@ -47,9 +47,17 @@ const TITLE_OPTIONS = [
 // ─── Profile Themes ───
 const PROFILE_THEMES = [
   { id: 'cyber-grid', name: 'Cyber Grid', primary: '#00ffff', secondary: '#bf00ff', gradient: 'from-cyan-900/40 via-blue-900/30 to-purple-900/40' },
+  { id: 'cyber-pulse', name: 'Cyber Pulse', primary: '#00e5ff', secondary: '#1a237e', gradient: 'from-cyan-800/50 via-indigo-900/40 to-blue-900/50' },
+  { id: 'cyber-hex', name: 'Cyber Hex', primary: '#00ff88', secondary: '#003322', gradient: 'from-emerald-900/40 via-teal-900/30 to-cyan-900/40' },
   { id: 'neon-smoke', name: 'Neon Smoke', primary: '#ff0055', secondary: '#ff6600', gradient: 'from-pink-900/40 via-red-900/30 to-orange-900/40' },
-  { id: 'arcade-scanlines', name: 'Arcade Scanlines', primary: '#39ff14', secondary: '#00ff88', gradient: 'from-green-900/40 via-emerald-900/30 to-cyan-900/40' },
+  { id: 'neon-frost', name: 'Neon Frost', primary: '#7df9ff', secondary: '#e0f7fa', gradient: 'from-sky-800/40 via-cyan-900/30 to-teal-800/40' },
+  { id: 'neon-blaze', name: 'Neon Blaze', primary: '#ff00ff', secondary: '#ffff00', gradient: 'from-fuchsia-900/40 via-pink-900/30 to-yellow-900/40' },
   { id: 'space-portals', name: 'Space Portals', primary: '#9900ff', secondary: '#ff00ff', gradient: 'from-purple-900/40 via-indigo-900/30 to-pink-900/40' },
+  { id: 'space-nebula', name: 'Space Nebula', primary: '#6366f1', secondary: '#a855f7', gradient: 'from-indigo-900/50 via-purple-900/40 to-violet-800/50' },
+  { id: 'galaxy-drift', name: 'Galaxy Drift', primary: '#3b82f6', secondary: '#8b5cf6', gradient: 'from-blue-900/50 via-indigo-900/40 to-purple-900/50' },
+  { id: 'galaxy-void', name: 'Galaxy Void', primary: '#1e1b4b', secondary: '#7c3aed', gradient: 'from-slate-900/60 via-indigo-950/50 to-violet-900/40' },
+  { id: 'arcade-classic', name: 'Arcade Classic', primary: '#39ff14', secondary: '#00ff88', gradient: 'from-green-900/40 via-emerald-900/30 to-cyan-900/40' },
+  { id: 'arcade-retro', name: 'Arcade Retro', primary: '#f59e0b', secondary: '#ef4444', gradient: 'from-amber-900/40 via-orange-900/30 to-red-900/40' },
 ];
 
 // ─── Sidebar Sections ───
