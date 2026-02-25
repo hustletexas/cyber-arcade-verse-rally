@@ -420,8 +420,9 @@ const CyberGalaxyGame: React.FC = () => {
     if (s.diveTimer <= 0 || needMore) {
       s.diveTimer = diveInterval;
       const nonDiving = s.enemies.filter(e => !e.isDiving && e.reformTimer <= 0);
-      const wantCount = Math.max(2 - currentlyDiving, 1 + Math.floor(s.wave / 2));
-      const diveCount = Math.min(wantCount, 3, nonDiving.length);
+      const maxDivers = s.wave <= 10 ? 2 : Math.min(1 + Math.floor(s.wave / 2), 4);
+      const wantCount = Math.max(maxDivers - currentlyDiving, 1);
+      const diveCount = Math.min(wantCount, maxDivers - currentlyDiving, nonDiving.length);
       // Pick one from the left half and one from the right half of the stage
       const midX = s.cw / 2;
       const leftPool = nonDiving.filter(e => e.formX < midX);
