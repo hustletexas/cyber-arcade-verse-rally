@@ -41,6 +41,7 @@ export const useCyberTrivia = () => {
   const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<TriviaDailyLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const answeredIdsRef = useRef<Set<string>>(new Set());
 
   const userId = primaryWallet?.address || `anon_${Date.now()}`;
 
@@ -232,9 +233,15 @@ export const useCyberTrivia = () => {
         return [];
       }
 
-      // Shuffle and return
+      // Shuffle and filter out previously answered questions
       const questions = (data || []) as unknown as TriviaQuestionV2[];
-      return questions.sort(() => Math.random() - 0.5);
+      const filtered = questions.filter(q => !answeredIdsRef.current.has(q.id));
+      // If we filtered too many, fall back to all questions (reset memory)
+      if (filtered.length < 5 && questions.length >= 5) {
+        answeredIdsRef.current.clear();
+        return questions.sort(() => Math.random() - 0.5);
+      }
+      return filtered.sort(() => Math.random() - 0.5);
     } catch (error) {
       console.error('Error fetching questions:', error);
       return [];
@@ -331,6 +338,8 @@ export const useCyberTrivia = () => {
     let ticketsEarned = 0;
 
     if (isCorrect) {
+      // Track this question so it won't appear again
+      answeredIdsRef.current.add(currentQuestion.id);
       newStreak = gameState.streak + 1;
       newCombo = Math.min(1 + (newStreak * config.STREAK_BONUS_MULTIPLIER), 3.0);
       
