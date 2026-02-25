@@ -22,7 +22,7 @@ export const CyberMatchModeSelect: React.FC<CyberMatchModeSelectProps> = ({
 }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('normal');
   const { hasPass } = useSeasonPass();
-  const difficulties: Difficulty[] = ['easy', 'normal', 'hard', 'hardest'];
+  const difficulties: Difficulty[] = ['easy', 'normal', 'hard'];
 
   const handleStartGame = () => {
     onStartGame('free', selectedDifficulty);
