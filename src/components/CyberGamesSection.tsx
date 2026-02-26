@@ -101,8 +101,8 @@ export const CyberGamesSection: React.FC = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-        {/* Cyber Breaker - Left */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        {/* Cyber Breaker */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-yellow-500/30" onClick={() => navigate('/games/cyber-breaker')}>
           <img src="/images/games/cyber-breaker-card.png" alt="Cyber Breaker" className="w-full h-auto object-cover" />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
@@ -113,11 +113,31 @@ export const CyberGamesSection: React.FC = () => {
           </div>
         </Card>
 
-        {/* Cyber Galaxy - Right */}
+        {/* Cyber Galaxy */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-purple-500/30" onClick={() => navigate('/cyber-galaxy')}>
           <img src="/images/games/cyber-galaxy-card.png?v=2" alt="Cyber Galaxy" className="w-full h-auto object-cover" />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
             <div className="flex items-center text-purple-400 text-sm font-medium">
+              Play Now
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Card>
+
+        {/* Cyber Columns — NEW */}
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30" onClick={() => navigate('/games/cyber-columns')}>
+          <div className="w-full h-48 bg-gradient-to-br from-cyan-900/60 via-blue-950/80 to-black flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-4xl mb-2">🧩</div>
+              <h3 className="text-xl font-bold text-neon-cyan">CYBER COLUMNS</h3>
+              <p className="text-xs text-muted-foreground mt-1">Falling gem puzzle</p>
+            </div>
+          </div>
+          <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
+            NEW
+          </Badge>
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
+            <div className="flex items-center text-neon-cyan text-sm font-medium">
               Play Now
               <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>

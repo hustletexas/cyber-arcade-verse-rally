@@ -32,6 +32,7 @@ import RewardsPage from "./pages/RewardsPage";
 import EsportsPage from "./pages/EsportsPage";
 import DJBoothPage from "./pages/DJBoothPage";
 import CyberBreakerPage from "./pages/CyberBreakerPage";
+import CyberColumnsPage from "./pages/CyberColumnsPage";
 import SponsorshipsPage from "./pages/SponsorshipsPage";
 import WalletPage from "./pages/WalletPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
@@ -77,6 +78,7 @@ const App = () => (
                   <Route path="/esports" element={<EsportsPage />} />
                   <Route path="/dj" element={<DJBoothPage />} />
                   <Route path="/games/cyber-breaker" element={<CyberBreakerPage />} />
+                  <Route path="/games/cyber-columns" element={<CyberColumnsPage />} />
                   <Route path="/sponsorships" element={<SponsorshipsPage />} />
                   <Route path="/wallet" element={<WalletPage />} />
                   <Route path="/success" element={<Success />} />
