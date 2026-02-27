@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Pause, Play } from 'lucide-react';
 import { useCyberSequence } from '@/hooks/useCyberSequence';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
@@ -170,16 +170,19 @@ const CyberSequence: React.FC = () => {
               />
 
               <div className="flex justify-center gap-2 sm:gap-3 mt-4 sm:mt-6">
+                <Button onClick={() => startGame()} variant="outline" size="sm"
+                  className="border-neon-pink/50 text-neon-pink hover:bg-pink-500/10 text-xs sm:text-sm">
+                  <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Start
+                </Button>
+                <Button onClick={() => { resetGame(); setTimeout(() => startGame(), 100); }}
+                  variant="outline" size="sm"
+                  className="border-neon-pink/50 text-neon-pink hover:bg-pink-500/10 text-xs sm:text-sm">
+                  <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Restart
+                </Button>
                 <Button onClick={handleBackToMenu} variant="outline" size="sm"
                   className="border-gray-500/50 text-gray-400 hover:bg-gray-500/10 text-xs sm:text-sm">
                   <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Exit
                 </Button>
-                {mode === 'free' && (
-                  <Button onClick={() => { resetGame(); setTimeout(() => startGame(), 100); }}
-                    variant="outline" className="border-neon-pink/50 text-neon-pink hover:bg-pink-500/10">
-                    <RotateCcw className="w-4 h-4 mr-2" /> Restart
-                  </Button>
-                )}
               </div>
             </motion.div>
           )}
