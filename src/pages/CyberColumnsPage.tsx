@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCyberColumns } from '@/hooks/useCyberColumns';
 import {
@@ -15,6 +15,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import '@/components/games/cyber-columns/cyber-columns.css';
 
+// Generate particle data once
+const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  left: `${Math.random() * 100}%`,
+  duration: `${6 + Math.random() * 8}s`,
+  delay: `${Math.random() * 6}s`,
+  size: `${2 + Math.random() * 3}px`,
+  color: ['hsl(330 100% 65%)', 'hsl(199 100% 60%)', 'hsl(270 80% 65%)', 'hsl(180 90% 55%)', 'hsl(45 100% 60%)'][Math.floor(Math.random() * 5)],
+}));
+
 const CyberColumnsPage: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -23,16 +33,35 @@ const CyberColumnsPage: React.FC = () => {
   } = useCyberColumns();
 
   return (
-    <div className="cyber-columns-container min-h-screen bg-gradient-to-br from-black via-cyan-950/30 to-blue-950/40">
-      {/* Background effects */}
-      <div className="cyber-grid-bg" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500/8 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
+    <div className="cyber-columns-container min-h-screen">
+      {/* ── Galaxy Background Layers ── */}
+      <div className="cc-starfield" />
+      <div className="cc-nebula" />
+      <div className="cc-orbit-ring" />
+
+      {/* Floating particles */}
+      <div className="cc-particles">
+        {PARTICLES.map((p) => (
+          <div
+            key={p.id}
+            className="cc-particle"
+            style={{
+              left: p.left,
+              width: p.size,
+              height: p.size,
+              backgroundColor: p.color,
+              boxShadow: `0 0 6px ${p.color}`,
+              animationDuration: p.duration,
+              animationDelay: p.delay,
+            }}
+          />
+        ))}
+      </div>
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-2xl">
         {/* Nav */}
         <div className="mb-4 flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-[hsl(270_80%_75%)] hover:text-[hsl(330_100%_70%)] hover:bg-[hsl(270_60%_50%/0.1)]">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Arcade
           </Button>
         </div>
@@ -42,10 +71,6 @@ const CyberColumnsPage: React.FC = () => {
           {/* Menu */}
           {!state.isPlaying && !state.isGameOver && (
             <motion.div key="menu" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-              <div className="text-center py-6">
-                <h1 className="cyber-title font-display text-4xl md:text-5xl text-neon-cyan mb-2" data-text="CYBER COLUMNS">CYBER COLUMNS</h1>
-                <p className="text-muted-foreground">Drop gems • Match 3 • Chain combos</p>
-              </div>
               <CyberColumnsModeSelect onStart={startGame} />
             </motion.div>
           )}
@@ -75,11 +100,11 @@ const CyberColumnsPage: React.FC = () => {
               />
 
               <div className="flex justify-center gap-3 mt-4">
-                <Button variant="outline" size="sm" onClick={togglePause} className="border-neon-cyan/40 text-neon-cyan hover:bg-cyan-500/10">
+                <Button variant="outline" size="sm" onClick={togglePause} className="border-[hsl(270_60%_50%/0.4)] text-[hsl(270_80%_75%)] hover:bg-[hsl(270_60%_50%/0.1)]">
                   {state.isPaused ? <Play className="w-4 h-4 mr-1" /> : <Pause className="w-4 h-4 mr-1" />}
                   {state.isPaused ? 'Resume' : 'Pause'}
                 </Button>
-                <Button variant="outline" size="sm" onClick={resetGame} className="border-muted-foreground/30 text-muted-foreground hover:bg-white/5">
+                <Button variant="outline" size="sm" onClick={resetGame} className="border-muted-foreground/30 text-muted-foreground hover:bg-[hsl(0_0%_100%/0.05)]">
                   <ArrowLeft className="w-4 h-4 mr-1" /> Quit
                 </Button>
               </div>
