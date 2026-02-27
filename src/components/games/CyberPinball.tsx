@@ -1190,6 +1190,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         const power = g.plungerPower;
         Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
         g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
+        setPlungerDisplay(0); setIsCharging(false);
         if (power > 0.65 && power < 0.82) showMsg('PERFECT LAUNCH!');
       }
     };
@@ -1211,17 +1212,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     else G.current.rightUp = down;
   }, []);
 
+  const releasePlunger = useCallback(() => {
+    const g = G.current;
+    if (!g.plungerCharging || !g.currentBall || g.launched) return;
+    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + g.plungerPower * 0.028) });
+    g.plungerCharging = false;
+    g.plungerPower = 0;
+    g.launched = true;
+    setPlungerDisplay(0);
+    setIsCharging(false);
+  }, []);
+
   const plungerTouch = useCallback((down: boolean) => {
     const g = G.current;
     if (down && !g.launched && g.currentBall) {
       g.plungerCharging = true;
       setIsCharging(true);
-    } else if (!down && g.plungerCharging && g.currentBall && !g.launched) {
-      Body.applyForce(g.currentBall!, g.currentBall!.position, { x: 0, y: -(0.009 + g.plungerPower * 0.028) });
-      g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
-      setPlungerDisplay(0); setIsCharging(false);
+      return;
     }
-  }, []);
+
+    if (!down) {
+      releasePlunger();
+    }
+  }, [releasePlunger]);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -1300,13 +1313,24 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           onMouseDown={() => flipperTouch('left', true)}
           onMouseUp={() => flipperTouch('left', false)}
           onMouseLeave={() => flipperTouch('left', false)}>◀ LEFT</button>
-        <div className="relative overflow-hidden border border-neon-pink/40 rounded-xl touch-none select-none"
-          onTouchStart={(e) => { e.preventDefault(); plungerTouch(true); }}
-          onTouchEnd={(e) => { e.preventDefault(); plungerTouch(false); }}
-          onTouchCancel={(e) => { e.preventDefault(); plungerTouch(false); }}
-          onMouseDown={() => plungerTouch(true)}
-          onMouseUp={() => plungerTouch(false)}
-          onMouseLeave={() => plungerTouch(false)}>
+        <button
+          type="button"
+          className="relative overflow-hidden border border-neon-pink/40 rounded-xl touch-none select-none"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            plungerTouch(true);
+          }}
+          onPointerUp={(e) => {
+            e.preventDefault();
+            plungerTouch(false);
+          }}
+          onPointerCancel={(e) => {
+            e.preventDefault();
+            plungerTouch(false);
+          }}
+          onLostPointerCapture={() => plungerTouch(false)}
+        >
           {/* Power meter fill */}
           <div
             className="absolute bottom-0 left-0 right-0 transition-[height] duration-75"
@@ -1327,7 +1351,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           <div className="relative z-10 py-5 text-center font-bold text-sm text-neon-pink">
             {isCharging ? `⚡ ${Math.round(plungerDisplay * 100)}%` : G.current.launched ? '🎯 LAUNCH' : '⬇ HOLD'}
           </div>
-        </div>
+        </button>
         <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-5 rounded-xl active:bg-neon-cyan/40 select-none text-sm touch-none"
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('right', true); }}
           onTouchEnd={(e) => { e.preventDefault(); flipperTouch('right', false); }}
