@@ -861,18 +861,18 @@ const PortalBreakerGame: React.FC = () => {
       ctx.translate((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
     }
 
-    // BG gradient
+    // BG gradient (fixed to first theme so stage color never changes)
     const bg = ctx.createLinearGradient(0, 0, 0, ch);
-    bg.addColorStop(0, theme.bgTop);
-    bg.addColorStop(0.5, theme.bgMid);
-    bg.addColorStop(1, theme.bgBot);
+    bg.addColorStop(0, LEVEL_THEMES[0].bgTop);
+    bg.addColorStop(0.5, LEVEL_THEMES[0].bgMid);
+    bg.addColorStop(1, LEVEL_THEMES[0].bgBot);
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, cw, ch);
 
     // Stars
     s.stars.forEach(st => {
       ctx.globalAlpha = st.a;
-      ctx.fillStyle = theme.starTint;
+      ctx.fillStyle = LEVEL_THEMES[0].starTint;
       ctx.beginPath();
       ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
       ctx.fill();
