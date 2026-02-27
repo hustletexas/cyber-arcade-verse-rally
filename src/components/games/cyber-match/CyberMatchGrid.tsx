@@ -20,20 +20,34 @@ export const CyberMatchGrid: React.FC<CyberMatchGridProps> = ({
 }) => {
   const config = DIFFICULTY_CONFIGS[difficulty];
   
+  // Use fewer columns on mobile for hard/hardest
+  const mobileColumns = config.columns > 4 ? 4 : config.columns;
+  
   return (
     <div 
       className={cn(
-        "w-full p-4 sm:p-6 transition-transform duration-75",
+        "w-full px-2 py-3 sm:p-4 md:p-6 transition-transform duration-75",
         screenShake && "animate-shake"
       )}
     >
       <div 
-        className="grid gap-3 sm:gap-4 md:gap-5"
+        className={cn(
+          "grid gap-2 sm:gap-3 md:gap-4 mx-auto",
+          "max-w-[95vw] sm:max-w-[600px] md:max-w-[700px] lg:max-w-[800px]"
+        )}
         style={{
-          gridTemplateColumns: `repeat(${config.columns}, minmax(100px, 160px))`,
-          justifyContent: 'center',
-        }}
+          gridTemplateColumns: `repeat(var(--grid-cols), 1fr)`,
+          // @ts-ignore CSS custom properties
+          '--grid-cols': mobileColumns,
+        } as React.CSSProperties}
       >
+        <style>{`
+          @media (min-width: 640px) {
+            [style*="--grid-cols"] {
+              --grid-cols: ${config.columns} !important;
+            }
+          }
+        `}</style>
         {cards.map((card) => (
           <CyberMatchCard
             key={card.id}
