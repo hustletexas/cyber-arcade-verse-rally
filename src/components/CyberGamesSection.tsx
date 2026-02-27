@@ -88,7 +88,7 @@ export const CyberGamesSection: React.FC = () => {
         </Card>
         
         {/* Cyber Trivia - Image Card */}
-        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30" onClick={() => navigate('/games/cyber-trivia')}>
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30" onClick={() => { const el = document.getElementById('community-hub'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}>
           <img src="/images/games/cyber-trivia-card.png" alt="Cyber Trivia" className="w-full h-full object-cover" />
           <Badge className="absolute top-3 right-3 bg-neon-pink text-black font-bold text-xs">
             HOT
