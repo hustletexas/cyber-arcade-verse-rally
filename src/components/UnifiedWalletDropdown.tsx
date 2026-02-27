@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { QRScanner } from './QRScanner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +15,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { useWalletBalances, formatBalance, StellarAsset } from '@/hooks/useWalletBalances';
 import { useTransactionHistory, formatTxHash, getExplorerUrl, Transaction } from '@/hooks/useTransactionHistory';
 import { useWinnerChests } from '@/hooks/useWinnerChests';
-import { Wallet, LogOut, ChevronDown, ChevronUp, ArrowUpRight, ArrowDownLeft, CreditCard, Copy, Settings, QrCode, Gift, Headphones, User, Sparkles, ExternalLink, ArrowLeftRight, RefreshCw, Loader2, Clock, CheckCircle2, XCircle, History, Trophy, Package, HelpCircle } from 'lucide-react';
+import { Wallet, LogOut, ChevronDown, ChevronUp, ArrowUpRight, ArrowDownLeft, CreditCard, Copy, Settings, QrCode, Gift, Headphones, User, Sparkles, ExternalLink, ArrowLeftRight, RefreshCw, Loader2, Clock, CheckCircle2, XCircle, History, Trophy, Package, HelpCircle, Camera } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { WalletConnectionModal } from './WalletConnectionModal';
@@ -83,6 +84,7 @@ export const UnifiedWalletDropdown = () => {
   const [buyAmount, setBuyAmount] = useState('');
   const [buyCurrency, setBuyCurrency] = useState<'usdc' | 'xlm'>('usdc');
   const [tokensMinimized, setTokensMinimized] = useState(true);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -717,18 +719,59 @@ export const UnifiedWalletDropdown = () => {
               </div>}
 
             {activeAction === 'send' && <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Amount</label>
-                  <Input type="number" placeholder="0.00" value={sendAmount} onChange={e => setSendAmount(e.target.value)} className="bg-black/50 border-neon-pink/30" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Recipient Address</label>
-                  <Input placeholder="Stellar wallet address (G...)" value={sendAddress} onChange={e => setSendAddress(e.target.value)} className="bg-black/50 border-neon-pink/30" />
-                </div>
-                <Button onClick={handleSend} className="w-full bg-neon-pink hover:bg-neon-pink/90 text-black">
-                  <ArrowUpRight size={16} className="mr-2" />
-                  Send Transaction
-                </Button>
+                {showQRScanner ? (
+                  <QRScanner
+                    onScan={(value) => {
+                      // Strip stellar: URI prefix if present
+                      const addr = value.startsWith('stellar:') ? value.replace('stellar:', '').split('?')[0] : value;
+                      setSendAddress(addr);
+                      setShowQRScanner(false);
+                      toast({ title: 'Address Scanned', description: `Address set to ${addr.slice(0, 8)}...${addr.slice(-4)}` });
+                    }}
+                    onClose={() => setShowQRScanner(false)}
+                  />
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm text-muted-foreground">Amount</label>
+                      <Input type="number" placeholder="0.00" value={sendAmount} onChange={e => setSendAmount(e.target.value)} className="bg-black/50 border-neon-pink/30" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm text-muted-foreground">Recipient Address</label>
+                      <div className="flex gap-2">
+                        <Input placeholder="Stellar wallet address (G...)" value={sendAddress} onChange={e => setSendAddress(e.target.value)} className="bg-black/50 border-neon-pink/30 flex-1" />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shrink-0 h-10 w-10 border-neon-cyan/40 hover:bg-neon-cyan/10"
+                          onClick={() => setShowQRScanner(true)}
+                          title="Scan QR Code"
+                        >
+                          <Camera size={16} className="text-neon-cyan" />
+                        </Button>
+                      </div>
+                      {sendAddress && !sendAddress.startsWith('G') && (
+                        <p className="text-[10px] text-destructive">Address must start with G (Stellar public key)</p>
+                      )}
+                      {sendAddress && sendAddress.startsWith('G') && sendAddress.length !== 56 && (
+                        <p className="text-[10px] text-yellow-400">Stellar addresses are 56 characters long</p>
+                      )}
+                      {sendAddress && sendAddress.startsWith('G') && sendAddress.length === 56 && (
+                        <p className="text-[10px] text-neon-green flex items-center gap-1">
+                          <CheckCircle2 size={10} /> Valid address format
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={handleSend}
+                      className="w-full bg-neon-pink hover:bg-neon-pink/90 text-black"
+                      disabled={!sendAddress.startsWith('G') || sendAddress.length !== 56 || !sendAmount || parseFloat(sendAmount) <= 0}
+                    >
+                      <ArrowUpRight size={16} className="mr-2" />
+                      Send Transaction
+                    </Button>
+                  </>
+                )}
               </div>}
 
             {activeAction === 'receive' && <div className="space-y-4">
