@@ -1060,13 +1060,12 @@ const PortalBreakerGame: React.FC = () => {
         ctx.setLineDash([]);
       }
 
-      // Special brick icons
+      // Special brick indicator (simple dot)
       if (b.special !== 'normal') {
-        ctx.fillStyle = '#fff';
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        const icon = b.special === 'explosive' ? '💣' : b.special === 'charge' ? '🔋' : b.special === 'freeze' ? '🧊' : '🔥';
-        ctx.fillText(icon, bx + b.w / 2, b.y + b.h / 2 + 3);
+        ctx.fillStyle = borderExtra || '#fff';
+        ctx.beginPath();
+        ctx.arc(bx + b.w / 2, b.y + b.h / 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
       }
     });
 
