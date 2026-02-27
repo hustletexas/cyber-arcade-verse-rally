@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Gamepad2, Brain, Zap, ArrowRight } from 'lucide-react';
+import cyberColumnsBanner from '@/assets/cyber-columns-banner.png';
 interface GameCardProps {
   title: string;
   description: string;
@@ -126,12 +127,8 @@ export const CyberGamesSection: React.FC = () => {
 
         {/* Cyber Columns — NEW */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30" onClick={() => navigate('/games/cyber-columns')}>
-          <div className="w-full h-48 bg-gradient-to-br from-cyan-900/60 via-blue-950/80 to-black flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl mb-2">🧩</div>
-              <h3 className="text-xl font-bold text-neon-cyan">CYBER COLUMNS</h3>
-              <p className="text-xs text-muted-foreground mt-1">Falling gem puzzle</p>
-            </div>
+          <div className="w-full h-48 relative">
+            <img src={cyberColumnsBanner} alt="Cyber Columns - Falling gem puzzle" className="w-full h-full object-cover" />
           </div>
           <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
             NEW
