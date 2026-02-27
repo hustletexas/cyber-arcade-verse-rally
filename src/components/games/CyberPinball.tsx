@@ -43,6 +43,7 @@ interface CyberPinballProps {
 
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; color: string; size: number };
 type Raindrop = { x: number; y: number; speed: number; len: number };
+type Star = { x: number; y: number; size: number; twinkleSpeed: number; phase: number };
 
 export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBallLost, onGameOver }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -51,6 +52,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const animRef = useRef<number>(0);
   const particles = useRef<Particle[]>([]);
   const rain = useRef<Raindrop[]>([]);
+  const stars = useRef<Star[]>([]);
   const frame = useRef(0);
 
   const G = useRef({
@@ -557,121 +559,171 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (g.shake.power < 0.2) g.shake.power = 0;
       }
 
-      // ── Dark purple playfield ──
-      const pfGrad = ctx.createLinearGradient(0, 0, 0, TH);
-      pfGrad.addColorStop(0, '#0d0820');
-      pfGrad.addColorStop(0.3, '#110a1e');
-      pfGrad.addColorStop(0.6, '#0e0918');
-      pfGrad.addColorStop(1, '#0a0612');
+      // ── Deep space background ──
+      const pfGrad = ctx.createRadialGradient(TW / 2, TH * 0.4, 30, TW / 2, TH * 0.4, TH * 0.8);
+      pfGrad.addColorStop(0, '#1a0a3a');
+      pfGrad.addColorStop(0.3, '#0d0628');
+      pfGrad.addColorStop(0.6, '#08041a');
+      pfGrad.addColorStop(1, '#030210');
       ctx.fillStyle = pfGrad;
       ctx.fillRect(0, 0, TW, TH);
 
-      // Brushed metal texture
-      ctx.globalAlpha = 0.025;
-      for (let y = 0; y < TH; y += 3) {
-        ctx.strokeStyle = y % 6 === 0 ? '#8b5cf6' : '#000';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(0, y); ctx.lineTo(TW, y); ctx.stroke();
+      // ── Starfield ──
+      if (stars.current.length === 0) {
+        for (let i = 0; i < 120; i++) {
+          stars.current.push({
+            x: Math.random() * TW, y: Math.random() * TH,
+            size: Math.random() * 1.5 + 0.3,
+            twinkleSpeed: Math.random() * 3 + 1,
+            phase: Math.random() * Math.PI * 2,
+          });
+        }
       }
-      ctx.globalAlpha = 1;
+      for (const star of stars.current) {
+        const twinkle = Math.sin(t * star.twinkleSpeed + star.phase) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.6 + 0.1})`;
+        ctx.beginPath(); ctx.arc(star.x, star.y, star.size * twinkle, 0, Math.PI * 2); ctx.fill();
+      }
 
-      // ── Rain ──
+      // ── Nebula glow patches ──
+      const nebula1 = ctx.createRadialGradient(TW * 0.3, TH * 0.5, 10, TW * 0.3, TH * 0.5, 150);
+      nebula1.addColorStop(0, 'rgba(100, 20, 180, 0.06)');
+      nebula1.addColorStop(1, 'transparent');
+      ctx.fillStyle = nebula1; ctx.fillRect(0, 0, TW, TH);
+      const nebula2 = ctx.createRadialGradient(TW * 0.7, TH * 0.3, 10, TW * 0.7, TH * 0.3, 120);
+      nebula2.addColorStop(0, 'rgba(0, 80, 200, 0.04)');
+      nebula2.addColorStop(1, 'transparent');
+      ctx.fillStyle = nebula2; ctx.fillRect(0, 0, TW, TH);
+
+      // ── Rain (subtle) ──
       const rd = rain.current;
-      if (rd.length < 50) rd.push({ x: Math.random() * TW, y: -10, speed: 2 + Math.random() * 3, len: 10 + Math.random() * 18 });
-      ctx.globalAlpha = 0.05;
-      ctx.strokeStyle = '#00e5ff';
+      if (rd.length < 35) rd.push({ x: Math.random() * TW, y: -10, speed: 2 + Math.random() * 3, len: 8 + Math.random() * 14 });
+      ctx.globalAlpha = 0.04;
+      ctx.strokeStyle = '#6088ff';
       ctx.lineWidth = 0.5;
       for (let i = rd.length - 1; i >= 0; i--) {
         const r = rd[i];
-        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - 0.8, r.y + r.len); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - 0.5, r.y + r.len); ctx.stroke();
         r.y += r.speed;
         if (r.y > TH) rd.splice(i, 1);
       }
       ctx.globalAlpha = 1;
 
-      // ── Ambient glow ──
-      // Reactor glow
-      const reactorGlowSize = 80 + g.reactorCharge * 0.8;
-      const reactorGlowAlpha = g.overdrive ? 0.2 + Math.sin(t * 6) * 0.08 : 0.05 + g.reactorCharge * 0.001;
-      const rGlow = ctx.createRadialGradient(rcX, rcY, 5, rcX, rcY, reactorGlowSize);
-      rGlow.addColorStop(0, `rgba(168, 85, 247, ${reactorGlowAlpha})`);
+      // ── Table chrome border ──
+      ctx.strokeStyle = '#3a3a5e';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(3, 3, TW - 6, TH - 6);
+      // Inner neon trim
+      ctx.shadowColor = '#6040ff';
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = 'rgba(100, 70, 220, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(7, 7, TW - 14, TH - 14);
+      ctx.shadowBlur = 0;
+
+      // ── Reactor core ambient glow (orange/red like reference) ──
+      const reactorGlowSize = 90 + g.reactorCharge * 1.2;
+      const reactorGlowAlpha = g.overdrive ? 0.25 + Math.sin(t * 6) * 0.1 : 0.06 + g.reactorCharge * 0.002;
+      const rGlow = ctx.createRadialGradient(rcX, rcY, 3, rcX, rcY, reactorGlowSize);
+      rGlow.addColorStop(0, `rgba(255, 120, 20, ${reactorGlowAlpha * 1.5})`);
+      rGlow.addColorStop(0.3, `rgba(200, 50, 80, ${reactorGlowAlpha})`);
+      rGlow.addColorStop(0.7, `rgba(120, 30, 180, ${reactorGlowAlpha * 0.5})`);
       rGlow.addColorStop(1, 'transparent');
       ctx.fillStyle = rGlow;
       ctx.fillRect(rcX - reactorGlowSize, rcY - reactorGlowSize, reactorGlowSize * 2, reactorGlowSize * 2);
 
-      // Flipper glow
-      const fGlow = ctx.createRadialGradient(TW / 2, fY, 10, TW / 2, fY, 100);
-      fGlow.addColorStop(0, 'rgba(0, 229, 255, 0.05)');
+      // ── Flipper area glow ──
+      const fGlow = ctx.createRadialGradient(TW / 2, fY, 10, TW / 2, fY, 120);
+      fGlow.addColorStop(0, 'rgba(255, 0, 110, 0.04)');
+      fGlow.addColorStop(0.5, 'rgba(0, 100, 255, 0.02)');
       fGlow.addColorStop(1, 'transparent');
       ctx.fillStyle = fGlow;
-      ctx.fillRect(0, TH - 200, TW, 200);
+      ctx.fillRect(0, TH - 220, TW, 220);
 
-      // ── Lightning ──
+      // ── Lightning flash ──
       if (g.lightningFlash > 0) {
-        ctx.fillStyle = `rgba(200, 220, 255, ${g.lightningFlash * 0.12})`;
+        ctx.fillStyle = `rgba(180, 200, 255, ${g.lightningFlash * 0.15})`;
         ctx.fillRect(0, 0, TW, TH);
         g.lightningFlash *= 0.88;
         if (g.lightningFlash < 0.03) g.lightningFlash = 0;
       }
 
-      // ── Neon grid ──
-      ctx.globalAlpha = 0.015 + Math.sin(t * 0.5) * 0.003;
-      ctx.strokeStyle = '#7c3aed';
-      ctx.lineWidth = 0.5;
-      for (let x = 0; x < TW; x += 35) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, TH); ctx.stroke(); }
-      for (let y = 0; y < TH; y += 35) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(TW, y); ctx.stroke(); }
-      ctx.globalAlpha = 1;
-
-      // ── Houston Skyline (top) ──
+      // ── Houston Skyline (mid-upper, richer) ──
+      const skyBaseY = 130;
       const bldgs = [
-        { x: 25, h: 70 }, { x: 55, h: 55 }, { x: 80, h: 82 }, { x: 110, h: 48 },
-        { x: 140, h: 65 }, { x: 165, h: 40 }, { x: 195, h: 88 }, { x: 220, h: 60 },
-        { x: 250, h: 72 }, { x: 280, h: 50 }, { x: 310, h: 78 }, { x: 345, h: 58 },
+        { x: 30, w: 22, h: 75 }, { x: 58, w: 18, h: 55 }, { x: 82, w: 26, h: 90 }, { x: 115, w: 20, h: 50 },
+        { x: 142, w: 24, h: 70 }, { x: 170, w: 16, h: 42 }, { x: 195, w: 30, h: 100 }, { x: 228, w: 22, h: 65 },
+        { x: 258, w: 20, h: 80 }, { x: 285, w: 18, h: 52 }, { x: 310, w: 26, h: 85 }, { x: 345, w: 22, h: 60 },
+        { x: 375, w: 18, h: 70 }, { x: 400, w: 24, h: 55 },
       ];
+      // Skyline glow behind buildings
+      const skyGlow = ctx.createLinearGradient(0, skyBaseY - 100, 0, skyBaseY + 10);
+      skyGlow.addColorStop(0, 'rgba(0, 100, 200, 0.08)');
+      skyGlow.addColorStop(0.5, 'rgba(100, 0, 200, 0.06)');
+      skyGlow.addColorStop(1, 'transparent');
+      ctx.fillStyle = skyGlow;
+      ctx.fillRect(0, skyBaseY - 100, TW, 110);
+
       ctx.save();
       for (let bi = 0; bi < bldgs.length; bi++) {
         const b = bldgs[bi];
-        const lit = g.buildingLit[bi];
-        const baseAlpha = lit ? 0.2 + Math.sin(t * 3 + bi) * 0.05 : 0.04;
-        ctx.fillStyle = lit ? `rgba(0, 229, 255, ${baseAlpha})` : `rgba(100, 100, 140, ${baseAlpha})`;
-        ctx.fillRect(b.x - 9, 90 - b.h + 40, 18, b.h);
-        // Windows
-        const wAlpha = lit ? 0.5 : 0.08;
-        ctx.fillStyle = `rgba(0, 229, 255, ${wAlpha})`;
-        for (let wy = 90 - b.h + 46; wy < 90 + 34; wy += 7) {
-          ctx.fillRect(b.x - 5, wy, 2, 2);
-          ctx.fillRect(b.x + 2, wy, 2, 2);
-        }
-        // Glow if lit
+        const lit = g.buildingLit[bi % 12];
+        const bx = b.x - b.w / 2;
+        const by = skyBaseY - b.h;
+        // Building body
+        const bGrad = ctx.createLinearGradient(bx, by, bx, skyBaseY);
         if (lit) {
-          ctx.shadowColor = '#00e5ff';
-          ctx.shadowBlur = 8;
-          ctx.fillStyle = 'rgba(0, 229, 255, 0.03)';
-          ctx.fillRect(b.x - 12, 90 - b.h + 35, 24, b.h + 10);
+          bGrad.addColorStop(0, `rgba(0, 180, 255, ${0.15 + Math.sin(t * 2 + bi) * 0.05})`);
+          bGrad.addColorStop(1, `rgba(80, 0, 200, 0.08)`);
+        } else {
+          bGrad.addColorStop(0, 'rgba(30, 25, 60, 0.5)');
+          bGrad.addColorStop(1, 'rgba(15, 10, 30, 0.3)');
+        }
+        ctx.fillStyle = bGrad;
+        ctx.fillRect(bx, by, b.w, b.h);
+        // Building outline
+        ctx.strokeStyle = lit ? 'rgba(0, 200, 255, 0.3)' : 'rgba(60, 50, 100, 0.3)';
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(bx, by, b.w, b.h);
+        // Windows (2 columns)
+        const wc = lit ? 'rgba(255, 200, 50, 0.7)' : 'rgba(80, 80, 120, 0.2)';
+        ctx.fillStyle = wc;
+        const cols = Math.max(2, Math.floor(b.w / 8));
+        for (let wy = by + 5; wy < skyBaseY - 4; wy += 6) {
+          for (let wx = 0; wx < cols; wx++) {
+            if (Math.random() > (lit ? 0.2 : 0.6)) {
+              ctx.fillRect(bx + 3 + wx * (b.w - 6) / cols, wy, 2.5, 2.5);
+            }
+          }
+        }
+        // Glow halo for lit buildings
+        if (lit) {
+          ctx.shadowColor = '#00ccff';
+          ctx.shadowBlur = 12;
+          ctx.fillStyle = 'rgba(0, 200, 255, 0.015)';
+          ctx.fillRect(bx - 5, by - 5, b.w + 10, b.h + 10);
           ctx.shadowBlur = 0;
         }
       }
       ctx.restore();
 
-      // ── Ball trail (plasma) ──
+      // ── Ball trail (plasma, brighter) ──
       if (g.currentBall && g.launched) {
         g.trail.push({ x: g.currentBall.position.x, y: g.currentBall.position.y, age: 0 });
-        if (g.trail.length > 25) g.trail.shift();
+        if (g.trail.length > 30) g.trail.shift();
       }
       for (let i = g.trail.length - 1; i >= 0; i--) {
         const pt = g.trail[i];
         pt.age++;
-        if (pt.age > 25) { g.trail.splice(i, 1); continue; }
-        const a = 1 - pt.age / 25;
-        const s = BALL_R * a * 0.7;
-        const trailGrad = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, s + 3);
-        trailGrad.addColorStop(0, `rgba(255, 0, 255, ${a * 0.35})`);
-        trailGrad.addColorStop(1, `rgba(168, 85, 247, 0)`);
+        if (pt.age > 30) { g.trail.splice(i, 1); continue; }
+        const a = 1 - pt.age / 30;
+        const s = BALL_R * a;
+        const trailGrad = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, s + 5);
+        trailGrad.addColorStop(0, `rgba(100, 150, 255, ${a * 0.5})`);
+        trailGrad.addColorStop(0.5, `rgba(150, 50, 255, ${a * 0.25})`);
+        trailGrad.addColorStop(1, 'transparent');
         ctx.fillStyle = trailGrad;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, s + 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, s + 5, 0, Math.PI * 2); ctx.fill();
       }
 
       // ── Particles ──
@@ -683,10 +735,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         const a = p.life / p.maxLife;
         ctx.fillStyle = p.color.replace(/[\d.]+\)$/, `${a})`);
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 3;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * a, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.shadowBlur = 4;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size * a, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
       }
 
@@ -699,191 +749,272 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.rotate(body.angle);
 
         if (body.label === 'ball') {
-          // Plasma ball
+          // Outer glow rings
           for (let r = 3; r >= 1; r--) {
-            ctx.fillStyle = `rgba(255, 0, 255, ${0.04 * r})`;
-            ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(100, 150, 255, ${0.03 * r})`;
+            ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 7, 0, Math.PI * 2); ctx.fill();
           }
-          const bg = ctx.createRadialGradient(-2, -2, 1, 0, 0, BALL_R);
+          // Chrome ball with bright specular
+          const bg = ctx.createRadialGradient(-2, -3, 1, 0, 0, BALL_R);
           bg.addColorStop(0, '#ffffff');
-          bg.addColorStop(0.25, '#ff88ff');
-          bg.addColorStop(0.6, '#cc00cc');
-          bg.addColorStop(1, '#550055');
-          ctx.shadowColor = '#ff00ff';
-          ctx.shadowBlur = 28;
+          bg.addColorStop(0.2, '#cce0ff');
+          bg.addColorStop(0.5, '#4488ff');
+          bg.addColorStop(0.8, '#1133aa');
+          bg.addColorStop(1, '#0a0a40');
+          ctx.shadowColor = '#4488ff';
+          ctx.shadowBlur = 30;
           ctx.fillStyle = bg;
           ctx.beginPath(); ctx.arc(0, 0, BALL_R, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
+          // Specular highlight
           ctx.fillStyle = 'rgba(255,255,255,0.9)';
-          ctx.beginPath(); ctx.arc(-2, -2, 2, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = 'rgba(255,0,255,0.5)';
-          ctx.lineWidth = 0.8;
-          ctx.beginPath(); ctx.arc(0, 0, BALL_R + 1, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(-2, -2, 2.2, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.3)';
+          ctx.beginPath(); ctx.arc(1.5, 1, 1, 0, Math.PI * 2); ctx.fill();
+          // Chrome rim
+          ctx.strokeStyle = 'rgba(100,180,255,0.6)';
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(0, 0, BALL_R + 0.5, 0, Math.PI * 2); ctx.stroke();
+
         } else if (body.label.startsWith('bumper_')) {
           const flashing = g.bumperFlash.has(body.label) && Date.now() < g.bumperFlash.get(body.label)!;
-          ctx.shadowColor = flashing ? '#fff' : C.bumperStroke;
-          ctx.shadowBlur = flashing ? 40 : 14;
-          const bg = ctx.createRadialGradient(0, 0, 2, 0, 0, BUMPER_R);
-          bg.addColorStop(0, flashing ? '#fff' : '#c084fc');
-          bg.addColorStop(0.5, flashing ? '#e879f9' : '#7c3aed');
-          bg.addColorStop(1, flashing ? '#a855f7' : '#4c1d95');
-          ctx.fillStyle = bg;
+          // Bumper base (metallic cylinder look)
+          const bBase = ctx.createRadialGradient(0, -2, 2, 0, 2, BUMPER_R);
+          bBase.addColorStop(0, flashing ? '#fff' : '#8888cc');
+          bBase.addColorStop(0.3, flashing ? '#ff8844' : '#4444aa');
+          bBase.addColorStop(0.7, flashing ? '#cc4400' : '#222266');
+          bBase.addColorStop(1, flashing ? '#881100' : '#111133');
+          ctx.shadowColor = flashing ? '#ff6600' : '#6644cc';
+          ctx.shadowBlur = flashing ? 40 : 16;
+          ctx.fillStyle = bBase;
           ctx.beginPath(); ctx.arc(0, 0, BUMPER_R, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.strokeStyle = flashing ? '#fff' : C.bumperStroke;
-          ctx.lineWidth = 2.5; ctx.stroke();
-          ctx.strokeStyle = `rgba(232,121,249,${flashing ? 1 : 0.35})`;
+          // Chrome ring
+          ctx.strokeStyle = flashing ? '#ffaa44' : '#6666bb';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(0, 0, BUMPER_R, 0, Math.PI * 2); ctx.stroke();
+          // Inner ring
+          ctx.strokeStyle = flashing ? 'rgba(255,200,100,0.8)' : 'rgba(100,100,180,0.4)';
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.arc(0, 0, BUMPER_R - 5, 0, Math.PI * 2); ctx.stroke();
+          // Center gem (glowing orange/red like reference)
+          const gemGrad = ctx.createRadialGradient(0, -1, 0, 0, 0, 5);
+          gemGrad.addColorStop(0, flashing ? '#fff' : '#ff8844');
+          gemGrad.addColorStop(0.6, flashing ? '#ff6600' : '#cc4400');
+          gemGrad.addColorStop(1, flashing ? '#cc2200' : '#661100');
+          ctx.fillStyle = gemGrad;
+          ctx.shadowColor = '#ff6600';
+          ctx.shadowBlur = flashing ? 15 : 5;
+          ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          // Score text
           ctx.fillStyle = '#fff';
-          ctx.font = 'bold 8px monospace';
+          ctx.font = 'bold 7px monospace';
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText('100', 0, 1);
+          ctx.globalAlpha = 0.7;
+          ctx.fillText('100', 0, -BUMPER_R - 5);
+          ctx.globalAlpha = 1;
+
         } else if (body.label === 'leftFlipper' || body.label === 'rightFlipper') {
           const up = body.label === 'leftFlipper' ? g.leftUp : g.rightUp;
-          const fg = ctx.createLinearGradient(-FW / 2, 0, FW / 2, 0);
-          fg.addColorStop(0, up ? '#00ffff' : '#007788');
-          fg.addColorStop(0.5, up ? '#66ffff' : '#00aacc');
-          fg.addColorStop(1, up ? '#00dddd' : '#005566');
-          ctx.shadowColor = '#00e5ff';
-          ctx.shadowBlur = up ? 22 : 6;
+          const isLeft = body.label === 'leftFlipper';
+          // Metallic chrome flipper
+          const fg = ctx.createLinearGradient(-FW / 2, -FH / 2, FW / 2, FH / 2);
+          fg.addColorStop(0, up ? '#ff66aa' : '#884466');
+          fg.addColorStop(0.3, up ? '#ff88cc' : '#aa5577');
+          fg.addColorStop(0.5, up ? '#ffaadd' : '#cc7799');
+          fg.addColorStop(0.7, up ? '#ff88cc' : '#aa5577');
+          fg.addColorStop(1, up ? '#ff4488' : '#663355');
+          ctx.shadowColor = '#ff0066';
+          ctx.shadowBlur = up ? 25 : 8;
           ctx.fillStyle = fg;
           ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 6); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.fillStyle = `rgba(255,255,255,${up ? 0.3 : 0.08})`;
+          // Top highlight
+          ctx.fillStyle = `rgba(255,255,255,${up ? 0.35 : 0.1})`;
           ctx.beginPath(); ctx.roundRect(-FW / 2 + 3, -FH / 2 + 1, FW - 6, 3, 2); ctx.fill();
-          ctx.strokeStyle = `rgba(0,229,255,${up ? 0.8 : 0.3})`;
+          // Outline
+          ctx.strokeStyle = `rgba(255,100,180,${up ? 0.9 : 0.4})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 6); ctx.stroke();
+          // Pivot joint indicator
+          const pivotX = isLeft ? -FW / 2 + 7 : FW / 2 - 7;
+          ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.4)';
+          ctx.beginPath(); ctx.arc(pivotX, 0, 3, 0, Math.PI * 2); ctx.fill();
+
         } else if (body.label === 'wall' || body.label === 'orbit_wall' || body.label === 'ramp_guide') {
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.fillStyle = '#1a1a30';
+          // Metallic wall fill
+          const wallGrad = ctx.createLinearGradient(verts[0].x, verts[0].y, verts[verts.length - 1].x, verts[verts.length - 1].y);
+          wallGrad.addColorStop(0, '#1e1a3a');
+          wallGrad.addColorStop(0.5, '#2a2650');
+          wallGrad.addColorStop(1, '#1e1a3a');
+          ctx.fillStyle = wallGrad;
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
           ctx.closePath(); ctx.fill();
-          ctx.shadowColor = body.label === 'orbit_wall' ? '#7c3aed' : '#00e5ff';
-          ctx.shadowBlur = 3;
+          // Neon edge
+          const edgeColor = body.label === 'orbit_wall' ? '#7c3aed' : '#3355aa';
+          ctx.shadowColor = edgeColor;
+          ctx.shadowBlur = 4;
           ctx.strokeStyle = body.label === 'orbit_wall'
-            ? `rgba(124, 58, 237, ${0.3 + Math.sin(t * 1.5 + body.position.y * 0.02) * 0.1})`
-            : `rgba(0, 229, 255, ${0.2 + Math.sin(t * 2 + body.position.x * 0.03) * 0.08})`;
+            ? `rgba(140, 80, 255, ${0.4 + Math.sin(t * 1.5 + body.position.y * 0.02) * 0.15})`
+            : `rgba(60, 100, 200, ${0.25 + Math.sin(t * 2 + body.position.x * 0.03) * 0.1})`;
           ctx.lineWidth = 1.5; ctx.stroke();
           ctx.shadowBlur = 0;
+
         } else if (body.label === 'slingshot') {
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.fillStyle = '#d97706';
-          ctx.shadowColor = '#facc15';
-          ctx.shadowBlur = 10;
+          // Metallic slingshot with pink/magenta glow like reference
+          const slGrad = ctx.createLinearGradient(verts[0].x, verts[0].y, verts[2]?.x || 0, verts[2]?.y || 0);
+          slGrad.addColorStop(0, '#aa3366');
+          slGrad.addColorStop(0.5, '#cc4488');
+          slGrad.addColorStop(1, '#882255');
+          ctx.fillStyle = slGrad;
+          ctx.shadowColor = '#ff0088';
+          ctx.shadowBlur = 12;
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
           ctx.closePath(); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+          ctx.strokeStyle = 'rgba(255,150,200,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+
         } else if (body.label.startsWith('ramp_left') || body.label.startsWith('ramp_right')) {
           if (!body.label.includes('hit') && !body.label.includes('guide')) {
             const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
             const isLeft = body.label.includes('left');
-            ctx.shadowColor = isLeft ? C.rampCyan : C.pink;
-            ctx.shadowBlur = 8;
-            ctx.strokeStyle = isLeft ? C.rampCyan : C.pink;
-            ctx.lineWidth = 3;
+            // Ramp rail glow - cyan for left, orange for right (like reference)
+            const rampColor1 = isLeft ? '#00ccff' : '#ff8800';
+            const rampColor2 = isLeft ? 'rgba(0,200,255,0.3)' : 'rgba(255,140,0,0.3)';
+            ctx.shadowColor = rampColor1;
+            ctx.shadowBlur = 10;
+            ctx.strokeStyle = rampColor1;
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
             ctx.moveTo(verts[0].x, verts[0].y);
             for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
             ctx.closePath(); ctx.stroke();
             ctx.shadowBlur = 0;
-            ctx.setLineDash([5, 8]);
-            ctx.lineDashOffset = -t * 35;
-            ctx.strokeStyle = isLeft ? 'rgba(34,211,238,0.35)' : 'rgba(255,0,110,0.35)';
-            ctx.lineWidth = 1; ctx.stroke();
+            // Animated energy flow
+            ctx.setLineDash([4, 10]);
+            ctx.lineDashOffset = -t * 40;
+            ctx.strokeStyle = rampColor2;
+            ctx.lineWidth = 1.5; ctx.stroke();
             ctx.setLineDash([]);
           }
+
         } else if (body.label.startsWith('cca_')) {
           const idx = parseInt(body.label.split('_')[1]);
           const lit = g.ccaLanes[idx];
+          // Glowing letter box (like reference)
           if (lit) {
-            ctx.shadowColor = C.target; ctx.shadowBlur = 18;
-            const ig = ctx.createRadialGradient(0, 0, 0, 0, 0, 10);
-            ig.addColorStop(0, '#fff'); ig.addColorStop(0.4, '#00e5ff'); ig.addColorStop(1, 'rgba(0,229,255,0.2)');
-            ctx.fillStyle = ig;
+            ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 22;
+            ctx.fillStyle = '#00ccff';
+            ctx.beginPath(); ctx.roundRect(-8, -12, 16, 24, 3); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#003355';
           } else {
-            ctx.fillStyle = `rgba(0,229,255,${0.08 + Math.sin(t * 2 + idx) * 0.04})`;
+            ctx.fillStyle = `rgba(30, 40, 80, ${0.6 + Math.sin(t * 2 + idx) * 0.1})`;
+            ctx.beginPath(); ctx.roundRect(-8, -12, 16, 24, 3); ctx.fill();
+            ctx.strokeStyle = 'rgba(0, 150, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(-8, -12, 16, 24, 3); ctx.stroke();
+            ctx.fillStyle = 'rgba(200,220,255,0.5)';
           }
-          ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
-          ctx.shadowBlur = 0;
-          ctx.strokeStyle = lit ? '#00e5ff' : 'rgba(0,229,255,0.25)';
-          ctx.lineWidth = 1.5; ctx.stroke();
-          ctx.fillStyle = lit ? '#fff' : 'rgba(255,255,255,0.4)';
-          ctx.font = `bold ${lit ? 10 : 8}px monospace`;
+          ctx.font = `bold ${lit ? 12 : 10}px monospace`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText(['C', 'C', 'A'][idx], 0, 1);
+
         } else if (body.label.startsWith('cyber_')) {
           const idx = parseInt(body.label.split('_')[1]);
           const hit = g.cyberTargets[idx];
           const isNext = idx === g.cyberIndex;
-          const pulse = isNext ? Math.sin(t * 5) * 0.3 + 0.7 : 0.3;
-          ctx.fillStyle = hit ? '#00e5ff' : `rgba(0, 229, 255, ${pulse})`;
-          if (hit) { ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 12; }
-          else if (isNext) { ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 6; }
-          ctx.beginPath(); ctx.roundRect(-3, -11, 6, 22, 2); ctx.fill();
+          // CYBER target blocks (like reference letter blocks)
+          if (hit) {
+            ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 14;
+            ctx.fillStyle = '#00dd66';
+          } else if (isNext) {
+            ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 8;
+            ctx.fillStyle = `rgba(255, 170, 0, ${0.5 + Math.sin(t * 5) * 0.3})`;
+          } else {
+            ctx.fillStyle = 'rgba(40, 40, 80, 0.6)';
+          }
+          ctx.beginPath(); ctx.roundRect(-7, -11, 14, 22, 2); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.strokeStyle = hit ? '#00e5ff' : 'rgba(0,229,255,0.4)';
-          ctx.lineWidth = 1; ctx.stroke();
-          ctx.fillStyle = hit ? '#fff' : 'rgba(255,255,255,0.6)';
-          ctx.font = 'bold 7px monospace';
+          ctx.strokeStyle = hit ? '#00ff88' : isNext ? '#ffaa00' : 'rgba(100,100,160,0.4)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.roundRect(-7, -11, 14, 22, 2); ctx.stroke();
+          ctx.fillStyle = hit ? '#003322' : isNext ? '#442200' : 'rgba(200,200,220,0.5)';
+          ctx.font = 'bold 9px monospace';
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText('CYBER'[idx], 0, 1);
+
         } else if (body.label === 'spinner') {
           ctx.save();
           ctx.rotate((g.spinnerAngle * Math.PI) / 180);
-          ctx.shadowColor = C.rampCyan;
-          ctx.shadowBlur = g.spinnerSpeed > 2 ? 18 : 5;
-          ctx.strokeStyle = C.rampCyan; ctx.lineWidth = 3;
+          ctx.shadowColor = '#00ccff';
+          ctx.shadowBlur = g.spinnerSpeed > 2 ? 20 : 6;
+          ctx.strokeStyle = '#00ccff'; ctx.lineWidth = 3;
           ctx.beginPath(); ctx.moveTo(-18, 0); ctx.lineTo(18, 0); ctx.stroke();
-          ctx.strokeStyle = 'rgba(34,211,238,0.4)'; ctx.lineWidth = 1.5;
+          ctx.strokeStyle = 'rgba(0,200,255,0.3)'; ctx.lineWidth = 1.5;
           ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
           ctx.shadowBlur = 0;
           ctx.restore();
+
         } else if (body.label === 'kickback') {
           const active = g.kickbackActive;
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.fillStyle = active ? C.pink : 'rgba(255,0,110,0.2)';
-          ctx.shadowColor = C.pink;
-          ctx.shadowBlur = active ? 14 : 3;
+          ctx.fillStyle = active ? '#ff0066' : 'rgba(100,30,60,0.3)';
+          ctx.shadowColor = '#ff0066';
+          ctx.shadowBlur = active ? 16 : 3;
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
           ctx.closePath(); ctx.fill();
           ctx.shadowBlur = 0;
           if (active) {
-            ctx.fillStyle = `rgba(255,0,110,${Math.sin(t * 4) * 0.3 + 0.7})`;
+            ctx.fillStyle = `rgba(255,100,180,${Math.sin(t * 4) * 0.3 + 0.7})`;
             ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
             ctx.fillText('▲', 0, 0);
           }
+
         } else if (body.label === 'reactor_core') {
-          // Reactor core visual
+          // Glowing energy core (orange/red/gold like reference)
           const charge = g.reactorCharge / 100;
-          const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
-          coreGrad.addColorStop(0, g.overdrive ? '#fff' : `rgba(168,85,247,${0.3 + charge * 0.7})`);
-          coreGrad.addColorStop(0.5, g.overdrive ? '#a855f7' : `rgba(124,58,237,${0.2 + charge * 0.5})`);
-          coreGrad.addColorStop(1, 'transparent');
-          ctx.fillStyle = coreGrad;
-          ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
-          // Pulsing rings
-          if (g.overdrive) {
-            for (let r = 0; r < 3; r++) {
-              const ringR = 15 + r * 8 + Math.sin(t * 8 + r * 2) * 3;
-              ctx.strokeStyle = `rgba(168,85,247,${0.3 - r * 0.08})`;
-              ctx.lineWidth = 1;
-              ctx.beginPath(); ctx.arc(0, 0, ringR, 0, Math.PI * 2); ctx.stroke();
-            }
+          // Outer energy rings
+          for (let r = 0; r < 3; r++) {
+            const ringR = 18 + r * 10 + Math.sin(t * 4 + r * 2) * 3;
+            const ringAlpha = g.overdrive ? 0.3 : 0.1 + charge * 0.1;
+            ctx.strokeStyle = `rgba(255, ${120 + r * 40}, 0, ${ringAlpha - r * 0.03})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(0, 0, ringR, 0, Math.PI * 2); ctx.stroke();
           }
-          // Charge indicator ring
-          ctx.strokeStyle = `rgba(168,85,247,${0.4 + charge * 0.4})`;
-          ctx.lineWidth = 2;
+          // Core gradient (bright orange center)
+          const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 14);
+          if (g.overdrive) {
+            coreGrad.addColorStop(0, '#ffffff');
+            coreGrad.addColorStop(0.2, '#ffdd44');
+            coreGrad.addColorStop(0.5, '#ff6600');
+            coreGrad.addColorStop(0.8, '#cc2200');
+            coreGrad.addColorStop(1, 'rgba(150,20,0,0.3)');
+          } else {
+            coreGrad.addColorStop(0, `rgba(255,200,100,${0.3 + charge * 0.7})`);
+            coreGrad.addColorStop(0.4, `rgba(255,100,20,${0.2 + charge * 0.6})`);
+            coreGrad.addColorStop(0.8, `rgba(180,30,0,${0.1 + charge * 0.3})`);
+            coreGrad.addColorStop(1, 'transparent');
+          }
+          ctx.shadowColor = g.overdrive ? '#ff8800' : '#ff4400';
+          ctx.shadowBlur = g.overdrive ? 35 : 10 + charge * 15;
+          ctx.fillStyle = coreGrad;
+          ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          // Charge indicator arc
+          ctx.strokeStyle = `rgba(255, 150, 0, ${0.5 + charge * 0.5})`;
+          ctx.lineWidth = 2.5;
           ctx.beginPath();
-          ctx.arc(0, 0, 14, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * charge));
+          ctx.arc(0, 0, 16, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * charge));
           ctx.stroke();
         }
 
@@ -910,37 +1041,41 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       // ── Labels ──
       ctx.save();
-      ctx.shadowColor = C.rampCyan; ctx.shadowBlur = 3;
-      ctx.fillStyle = C.rampCyan; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
-      ctx.globalAlpha = 0.65;
+      ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 4;
+      ctx.fillStyle = '#00ccff'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.75;
       ctx.translate(38, 370); ctx.rotate(-0.22);
-      ctx.fillText('DOWNTOWN', 0, 0); ctx.fillText('RUSH', 0, 9);
+      ctx.fillText('DOWNTOWN', 0, 0); ctx.fillText('RAMP', 0, 9);
       ctx.restore();
 
       ctx.save();
-      ctx.shadowColor = C.pink; ctx.shadowBlur = 3;
-      ctx.fillStyle = C.pink; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
-      ctx.globalAlpha = 0.65;
+      ctx.shadowColor = '#ff8800'; ctx.shadowBlur = 4;
+      ctx.fillStyle = '#ff8800'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.75;
       ctx.translate(TW - 65, 370); ctx.rotate(0.22);
       ctx.fillText('NEON', 0, 0); ctx.fillText('HIGHWAY', 0, 9);
       ctx.restore();
 
       // Reactor label
-      ctx.shadowColor = '#a855f7'; ctx.shadowBlur = 3;
-      ctx.fillStyle = '#a855f7'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
-      ctx.globalAlpha = 0.5 + (g.overdrive ? 0.4 : g.spinnerSpeed > 0 ? 0.2 : 0);
+      ctx.shadowColor = '#ff6600'; ctx.shadowBlur = 4;
+      ctx.fillStyle = '#ff8844'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.6 + (g.overdrive ? 0.4 : g.spinnerSpeed > 0 ? 0.2 : 0);
       ctx.fillText('REACTOR', rcX, rcY + 50);
       ctx.fillText('CORE', rcX, rcY + 59);
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;
 
       // CYBER label above targets
-      ctx.fillStyle = 'rgba(0,229,255,0.3)'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+      ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 3;
+      ctx.fillStyle = 'rgba(255,170,0,0.5)'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
       ctx.fillText('▼ CYBER TARGETS ▼', TW / 2, cyberY - 22);
+      ctx.shadowBlur = 0;
 
       // Orbit labels
-      ctx.fillStyle = 'rgba(124,58,237,0.4)'; ctx.font = 'bold 6px monospace';
+      ctx.shadowColor = '#6644cc'; ctx.shadowBlur = 3;
+      ctx.fillStyle = 'rgba(140,100,255,0.5)'; ctx.font = 'bold 6px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('ORBIT', 30, 155); ctx.fillText('ORBIT', TW - 58, 155);
+      ctx.fillText('← ORBIT', 30, 155); ctx.fillText('ORBIT →', TW - 58, 155);
+      ctx.shadowBlur = 0;
 
       // ── HUD overlays ──
       if (g.tilted) {
