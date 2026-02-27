@@ -531,14 +531,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.35);
       }
 
-      // Plunger
-      if (g.plungerCharging && !g.launched) {
-        g.plungerPower = Math.min(g.plungerPower + 0.018, 1);
-        setPlungerDisplay(g.plungerPower);
-        setIsCharging(true);
-      } else if (!g.plungerCharging && g.plungerPower === 0) {
-        if (f % 10 === 0) { setPlungerDisplay(0); setIsCharging(false); }
-      }
+      // Plunger - slider-based, no auto-charge needed
 
       // Spinner
       if (g.spinnerSpeed > 0) {
@@ -1186,7 +1179,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const g = G.current;
       if (e.key === 'ArrowLeft' || e.key === 'z' || e.key === 'Z') g.leftUp = false;
       if (e.key === 'ArrowRight' || e.key === '/' || e.key === 'm' || e.key === 'M') g.rightUp = false;
-      if ((e.key === ' ' || e.key === 'ArrowDown') && g.plungerCharging && g.currentBall && !g.launched) {
+      // Space now launches at current slider power
+      if ((e.key === ' ' || e.key === 'Enter') && g.currentBall && !g.launched) {
         const power = g.plungerPower;
         Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
         g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
@@ -1212,46 +1206,28 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     else G.current.rightUp = down;
   }, []);
 
-  const releasePlunger = useCallback(() => {
+  const launchBall = useCallback(() => {
     const g = G.current;
-    if (!g.plungerCharging || !g.currentBall || g.launched) return;
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + g.plungerPower * 0.028) });
+    if (!g.currentBall || g.launched) return;
+    const power = g.plungerPower;
+    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
     g.plungerCharging = false;
     g.plungerPower = 0;
     g.launched = true;
     setPlungerDisplay(0);
     setIsCharging(false);
-  }, []);
+    if (power > 0.65 && power < 0.82) showMsg('PERFECT LAUNCH!');
+  }, [showMsg]);
 
-  const plungerTouch = useCallback((down: boolean) => {
+  const handleSliderChange = useCallback((value: number) => {
     const g = G.current;
-    if (down && !g.launched && g.currentBall) {
-      g.plungerCharging = true;
-      setIsCharging(true);
-      return;
-    }
-
-    if (!down) {
-      releasePlunger();
-    }
-  }, [releasePlunger]);
-
-  useEffect(() => {
-    if (!isCharging) return;
-
-    const forceRelease = () => plungerTouch(false);
-    window.addEventListener('pointerup', forceRelease, { passive: true });
-    window.addEventListener('mouseup', forceRelease, { passive: true });
-    window.addEventListener('touchend', forceRelease, { passive: true });
-    window.addEventListener('blur', forceRelease);
-
-    return () => {
-      window.removeEventListener('pointerup', forceRelease);
-      window.removeEventListener('mouseup', forceRelease);
-      window.removeEventListener('touchend', forceRelease);
-      window.removeEventListener('blur', forceRelease);
-    };
-  }, [isCharging, plungerTouch]);
+    if (g.launched || g.gameOver) return;
+    const clamped = Math.max(0, Math.min(1, value));
+    g.plungerPower = clamped;
+    g.plungerCharging = clamped > 0;
+    setPlungerDisplay(clamped);
+    setIsCharging(clamped > 0);
+  }, []);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -1301,27 +1277,35 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           </div>
         </div>
 
-        {/* Launch power meter (always visible) */}
+        {/* Launch power slider (always visible) */}
         <div className="mt-2 p-2 rounded-lg border border-neon-pink/40 bg-black/40">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[9px] uppercase tracking-widest text-neon-pink font-bold">Launch Power</span>
             <span className="text-[11px] font-mono font-bold text-neon-pink">⚡ {Math.round(plungerDisplay * 100)}%</span>
           </div>
-          <div className="h-2.5 rounded-full bg-muted/20 overflow-hidden border border-neon-pink/20">
-            <div
-              className="h-full transition-all duration-75"
-              style={{
-                width: `${Math.max(plungerDisplay * 100, 2)}%`,
-                background: plungerDisplay < 0.5
-                  ? 'linear-gradient(to right, rgba(255,0,110,0.65), rgba(255,0,110,0.35))'
-                  : plungerDisplay < 0.8
-                    ? 'linear-gradient(to right, rgba(255,170,0,0.7), rgba(255,100,0,0.4))'
-                    : 'linear-gradient(to right, rgba(255,80,80,0.85), rgba(255,0,110,0.45))',
-                boxShadow: plungerDisplay > 0.5 ? `0 0 ${plungerDisplay * 18}px rgba(255,0,110,0.45)` : 'none',
-              }}
-            />
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(plungerDisplay * 100)}
+            onChange={(e) => handleSliderChange(parseInt(e.target.value) / 100)}
+            disabled={G.current.launched || gameOver}
+            className="w-full h-3 appearance-none rounded-full cursor-pointer accent-neon-pink"
+            style={{
+              background: `linear-gradient(to right, rgba(255,0,110,0.7) 0%, rgba(255,0,110,0.7) ${plungerDisplay * 100}%, rgba(255,255,255,0.1) ${plungerDisplay * 100}%)`,
+            }}
+          />
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-[9px] text-muted-foreground">Drag slider, then tap LAUNCH</p>
+            <div className="text-[8px] text-neon-cyan/50 font-mono">SKILL: 65-82%</div>
           </div>
-          <p className="text-[9px] text-muted-foreground mt-1">Hold ⬇ launch to charge, release to fire.</p>
+          <button
+            onClick={launchBall}
+            disabled={G.current.launched || gameOver || plungerDisplay === 0}
+            className="w-full mt-2 py-2.5 rounded-lg font-bold text-sm bg-neon-pink/20 border border-neon-pink/50 text-neon-pink active:bg-neon-pink/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            {G.current.launched ? '🎯 LAUNCHED' : '🚀 LAUNCH'}
+          </button>
         </div>
 
         {/* Mode indicators */}
@@ -1355,50 +1339,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           onMouseLeave={() => flipperTouch('left', false)}>◀ LEFT</button>
         <button
           type="button"
-          className="relative overflow-hidden border border-neon-pink/40 rounded-xl touch-none select-none"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            if (typeof e.currentTarget.setPointerCapture === 'function') {
-              try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
-            }
-            plungerTouch(true);
-          }}
-          onPointerUp={(e) => {
-            e.preventDefault();
-            plungerTouch(false);
-          }}
-          onPointerCancel={(e) => {
-            e.preventDefault();
-            plungerTouch(false);
-          }}
-          onLostPointerCapture={() => plungerTouch(false)}
-          onTouchStart={(e) => { e.preventDefault(); plungerTouch(true); }}
-          onTouchEnd={(e) => { e.preventDefault(); plungerTouch(false); }}
-          onTouchCancel={(e) => { e.preventDefault(); plungerTouch(false); }}
-          onMouseDown={() => plungerTouch(true)}
-          onMouseUp={() => plungerTouch(false)}
-          onMouseLeave={() => plungerTouch(false)}
+          className="border border-neon-pink/40 rounded-xl touch-none select-none bg-neon-pink/20 font-bold text-sm text-neon-pink active:bg-neon-pink/40 disabled:opacity-30 disabled:cursor-not-allowed"
+          onClick={launchBall}
+          disabled={G.current.launched || gameOver || plungerDisplay === 0}
         >
-          {/* Power meter fill */}
-          <div
-            className="absolute bottom-0 left-0 right-0 transition-[height] duration-75"
-            style={{
-              height: `${plungerDisplay * 100}%`,
-              background: plungerDisplay < 0.5
-                ? `linear-gradient(to top, rgba(255,0,110,0.5), rgba(255,0,110,0.2))`
-                : plungerDisplay < 0.8
-                  ? `linear-gradient(to top, rgba(255,170,0,0.6), rgba(255,100,0,0.2))`
-                  : `linear-gradient(to top, rgba(255,50,50,0.7), rgba(255,0,110,0.3))`,
-              boxShadow: plungerDisplay > 0.5 ? `0 0 ${plungerDisplay * 20}px rgba(255,0,110,0.4)` : 'none',
-            }}
-          />
-          {/* Skill zone marker */}
-          <div className="absolute left-1 right-1 border-t border-dashed border-neon-cyan/40" style={{ bottom: '72%' }} />
-          <div className="absolute right-1.5 text-[7px] text-neon-cyan/50 font-mono" style={{ bottom: '73%' }}>SKILL</div>
-          {/* Button label */}
-          <div className="relative z-10 py-5 text-center font-bold text-sm text-neon-pink">
-            {isCharging ? `⚡ ${Math.round(plungerDisplay * 100)}%` : G.current.launched ? '🎯 LAUNCH' : '⬇ HOLD'}
-          </div>
+          {G.current.launched ? '🎯 LAUNCHED' : `🚀 ${Math.round(plungerDisplay * 100)}%`}
         </button>
         <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-5 rounded-xl active:bg-neon-cyan/40 select-none text-sm touch-none"
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('right', true); }}
