@@ -90,7 +90,7 @@ export const CyberGamesSection: React.FC = () => {
         
         {/* Cyber Pinball - Image Card */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30" onClick={() => navigate('/games/cyber-pinball')}>
-          <img src={cyberPinballBanner} alt="Cyber Pinball" className="w-full h-[200px] object-cover" />
+          <img src={cyberPinballBanner} alt="Cyber Pinball" className="w-full h-[200px] object-contain bg-black" />
           <Badge className="absolute top-3 right-3 bg-neon-pink text-black font-bold text-xs">
             NEW
           </Badge>
