@@ -3,6 +3,31 @@ import Matter from 'matter-js';
 
 const { Engine, Runner, Bodies, Body, Composite, Events, Constraint, Vector } = Matter;
 
+// ── Numeric safety helpers ──
+const fin = (v: number): boolean => Number.isFinite(v);
+const safeN = (v: number, fallback = 0): number => fin(v) ? v : fallback;
+const safeClamp = (v: number, lo: number, hi: number): number => {
+  const n = safeN(v, lo);
+  return Math.max(lo, Math.min(hi, n));
+};
+const safeGrad = (
+  ctx: CanvasRenderingContext2D,
+  x0: number, y0: number, r0: number,
+  x1: number, y1: number, r1: number
+): CanvasGradient | null => {
+  const vals = [x0, y0, r0, x1, y1, r1];
+  if (!vals.every(fin)) return null;
+  if (r0 < 0 || r1 < 0) return null;
+  try { return ctx.createRadialGradient(x0, y0, r0, x1, y1, r1); } catch { return null; }
+};
+const safeLGrad = (
+  ctx: CanvasRenderingContext2D,
+  x0: number, y0: number, x1: number, y1: number
+): CanvasGradient | null => {
+  if (![x0, y0, x1, y1].every(fin)) return null;
+  try { return ctx.createLinearGradient(x0, y0, x1, y1); } catch { return null; }
+};
+
 // ── Table dimensions (wide-body) ──
 const TW = 440;
 const TH = 780;
@@ -505,6 +530,30 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const f = frame.current++;
       const t = f * 0.016;
 
+      // ── Ball recovery: detect invalid physics state ──
+      if (g.currentBall) {
+        const bp = g.currentBall.position;
+        const bv = g.currentBall.velocity;
+        if (!fin(bp.x) || !fin(bp.y) || !fin(bv.x) || !fin(bv.y)) {
+          // Remove broken ball, preserve game state
+          try { Composite.remove(engine.world, g.currentBall); } catch {}
+          g.currentBall = null;
+          g.launched = false;
+          g.trail = [];
+          if (!g.gameOver && g.balls > 0) {
+            setTimeout(() => spawnBall(), 800);
+          }
+        }
+      }
+      // Also check extra balls
+      for (let ei = g.extraBalls.length - 1; ei >= 0; ei--) {
+        const eb = g.extraBalls[ei];
+        if (!fin(eb.position.x) || !fin(eb.position.y)) {
+          try { Composite.remove(engine.world, eb); } catch {}
+          g.extraBalls.splice(ei, 1);
+        }
+      }
+
       // Timers
       if (g.combo > 0 && Date.now() > g.comboTimer) { g.combo = 0; setCombo(0); }
       if (g.overdrive && Date.now() > g.overdriveTimer) {
@@ -556,12 +605,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       }
 
       // ── Deep space background ──
-      const pfGrad = ctx.createRadialGradient(TW / 2, TH * 0.4, 30, TW / 2, TH * 0.4, TH * 0.8);
-      pfGrad.addColorStop(0, '#1a0a3a');
-      pfGrad.addColorStop(0.3, '#0d0628');
-      pfGrad.addColorStop(0.6, '#08041a');
-      pfGrad.addColorStop(1, '#030210');
-      ctx.fillStyle = pfGrad;
+      const pfGrad = safeGrad(ctx, TW / 2, TH * 0.4, 30, TW / 2, TH * 0.4, TH * 0.8);
+      if (pfGrad) {
+        pfGrad.addColorStop(0, '#1a0a3a');
+        pfGrad.addColorStop(0.3, '#0d0628');
+        pfGrad.addColorStop(0.6, '#08041a');
+        pfGrad.addColorStop(1, '#030210');
+        ctx.fillStyle = pfGrad;
+      } else {
+        ctx.fillStyle = '#0a0812';
+      }
       ctx.fillRect(0, 0, TW, TH);
 
       // ── Starfield ──
@@ -582,14 +635,18 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       }
 
       // ── Nebula glow patches ──
-      const nebula1 = ctx.createRadialGradient(TW * 0.3, TH * 0.5, 10, TW * 0.3, TH * 0.5, 150);
-      nebula1.addColorStop(0, 'rgba(100, 20, 180, 0.06)');
-      nebula1.addColorStop(1, 'transparent');
-      ctx.fillStyle = nebula1; ctx.fillRect(0, 0, TW, TH);
-      const nebula2 = ctx.createRadialGradient(TW * 0.7, TH * 0.3, 10, TW * 0.7, TH * 0.3, 120);
-      nebula2.addColorStop(0, 'rgba(0, 80, 200, 0.04)');
-      nebula2.addColorStop(1, 'transparent');
-      ctx.fillStyle = nebula2; ctx.fillRect(0, 0, TW, TH);
+      const nebula1 = safeGrad(ctx, TW * 0.3, TH * 0.5, 10, TW * 0.3, TH * 0.5, 150);
+      if (nebula1) {
+        nebula1.addColorStop(0, 'rgba(100, 20, 180, 0.06)');
+        nebula1.addColorStop(1, 'transparent');
+        ctx.fillStyle = nebula1; ctx.fillRect(0, 0, TW, TH);
+      }
+      const nebula2 = safeGrad(ctx, TW * 0.7, TH * 0.3, 10, TW * 0.7, TH * 0.3, 120);
+      if (nebula2) {
+        nebula2.addColorStop(0, 'rgba(0, 80, 200, 0.04)');
+        nebula2.addColorStop(1, 'transparent');
+        ctx.fillStyle = nebula2; ctx.fillRect(0, 0, TW, TH);
+      }
 
       // ── Rain (subtle) ──
       const rd = rain.current;
@@ -618,23 +675,27 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.shadowBlur = 0;
 
       // ── Reactor core ambient glow (orange/red like reference) ──
-      const reactorGlowSize = 90 + g.reactorCharge * 1.2;
-      const reactorGlowAlpha = g.overdrive ? 0.25 + Math.sin(t * 6) * 0.1 : 0.06 + g.reactorCharge * 0.002;
-      const rGlow = ctx.createRadialGradient(rcX, rcY, 3, rcX, rcY, reactorGlowSize);
-      rGlow.addColorStop(0, `rgba(255, 120, 20, ${reactorGlowAlpha * 1.5})`);
-      rGlow.addColorStop(0.3, `rgba(200, 50, 80, ${reactorGlowAlpha})`);
-      rGlow.addColorStop(0.7, `rgba(120, 30, 180, ${reactorGlowAlpha * 0.5})`);
-      rGlow.addColorStop(1, 'transparent');
-      ctx.fillStyle = rGlow;
-      ctx.fillRect(rcX - reactorGlowSize, rcY - reactorGlowSize, reactorGlowSize * 2, reactorGlowSize * 2);
+      const reactorGlowSize = safeN(90 + g.reactorCharge * 1.2, 90);
+      const reactorGlowAlpha = safeClamp(g.overdrive ? 0.25 + Math.sin(t * 6) * 0.1 : 0.06 + g.reactorCharge * 0.002, 0, 1);
+      const rGlow = safeGrad(ctx, rcX, rcY, 3, rcX, rcY, reactorGlowSize);
+      if (rGlow) {
+        rGlow.addColorStop(0, `rgba(255, 120, 20, ${reactorGlowAlpha * 1.5})`);
+        rGlow.addColorStop(0.3, `rgba(200, 50, 80, ${reactorGlowAlpha})`);
+        rGlow.addColorStop(0.7, `rgba(120, 30, 180, ${reactorGlowAlpha * 0.5})`);
+        rGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = rGlow;
+        ctx.fillRect(rcX - reactorGlowSize, rcY - reactorGlowSize, reactorGlowSize * 2, reactorGlowSize * 2);
+      }
 
       // ── Flipper area glow ──
-      const fGlow = ctx.createRadialGradient(TW / 2, fY, 10, TW / 2, fY, 120);
-      fGlow.addColorStop(0, 'rgba(255, 0, 110, 0.04)');
-      fGlow.addColorStop(0.5, 'rgba(0, 100, 255, 0.02)');
-      fGlow.addColorStop(1, 'transparent');
-      ctx.fillStyle = fGlow;
-      ctx.fillRect(0, TH - 220, TW, 220);
+      const fGlow = safeGrad(ctx, TW / 2, fY, 10, TW / 2, fY, 120);
+      if (fGlow) {
+        fGlow.addColorStop(0, 'rgba(255, 0, 110, 0.04)');
+        fGlow.addColorStop(0.5, 'rgba(0, 100, 255, 0.02)');
+        fGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = fGlow;
+        ctx.fillRect(0, TH - 220, TW, 220);
+      }
 
       // ── Lightning flash ──
       if (g.lightningFlash > 0) {
@@ -705,16 +766,20 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       // ── Ball trail (plasma, brighter) ──
       if (g.currentBall && g.launched) {
-        g.trail.push({ x: g.currentBall.position.x, y: g.currentBall.position.y, age: 0 });
-        if (g.trail.length > 30) g.trail.shift();
+        const tx = g.currentBall.position.x, ty = g.currentBall.position.y;
+        if (fin(tx) && fin(ty)) {
+          g.trail.push({ x: tx, y: ty, age: 0 });
+          if (g.trail.length > 30) g.trail.shift();
+        }
       }
       for (let i = g.trail.length - 1; i >= 0; i--) {
         const pt = g.trail[i];
         pt.age++;
-        if (pt.age > 30) { g.trail.splice(i, 1); continue; }
+        if (pt.age > 30 || !fin(pt.x) || !fin(pt.y)) { g.trail.splice(i, 1); continue; }
         const a = 1 - pt.age / 30;
-        const s = BALL_R * a;
-        const trailGrad = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, s + 5);
+        const s = Math.max(0, BALL_R * a);
+        const trailGrad = safeGrad(ctx, pt.x, pt.y, 0, pt.x, pt.y, s + 5);
+        if (!trailGrad) continue;
         trailGrad.addColorStop(0, `rgba(100, 150, 255, ${a * 0.5})`);
         trailGrad.addColorStop(0.5, `rgba(150, 50, 255, ${a * 0.25})`);
         trailGrad.addColorStop(1, 'transparent');
@@ -740,6 +805,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const bodies = Composite.allBodies(engine.world);
       for (const body of bodies) {
         if (body.label === 'drain') continue;
+        if (!fin(body.position.x) || !fin(body.position.y) || !fin(body.angle)) continue;
         ctx.save();
         ctx.translate(body.position.x, body.position.y);
         ctx.rotate(body.angle);
@@ -751,7 +817,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 7, 0, Math.PI * 2); ctx.fill();
           }
           // Chrome ball with bright specular
-          const bg = ctx.createRadialGradient(-2, -3, 1, 0, 0, BALL_R);
+          const bg = safeGrad(ctx, -2, -3, 1, 0, 0, BALL_R) || ctx.createRadialGradient(-2, -3, 1, 0, 0, BALL_R);
           bg.addColorStop(0, '#ffffff');
           bg.addColorStop(0.2, '#cce0ff');
           bg.addColorStop(0.5, '#4488ff');
@@ -775,7 +841,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         } else if (body.label.startsWith('bumper_')) {
           const flashing = g.bumperFlash.has(body.label) && Date.now() < g.bumperFlash.get(body.label)!;
           // Bumper base (metallic cylinder look)
-          const bBase = ctx.createRadialGradient(0, -2, 2, 0, 2, BUMPER_R);
+          const bBase = safeGrad(ctx, 0, -2, 2, 0, 2, BUMPER_R) || ctx.createRadialGradient(0, -2, 2, 0, 2, BUMPER_R);
           bBase.addColorStop(0, flashing ? '#fff' : '#8888cc');
           bBase.addColorStop(0.3, flashing ? '#ff8844' : '#4444aa');
           bBase.addColorStop(0.7, flashing ? '#cc4400' : '#222266');
@@ -794,7 +860,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.arc(0, 0, BUMPER_R - 5, 0, Math.PI * 2); ctx.stroke();
           // Center gem (glowing orange/red like reference)
-          const gemGrad = ctx.createRadialGradient(0, -1, 0, 0, 0, 5);
+          const gemGrad = safeGrad(ctx, 0, -1, 0, 0, 0, 5) || ctx.createRadialGradient(0, -1, 0, 0, 0, 5);
           gemGrad.addColorStop(0, flashing ? '#fff' : '#ff8844');
           gemGrad.addColorStop(0.6, flashing ? '#ff6600' : '#cc4400');
           gemGrad.addColorStop(1, flashing ? '#cc2200' : '#661100');
@@ -988,7 +1054,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             ctx.beginPath(); ctx.arc(0, 0, ringR, 0, Math.PI * 2); ctx.stroke();
           }
           // Core gradient (bright orange center)
-          const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 14);
+          const coreGrad = safeGrad(ctx, 0, 0, 0, 0, 0, 14) || ctx.createRadialGradient(0, 0, 0, 0, 0, 14);
           if (g.overdrive) {
             coreGrad.addColorStop(0, '#ffffff');
             coreGrad.addColorStop(0.2, '#ffdd44');
@@ -1184,7 +1250,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (e.key === 'ArrowRight' || e.key === '/' || e.key === 'm' || e.key === 'M') g.rightUp = false;
       // Space now launches at current slider power
       if ((e.key === ' ' || e.key === 'Enter') && g.currentBall && !g.launched) {
-        const power = g.plungerPower;
+        const power = safeClamp(g.plungerPower, 0, 1);
+        if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
         Body.setStatic(g.currentBall, false);
         Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
         g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
@@ -1213,7 +1280,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const launchBall = useCallback(() => {
     const g = G.current;
     if (!g.currentBall || g.launched) return;
-    const power = g.plungerPower;
+    const power = safeClamp(g.plungerPower, 0, 1);
+    if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
     // Make ball dynamic before launching
     Body.setStatic(g.currentBall, false);
     Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
