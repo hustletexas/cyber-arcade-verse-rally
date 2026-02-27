@@ -200,7 +200,7 @@ function buildBricks(level: number, cw: number): Brick[] {
 
 function makeBall(cx: number, py: number): Ball {
   const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.6;
-   const speed = 5;
+   const speed = 7;
    return { x: cx, y: py - BALL_RADIUS - 2, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, trail: [], pierceLeft: 0 };
 }
 
@@ -352,10 +352,18 @@ const PortalBreakerGame: React.FC = () => {
     };
     const onClick = () => {
       const s = stateRef.current;
+      // Tap to start on mobile
+      if (s.status === 'idle' || s.status === 'gameover') {
+        Object.assign(s, initState(BASE_WIDTH, BASE_HEIGHT));
+        s.activePowers = new Map();
+        s.status = 'running';
+        scoreSubmittedRef.current = false;
+        return;
+      }
       if (s.caughtBall) {
         // Release caught ball
         const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.4;
-        const sp = 4;
+        const sp = 7;
         s.caughtBall.vx = Math.cos(angle) * sp;
         s.caughtBall.vy = Math.sin(angle) * sp;
         s.caughtBall = null;
@@ -464,8 +472,8 @@ const PortalBreakerGame: React.FC = () => {
   };
 
   const ballSpeed = useCallback((level: number, destroyed: number) => {
-     const sp = 5 + (level - 1) * 0.3 + Math.floor(destroyed / 10) * 0.15;
-     return Math.min(sp, 9);
+     const sp = 7 + (level - 1) * 0.35 + Math.floor(destroyed / 10) * 0.15;
+     return Math.min(sp, 12);
   }, []);
 
   // ─── Power-up drop table ──────────────────────────────────────────
@@ -1012,31 +1020,104 @@ const PortalBreakerGame: React.FC = () => {
 
     // Balls
     s.balls.forEach(ball => {
+      const isFireball = hasPower(s, 'fireball', now);
       const isPlasmaActive = hasPower(s, 'plasma', now);
       const isPowerSurge = hasPower(s, 'powersurge', now);
+      const isPhase = hasPower(s, 'phase', now);
+      const isElectric = hasPower(s, 'laser', now);
+      const isSlow = hasPower(s, 'slow', now);
 
+      // Determine ball style
+      let ballColor = theme.orbColor;
+      let trailBase = theme.trailColor;
+      let glowColor = theme.orbColor;
+      let innerColor = '#fff';
+      let glowSize = BALL_RADIUS * 2;
+      let trailWidth = 0.8;
+
+      if (isFireball) {
+        ballColor = '#ff6600'; trailBase = 'rgba(255,100,0,'; glowColor = '#ff4400'; innerColor = '#ffdd44'; glowSize = BALL_RADIUS * 3.5; trailWidth = 1.2;
+      } else if (isPlasmaActive) {
+        ballColor = '#ff2244'; trailBase = 'rgba(255,34,68,'; glowColor = '#ff0033'; innerColor = '#ffaacc'; glowSize = BALL_RADIUS * 3; trailWidth = 1.0;
+      } else if (isElectric) {
+        ballColor = '#44aaff'; trailBase = 'rgba(68,170,255,'; glowColor = '#2288ff'; innerColor = '#ccefff'; glowSize = BALL_RADIUS * 3; trailWidth = 1.1;
+      } else if (isPowerSurge) {
+        ballColor = '#00ff88'; trailBase = 'rgba(0,255,136,'; glowColor = '#00dd66'; innerColor = '#aaffdd'; glowSize = BALL_RADIUS * 2.5; trailWidth = 1.0;
+      } else if (isPhase) {
+        ballColor = '#ec4899'; trailBase = 'rgba(236,72,153,'; glowColor = '#d946ef'; innerColor = '#ffd6f0'; glowSize = BALL_RADIUS * 2.5; trailWidth = 0.6;
+      } else if (isSlow) {
+        ballColor = '#a78bfa'; trailBase = 'rgba(167,139,250,'; glowColor = '#8b5cf6'; innerColor = '#e0d4ff'; glowSize = BALL_RADIUS * 2.2; trailWidth = 0.7;
+      }
+
+      // Trail
       ball.trail.forEach((t, i) => {
-        const alpha = (i / ball.trail.length) * 0.35;
-        const trailCol = isPlasmaActive ? 'rgba(255,68,68,' : isPowerSurge ? 'rgba(0,255,136,' : theme.trailColor;
-        ctx.fillStyle = trailCol + `${alpha})`;
+        const alpha = (i / ball.trail.length) * (isFireball ? 0.55 : 0.35);
+        ctx.fillStyle = trailBase + `${alpha})`;
         ctx.beginPath();
-        ctx.arc(t.x, t.y, BALL_RADIUS * (i / ball.trail.length) * 0.8, 0, Math.PI * 2);
+        ctx.arc(t.x, t.y, BALL_RADIUS * (i / ball.trail.length) * trailWidth, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      const orbCol = isPlasmaActive ? '#ff4444' : isPowerSurge ? '#00ff88' : theme.orbColor;
-      const orbGrad = ctx.createRadialGradient(ball.x, ball.y, 0, ball.x, ball.y, BALL_RADIUS * 2);
-      orbGrad.addColorStop(0, '#fff');
-      orbGrad.addColorStop(0.3, orbCol);
-      orbGrad.addColorStop(1, (isPlasmaActive ? 'rgba(255,68,68,' : isPowerSurge ? 'rgba(0,255,136,' : theme.trailColor) + '0)');
+      // Fireball: flickering flame particles
+      if (isFireball) {
+        for (let i = 0; i < 4; i++) {
+          const flicker = Math.sin(now * 0.02 + i * 1.5) * 4;
+          const fx = ball.x + (Math.random() - 0.5) * 10;
+          const fy = ball.y + (Math.random() - 0.5) * 10 + flicker;
+          const fr = Math.random() * 3 + 1;
+          ctx.globalAlpha = 0.5 + Math.random() * 0.3;
+          ctx.fillStyle = i % 2 === 0 ? '#ff8800' : '#ffcc00';
+          ctx.beginPath(); ctx.arc(fx, fy, fr, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // Electric: lightning arcs
+      if (isElectric) {
+        ctx.strokeStyle = 'rgba(100,200,255,0.7)';
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(ball.x, ball.y);
+          const ex = ball.x + (Math.random() - 0.5) * 24;
+          const ey = ball.y + (Math.random() - 0.5) * 24;
+          const mx = (ball.x + ex) / 2 + (Math.random() - 0.5) * 12;
+          const my = (ball.y + ey) / 2 + (Math.random() - 0.5) * 12;
+          ctx.quadraticCurveTo(mx, my, ex, ey);
+          ctx.stroke();
+        }
+      }
+
+      // Phase: pulsing ghost ring
+      if (isPhase) {
+        const pulse = 0.5 + Math.sin(now * 0.008) * 0.3;
+        ctx.globalAlpha = pulse;
+        ctx.strokeStyle = '#d946ef';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, BALL_RADIUS * 2.5 + Math.sin(now * 0.006) * 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // Glow
+      const orbGrad = ctx.createRadialGradient(ball.x, ball.y, 0, ball.x, ball.y, glowSize);
+      orbGrad.addColorStop(0, innerColor);
+      orbGrad.addColorStop(0.3, ballColor);
+      orbGrad.addColorStop(1, trailBase + '0)');
       ctx.fillStyle = orbGrad;
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, BALL_RADIUS * 2, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, glowSize, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#fff';
+
+      // Core
+      ctx.fillStyle = innerColor;
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = isFireball ? 18 : isElectric ? 14 : 8;
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
     });
 
     // Particles
