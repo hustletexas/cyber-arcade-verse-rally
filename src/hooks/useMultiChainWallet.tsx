@@ -1,4 +1,4 @@
-// Stellar-only multi-chain wallet hook (simplified)
+// Multi-chain wallet hook
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,8 +18,7 @@ export const useMultiChainWallet = () => {
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([]);
   const [primaryWallet, setPrimaryWallet] = useState<ConnectedWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  // Stellar is the only supported chain
-  const [activeChain] = useState<ChainType>('stellar');
+  const [activeChain, setActiveChain] = useState<ChainType>('stellar');
 
   // Check for existing wallet connections on load
   useEffect(() => {
@@ -34,17 +33,16 @@ export const useMultiChainWallet = () => {
       const storedWallets = localStorage.getItem('cyberCity_connectedWallets');
       if (storedWallets) {
         const parsed = JSON.parse(storedWallets);
-        // Only restore Stellar wallets
         for (const wallet of parsed) {
-          if (wallet.type === 'lobstr' || wallet.type === 'freighter') {
-            wallets.push({
-              type: wallet.type,
-              chain: 'stellar',
-              address: wallet.address,
-              isConnected: true,
-              symbol: 'XLM'
-            });
-          }
+          const chain = getChainForWallet(wallet.type);
+          const chainInfo = CHAINS[chain];
+          wallets.push({
+            type: wallet.type,
+            chain,
+            address: wallet.address,
+            isConnected: true,
+            symbol: chainInfo?.symbol || 'XLM'
+          });
         }
       }
     } catch (error) {
@@ -173,13 +171,16 @@ export const useMultiChainWallet = () => {
   }, [toast, user]);
 
   const switchChain = useCallback((chain: ChainType) => {
-    // No-op - only Stellar is supported
+    setActiveChain(chain);
   }, []);
 
   const getWalletIcon = (type: WalletType) => {
     switch (type) {
       case 'lobstr': return '🌟';
       case 'freighter': return '🚀';
+      case 'phantom': return '👻';
+      case 'hashpack': return '🔷';
+      case 'xaman': return '🔵';
       case 'created': return '💰';
       default: return '🔗';
     }
@@ -193,7 +194,7 @@ export const useMultiChainWallet = () => {
 
   const isWalletConnected = connectedWallets.length > 0;
   const hasMultipleWallets = connectedWallets.length > 1;
-  const hasMultipleChains = false; // Stellar only
+  const hasMultipleChains = new Set(connectedWallets.map(w => w.chain)).size > 1;
 
   return {
     connectedWallets,

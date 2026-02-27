@@ -1,11 +1,14 @@
-// Stellar-only wallet types
+// Multi-chain wallet types
 
-export type ChainType = 'stellar';
+export type ChainType = 'stellar' | 'solana' | 'hedera' | 'xrpl';
 
 export type WalletType = 
   | 'lobstr'
   | 'freighter'
   | 'hotwallet'
+  | 'phantom'
+  | 'hashpack'
+  | 'xaman'
   | 'created';
 
 export interface ChainInfo {
@@ -15,6 +18,7 @@ export interface ChainInfo {
   icon: string;
   color: string;
   logoUrl?: string;
+  usdcSupported?: boolean;
 }
 
 export interface WalletInfo {
@@ -44,7 +48,35 @@ export const CHAINS: Record<ChainType, ChainInfo> = {
     symbol: 'XLM',
     icon: '✦',
     color: 'rgb(20, 185, 255)',
-    logoUrl: '/images/wallets/stellar.png'
+    logoUrl: '/images/wallets/stellar.png',
+    usdcSupported: true
+  },
+  solana: {
+    id: 'solana',
+    name: 'Solana',
+    symbol: 'SOL',
+    icon: '◎',
+    color: 'rgb(153, 69, 255)',
+    logoUrl: '/images/wallets/solana.png',
+    usdcSupported: true
+  },
+  hedera: {
+    id: 'hedera',
+    name: 'Hedera',
+    symbol: 'HBAR',
+    icon: 'ℏ',
+    color: 'rgb(130, 71, 229)',
+    logoUrl: '/images/wallets/hedera.png',
+    usdcSupported: true
+  },
+  xrpl: {
+    id: 'xrpl',
+    name: 'XRPL',
+    symbol: 'XRP',
+    icon: '✕',
+    color: 'rgb(35, 41, 47)',
+    logoUrl: '/images/wallets/xrpl.png',
+    usdcSupported: true
   }
 };
 
@@ -52,6 +84,7 @@ export const CHAINS: Record<ChainType, ChainInfo> = {
 export const DEFAULT_WALLET: WalletType = 'lobstr';
 
 export const WALLETS: WalletInfo[] = [
+  // Stellar wallets
   {
     id: 'lobstr',
     name: 'LOBSTR',
@@ -79,24 +112,54 @@ export const WALLETS: WalletInfo[] = [
     chain: 'stellar',
     downloadUrl: 'https://hotwallet.app/',
     description: 'Fast and simple Stellar wallet'
+  },
+  // Solana wallet
+  {
+    id: 'phantom',
+    name: 'Phantom',
+    icon: '👻',
+    logoUrl: '/images/wallets/phantom.png',
+    chain: 'solana',
+    downloadUrl: 'https://phantom.app/',
+    description: 'The #1 Solana wallet with USDC support',
+    isPopular: true
+  },
+  // Hedera wallet
+  {
+    id: 'hashpack',
+    name: 'HashPack',
+    icon: '🔷',
+    logoUrl: '/images/wallets/hashpack.png',
+    chain: 'hedera',
+    downloadUrl: 'https://www.hashpack.app/',
+    description: 'Leading Hedera wallet with USDC support'
+  },
+  // XRPL wallet
+  {
+    id: 'xaman',
+    name: 'Xaman',
+    icon: '🔵',
+    logoUrl: '/images/wallets/xaman.png',
+    chain: 'xrpl',
+    downloadUrl: 'https://xaman.app/',
+    description: 'Premier XRPL wallet (formerly Xumm)'
   }
 ];
 
 export const getChainForWallet = (walletType: WalletType): ChainType => {
-  return 'stellar';
+  const wallet = WALLETS.find(w => w.id === walletType);
+  return wallet?.chain || 'stellar';
 };
 
-// Default chain - Stellar only
+// Default chain - Stellar primary
 export const DEFAULT_CHAIN: ChainType = 'stellar';
 
-// Payment configuration - Stellar-first architecture
+// Payment configuration - multi-chain USDC architecture
 export const PAYMENT_CONFIG = {
-  // Tournament entry fees paid in USDC on Stellar
-  entryFeeChain: 'stellar' as ChainType,
+  // Tournament entry fees paid in USDC
   entryFeeCurrency: 'USDC',
   
-  // Payouts distributed in USDC on Stellar
-  payoutChain: 'stellar' as ChainType,
+  // Payouts distributed in USDC
   payoutCurrency: 'USDC',
   
   // CCC rewards token on Soroban (Stellar smart contracts)
@@ -105,6 +168,9 @@ export const PAYMENT_CONFIG = {
   
   // Pass gating using Soroban smart contracts
   passGatingChain: 'stellar' as ChainType,
+  
+  // Supported USDC chains
+  usdcChains: ['stellar', 'solana', 'hedera', 'xrpl'] as ChainType[],
 };
 
 export const getWalletsByChain = (chain: ChainType): WalletInfo[] => {

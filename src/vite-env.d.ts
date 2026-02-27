@@ -7,9 +7,19 @@ declare global {
       getPublicKey: () => Promise<string>;
       signTransaction: (xdr: string, opts?: { network?: string; networkPassphrase?: string }) => Promise<string>;
     };
+    freighterApi?: any;
+    phantom?: {
+      solana?: {
+        isPhantom?: boolean;
+        connect: (opts?: { onlyIfTrusted?: boolean }) => Promise<{ publicKey: { toString: () => string } }>;
+        disconnect: () => Promise<void>;
+        signMessage: (message: Uint8Array, encoding?: string) => Promise<{ signature: Uint8Array }>;
+        isConnected: boolean;
+      };
+    };
+    hashpack?: any;
+    xaman?: any;
   }
 }
-
-// Stellar-only architecture - ETH and SOL wallets removed
 
 export {};
