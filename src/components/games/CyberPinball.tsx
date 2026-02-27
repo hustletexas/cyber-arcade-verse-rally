@@ -434,13 +434,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // ── Instant launch helper ──
     const doLaunch = () => {
       const g = G.current;
-      if (!g.currentBall || g.launched || g.gameOver) return;
-      if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
+      if (g.launched || g.gameOver) return;
+
+      const engine = engineRef.current;
+      if (!engine) return;
+
+      const worldBall = Composite.allBodies(engine.world).find((b) => b.label === 'ball') as Matter.Body | undefined;
+      if (!g.currentBall && worldBall) g.currentBall = worldBall;
+
+      if (!g.currentBall) {
+        const emergencyBall = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
+          label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
+        });
+        Composite.add(engine.world, emergencyBall);
+        g.currentBall = emergencyBall;
+      }
+      if (!g.currentBall || !fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
+
       Body.setStatic(g.currentBall, false);
-      // Full power instant launch
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.032 });
+      Body.setPosition(g.currentBall, { x: PLUNGER_X, y: TH - 44 });
+      Body.setVelocity(g.currentBall, { x: 0, y: -26 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.11 });
       g.launched = true;
-      g.lightFlash = 0.2;
+      showMsg('LAUNCH!');
       g.shake.power = 3;
       spawnParticles(PLUNGER_X, TH - 38, 10, NEON.cyan, 6);
     };
@@ -1110,15 +1126,32 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
   const launchBall = useCallback(() => {
     const g = G.current;
-    if (!g.currentBall || g.launched || g.gameOver) return;
-    if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
+    if (g.launched || g.gameOver) return;
+
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    const worldBall = Composite.allBodies(engine.world).find((b) => b.label === 'ball') as Matter.Body | undefined;
+    if (!g.currentBall && worldBall) g.currentBall = worldBall;
+
+    if (!g.currentBall) {
+      const emergencyBall = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
+        label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
+      });
+      Composite.add(engine.world, emergencyBall);
+      g.currentBall = emergencyBall;
+    }
+    if (!g.currentBall || !fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
+
     Body.setStatic(g.currentBall, false);
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.032 });
+    Body.setPosition(g.currentBall, { x: PLUNGER_X, y: TH - 44 });
+    Body.setVelocity(g.currentBall, { x: 0, y: -26 });
+    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.11 });
     g.launched = true;
-    g.lightFlash = 0.2;
+    showMsg('LAUNCH!');
     g.shake.power = 3;
     spawnParticles(PLUNGER_X, g.currentBall.position.y, 10, NEON.cyan, 6);
-  }, [spawnParticles]);
+  }, [showMsg, spawnParticles]);
 
   return (
     <div className="flex flex-col items-center gap-3">
