@@ -1142,29 +1142,31 @@ const PortalBreakerGame: React.FC = () => {
         else { hue = 60; lightness = 60; borderExtra = '#ffdd00'; glowColor = '#ffdd00'; }
       }
 
-      // ── Dark cyber base with neon edges ──
+      // ── Solid 3D brick base ──
       const baseGrad = ctx.createLinearGradient(bx, b.y, bx, b.y + b.h);
 
       if (b.special === 'crystal') {
-        // Faceted gem: multi-stop gradient
-        baseGrad.addColorStop(0, `hsla(${hue}, 80%, 30%, 0.9)`);
-        baseGrad.addColorStop(0.3, `hsla(${hue + 20}, 90%, 50%, 0.7)`);
-        baseGrad.addColorStop(0.7, `hsla(${hue - 10}, 85%, 40%, 0.8)`);
-        baseGrad.addColorStop(1, `hsla(${hue}, 70%, 25%, 0.9)`);
+        baseGrad.addColorStop(0, `hsl(${hue}, 80%, 45%)`);
+        baseGrad.addColorStop(0.4, `hsl(${hue + 20}, 90%, 55%)`);
+        baseGrad.addColorStop(0.6, `hsl(${hue - 10}, 85%, 48%)`);
+        baseGrad.addColorStop(1, `hsl(${hue}, 70%, 35%)`);
       } else if (b.special === 'glitch') {
-        // RGB glitch offset
         const glitchOff = Math.sin(now * 0.02 + b.seed) * 3;
-        baseGrad.addColorStop(0, `hsl(${hue + glitchOff * 20}, 50%, 15%)`);
-        baseGrad.addColorStop(0.5, `hsl(${hue}, 40%, 10%)`);
-        baseGrad.addColorStop(1, `hsl(${hue - glitchOff * 15}, 50%, 12%)`);
+        baseGrad.addColorStop(0, `hsl(${hue + glitchOff * 20}, 60%, 40%)`);
+        baseGrad.addColorStop(0.5, `hsl(${hue}, 50%, 30%)`);
+        baseGrad.addColorStop(1, `hsl(${hue - glitchOff * 15}, 60%, 25%)`);
       } else if (b.special === 'boss') {
-        baseGrad.addColorStop(0, `hsl(${hue}, 60%, 18%)`);
-        baseGrad.addColorStop(0.5, `hsl(${hue}, 50%, 12%)`);
-        baseGrad.addColorStop(1, `hsl(${hue}, 60%, 8%)`);
+        baseGrad.addColorStop(0, `hsl(${hue}, 70%, 40%)`);
+        baseGrad.addColorStop(0.5, `hsl(${hue}, 60%, 30%)`);
+        baseGrad.addColorStop(1, `hsl(${hue}, 70%, 20%)`);
       } else {
-        baseGrad.addColorStop(0, `hsl(${hue}, 50%, ${lightness * 0.25 + 4}%)`);
-        baseGrad.addColorStop(0.5, `hsl(${hue}, 40%, ${lightness * 0.18}%)`);
-        baseGrad.addColorStop(1, `hsl(${hue}, 50%, ${lightness * 0.12}%)`);
+        // Solid opaque base with good saturation
+        const topL = lightness * 0.7 + 20;
+        const midL = lightness * 0.5 + 12;
+        const botL = lightness * 0.3 + 6;
+        baseGrad.addColorStop(0, `hsl(${hue}, 65%, ${topL}%)`);
+        baseGrad.addColorStop(0.5, `hsl(${hue}, 55%, ${midL}%)`);
+        baseGrad.addColorStop(1, `hsl(${hue}, 65%, ${botL}%)`);
       }
 
       ctx.fillStyle = baseGrad;
@@ -1188,6 +1190,19 @@ const PortalBreakerGame: React.FC = () => {
       ctx.fill();
       ctx.stroke();
       ctx.shadowBlur = 0;
+
+      // ── 3D bevel: top highlight ──
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.fillRect(bx + 2, b.y + 1, b.w - 4, 2);
+      // Left edge highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillRect(bx + 1, b.y + 2, 1.5, b.h - 4);
+      // ── 3D bevel: bottom shadow ──
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(bx + 2, b.y + b.h - 2.5, b.w - 4, 2);
+      // Right edge shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(bx + b.w - 2, b.y + 2, 1.5, b.h - 4);
 
       // ── Type-specific overlays ──
       ctx.save();
