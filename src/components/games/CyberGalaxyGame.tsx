@@ -390,7 +390,8 @@ const CyberGalaxyGame: React.FC = () => {
     if (touchXRef.current !== null) {
       const target = touchXRef.current - p.w / 2;
       const diff = target - p.x;
-      p.x += Math.sign(diff) * Math.min(Math.abs(diff), speed * 1.5);
+      // Move quickly toward finger — nearly instant tracking
+      p.x += Math.sign(diff) * Math.min(Math.abs(diff), Math.max(speed * 4, Math.abs(diff) * 0.4));
     }
     p.x = Math.max(0, Math.min(s.cw - p.w, p.x));
 
@@ -412,18 +413,18 @@ const CyberGalaxyGame: React.FC = () => {
       }
     });
 
-    // ── Dive timer — ensure at least 2 enemies are always diving ──
+    // ── Dive timer — don't send new divers until all current ones return ──
     const diveInterval = Math.max(800, DIVE_INTERVAL_BASE - s.wave * 150);
     const currentlyDiving = s.enemies.filter(e => e.isDiving).length;
     s.diveTimer -= dtMs;
-    const needMore = currentlyDiving < 2;
-    if (s.diveTimer <= 0 || needMore) {
+
+    // Only launch new divers when NO enemies are currently diving
+    if (s.diveTimer <= 0 && currentlyDiving === 0) {
       s.diveTimer = diveInterval;
       const nonDiving = s.enemies.filter(e => !e.isDiving && e.reformTimer <= 0);
       const maxDivers = s.wave <= 10 ? 2 : Math.min(1 + Math.floor(s.wave / 2), 4);
-      const wantCount = Math.max(maxDivers - currentlyDiving, 1);
-      const diveCount = Math.min(wantCount, maxDivers - currentlyDiving, nonDiving.length);
-      // Pick one from the left half and one from the right half of the stage
+      const diveCount = Math.min(maxDivers, nonDiving.length);
+      // Pick from left and right halves of the stage
       const midX = s.cw / 2;
       const leftPool = nonDiving.filter(e => e.formX < midX);
       const rightPool = nonDiving.filter(e => e.formX >= midX);
