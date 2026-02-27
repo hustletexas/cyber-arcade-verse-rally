@@ -17,7 +17,7 @@ export const CyberColumnsEndModal: React.FC<CyberColumnsEndModalProps> = ({
   isOpen, score, level, linesCleared, chainCount, onPlayAgain, onBackToMenu,
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onBackToMenu(); }}>
       <DialogContent className="bg-[hsl(240_30%_6%/0.95)] border-[hsl(270_60%_50%/0.3)] backdrop-blur-xl max-w-sm text-center">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-[hsl(330_100%_65%)] flex items-center justify-center gap-2">
