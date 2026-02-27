@@ -106,6 +106,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const [downtownHits, setDowntownHits] = useState(0);
   const [neonHits, setNeonHits] = useState(0);
   const [lockedBalls, setLockedBalls] = useState(0);
+  const [plungerDisplay, setPlungerDisplay] = useState(0);
+  const [isCharging, setIsCharging] = useState(false);
 
   const showMsg = useCallback((msg: string, dur = 2000) => {
     setMessage(msg);
@@ -530,6 +532,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // Plunger
       if (g.plungerCharging && !g.launched) {
         g.plungerPower = Math.min(g.plungerPower + 0.018, 1);
+        setPlungerDisplay(g.plungerPower);
+        setIsCharging(true);
+      } else if (!g.plungerCharging && g.plungerPower === 0) {
+        if (f % 10 === 0) { setPlungerDisplay(0); setIsCharging(false); }
       }
 
       // Spinner
@@ -1072,10 +1078,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
   const plungerTouch = useCallback((down: boolean) => {
     const g = G.current;
-    if (down && !g.launched && g.currentBall) g.plungerCharging = true;
-    else if (!down && g.plungerCharging && g.currentBall && !g.launched) {
+    if (down && !g.launched && g.currentBall) {
+      g.plungerCharging = true;
+      setIsCharging(true);
+    } else if (!down && g.plungerCharging && g.currentBall && !g.launched) {
       Body.applyForce(g.currentBall!, g.currentBall!.position, { x: 0, y: -(0.009 + g.plungerPower * 0.028) });
       g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
+      setPlungerDisplay(0); setIsCharging(false);
     }
   }, []);
 
@@ -1156,19 +1165,34 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           onMouseDown={() => flipperTouch('left', true)}
           onMouseUp={() => flipperTouch('left', false)}
           onMouseLeave={() => flipperTouch('left', false)}>◀ LEFT</button>
-        <button className={`border font-bold py-5 rounded-xl select-none text-sm touch-none transition-colors ${
-          G.current.plungerCharging
-            ? 'bg-neon-pink/40 border-neon-pink/70 text-neon-pink scale-95'
-            : 'bg-neon-pink/20 border-neon-pink/40 text-neon-pink'
-        }`}
+        <div className="relative overflow-hidden border border-neon-pink/40 rounded-xl touch-none select-none"
           onTouchStart={(e) => { e.preventDefault(); plungerTouch(true); }}
           onTouchEnd={(e) => { e.preventDefault(); plungerTouch(false); }}
           onTouchCancel={(e) => { e.preventDefault(); plungerTouch(false); }}
           onMouseDown={() => plungerTouch(true)}
           onMouseUp={() => plungerTouch(false)}
           onMouseLeave={() => plungerTouch(false)}>
-          {G.current.launched ? '🎯 LAUNCH' : '⬇ HOLD'}
-        </button>
+          {/* Power meter fill */}
+          <div
+            className="absolute bottom-0 left-0 right-0 transition-[height] duration-75"
+            style={{
+              height: `${plungerDisplay * 100}%`,
+              background: plungerDisplay < 0.5
+                ? `linear-gradient(to top, rgba(255,0,110,0.5), rgba(255,0,110,0.2))`
+                : plungerDisplay < 0.8
+                  ? `linear-gradient(to top, rgba(255,170,0,0.6), rgba(255,100,0,0.2))`
+                  : `linear-gradient(to top, rgba(255,50,50,0.7), rgba(255,0,110,0.3))`,
+              boxShadow: plungerDisplay > 0.5 ? `0 0 ${plungerDisplay * 20}px rgba(255,0,110,0.4)` : 'none',
+            }}
+          />
+          {/* Skill zone marker */}
+          <div className="absolute left-1 right-1 border-t border-dashed border-neon-cyan/40" style={{ bottom: '72%' }} />
+          <div className="absolute right-1.5 text-[7px] text-neon-cyan/50 font-mono" style={{ bottom: '73%' }}>SKILL</div>
+          {/* Button label */}
+          <div className="relative z-10 py-5 text-center font-bold text-sm text-neon-pink">
+            {isCharging ? `⚡ ${Math.round(plungerDisplay * 100)}%` : G.current.launched ? '🎯 LAUNCH' : '⬇ HOLD'}
+          </div>
+        </div>
         <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-5 rounded-xl active:bg-neon-cyan/40 select-none text-sm touch-none"
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('right', true); }}
           onTouchEnd={(e) => { e.preventDefault(); flipperTouch('right', false); }}
