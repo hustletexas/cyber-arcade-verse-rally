@@ -349,82 +349,86 @@
   animation: cc-gem-pulse 1.2s ease-in-out infinite;
 }
 
-/* ===== MATCH BURST — Color-matched supernova ===== */
+/* ===== MATCH BURST — Vivid color-matched supernova ===== */
 .cyber-gem--clearing {
-  animation: cc-gem-explode 0.55s ease-out forwards;
+  animation: cc-gem-explode 0.6s ease-out forwards;
   z-index: 10;
 }
 
-/* Base clearing burst ring */
+/* Expanding color burst ring */
 .cyber-gem--clearing::before {
-  animation: cc-burst-ring 0.6s ease-out forwards !important;
+  animation: cc-burst-ring 0.65s ease-out forwards !important;
   border-radius: 50% !important;
-  inset: -80% !important;
+  inset: -100% !important;
   box-shadow: none !important;
-  background: hsl(0 0% 100% / 0.7) !important;
 }
 
-/* Base clearing sparkle rays */
+/* Color sparkle rays */
 .cyber-gem--clearing::after {
-  animation: cc-burst-sparkle 0.55s ease-out forwards !important;
-  width: 250% !important;
-  height: 250% !important;
-  top: -75% !important;
-  left: -75% !important;
+  animation: cc-burst-sparkle 0.6s ease-out forwards !important;
+  width: 300% !important;
+  height: 300% !important;
+  top: -100% !important;
+  left: -100% !important;
   border-radius: 50% !important;
-  filter: blur(0.5px) !important;
+  filter: blur(0.3px) !important;
 }
 
-/* Blue supernova */
+/* ── Blue supernova ── */
 .cyber-gem--energy.cyber-gem--clearing::before {
-  background: radial-gradient(circle, hsl(199 100% 85% / 0.95), hsl(210 100% 60% / 0.5), transparent 70%) !important;
+  background: radial-gradient(circle, hsl(199 100% 95% / 1), hsl(199 100% 70% / 0.8), hsl(210 100% 55% / 0.4), transparent 65%) !important;
 }
 .cyber-gem--energy.cyber-gem--clearing::after {
-  background: conic-gradient(from 0deg, hsl(199 100% 85% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(210 100% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(199 100% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(210 100% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(199 100% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(210 100% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(199 100% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(210 100% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+  background: conic-gradient(from 0deg, hsl(199 100% 90% / 1) 0deg, hsl(210 100% 70% / 0.5) 5deg, transparent 10deg, transparent 35deg, hsl(199 100% 85% / 0.9) 40deg, hsl(210 100% 65% / 0.4) 45deg, transparent 50deg, transparent 80deg, hsl(199 100% 90% / 0.8) 85deg, transparent 95deg, transparent 125deg, hsl(210 100% 85% / 0.9) 130deg, transparent 140deg, transparent 170deg, hsl(199 100% 90% / 0.8) 175deg, transparent 185deg, transparent 215deg, hsl(210 100% 85% / 0.9) 220deg, transparent 230deg, transparent 260deg, hsl(199 100% 90% / 0.8) 265deg, transparent 275deg, transparent 305deg, hsl(210 100% 85% / 0.9) 310deg, transparent 320deg, transparent 350deg, hsl(199 100% 80% / 0.7) 355deg, transparent 360deg) !important;
 }
 
-/* Pink supernova */
+/* ── Pink supernova ── */
 .cyber-gem--data.cyber-gem--clearing::before {
-  background: radial-gradient(circle, hsl(330 100% 88% / 0.95), hsl(340 100% 60% / 0.5), transparent 70%) !important;
+  background: radial-gradient(circle, hsl(330 100% 95% / 1), hsl(330 100% 72% / 0.8), hsl(340 100% 55% / 0.4), transparent 65%) !important;
 }
 .cyber-gem--data.cyber-gem--clearing::after {
-  background: conic-gradient(from 0deg, hsl(330 100% 88% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(340 100% 80% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(330 100% 85% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(340 100% 88% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(330 100% 80% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(340 100% 85% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(330 100% 88% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(340 100% 80% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+  background: conic-gradient(from 0deg, hsl(330 100% 92% / 1) 0deg, hsl(340 100% 70% / 0.5) 5deg, transparent 10deg, transparent 35deg, hsl(330 100% 88% / 0.9) 40deg, hsl(340 100% 65% / 0.4) 45deg, transparent 50deg, transparent 80deg, hsl(330 100% 92% / 0.8) 85deg, transparent 95deg, transparent 125deg, hsl(340 100% 88% / 0.9) 130deg, transparent 140deg, transparent 170deg, hsl(330 100% 92% / 0.8) 175deg, transparent 185deg, transparent 215deg, hsl(340 100% 88% / 0.9) 220deg, transparent 230deg, transparent 260deg, hsl(330 100% 92% / 0.8) 265deg, transparent 275deg, transparent 305deg, hsl(340 100% 88% / 0.9) 310deg, transparent 320deg, transparent 350deg, hsl(330 100% 85% / 0.7) 355deg, transparent 360deg) !important;
 }
 
-/* Purple supernova */
+/* ── Purple supernova ── */
 .cyber-gem--quantum.cyber-gem--clearing::before {
-  background: radial-gradient(circle, hsl(270 80% 85% / 0.95), hsl(260 80% 55% / 0.5), transparent 70%) !important;
+  background: radial-gradient(circle, hsl(270 85% 92% / 1), hsl(270 80% 68% / 0.8), hsl(260 80% 50% / 0.4), transparent 65%) !important;
 }
 .cyber-gem--quantum.cyber-gem--clearing::after {
-  background: conic-gradient(from 0deg, hsl(270 80% 85% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(280 80% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(270 80% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(280 80% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(270 80% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(280 80% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(270 80% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(280 80% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+  background: conic-gradient(from 0deg, hsl(270 85% 90% / 1) 0deg, hsl(280 80% 68% / 0.5) 5deg, transparent 10deg, transparent 35deg, hsl(270 85% 85% / 0.9) 40deg, hsl(260 80% 62% / 0.4) 45deg, transparent 50deg, transparent 80deg, hsl(270 85% 90% / 0.8) 85deg, transparent 95deg, transparent 125deg, hsl(280 80% 85% / 0.9) 130deg, transparent 140deg, transparent 170deg, hsl(270 85% 90% / 0.8) 175deg, transparent 185deg, transparent 215deg, hsl(280 80% 85% / 0.9) 220deg, transparent 230deg, transparent 260deg, hsl(270 85% 90% / 0.8) 265deg, transparent 275deg, transparent 305deg, hsl(280 80% 85% / 0.9) 310deg, transparent 320deg, transparent 350deg, hsl(270 80% 82% / 0.7) 355deg, transparent 360deg) !important;
 }
 
-/* Cyan supernova */
+/* ── Cyan supernova ── */
 .cyber-gem--circuit.cyber-gem--clearing::before {
-  background: radial-gradient(circle, hsl(180 90% 85% / 0.95), hsl(185 90% 55% / 0.5), transparent 70%) !important;
+  background: radial-gradient(circle, hsl(180 95% 92% / 1), hsl(180 90% 65% / 0.8), hsl(185 85% 50% / 0.4), transparent 65%) !important;
 }
 .cyber-gem--circuit.cyber-gem--clearing::after {
-  background: conic-gradient(from 0deg, hsl(180 90% 85% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(185 90% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(180 90% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(185 90% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(180 90% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(185 90% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(180 90% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(185 90% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+  background: conic-gradient(from 0deg, hsl(180 95% 90% / 1) 0deg, hsl(185 90% 68% / 0.5) 5deg, transparent 10deg, transparent 35deg, hsl(180 95% 85% / 0.9) 40deg, hsl(185 90% 62% / 0.4) 45deg, transparent 50deg, transparent 80deg, hsl(180 95% 90% / 0.8) 85deg, transparent 95deg, transparent 125deg, hsl(185 90% 85% / 0.9) 130deg, transparent 140deg, transparent 170deg, hsl(180 95% 90% / 0.8) 175deg, transparent 185deg, transparent 215deg, hsl(185 90% 85% / 0.9) 220deg, transparent 230deg, transparent 260deg, hsl(180 95% 90% / 0.8) 265deg, transparent 275deg, transparent 305deg, hsl(185 90% 85% / 0.9) 310deg, transparent 320deg, transparent 350deg, hsl(180 90% 82% / 0.7) 355deg, transparent 360deg) !important;
 }
 
-/* Gold supernova */
+/* ── Gold MEGA supernova ── */
 .cyber-gem--bonus.cyber-gem--clearing::before {
-  background: radial-gradient(circle, hsl(45 100% 90% / 0.95), hsl(40 100% 55% / 0.6), transparent 70%) !important;
+  background: radial-gradient(circle, hsl(50 100% 97% / 1), hsl(45 100% 75% / 0.9), hsl(40 100% 55% / 0.5), transparent 60%) !important;
 }
 .cyber-gem--bonus.cyber-gem--clearing::after {
-  background: conic-gradient(from 0deg, hsl(45 100% 88% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(40 100% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(50 100% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(40 100% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(50 100% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(40 100% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(50 100% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(40 100% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+  background: conic-gradient(from 0deg, hsl(45 100% 92% / 1) 0deg, hsl(40 100% 75% / 0.6) 5deg, transparent 10deg, transparent 25deg, hsl(50 100% 88% / 0.95) 28deg, transparent 35deg, transparent 55deg, hsl(45 100% 90% / 0.9) 58deg, transparent 65deg, transparent 85deg, hsl(40 100% 88% / 0.9) 88deg, transparent 95deg, transparent 115deg, hsl(50 100% 90% / 0.9) 118deg, transparent 125deg, transparent 145deg, hsl(45 100% 88% / 0.9) 148deg, transparent 155deg, transparent 175deg, hsl(40 100% 90% / 0.9) 178deg, transparent 185deg, transparent 205deg, hsl(50 100% 88% / 0.9) 208deg, transparent 215deg, transparent 235deg, hsl(45 100% 90% / 0.9) 238deg, transparent 245deg, transparent 265deg, hsl(40 100% 88% / 0.9) 268deg, transparent 275deg, transparent 295deg, hsl(50 100% 90% / 0.9) 298deg, transparent 305deg, transparent 325deg, hsl(45 100% 88% / 0.9) 328deg, transparent 335deg, transparent 355deg, hsl(40 100% 85% / 0.8) 358deg, transparent 360deg) !important;
+  width: 400% !important;
+  height: 400% !important;
+  top: -150% !important;
+  left: -150% !important;
 }
 
 @keyframes cc-burst-ring {
-  0% { transform: scale(0.1); opacity: 1; }
-  40% { transform: scale(2.2); opacity: 0.7; }
-  100% { transform: scale(4.5); opacity: 0; }
+  0% { transform: scale(0.1); opacity: 1; filter: brightness(2); }
+  30% { transform: scale(2); opacity: 0.9; filter: brightness(1.5); }
+  60% { transform: scale(3.5); opacity: 0.5; filter: brightness(1.2); }
+  100% { transform: scale(5.5); opacity: 0; filter: brightness(1); }
 }
 
 @keyframes cc-burst-sparkle {
-  0% { transform: scale(0.15) rotate(0deg); opacity: 1; }
-  50% { transform: scale(1.6) rotate(25deg); opacity: 0.8; }
-  100% { transform: scale(3.5) rotate(55deg); opacity: 0; }
+  0% { transform: scale(0.1) rotate(0deg); opacity: 1; filter: brightness(2); }
+  40% { transform: scale(1.4) rotate(20deg); opacity: 0.9; filter: brightness(1.5); }
+  100% { transform: scale(4) rotate(60deg); opacity: 0; filter: brightness(1); }
 }
 
 /* ===== Active piece glow ===== */
