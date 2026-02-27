@@ -6,6 +6,7 @@ export interface GemCell {
   type: GemType;
   id: string;
   clearing?: boolean;
+  clearingChain?: number; // 1 = first match, 2 = chain x2, 3+ = mega
 }
 
 export type BoardCell = GemCell | null;

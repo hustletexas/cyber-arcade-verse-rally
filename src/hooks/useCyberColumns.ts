@@ -114,7 +114,8 @@ function applyGravity(board: BoardCell[][]): BoardCell[][] {
   return newBoard;
 }
 
-const CLEAR_ANIMATION_MS = 550; // match the CSS animation duration
+const CLEAR_ANIMATION_MS = 600; // base animation duration
+const clearAnimationMs = (chain: number) => Math.min(CLEAR_ANIMATION_MS + (chain - 1) * 150, 1100);
 
 export function useCyberColumns() {
   const [state, setState] = useState<CyberColumnsState>({
@@ -212,10 +213,10 @@ export function useCyberColumns() {
       const chainMultiplier = SCORING.CHAIN_MULTIPLIER(chainCount);
       totalScore += matches.length * SCORING.BASE_CLEAR * chainMultiplier;
 
-      // Step 1: Mark matched gems as clearing (visible to UI)
+      // Step 1: Mark matched gems as clearing (visible to UI) with chain level
       for (const [r, c] of matches) {
         if (currentBoard[r][c]) {
-          currentBoard[r][c] = { ...currentBoard[r][c]!, clearing: true };
+          currentBoard[r][c] = { ...currentBoard[r][c]!, clearing: true, clearingChain: chainCount };
         }
       }
       const clearingBoard = currentBoard.map(row => [...row]);
@@ -240,7 +241,7 @@ export function useCyberColumns() {
 
         // Step 3: Check for more matches (chain reaction)
         setTimeout(() => resolveStep(), 100);
-      }, CLEAR_ANIMATION_MS);
+      }, clearAnimationMs(chainCount));
     };
 
     resolveStep();

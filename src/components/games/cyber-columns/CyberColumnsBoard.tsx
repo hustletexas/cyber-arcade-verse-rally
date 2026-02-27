@@ -56,7 +56,10 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
 
                 {/* Placed gem */}
                 {cell && !pieceGem && (
-                  <div className={`absolute inset-[1px] ${gemClass(cell.type)} ${cell.clearing ? 'cyber-gem--clearing' : ''}`}>
+                  <div
+                    className={`absolute inset-[1px] ${gemClass(cell.type)} ${cell.clearing ? `cyber-gem--clearing cc-combo-${Math.min(cell.clearingChain || 1, 4)}` : ''}`}
+                    style={cell.clearing ? { '--combo': Math.min(cell.clearingChain || 1, 4) } as React.CSSProperties : undefined}
+                  >
                     {cell.clearing && (
                       <>
                         <div className="cc-electric-arc cc-electric-arc--1" />
@@ -66,6 +69,9 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
                         <div className="cc-electric-arc cc-electric-arc--5" />
                         <div className="cc-electric-arc cc-electric-arc--6" />
                         <div className={`cc-burst-color cc-burst-color--${cell.type}`} />
+                        {(cell.clearingChain || 1) >= 3 && (
+                          <div className="cc-shockwave" />
+                        )}
                       </>
                     )}
                   </div>
