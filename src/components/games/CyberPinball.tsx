@@ -913,38 +913,33 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (g.lightFlash < 0.03) g.lightFlash = 0;
       }
 
-      // ── Electric table border ──
-      const borderPulse = 0.6 + Math.sin(t * 3) * 0.3;
+      // ── Electric table border (steady) ──
       ctx.shadowColor = NEON.cyan;
-      ctx.shadowBlur = 14 + Math.sin(t * 5) * 6;
-      ctx.strokeStyle = `rgba(0, 255, 255, ${borderPulse * 0.8})`;
+      ctx.shadowBlur = 14;
+      ctx.strokeStyle = `rgba(0, 255, 255, 0.5)`;
       ctx.lineWidth = 2.5;
       ctx.strokeRect(3, 3, TW - 6, TH - 6);
       ctx.shadowBlur = 0;
-      // Inner electric border
-      ctx.strokeStyle = `rgba(255, 0, 255, ${borderPulse * 0.25})`;
+      ctx.strokeStyle = `rgba(255, 0, 255, 0.15)`;
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, TW - 10, TH - 10);
-      // Corner sparks
+      // Corner glow (steady)
       const corners = [[6, 6], [TW - 6, 6], [6, TH - 6], [TW - 6, TH - 6]];
       for (let ci = 0; ci < corners.length; ci++) {
         const [cx, cy] = corners[ci];
-        const sparkA = 0.4 + Math.sin(t * 9 + ci * 1.5) * 0.4;
-        ctx.fillStyle = `rgba(0, 255, 255, ${sparkA})`;
+        ctx.fillStyle = `rgba(0, 255, 255, 0.6)`;
         ctx.shadowColor = NEON.cyan;
-        ctx.shadowBlur = 12;
-        ctx.beginPath(); ctx.arc(cx, cy, 2 + Math.sin(t * 7 + ci) * 1, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
       }
-      // Travelling electric arc along top edge
-      const arcX = 6 + ((t * 80) % (TW - 12));
-      ctx.strokeStyle = `rgba(0, 255, 255, 0.5)`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(arcX, 3);
-      ctx.lineTo(arcX + Math.sin(t * 15) * 4, 3 + Math.sin(t * 12) * 3);
-      ctx.lineTo(arcX + 6, 3);
-      ctx.stroke();
+      // Flowing current dot along top edge
+      const arcX = 6 + ((t * 60) % (TW - 12));
+      ctx.fillStyle = NEON.cyan;
+      ctx.shadowColor = NEON.cyan;
+      ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(arcX, 3, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
 
       // ── Ball trail ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
@@ -1167,35 +1162,28 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
-          // Electric glow border
-          const elecPulse = 0.25 + Math.sin(t * 4 + body.position.y * 0.03) * 0.2;
+          // Steady electric glow border
           ctx.shadowColor = NEON.cyan;
-          ctx.shadowBlur = 8 + Math.sin(t * 6 + body.position.x * 0.05) * 4;
-          ctx.strokeStyle = `rgba(0, 255, 255, ${elecPulse})`;
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = `rgba(0, 255, 255, 0.35)`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
           ctx.shadowBlur = 0;
-          // Secondary pink electric layer
-          ctx.strokeStyle = `rgba(255, 0, 255, ${elecPulse * 0.4})`;
+          // Secondary steady pink layer
+          ctx.strokeStyle = `rgba(255, 0, 255, 0.12)`;
           ctx.lineWidth = 0.8;
           ctx.stroke();
-          // Lightning crackle segments along wall edges
+          // Flowing current dots along wall edges
           const wallLen = Math.sqrt((verts[1].x - verts[0].x) ** 2 + (verts[1].y - verts[0].y) ** 2);
           if (wallLen > 20) {
-            const segments = Math.floor(wallLen / 12);
-            ctx.strokeStyle = NEON.cyan;
-            ctx.lineWidth = 0.6;
-            ctx.globalAlpha = 0.3 + Math.sin(t * 8 + body.position.y * 0.1) * 0.2;
-            for (let s = 0; s < segments; s++) {
-              const prog = (s + 0.5) / segments;
-              const sx = verts[0].x + (verts[1].x - verts[0].x) * prog;
-              const sy = verts[0].y + (verts[1].y - verts[0].y) * prog;
-              const jx = (Math.sin(t * 12 + s * 3.7 + body.position.x) * 3);
-              const jy = (Math.cos(t * 10 + s * 2.3 + body.position.y) * 3);
-              ctx.beginPath();
-              ctx.moveTo(sx, sy);
-              ctx.lineTo(sx + jx, sy + jy);
-              ctx.stroke();
+            const dotCount = Math.floor(wallLen / 10);
+            ctx.fillStyle = NEON.cyan;
+            ctx.globalAlpha = 0.5;
+            for (let d = 0; d < dotCount; d++) {
+              const prog = ((d / dotCount) + t * 0.3) % 1;
+              const dx = verts[0].x + (verts[1].x - verts[0].x) * prog;
+              const dy = verts[0].y + (verts[1].y - verts[0].y) * prog;
+              ctx.beginPath(); ctx.arc(dx, dy, 0.8, 0, Math.PI * 2); ctx.fill();
             }
             ctx.globalAlpha = 1;
           }
