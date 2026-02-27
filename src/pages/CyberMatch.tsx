@@ -10,7 +10,7 @@ import {
 } from '@/components/games/cyber-match';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Play, Pause } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -196,23 +196,32 @@ const CyberMatch: React.FC = () => {
 
               <div className="flex justify-center gap-3 mt-6">
                 <Button
+                  onClick={restartGame}
+                  variant="outline"
+                  size="sm"
+                  className="border-neon-pink/50 text-neon-pink hover:bg-pink-500/10"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Start
+                </Button>
+                <Button
+                  onClick={restartGame}
+                  variant="outline"
+                  size="sm"
+                  className="border-neon-pink/50 text-neon-pink hover:bg-pink-500/10"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Restart
+                </Button>
+                <Button
                   onClick={backToModeSelect}
                   variant="outline"
+                  size="sm"
                   className="border-gray-500/50 text-gray-400 hover:bg-gray-500/10"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Exit
                 </Button>
-                {gameMode === 'free' && (
-                  <Button
-                    onClick={restartGame}
-                    variant="outline"
-                    className="border-neon-pink/50 text-neon-pink hover:bg-pink-500/10"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Restart
-                  </Button>
-                )}
               </div>
             </motion.div>
           )}
