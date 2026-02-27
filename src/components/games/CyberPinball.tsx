@@ -3,62 +3,32 @@ import Matter from 'matter-js';
 
 const { Engine, Runner, Bodies, Body, Composite, Events, Constraint, Vector } = Matter;
 
-// ── Numeric safety helpers ──
-const fin = (v: number): boolean => Number.isFinite(v);
-const safeN = (v: number, fallback = 0): number => fin(v) ? v : fallback;
-const safeClamp = (v: number, lo: number, hi: number): number => {
-  const n = safeN(v, lo);
-  return Math.max(lo, Math.min(hi, n));
-};
-const safeGrad = (
-  ctx: CanvasRenderingContext2D,
-  x0: number, y0: number, r0: number,
-  x1: number, y1: number, r1: number
-): CanvasGradient | null => {
-  const vals = [x0, y0, r0, x1, y1, r1];
-  if (!vals.every(fin)) return null;
-  if (r0 < 0 || r1 < 0) return null;
+// ═══════════════════════════════════════════════════════
+// CYBER CITY PINBALL — Demon's Tilt inspired
+// ═══════════════════════════════════════════════════════
+
+// ── Safe rendering helpers ──
+const fin = (v: number) => Number.isFinite(v);
+const sn = (v: number, fb = 0) => fin(v) ? v : fb;
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, sn(v, lo)));
+const radGrad = (ctx: CanvasRenderingContext2D, x0: number, y0: number, r0: number, x1: number, y1: number, r1: number) => {
+  if (![x0, y0, r0, x1, y1, r1].every(fin) || r0 < 0 || r1 < 0) return null;
   try { return ctx.createRadialGradient(x0, y0, r0, x1, y1, r1); } catch { return null; }
 };
-const safeLGrad = (
-  ctx: CanvasRenderingContext2D,
-  x0: number, y0: number, x1: number, y1: number
-): CanvasGradient | null => {
+const linGrad = (ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number) => {
   if (![x0, y0, x1, y1].every(fin)) return null;
   try { return ctx.createLinearGradient(x0, y0, x1, y1); } catch { return null; }
 };
 
-// ── Table dimensions (wide-body) ──
-const TW = 440;
-const TH = 780;
-const BALL_R = 7;
-const FW = 72; // flipper width
-const FH = 13;
-const WALL = 10;
-const BUMPER_R = 16;
-const PLUNGER_X = TW - 18;
-
-// ── Colours ──
-const C = {
-  bg: '#0a0812',
-  playfield: '#110a1e',
-  wall: '#1a1a2e',
-  wallGlow: '#00e5ff',
-  flipper: '#00e5ff',
-  ball: '#ff00ff',
-  bumper: '#9333ea',
-  bumperHit: '#e879f9',
-  bumperStroke: '#c084fc',
-  slingshot: '#facc15',
-  rampCyan: '#22d3ee',
-  rampPink: '#ff006e',
-  target: '#00e5ff',
-  pink: '#ff006e',
-  purple: '#7c3aed',
-  reactorCore: '#a855f7',
-  text: '#e2e8f0',
-  skyline: '#00e5ff',
-};
+// ── Dimensions ──
+const TW = 420;
+const TH = 820;
+const BALL_R = 6;
+const WALL = 8;
+const BUMPER_R = 15;
+const FW = 62;
+const FH = 11;
+const PLUNGER_X = TW - 16;
 
 interface CyberPinballProps {
   onScoreUpdate?: (score: number) => void;
@@ -66,75 +36,62 @@ interface CyberPinballProps {
   onGameOver?: (finalScore: number) => void;
 }
 
-type Particle = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; color: string; size: number };
-type Raindrop = { x: number; y: number; speed: number; len: number };
-type Star = { x: number; y: number; size: number; twinkleSpeed: number; phase: number };
+type Particle = { x: number; y: number; vx: number; vy: number; life: number; color: string; size: number };
 
 export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBallLost, onGameOver }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const runnerRef = useRef<Matter.Runner | null>(null);
-  const animRef = useRef<number>(0);
-  const particles = useRef<Particle[]>([]);
-  const rain = useRef<Raindrop[]>([]);
-  const stars = useRef<Star[]>([]);
+  const animRef = useRef(0);
   const frame = useRef(0);
+  const particles = useRef<Particle[]>([]);
 
+  // ── Game state ref ──
   const G = useRef({
-    score: 0, balls: 3, gameOver: false,
+    score: 0, balls: 3, gameOver: false, launched: false,
     currentBall: null as Matter.Body | null,
-    leftUp: false, rightUp: false,
     leftFlipper: null as Matter.Body | null,
     rightFlipper: null as Matter.Body | null,
-    plungerPower: 0, plungerCharging: false, launched: false,
-    tiltWarnings: 0, tilted: false,
-    combo: 0, comboTimer: 0,
-    // CCA lanes
-    ccaLanes: [false, false, false] as boolean[],
-    // Reactor Core
-    reactorCharge: 0, // 0-100
-    overdrive: false, overdriveTimer: 0,
-    // CYBER targets (5 in sequence)
-    cyberTargets: [false, false, false, false, false] as boolean[],
-    cyberIndex: 0, // next expected target
-    cyberSurge: false, cyberSurgeTimer: 0,
-    // Ramp hit counts
-    downtownHits: 0, neonHits: 0,
-    downtownRush: false, downtownRushTimer: 0,
-    // Orbit combo
-    orbitCombo: 0, lastOrbitSide: '' as string,
-    // Multiball
-    lockedBalls: 0, multiball: false,
+    leftUp: false, rightUp: false,
+    plungerPower: 0, plungerCharging: false,
+    combo: 0, comboTimer: 0, maxCombo: 0,
+    // Demon targets (6 drop targets in 2 banks)
+    demonTargetsL: [false, false, false] as boolean[],
+    demonTargetsR: [false, false, false] as boolean[],
+    demonMode: false, demonTimer: 0,
+    // Orbit tracking
+    orbitCount: 0, lastOrbitDir: '',
+    // Reactor charge
+    reactorCharge: 0, overdriveActive: false, overdriveTimer: 0,
+    // Multi-ball
+    lockedBalls: 0, multiballActive: false,
     extraBalls: [] as Matter.Body[],
-    // Kickback
-    kickbackActive: false,
-    // Visuals
+    // Visual
     bumperFlash: new Map<string, number>(),
-    lightningFlash: 0,
+    trail: [] as { x: number; y: number; age: number }[],
     shake: { x: 0, y: 0, power: 0 },
-    trail: [] as Array<{ x: number; y: number; age: number }>,
-    spinnerAngle: 0, spinnerSpeed: 0,
+    lightFlash: 0,
     skillShot: true,
-    // Skyline buildings that light up
-    buildingLit: new Array(12).fill(false) as boolean[],
+    tiltWarnings: 0, tilted: false,
+    // Cyber letters
+    cyberLetters: [false, false, false, false, false] as boolean[],
+    cyberComplete: 0,
+    // Buildings lit
+    buildingsLit: 0,
   });
 
   const [score, setScore] = useState(0);
   const [balls, setBalls] = useState(3);
-  const [tiltW, setTiltW] = useState(0);
-  const [tilted, setTilted] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
   const [combo, setCombo] = useState(0);
-  const [ccaLanes, setCcaLanes] = useState([false, false, false]);
-  const [reactorCharge, setReactorCharge] = useState(0);
-  const [overdrive, setOverdrive] = useState(false);
-  const [cyberTargets, setCyberTargets] = useState([false, false, false, false, false]);
+  const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('');
-  const [downtownHits, setDowntownHits] = useState(0);
-  const [neonHits, setNeonHits] = useState(0);
-  const [lockedBalls, setLockedBalls] = useState(0);
   const [plungerDisplay, setPlungerDisplay] = useState(0);
-  const [isCharging, setIsCharging] = useState(false);
+  const [demonMode, setDemonMode] = useState(false);
+  const [overdrive, setOverdrive] = useState(false);
+  const [reactorCharge, setReactorCharge] = useState(0);
+  const [cyberLetters, setCyberLetters] = useState([false, false, false, false, false]);
+  const [lockedBalls, setLockedBalls] = useState(0);
+  const [tiltW, setTiltW] = useState(0);
 
   const showMsg = useCallback((msg: string, dur = 2000) => {
     setMessage(msg);
@@ -146,150 +103,162 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     if (g.tilted || g.gameOver) return;
     g.combo++;
     g.comboTimer = Date.now() + 3000;
-    const mult = Math.min(g.combo, 5);
-    const overdriveMult = g.overdrive ? 2 : 1;
-    const surgeMult = g.cyberSurge ? 1.5 : 1;
-    const total = Math.round(pts * mult * overdriveMult * surgeMult);
+    if (g.combo > g.maxCombo) g.maxCombo = g.combo;
+    const mult = Math.min(g.combo, 8);
+    const dm = g.demonMode ? 3 : 1;
+    const od = g.overdriveActive ? 2 : 1;
+    const total = Math.round(pts * mult * dm * od);
     g.score += total;
     setScore(g.score);
     setCombo(g.combo);
     onScoreUpdate?.(g.score);
-    if (mult > 1) showMsg(`${mult}x COMBO! +${total}`);
-  }, [onScoreUpdate, showMsg]);
+  }, [onScoreUpdate]);
 
   const spawnParticles = useCallback((x: number, y: number, count: number, color: string, spread = 5) => {
+    if (!fin(x) || !fin(y)) return;
     for (let i = 0; i < count; i++) {
       particles.current.push({
         x, y,
         vx: (Math.random() - 0.5) * spread,
         vy: (Math.random() - 0.5) * spread - 2,
-        life: 25 + Math.random() * 15,
-        maxLife: 40,
-        color, size: 1.5 + Math.random() * 2.5,
+        life: 20 + Math.random() * 15,
+        color, size: 1 + Math.random() * 2.5,
       });
     }
   }, []);
 
-  // ── Initialize physics ──
+  // ═══════════════════════════════════════
+  // ── PHYSICS INIT ──
+  // ═══════════════════════════════════════
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const engine = Engine.create({ gravity: { x: 0, y: 1.4, scale: 0.001 } });
-    engineRef.current = engine;
     const ctx = canvas.getContext('2d')!;
     canvas.width = TW;
     canvas.height = TH;
 
-    const w: Matter.Body[] = []; // walls
+    const engine = Engine.create({ gravity: { x: 0, y: 1.3, scale: 0.001 } });
+    engineRef.current = engine;
 
-    // ── Outer walls ──
-    w.push(Bodies.rectangle(WALL / 2, TH / 2, WALL, TH, { isStatic: true, label: 'wall' }));
-    w.push(Bodies.rectangle(TW - WALL / 2, TH / 2 - 120, WALL, TH - 240, { isStatic: true, label: 'wall' }));
-    w.push(Bodies.rectangle(TW / 2, WALL / 2, TW, WALL, { isStatic: true, label: 'wall' }));
-    w.push(Bodies.rectangle(TW / 2, TH + 20, TW, 40, { isStatic: true, label: 'drain' }));
-    // Plunger lane walls
-    w.push(Bodies.rectangle(TW - WALL / 2, TH - 60, WALL, 120, { isStatic: true, label: 'wall' }));
-    w.push(Bodies.rectangle(TW - 38, TH - 200, 5, 220, { isStatic: true, label: 'wall', angle: 0.04 }));
-    w.push(Bodies.rectangle(TW - 55, TH - 330, 55, 5, { isStatic: true, label: 'wall', angle: -0.35 }));
+    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.3 };
+    const sensorOpts = (label: string) => ({ isStatic: true, isSensor: true, label });
 
-    // ── Left orbit lane (curved wall segments) ──
-    w.push(Bodies.rectangle(22, 200, 5, 250, { isStatic: true, label: 'orbit_wall' }));
-    w.push(Bodies.rectangle(40, 75, 50, 5, { isStatic: true, label: 'orbit_wall', angle: -0.3 }));
-    // Right orbit
-    w.push(Bodies.rectangle(TW - 50, 200, 5, 250, { isStatic: true, label: 'orbit_wall' }));
-    w.push(Bodies.rectangle(TW - 65, 75, 50, 5, { isStatic: true, label: 'orbit_wall', angle: 0.3 }));
-
-    // Orbit sensors
-    const leftOrbitSensor = Bodies.rectangle(30, 120, 20, 10, { isStatic: true, isSensor: true, label: 'orbit_left' });
-    const rightOrbitSensor = Bodies.rectangle(TW - 58, 120, 20, 10, { isStatic: true, isSensor: true, label: 'orbit_right' });
-
-    // ── Outlanes & inlanes ──
-    w.push(Bodies.rectangle(32, TH - 180, 5, 140, { isStatic: true, label: 'wall', angle: 0.12 }));
-    w.push(Bodies.rectangle(TW - 62, TH - 180, 5, 140, { isStatic: true, label: 'wall', angle: -0.12 }));
-    w.push(Bodies.rectangle(68, TH - 150, 5, 100, { isStatic: true, label: 'wall', angle: 0.18 }));
-    w.push(Bodies.rectangle(TW - 98, TH - 150, 5, 100, { isStatic: true, label: 'wall', angle: -0.18 }));
+    // ── Walls ──
+    const walls = [
+      // Outer frame
+      Bodies.rectangle(WALL / 2, TH / 2, WALL, TH, wallOpts),
+      Bodies.rectangle(TW / 2, WALL / 2, TW, WALL, wallOpts),
+      Bodies.rectangle(TW / 2, TH + 20, TW, 40, { isStatic: true, label: 'drain' }),
+      // Right wall (gap for plunger lane)
+      Bodies.rectangle(TW - WALL / 2, TH / 2 - 140, WALL, TH - 280, wallOpts),
+      Bodies.rectangle(TW - WALL / 2, TH - 55, WALL, 110, wallOpts),
+      // Plunger lane inner wall
+      Bodies.rectangle(TW - 34, TH - 190, 4, 200, { ...wallOpts, angle: 0.03 }),
+      // Plunger lane top curve
+      Bodies.rectangle(TW - 48, TH - 310, 45, 4, { ...wallOpts, angle: -0.32 }),
+      // Outlane / inlane guides (left)
+      Bodies.rectangle(30, TH - 170, 4, 130, { ...wallOpts, angle: 0.12 }),
+      Bodies.rectangle(62, TH - 145, 4, 95, { ...wallOpts, angle: 0.16 }),
+      // Outlane / inlane guides (right)
+      Bodies.rectangle(TW - 58, TH - 170, 4, 130, { ...wallOpts, angle: -0.12 }),
+      Bodies.rectangle(TW - 90, TH - 145, 4, 95, { ...wallOpts, angle: -0.16 }),
+      // Orbit lane walls
+      Bodies.rectangle(20, 195, 4, 230, wallOpts),
+      Bodies.rectangle(38, 78, 42, 4, { ...wallOpts, angle: -0.3 }),
+      Bodies.rectangle(TW - 46, 195, 4, 230, wallOpts),
+      Bodies.rectangle(TW - 60, 78, 42, 4, { ...wallOpts, angle: 0.3 }),
+    ];
 
     // ── Flippers ──
-    const lfX = TW / 2 - 58, rfX = TW / 2 + 58, fY = TH - 72;
-    const lf = Bodies.rectangle(lfX, fY, FW, FH, { label: 'leftFlipper', density: 0.02, frictionAir: 0.02, chamfer: { radius: 5 } });
-    const rf = Bodies.rectangle(rfX, fY, FW, FH, { label: 'rightFlipper', density: 0.02, frictionAir: 0.02, chamfer: { radius: 5 } });
-    const lp = Constraint.create({ bodyA: lf, pointA: { x: -FW / 2 + 7, y: 0 }, pointB: { x: lfX - FW / 2 + 7, y: fY }, stiffness: 1, length: 0 });
-    const rp = Constraint.create({ bodyA: rf, pointA: { x: FW / 2 - 7, y: 0 }, pointB: { x: rfX + FW / 2 - 7, y: fY }, stiffness: 1, length: 0 });
+    const lfX = TW / 2 - 52, rfX = TW / 2 + 52, fY = TH - 68;
+    const lf = Bodies.rectangle(lfX, fY, FW, FH, { label: 'leftFlipper', density: 0.02, frictionAir: 0.02, chamfer: { radius: 4 } });
+    const rf = Bodies.rectangle(rfX, fY, FW, FH, { label: 'rightFlipper', density: 0.02, frictionAir: 0.02, chamfer: { radius: 4 } });
+    const lp = Constraint.create({ bodyA: lf, pointA: { x: -FW / 2 + 6, y: 0 }, pointB: { x: lfX - FW / 2 + 6, y: fY }, stiffness: 1, length: 0 });
+    const rp = Constraint.create({ bodyA: rf, pointA: { x: FW / 2 - 6, y: 0 }, pointB: { x: rfX + FW / 2 - 6, y: fY }, stiffness: 1, length: 0 });
     G.current.leftFlipper = lf;
     G.current.rightFlipper = rf;
 
-    // ── Slingshots (wider) ──
-    const lSling = Bodies.fromVertices(88, TH - 155, [[ { x: 0, y: 0 }, { x: 35, y: 55 }, { x: -5, y: 55 } ]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
-    const rSling = Bodies.fromVertices(TW - 118, TH - 155, [[ { x: 0, y: 0 }, { x: 5, y: 55 }, { x: -35, y: 55 } ]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
+    // ── Slingshots ──
+    const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
+    const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
 
-    // ── ZONE 2: Reactor Core (3 bumpers + center) ──
-    const rcX = TW / 2, rcY = 240;
+    // ── TIER 1: Upper bumper cluster (Demon's Tilt style triangle + extra) ──
+    const bCX = TW / 2, bCY = 225;
     const bumpers = [
-      Bodies.circle(rcX, rcY - 42, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.1 }),
-      Bodies.circle(rcX - 38, rcY + 22, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.1 }),
-      Bodies.circle(rcX + 38, rcY + 22, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.1 }),
-    ];
-    // Reactor core sensor (center of triangle)
-    const reactorSensor = Bodies.circle(rcX, rcY, 10, { isStatic: true, isSensor: true, label: 'reactor_core' });
-
-    // ── ZONE 1: CCA Rollover lanes ──
-    const laneY = 55;
-    const ccaSensors = [
-      Bodies.rectangle(TW / 2 - 55, laneY, 12, 28, { isStatic: true, isSensor: true, label: 'cca_0' }),
-      Bodies.rectangle(TW / 2, laneY, 12, 28, { isStatic: true, isSensor: true, label: 'cca_1' }),
-      Bodies.rectangle(TW / 2 + 55, laneY, 12, 28, { isStatic: true, isSensor: true, label: 'cca_2' }),
-    ];
-    const laneGuides = [
-      Bodies.rectangle(TW / 2 - 82, laneY, 3, 38, { isStatic: true, label: 'wall' }),
-      Bodies.rectangle(TW / 2 - 28, laneY, 3, 38, { isStatic: true, label: 'wall' }),
-      Bodies.rectangle(TW / 2 + 28, laneY, 3, 38, { isStatic: true, label: 'wall' }),
-      Bodies.rectangle(TW / 2 + 82, laneY, 3, 38, { isStatic: true, label: 'wall' }),
+      Bodies.circle(bCX, bCY - 40, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.15 }),
+      Bodies.circle(bCX - 36, bCY + 18, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.15 }),
+      Bodies.circle(bCX + 36, bCY + 18, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.15 }),
+      // Upper mini bumpers
+      Bodies.circle(bCX - 65, bCY - 55, 10, { isStatic: true, label: 'bumper_3', restitution: 1.2 }),
+      Bodies.circle(bCX + 65, bCY - 55, 10, { isStatic: true, label: 'bumper_4', restitution: 1.2 }),
     ];
 
-    // ── ZONE 3: Downtown Ramp (left) ──
-    const lRamp = Bodies.rectangle(55, 340, 5, 180, { isStatic: true, label: 'ramp_left', angle: 0.22 });
-    const lRampGuide = Bodies.rectangle(80, 340, 5, 180, { isStatic: true, label: 'ramp_guide', angle: 0.22 });
-    const lRampSensor = Bodies.rectangle(55, 250, 15, 10, { isStatic: true, isSensor: true, label: 'ramp_left_hit' });
+    // ── Reactor core sensor ──
+    const reactorSensor = Bodies.circle(bCX, bCY, 8, sensorOpts('reactor_core'));
 
-    // ── ZONE 4: Neon Highway Ramp (right) ──
-    const rRamp = Bodies.rectangle(TW - 85, 340, 5, 180, { isStatic: true, label: 'ramp_right', angle: -0.22 });
-    const rRampGuide = Bodies.rectangle(TW - 110, 340, 5, 180, { isStatic: true, label: 'ramp_guide', angle: -0.22 });
-    const rRampSensor = Bodies.rectangle(TW - 85, 250, 15, 10, { isStatic: true, isSensor: true, label: 'ramp_right_hit' });
-
-    // ── ZONE 5: CYBER Target Bank (5 narrow targets) ──
-    const cyberY = 440;
-    const cyberSpacing = 28;
-    const cyberStartX = TW / 2 - (cyberSpacing * 2);
-    const cyberBodies = 'CYBER'.split('').map((_, i) =>
-      Bodies.rectangle(cyberStartX + i * cyberSpacing, cyberY, 5, 22, { isStatic: true, isSensor: true, label: `cyber_${i}` })
+    // ── TIER 2: CYBER letter lanes (top) ──
+    const laneY = 52;
+    const cyberSensors = 'CYBER'.split('').map((_, i) =>
+      Bodies.rectangle(TW / 2 - 60 + i * 30, laneY, 10, 24, sensorOpts(`cyber_${i}`))
     );
-    // Backing wall behind targets
-    w.push(Bodies.rectangle(TW / 2, cyberY - 15, cyberSpacing * 5 + 10, 4, { isStatic: true, label: 'wall' }));
+    const laneGuides = [
+      Bodies.rectangle(TW / 2 - 78, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 - 45, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 - 15, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 + 15, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 + 45, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 + 78, laneY, 3, 34, wallOpts),
+    ];
 
-    // ── Spinner (Reactor area) ──
-    const spinner = Bodies.rectangle(rcX, rcY - 80, 36, 3, { isStatic: true, isSensor: true, label: 'spinner' });
+    // ── TIER 3: Drop target banks (Demon-style) ──
+    const dtY = 410;
+    const demonTargetsL = [0, 1, 2].map(i =>
+      Bodies.rectangle(60 + i * 22, dtY, 4, 20, sensorOpts(`demon_l_${i}`))
+    );
+    const demonTargetsR = [0, 1, 2].map(i =>
+      Bodies.rectangle(TW - 104 + i * 22, dtY, 4, 20, sensorOpts(`demon_r_${i}`))
+    );
+    // Backing walls for targets
+    walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, wallOpts));
+    walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, wallOpts));
 
-    // ── Kickback (left outlane) ──
-    const kickback = Bodies.rectangle(16, TH - 220, 7, 35, { isStatic: true, label: 'kickback', restitution: 1.8 });
+    // ── Orbit sensors ──
+    const orbitL = Bodies.rectangle(28, 115, 16, 8, sensorOpts('orbit_left'));
+    const orbitR = Bodies.rectangle(TW - 52, 115, 16, 8, sensorOpts('orbit_right'));
 
-    // ── Multiball lock sensor (behind reactor) ──
-    const lockSensor = Bodies.rectangle(rcX, rcY + 65, 30, 8, { isStatic: true, isSensor: true, label: 'multiball_lock' });
+    // ── Ramp entries ──
+    const rampL = Bodies.rectangle(52, 330, 4, 160, { ...wallOpts, angle: 0.2 });
+    const rampLGuide = Bodies.rectangle(76, 330, 4, 160, { ...wallOpts, angle: 0.2 });
+    const rampLSensor = Bodies.rectangle(52, 250, 12, 8, sensorOpts('ramp_left'));
+    const rampR = Bodies.rectangle(TW - 76, 330, 4, 160, { ...wallOpts, angle: -0.2 });
+    const rampRGuide = Bodies.rectangle(TW - 100, 330, 4, 160, { ...wallOpts, angle: -0.2 });
+    const rampRSensor = Bodies.rectangle(TW - 76, 250, 12, 8, sensorOpts('ramp_right'));
 
-    // Add all
+    // ── Spinner ──
+    const spinner = Bodies.rectangle(bCX, bCY - 78, 32, 3, sensorOpts('spinner'));
+
+    // ── Multiball lock ──
+    const lockSensor = Bodies.rectangle(bCX, bCY + 60, 26, 6, sensorOpts('multiball_lock'));
+
+    // ── Kickback ──
+    const kickback = Bodies.rectangle(14, TH - 210, 6, 30, { isStatic: true, label: 'kickback', restitution: 1.6 });
+
+    // ── Assemble ──
     Composite.add(engine.world, [
-      ...w, lf, rf, lp, rp,
-      lSling || Bodies.circle(0, 0, 1, { isStatic: true }),
-      rSling || Bodies.circle(0, 0, 1, { isStatic: true }),
+      ...walls, lf, rf, lp, rp,
+      ...(lSling ? [lSling] : []), ...(rSling ? [rSling] : []),
       ...bumpers, reactorSensor,
-      ...ccaSensors, ...laneGuides,
-      lRamp, lRampGuide, lRampSensor,
-      rRamp, rRampGuide, rRampSensor,
-      ...cyberBodies,
-      spinner, kickback, lockSensor,
-      leftOrbitSensor, rightOrbitSensor,
+      ...cyberSensors, ...laneGuides,
+      ...demonTargetsL, ...demonTargetsR,
+      orbitL, orbitR,
+      rampL, rampLGuide, rampLSensor,
+      rampR, rampRGuide, rampRSensor,
+      spinner, lockSensor, kickback,
     ]);
 
-    // ── Collision events ──
+    // ═══════════════════════════════════════
+    // ── COLLISION HANDLING ──
+    // ═══════════════════════════════════════
     Events.on(engine, 'collisionStart', (event) => {
       const g = G.current;
       for (const pair of event.pairs) {
@@ -300,31 +269,31 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         // Drain
         if (labels.includes('drain')) { handleDrain(ball); continue; }
 
-        // Bumpers → Reactor charge
-        for (let i = 0; i < 3; i++) {
+        // Bumpers
+        for (let i = 0; i < 5; i++) {
           if (labels.includes(`bumper_${i}`)) {
-            addScore(100);
-            g.bumperFlash.set(`bumper_${i}`, Date.now() + 300);
-            g.shake.power = 5;
-            g.lightningFlash = 0.4;
-            // Reactor charge
-            g.reactorCharge = Math.min(g.reactorCharge + 12, 100);
+            const pts = i < 3 ? 100 : 75;
+            addScore(pts);
+            g.bumperFlash.set(`bumper_${i}`, Date.now() + 250);
+            g.shake.power = 4;
+            g.lightFlash = 0.3;
+            g.reactorCharge = Math.min(g.reactorCharge + 10, 100);
             setReactorCharge(g.reactorCharge);
-            if (g.reactorCharge >= 100 && !g.overdrive) {
-              g.overdrive = true;
-              g.overdriveTimer = Date.now() + 12000;
+            if (g.reactorCharge >= 100 && !g.overdriveActive) {
+              g.overdriveActive = true;
+              g.overdriveTimer = Date.now() + 15000;
               setOverdrive(true);
-              showMsg('⚡ OVERDRIVE! 2x SCORING!', 3000);
-              g.lightningFlash = 1;
+              showMsg('⚡ OVERDRIVE ENGAGED! 2x SCORING!', 3000);
+              g.lightFlash = 1;
             }
             // Bounce
             const bmp = pair.bodyA.label === `bumper_${i}` ? pair.bodyA : pair.bodyB;
-            const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
-            Body.applyForce(ball, ball.position, { x: d.x * 0.009, y: d.y * 0.009 });
-            spawnParticles(ball.position.x, ball.position.y, 10, 'rgba(232, 121, 249, 1)', 6);
-            // Light a building
-            const unlit = g.buildingLit.findIndex(b => !b);
-            if (unlit >= 0) g.buildingLit[unlit] = true;
+            if (fin(ball.position.x) && fin(bmp.position.x)) {
+              const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
+              Body.applyForce(ball, ball.position, { x: d.x * 0.008, y: d.y * 0.008 });
+            }
+            spawnParticles(ball.position.x, ball.position.y, 8, '#e879f9', 5);
+            g.buildingsLit = Math.min(g.buildingsLit + 1, 14);
           }
         }
 
@@ -332,149 +301,120 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (labels.includes('slingshot')) {
           addScore(50);
           g.shake.power = 2;
-          spawnParticles(ball.position.x, ball.position.y, 5, 'rgba(250, 204, 21, 1)', 4);
+          spawnParticles(ball.position.x, ball.position.y, 4, '#facc15', 3);
         }
 
-        // CCA lanes
-        for (let i = 0; i < 3; i++) {
-          if (labels.includes(`cca_${i}`) && !g.ccaLanes[i]) {
-            g.ccaLanes[i] = true;
-            setCcaLanes([...g.ccaLanes]);
+        // CYBER letters
+        for (let i = 0; i < 5; i++) {
+          if (labels.includes(`cyber_${i}`) && !g.cyberLetters[i]) {
+            g.cyberLetters[i] = true;
+            setCyberLetters([...g.cyberLetters]);
             addScore(500);
-            showMsg(['C', 'C', 'A'][i] + ' LANE LIT!');
-            // Light building
-            const unlit = g.buildingLit.findIndex(b => !b);
-            if (unlit >= 0) g.buildingLit[unlit] = true;
-            if (g.ccaLanes.every(Boolean)) {
-              addScore(10000);
-              showMsg('🌆 SKYLINE JACKPOT! +10,000', 3000);
-              g.ccaLanes = [false, false, false];
-              setCcaLanes([false, false, false]);
-              g.buildingLit = new Array(12).fill(true);
-              g.lightningFlash = 1;
-              setTimeout(() => { g.buildingLit = new Array(12).fill(false); }, 5000);
+            showMsg(`${'CYBER'[i]} LIT!`);
+            spawnParticles(ball.position.x, ball.position.y, 6, '#00e5ff', 4);
+            if (g.cyberLetters.every(Boolean)) {
+              g.cyberComplete++;
+              g.cyberLetters.fill(false);
+              setCyberLetters([false, false, false, false, false]);
+              const bonus = 5000 * g.cyberComplete;
+              addScore(bonus);
+              showMsg(`🌆 CYBER CITY JACKPOT x${g.cyberComplete}! +${bonus.toLocaleString()}`, 3000);
+              g.lightFlash = 1;
+              g.shake.power = 6;
+              g.buildingsLit = 14;
             }
           }
+        }
+
+        // Demon drop targets
+        for (let i = 0; i < 3; i++) {
+          if (labels.includes(`demon_l_${i}`) && !g.demonTargetsL[i]) {
+            g.demonTargetsL[i] = true;
+            addScore(200);
+            spawnParticles(ball.position.x, ball.position.y, 5, '#ff4444', 4);
+          }
+          if (labels.includes(`demon_r_${i}`) && !g.demonTargetsR[i]) {
+            g.demonTargetsR[i] = true;
+            addScore(200);
+            spawnParticles(ball.position.x, ball.position.y, 5, '#ff4444', 4);
+          }
+        }
+        if (g.demonTargetsL.every(Boolean) && g.demonTargetsR.every(Boolean) && !g.demonMode) {
+          g.demonMode = true;
+          g.demonTimer = Date.now() + 20000;
+          setDemonMode(true);
+          showMsg('👹 DEMON MODE! 3x SCORING!', 4000);
+          g.lightFlash = 1;
+          g.shake.power = 8;
         }
 
         // Orbits
         if (labels.includes('orbit_left') || labels.includes('orbit_right')) {
-          const side = labels.includes('orbit_left') ? 'left' : 'right';
-          if (g.lastOrbitSide !== side) {
-            g.orbitCombo++;
-            g.lastOrbitSide = side;
-            addScore(200 * g.orbitCombo);
-            showMsg(`ORBIT x${g.orbitCombo}! +${200 * g.orbitCombo}`);
-          } else {
-            g.orbitCombo = 1;
-            g.lastOrbitSide = side;
-            addScore(200);
-          }
+          const dir = labels.includes('orbit_left') ? 'left' : 'right';
+          if (g.lastOrbitDir !== dir) { g.orbitCount++; g.lastOrbitDir = dir; }
+          else { g.orbitCount = 1; g.lastOrbitDir = dir; }
+          addScore(150 * g.orbitCount);
+          if (g.orbitCount > 1) showMsg(`ORBIT x${g.orbitCount}!`);
         }
 
         // Ramps
-        if (labels.includes('ramp_left_hit')) {
-          g.downtownHits++;
-          setDowntownHits(g.downtownHits);
+        if (labels.includes('ramp_left') || labels.includes('ramp_right')) {
           addScore(300);
-          showMsg(`DOWNTOWN RUSH! (${g.downtownHits}/3)`);
-          if (g.downtownHits >= 3 && !g.downtownRush) {
-            g.downtownRush = true;
-            g.downtownRushTimer = Date.now() + 15000;
-            showMsg('🔥 DOWNTOWN RUSH MODE!', 3000);
-          }
-          spawnParticles(ball.position.x, ball.position.y, 6, 'rgba(34, 211, 238, 1)');
-        }
-        if (labels.includes('ramp_right_hit')) {
-          g.neonHits++;
-          setNeonHits(g.neonHits);
-          addScore(300);
-          showMsg(`NEON HIGHWAY! (${g.neonHits})`);
-          spawnParticles(ball.position.x, ball.position.y, 6, 'rgba(255, 0, 110, 1)');
-        }
-
-        // CYBER targets (must hit in sequence)
-        for (let i = 0; i < 5; i++) {
-          if (labels.includes(`cyber_${i}`)) {
-            if (i === g.cyberIndex) {
-              g.cyberTargets[i] = true;
-              setCyberTargets([...g.cyberTargets]);
-              g.cyberIndex++;
-              addScore(400);
-              showMsg('CYBER'.charAt(i) + ' HIT!');
-              spawnParticles(ball.position.x, ball.position.y, 8, 'rgba(0, 229, 255, 1)');
-              if (g.cyberIndex >= 5) {
-                g.cyberSurge = true;
-                g.cyberSurgeTimer = Date.now() + 15000;
-                showMsg('⚡ CYBER SURGE! 1.5x SCORING!', 3000);
-                g.lightningFlash = 0.8;
-              }
-            } else {
-              // Wrong sequence — reset
-              g.cyberTargets.fill(false);
-              g.cyberIndex = 0;
-              setCyberTargets([false, false, false, false, false]);
-              showMsg('SEQUENCE RESET');
-            }
-          }
+          showMsg(labels.includes('ramp_left') ? 'DOWNTOWN RAMP!' : 'NEON HIGHWAY!');
+          spawnParticles(ball.position.x, ball.position.y, 6, '#22d3ee', 4);
         }
 
         // Spinner
-        if (labels.includes('spinner')) {
-          g.spinnerSpeed = 18;
-          addScore(25);
-        }
-
-        // Kickback
-        if (labels.includes('kickback') && g.kickbackActive) {
-          Body.applyForce(ball, ball.position, { x: 0.003, y: -0.018 });
-          addScore(100);
-          showMsg('KICKBACK!');
-          g.kickbackActive = false;
-        }
+        if (labels.includes('spinner')) { addScore(25); }
 
         // Multiball lock
-        if (labels.includes('multiball_lock') && !g.multiball && g.lockedBalls < 2) {
+        if (labels.includes('multiball_lock') && !g.multiballActive && g.lockedBalls < 2) {
           g.lockedBalls++;
           setLockedBalls(g.lockedBalls);
           addScore(1000);
           showMsg(`BALL LOCKED! (${g.lockedBalls}/2)`);
           if (g.lockedBalls >= 2) {
-            // CYBER STORM MULTIBALL
-            g.multiball = true;
-            g.lightningFlash = 1;
+            g.multiballActive = true;
+            g.lightFlash = 1;
             g.shake.power = 8;
             showMsg('🌩 CYBER STORM MULTIBALL!', 4000);
-            // Spawn 2 extra balls
             for (let b = 0; b < 2; b++) {
-              const extra = Bodies.circle(TW / 2 + (b - 0.5) * 40, 100, BALL_R, {
-                label: 'ball', restitution: 0.45, friction: 0.01, frictionAir: 0.001, density: 0.004,
+              const extra = Bodies.circle(TW / 2 + (b - 0.5) * 35, 100, BALL_R, {
+                label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
               });
               Composite.add(engine.world, extra);
               g.extraBalls.push(extra);
-              Body.applyForce(extra, extra.position, { x: (Math.random() - 0.5) * 0.005, y: 0.005 });
+              Body.applyForce(extra, extra.position, { x: (Math.random() - 0.5) * 0.004, y: 0.004 });
             }
           }
         }
 
         // Skill shot
-        if (g.skillShot && labels.includes('cca_1')) {
+        if (g.skillShot && labels.includes('cyber_2')) {
           addScore(3000);
           showMsg('🎯 SKILL SHOT! +3000', 2500);
           g.skillShot = false;
-          spawnParticles(ball.position.x, ball.position.y, 15, 'rgba(255, 255, 255, 1)', 8);
+          spawnParticles(ball.position.x, ball.position.y, 12, '#ffffff', 7);
+        }
+
+        // Kickback
+        if (labels.includes('kickback')) {
+          if (fin(ball.position.x)) Body.applyForce(ball, ball.position, { x: 0.003, y: -0.016 });
+          addScore(100);
+          showMsg('KICKBACK!');
         }
       }
     });
 
+    // ── Drain handler ──
     const handleDrain = (ball: Matter.Body) => {
       const g = G.current;
-      Composite.remove(engine.world, ball);
+      try { Composite.remove(engine.world, ball); } catch {}
       const extraIdx = g.extraBalls.indexOf(ball);
       if (extraIdx >= 0) {
         g.extraBalls.splice(extraIdx, 1);
-        if (g.extraBalls.length === 0 && g.multiball) {
-          g.multiball = false;
+        if (g.extraBalls.length === 0 && g.multiballActive) {
+          g.multiballActive = false;
           showMsg('MULTIBALL ENDED');
         }
         return;
@@ -483,8 +423,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.balls--;
       g.launched = false;
       g.skillShot = true;
-      g.orbitCombo = 0;
-      g.lastOrbitSide = '';
+      g.orbitCount = 0;
+      g.lastOrbitDir = '';
+      g.trail = [];
       setBalls(g.balls);
       onBallLost?.(g.balls);
       if (g.balls <= 0) {
@@ -494,58 +435,53 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         showMsg('GAME OVER');
       } else {
         showMsg(`BALL LOST — ${g.balls} LEFT`);
-        setTimeout(() => spawnBall(), 1200);
+        setTimeout(() => spawnBall(), 1000);
       }
     };
 
+    // ── Spawn ball ──
     const spawnBall = () => {
       const g = G.current;
       if (g.currentBall || g.gameOver) return;
-      const ball = Bodies.circle(PLUNGER_X, TH - 40, BALL_R, {
-        label: 'ball', restitution: 0.45, friction: 0.01, frictionAir: 0.001, density: 0.004,
-        isStatic: true, // Hold ball in place until launched
+      const ball = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
+        label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
+        isStatic: true,
       });
       Composite.add(engine.world, ball);
       g.currentBall = ball;
       g.launched = false;
       g.tilted = false;
       g.tiltWarnings = 0;
-      setTilted(false);
       setTiltW(0);
       setPlungerDisplay(0);
-      setIsCharging(false);
     };
 
-    setTimeout(() => spawnBall(), 500);
+    setTimeout(() => spawnBall(), 400);
 
     const runner = Runner.create();
     Runner.run(runner, engine);
     runnerRef.current = runner;
 
     // ═══════════════════════════════════════
-    // ──────── RENDER LOOP ────────
+    // ── RENDER LOOP ──
     // ═══════════════════════════════════════
     const renderLoop = () => {
       const g = G.current;
       const f = frame.current++;
       const t = f * 0.016;
 
-      // ── Ball recovery: detect invalid physics state ──
+      // ── Ball recovery ──
       if (g.currentBall) {
-        const bp = g.currentBall.position;
-        const bv = g.currentBall.velocity;
-        if (!fin(bp.x) || !fin(bp.y) || !fin(bv.x) || !fin(bv.y)) {
-          // Remove broken ball, preserve game state
+        const p = g.currentBall.position;
+        const v = g.currentBall.velocity;
+        if (!fin(p.x) || !fin(p.y) || !fin(v.x) || !fin(v.y)) {
           try { Composite.remove(engine.world, g.currentBall); } catch {}
           g.currentBall = null;
           g.launched = false;
           g.trail = [];
-          if (!g.gameOver && g.balls > 0) {
-            setTimeout(() => spawnBall(), 800);
-          }
+          if (!g.gameOver && g.balls > 0) setTimeout(() => spawnBall(), 600);
         }
       }
-      // Also check extra balls
       for (let ei = g.extraBalls.length - 1; ei >= 0; ei--) {
         const eb = g.extraBalls[ei];
         if (!fin(eb.position.x) || !fin(eb.position.y)) {
@@ -554,254 +490,214 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
-      // Timers
-      if (g.combo > 0 && Date.now() > g.comboTimer) { g.combo = 0; setCombo(0); }
-      if (g.overdrive && Date.now() > g.overdriveTimer) {
-        g.overdrive = false; g.reactorCharge = 0;
+      // ── Timers ──
+      const now = Date.now();
+      if (g.combo > 0 && now > g.comboTimer) { g.combo = 0; setCombo(0); }
+      if (g.overdriveActive && now > g.overdriveTimer) {
+        g.overdriveActive = false; g.reactorCharge = 0;
         setOverdrive(false); setReactorCharge(0);
       }
-      if (g.cyberSurge && Date.now() > g.cyberSurgeTimer) {
-        g.cyberSurge = false;
-        g.cyberTargets.fill(false); g.cyberIndex = 0;
-        setCyberTargets([false, false, false, false, false]);
-      }
-      if (g.downtownRush && Date.now() > g.downtownRushTimer) {
-        g.downtownRush = false; g.downtownHits = 0;
-        setDowntownHits(0);
+      if (g.demonMode && now > g.demonTimer) {
+        g.demonMode = false;
+        g.demonTargetsL.fill(false);
+        g.demonTargetsR.fill(false);
+        setDemonMode(false);
       }
 
-      // Unlock kickback after completing CYBER targets once
-      if (g.cyberIndex >= 5) g.kickbackActive = true;
-
-      // Flipper physics
+      // ── Flipper physics ──
       if (g.leftFlipper) {
-        const ta = g.leftUp ? -0.55 : 0.4;
+        const ta = g.leftUp ? -0.52 : 0.38;
         Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 0.35);
       }
       if (g.rightFlipper) {
-        const ta = g.rightUp ? 0.55 : -0.4;
+        const ta = g.rightUp ? 0.52 : -0.38;
         Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.35);
       }
 
-      // Plunger - slider-based, no auto-charge needed
-
-      // Spinner
-      if (g.spinnerSpeed > 0) {
-        g.spinnerSpeed *= 0.96;
-        g.spinnerAngle += g.spinnerSpeed;
-        if (g.spinnerSpeed < 0.5) g.spinnerSpeed = 0;
-      }
-
-      // ══════ DRAW ══════
+      // ═══════════════════════════════════════
+      // ── DRAW ──
+      // ═══════════════════════════════════════
       ctx.save();
 
-      // Screen shake
-      if (g.shake.power > 0) {
+      // Shake
+      if (g.shake.power > 0.2) {
         g.shake.x = (Math.random() - 0.5) * g.shake.power;
         g.shake.y = (Math.random() - 0.5) * g.shake.power;
         ctx.translate(g.shake.x, g.shake.y);
         g.shake.power *= 0.82;
-        if (g.shake.power < 0.2) g.shake.power = 0;
+        if (g.shake.power < 0.3) g.shake.power = 0;
       }
 
       // ── Deep space background ──
-      const pfGrad = safeGrad(ctx, TW / 2, TH * 0.4, 30, TW / 2, TH * 0.4, TH * 0.8);
-      if (pfGrad) {
-        pfGrad.addColorStop(0, '#1a0a3a');
-        pfGrad.addColorStop(0.3, '#0d0628');
-        pfGrad.addColorStop(0.6, '#08041a');
-        pfGrad.addColorStop(1, '#030210');
-        ctx.fillStyle = pfGrad;
+      const bgGrad = radGrad(ctx, TW / 2, TH * 0.35, 20, TW / 2, TH * 0.35, TH * 0.85);
+      if (bgGrad) {
+        bgGrad.addColorStop(0, '#1a0533');
+        bgGrad.addColorStop(0.3, '#0c0320');
+        bgGrad.addColorStop(0.6, '#060214');
+        bgGrad.addColorStop(1, '#02010a');
+        ctx.fillStyle = bgGrad;
       } else {
-        ctx.fillStyle = '#0a0812';
+        ctx.fillStyle = '#060214';
       }
       ctx.fillRect(0, 0, TW, TH);
 
-      // ── Starfield ──
-      if (stars.current.length === 0) {
-        for (let i = 0; i < 120; i++) {
-          stars.current.push({
-            x: Math.random() * TW, y: Math.random() * TH,
-            size: Math.random() * 1.5 + 0.3,
-            twinkleSpeed: Math.random() * 3 + 1,
-            phase: Math.random() * Math.PI * 2,
-          });
-        }
-      }
-      for (const star of stars.current) {
-        const twinkle = Math.sin(t * star.twinkleSpeed + star.phase) * 0.5 + 0.5;
-        ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.6 + 0.1})`;
-        ctx.beginPath(); ctx.arc(star.x, star.y, star.size * twinkle, 0, Math.PI * 2); ctx.fill();
-      }
-
-      // ── Nebula glow patches ──
-      const nebula1 = safeGrad(ctx, TW * 0.3, TH * 0.5, 10, TW * 0.3, TH * 0.5, 150);
-      if (nebula1) {
-        nebula1.addColorStop(0, 'rgba(100, 20, 180, 0.06)');
-        nebula1.addColorStop(1, 'transparent');
-        ctx.fillStyle = nebula1; ctx.fillRect(0, 0, TW, TH);
-      }
-      const nebula2 = safeGrad(ctx, TW * 0.7, TH * 0.3, 10, TW * 0.7, TH * 0.3, 120);
-      if (nebula2) {
-        nebula2.addColorStop(0, 'rgba(0, 80, 200, 0.04)');
-        nebula2.addColorStop(1, 'transparent');
-        ctx.fillStyle = nebula2; ctx.fillRect(0, 0, TW, TH);
-      }
-
-      // ── Rain (subtle) ──
-      const rd = rain.current;
-      if (rd.length < 35) rd.push({ x: Math.random() * TW, y: -10, speed: 2 + Math.random() * 3, len: 8 + Math.random() * 14 });
-      ctx.globalAlpha = 0.04;
-      ctx.strokeStyle = '#6088ff';
+      // ── Subtle grid overlay (Demon's Tilt style) ──
+      ctx.globalAlpha = 0.025;
+      ctx.strokeStyle = '#6040ff';
       ctx.lineWidth = 0.5;
-      for (let i = rd.length - 1; i >= 0; i--) {
-        const r = rd[i];
-        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - 0.5, r.y + r.len); ctx.stroke();
-        r.y += r.speed;
-        if (r.y > TH) rd.splice(i, 1);
+      for (let y = 0; y < TH; y += 20) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(TW, y); ctx.stroke();
+      }
+      for (let x = 0; x < TW; x += 20) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, TH); ctx.stroke();
       }
       ctx.globalAlpha = 1;
 
-      // ── Table chrome border ──
-      ctx.strokeStyle = '#3a3a5e';
-      ctx.lineWidth = 6;
-      ctx.strokeRect(3, 3, TW - 6, TH - 6);
-      // Inner neon trim
-      ctx.shadowColor = '#6040ff';
-      ctx.shadowBlur = 8;
-      ctx.strokeStyle = 'rgba(100, 70, 220, 0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(7, 7, TW - 14, TH - 14);
-      ctx.shadowBlur = 0;
-
-      // ── Reactor core ambient glow (orange/red like reference) ──
-      const reactorGlowSize = safeN(90 + g.reactorCharge * 1.2, 90);
-      const reactorGlowAlpha = safeClamp(g.overdrive ? 0.25 + Math.sin(t * 6) * 0.1 : 0.06 + g.reactorCharge * 0.002, 0, 1);
-      const rGlow = safeGrad(ctx, rcX, rcY, 3, rcX, rcY, reactorGlowSize);
-      if (rGlow) {
-        rGlow.addColorStop(0, `rgba(255, 120, 20, ${reactorGlowAlpha * 1.5})`);
-        rGlow.addColorStop(0.3, `rgba(200, 50, 80, ${reactorGlowAlpha})`);
-        rGlow.addColorStop(0.7, `rgba(120, 30, 180, ${reactorGlowAlpha * 0.5})`);
-        rGlow.addColorStop(1, 'transparent');
-        ctx.fillStyle = rGlow;
-        ctx.fillRect(rcX - reactorGlowSize, rcY - reactorGlowSize, reactorGlowSize * 2, reactorGlowSize * 2);
+      // ── Nebula glow ──
+      const neb1 = radGrad(ctx, TW * 0.25, TH * 0.45, 8, TW * 0.25, TH * 0.45, 140);
+      if (neb1) {
+        neb1.addColorStop(0, 'rgba(120, 20, 200, 0.06)');
+        neb1.addColorStop(1, 'transparent');
+        ctx.fillStyle = neb1; ctx.fillRect(0, 0, TW, TH);
+      }
+      const neb2 = radGrad(ctx, TW * 0.75, TH * 0.25, 8, TW * 0.75, TH * 0.25, 110);
+      if (neb2) {
+        neb2.addColorStop(0, 'rgba(0, 100, 220, 0.05)');
+        neb2.addColorStop(1, 'transparent');
+        ctx.fillStyle = neb2; ctx.fillRect(0, 0, TW, TH);
       }
 
-      // ── Flipper area glow ──
-      const fGlow = safeGrad(ctx, TW / 2, fY, 10, TW / 2, fY, 120);
-      if (fGlow) {
-        fGlow.addColorStop(0, 'rgba(255, 0, 110, 0.04)');
-        fGlow.addColorStop(0.5, 'rgba(0, 100, 255, 0.02)');
-        fGlow.addColorStop(1, 'transparent');
-        ctx.fillStyle = fGlow;
-        ctx.fillRect(0, TH - 220, TW, 220);
-      }
-
-      // ── Lightning flash ──
-      if (g.lightningFlash > 0) {
-        ctx.fillStyle = `rgba(180, 200, 255, ${g.lightningFlash * 0.15})`;
-        ctx.fillRect(0, 0, TW, TH);
-        g.lightningFlash *= 0.88;
-        if (g.lightningFlash < 0.03) g.lightningFlash = 0;
-      }
-
-      // ── Houston Skyline (mid-upper, richer) ──
-      const skyBaseY = 130;
+      // ── Cyber city skyline ──
+      const skyY = 125;
       const bldgs = [
-        { x: 30, w: 22, h: 75 }, { x: 58, w: 18, h: 55 }, { x: 82, w: 26, h: 90 }, { x: 115, w: 20, h: 50 },
-        { x: 142, w: 24, h: 70 }, { x: 170, w: 16, h: 42 }, { x: 195, w: 30, h: 100 }, { x: 228, w: 22, h: 65 },
-        { x: 258, w: 20, h: 80 }, { x: 285, w: 18, h: 52 }, { x: 310, w: 26, h: 85 }, { x: 345, w: 22, h: 60 },
-        { x: 375, w: 18, h: 70 }, { x: 400, w: 24, h: 55 },
+        { x: 25, w: 20, h: 70 }, { x: 50, w: 16, h: 50 }, { x: 72, w: 24, h: 88 },
+        { x: 102, w: 18, h: 45 }, { x: 125, w: 22, h: 68 }, { x: 152, w: 14, h: 38 },
+        { x: 172, w: 28, h: 100 }, { x: 205, w: 20, h: 60 }, { x: 230, w: 18, h: 78 },
+        { x: 255, w: 16, h: 48 }, { x: 278, w: 24, h: 82 }, { x: 308, w: 20, h: 55 },
+        { x: 333, w: 16, h: 65 }, { x: 358, w: 22, h: 50 },
       ];
-      // Skyline glow behind buildings
-      const skyGlow = ctx.createLinearGradient(0, skyBaseY - 100, 0, skyBaseY + 10);
-      skyGlow.addColorStop(0, 'rgba(0, 100, 200, 0.08)');
-      skyGlow.addColorStop(0.5, 'rgba(100, 0, 200, 0.06)');
-      skyGlow.addColorStop(1, 'transparent');
-      ctx.fillStyle = skyGlow;
-      ctx.fillRect(0, skyBaseY - 100, TW, 110);
-
-      ctx.save();
+      // Skyline glow
+      const skyGlow = linGrad(ctx, 0, skyY - 90, 0, skyY + 5);
+      if (skyGlow) {
+        skyGlow.addColorStop(0, 'rgba(0, 80, 200, 0.07)');
+        skyGlow.addColorStop(0.5, 'rgba(80, 0, 180, 0.05)');
+        skyGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = skyGlow;
+        ctx.fillRect(0, skyY - 90, TW, 95);
+      }
       for (let bi = 0; bi < bldgs.length; bi++) {
         const b = bldgs[bi];
-        const lit = g.buildingLit[bi % 12];
-        const bx = b.x - b.w / 2;
-        const by = skyBaseY - b.h;
-        // Building body
-        const bGrad = ctx.createLinearGradient(bx, by, bx, skyBaseY);
-        if (lit) {
-          bGrad.addColorStop(0, `rgba(0, 180, 255, ${0.15 + Math.sin(t * 2 + bi) * 0.05})`);
-          bGrad.addColorStop(1, `rgba(80, 0, 200, 0.08)`);
+        const lit = bi < g.buildingsLit;
+        const bx = b.x - b.w / 2, by = skyY - b.h;
+        const bGrad = linGrad(ctx, bx, by, bx, skyY);
+        if (bGrad) {
+          if (lit) {
+            bGrad.addColorStop(0, `rgba(0, 160, 255, ${0.12 + Math.sin(t * 2 + bi) * 0.04})`);
+            bGrad.addColorStop(1, 'rgba(60, 0, 180, 0.06)');
+          } else {
+            bGrad.addColorStop(0, 'rgba(25, 20, 50, 0.5)');
+            bGrad.addColorStop(1, 'rgba(12, 8, 25, 0.3)');
+          }
+          ctx.fillStyle = bGrad;
         } else {
-          bGrad.addColorStop(0, 'rgba(30, 25, 60, 0.5)');
-          bGrad.addColorStop(1, 'rgba(15, 10, 30, 0.3)');
+          ctx.fillStyle = 'rgba(25, 20, 50, 0.5)';
         }
-        ctx.fillStyle = bGrad;
         ctx.fillRect(bx, by, b.w, b.h);
-        // Building outline
-        ctx.strokeStyle = lit ? 'rgba(0, 200, 255, 0.3)' : 'rgba(60, 50, 100, 0.3)';
-        ctx.lineWidth = 0.8;
+        ctx.strokeStyle = lit ? 'rgba(0, 180, 255, 0.3)' : 'rgba(50, 40, 80, 0.3)';
+        ctx.lineWidth = 0.7;
         ctx.strokeRect(bx, by, b.w, b.h);
-        // Windows (2 columns)
-        const wc = lit ? 'rgba(255, 200, 50, 0.7)' : 'rgba(80, 80, 120, 0.2)';
-        ctx.fillStyle = wc;
+        // Windows
+        ctx.fillStyle = lit ? 'rgba(255, 200, 50, 0.6)' : 'rgba(60, 60, 100, 0.15)';
         const cols = Math.max(2, Math.floor(b.w / 8));
-        for (let wy = by + 5; wy < skyBaseY - 4; wy += 6) {
+        for (let wy = by + 4; wy < skyY - 3; wy += 5) {
           for (let wx = 0; wx < cols; wx++) {
-            if (Math.random() > (lit ? 0.2 : 0.6)) {
-              ctx.fillRect(bx + 3 + wx * (b.w - 6) / cols, wy, 2.5, 2.5);
+            if (Math.random() > (lit ? 0.25 : 0.6)) {
+              ctx.fillRect(bx + 2 + wx * (b.w - 4) / cols, wy, 2, 2);
             }
           }
         }
-        // Glow halo for lit buildings
-        if (lit) {
-          ctx.shadowColor = '#00ccff';
-          ctx.shadowBlur = 12;
-          ctx.fillStyle = 'rgba(0, 200, 255, 0.015)';
-          ctx.fillRect(bx - 5, by - 5, b.w + 10, b.h + 10);
-          ctx.shadowBlur = 0;
-        }
       }
-      ctx.restore();
 
-      // ── Ball trail (plasma, brighter) ──
-      if (g.currentBall && g.launched) {
-        const tx = g.currentBall.position.x, ty = g.currentBall.position.y;
-        if (fin(tx) && fin(ty)) {
-          g.trail.push({ x: tx, y: ty, age: 0 });
-          if (g.trail.length > 30) g.trail.shift();
-        }
+      // ── Reactor core glow ──
+      const rcSize = sn(85 + g.reactorCharge * 1.1, 85);
+      const rcAlpha = clamp(g.overdriveActive ? 0.22 + Math.sin(t * 6) * 0.08 : 0.05 + g.reactorCharge * 0.002, 0, 1);
+      const rcGlow = radGrad(ctx, bCX, bCY, 2, bCX, bCY, rcSize);
+      if (rcGlow) {
+        rcGlow.addColorStop(0, `rgba(255, 100, 20, ${rcAlpha * 1.5})`);
+        rcGlow.addColorStop(0.35, `rgba(180, 40, 80, ${rcAlpha})`);
+        rcGlow.addColorStop(0.7, `rgba(100, 20, 160, ${rcAlpha * 0.4})`);
+        rcGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = rcGlow;
+        ctx.fillRect(bCX - rcSize, bCY - rcSize, rcSize * 2, rcSize * 2);
+      }
+
+      // ── Flipper area glow ──
+      const fGlow = radGrad(ctx, TW / 2, fY, 8, TW / 2, fY, 110);
+      if (fGlow) {
+        fGlow.addColorStop(0, 'rgba(255, 0, 100, 0.04)');
+        fGlow.addColorStop(0.5, 'rgba(0, 80, 220, 0.02)');
+        fGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = fGlow;
+        ctx.fillRect(0, TH - 200, TW, 200);
+      }
+
+      // ── Lightning flash ──
+      if (g.lightFlash > 0.02) {
+        ctx.fillStyle = `rgba(160, 180, 255, ${g.lightFlash * 0.12})`;
+        ctx.fillRect(0, 0, TW, TH);
+        g.lightFlash *= 0.88;
+        if (g.lightFlash < 0.03) g.lightFlash = 0;
+      }
+
+      // ── Table chrome border ──
+      ctx.strokeStyle = '#2a2a4a';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(2, 2, TW - 4, TH - 4);
+      ctx.shadowColor = '#5030cc';
+      ctx.shadowBlur = 6;
+      ctx.strokeStyle = 'rgba(80, 50, 200, 0.35)';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(6, 6, TW - 12, TH - 12);
+      ctx.shadowBlur = 0;
+
+      // ── Ball trail ──
+      if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
+        g.trail.push({ x: g.currentBall.position.x, y: g.currentBall.position.y, age: 0 });
+        if (g.trail.length > 25) g.trail.shift();
       }
       for (let i = g.trail.length - 1; i >= 0; i--) {
         const pt = g.trail[i];
         pt.age++;
-        if (pt.age > 30 || !fin(pt.x) || !fin(pt.y)) { g.trail.splice(i, 1); continue; }
-        const a = 1 - pt.age / 30;
+        if (pt.age > 25 || !fin(pt.x) || !fin(pt.y)) { g.trail.splice(i, 1); continue; }
+        const a = 1 - pt.age / 25;
         const s = Math.max(0, BALL_R * a);
-        const trailGrad = safeGrad(ctx, pt.x, pt.y, 0, pt.x, pt.y, s + 5);
-        if (!trailGrad) continue;
-        trailGrad.addColorStop(0, `rgba(100, 150, 255, ${a * 0.5})`);
-        trailGrad.addColorStop(0.5, `rgba(150, 50, 255, ${a * 0.25})`);
-        trailGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = trailGrad;
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, s + 5, 0, Math.PI * 2); ctx.fill();
+        const tg = radGrad(ctx, pt.x, pt.y, 0, pt.x, pt.y, s + 4);
+        if (!tg) continue;
+        tg.addColorStop(0, `rgba(80, 140, 255, ${a * 0.45})`);
+        tg.addColorStop(0.5, `rgba(140, 40, 255, ${a * 0.2})`);
+        tg.addColorStop(1, 'transparent');
+        ctx.fillStyle = tg;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, s + 4, 0, Math.PI * 2); ctx.fill();
       }
 
       // ── Particles ──
-      const parts = particles.current;
-      for (let i = parts.length - 1; i >= 0; i--) {
-        const p = parts[i];
-        p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life--;
-        if (p.life <= 0) { parts.splice(i, 1); continue; }
-        const a = p.life / p.maxLife;
-        ctx.fillStyle = p.color.replace(/[\d.]+\)$/, `${a})`);
+      for (let i = particles.current.length - 1; i >= 0; i--) {
+        const p = particles.current[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life--;
+        if (p.life <= 0 || !fin(p.x) || !fin(p.y)) { particles.current.splice(i, 1); continue; }
+        const a = p.life / 35;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = clamp(a, 0, 1);
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 4;
+        ctx.shadowBlur = 3;
         ctx.beginPath(); ctx.arc(p.x, p.y, p.size * a, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
       }
+      ctx.globalAlpha = 1;
 
-      // ── Draw bodies ──
+      // ═══════════════════════════════════════
+      // ── DRAW BODIES ──
+      // ═══════════════════════════════════════
       const bodies = Composite.allBodies(engine.world);
       for (const body of bodies) {
         if (body.label === 'drain') continue;
@@ -810,392 +706,360 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.translate(body.position.x, body.position.y);
         ctx.rotate(body.angle);
 
+        // ── Ball ──
         if (body.label === 'ball') {
-          // Outer glow rings
+          // Glow rings
           for (let r = 3; r >= 1; r--) {
-            ctx.fillStyle = `rgba(100, 150, 255, ${0.03 * r})`;
-            ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 7, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(80, 130, 255, ${0.025 * r})`;
+            ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 6, 0, Math.PI * 2); ctx.fill();
           }
-          // Chrome ball with bright specular
-          const bg = safeGrad(ctx, -2, -3, 1, 0, 0, BALL_R) || ctx.createRadialGradient(-2, -3, 1, 0, 0, BALL_R);
-          bg.addColorStop(0, '#ffffff');
-          bg.addColorStop(0.2, '#cce0ff');
-          bg.addColorStop(0.5, '#4488ff');
-          bg.addColorStop(0.8, '#1133aa');
-          bg.addColorStop(1, '#0a0a40');
-          ctx.shadowColor = '#4488ff';
-          ctx.shadowBlur = 30;
-          ctx.fillStyle = bg;
+          const bg = radGrad(ctx, -1.5, -2.5, 0.5, 0, 0, BALL_R);
+          if (bg) {
+            bg.addColorStop(0, '#ffffff');
+            bg.addColorStop(0.15, '#ddeeff');
+            bg.addColorStop(0.4, '#4488ff');
+            bg.addColorStop(0.75, '#1133aa');
+            bg.addColorStop(1, '#080830');
+            ctx.shadowColor = '#4488ff';
+            ctx.shadowBlur = 24;
+            ctx.fillStyle = bg;
+          } else {
+            ctx.fillStyle = '#4488ff';
+            ctx.shadowColor = '#4488ff';
+            ctx.shadowBlur = 24;
+          }
           ctx.beginPath(); ctx.arc(0, 0, BALL_R, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
-          // Specular highlight
-          ctx.fillStyle = 'rgba(255,255,255,0.9)';
-          ctx.beginPath(); ctx.arc(-2, -2, 2.2, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = 'rgba(255,255,255,0.3)';
-          ctx.beginPath(); ctx.arc(1.5, 1, 1, 0, Math.PI * 2); ctx.fill();
-          // Chrome rim
-          ctx.strokeStyle = 'rgba(100,180,255,0.6)';
-          ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.arc(0, 0, BALL_R + 0.5, 0, Math.PI * 2); ctx.stroke();
+          // Specular
+          ctx.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx.beginPath(); ctx.arc(-1.5, -1.5, 1.8, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(80,160,255,0.5)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath(); ctx.arc(0, 0, BALL_R + 0.3, 0, Math.PI * 2); ctx.stroke();
 
+        // ── Bumpers ──
         } else if (body.label.startsWith('bumper_')) {
-          const flashing = g.bumperFlash.has(body.label) && Date.now() < g.bumperFlash.get(body.label)!;
-          // Bumper base (metallic cylinder look)
-          const bBase = safeGrad(ctx, 0, -2, 2, 0, 2, BUMPER_R) || ctx.createRadialGradient(0, -2, 2, 0, 2, BUMPER_R);
-          bBase.addColorStop(0, flashing ? '#fff' : '#8888cc');
-          bBase.addColorStop(0.3, flashing ? '#ff8844' : '#4444aa');
-          bBase.addColorStop(0.7, flashing ? '#cc4400' : '#222266');
-          bBase.addColorStop(1, flashing ? '#881100' : '#111133');
-          ctx.shadowColor = flashing ? '#ff6600' : '#6644cc';
-          ctx.shadowBlur = flashing ? 40 : 16;
-          ctx.fillStyle = bBase;
-          ctx.beginPath(); ctx.arc(0, 0, BUMPER_R, 0, Math.PI * 2); ctx.fill();
+          const idx = parseInt(body.label.split('_')[1]);
+          const r = idx < 3 ? BUMPER_R : 10;
+          const flash = g.bumperFlash.has(body.label) && now < (g.bumperFlash.get(body.label) || 0);
+          const bg = radGrad(ctx, 0, -1.5, 1.5, 0, 1.5, r);
+          if (bg) {
+            bg.addColorStop(0, flash ? '#fff' : '#7777bb');
+            bg.addColorStop(0.3, flash ? '#ff7733' : '#3333aa');
+            bg.addColorStop(0.7, flash ? '#cc3300' : '#1a1a55');
+            bg.addColorStop(1, flash ? '#771100' : '#0a0a2a');
+            ctx.fillStyle = bg;
+          } else {
+            ctx.fillStyle = flash ? '#ff7733' : '#3333aa';
+          }
+          ctx.shadowColor = flash ? '#ff5500' : '#5544bb';
+          ctx.shadowBlur = flash ? 30 : 12;
+          ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
-          // Chrome ring
-          ctx.strokeStyle = flashing ? '#ffaa44' : '#6666bb';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath(); ctx.arc(0, 0, BUMPER_R, 0, Math.PI * 2); ctx.stroke();
-          // Inner ring
-          ctx.strokeStyle = flashing ? 'rgba(255,200,100,0.8)' : 'rgba(100,100,180,0.4)';
-          ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.arc(0, 0, BUMPER_R - 5, 0, Math.PI * 2); ctx.stroke();
-          // Center gem (glowing orange/red like reference)
-          const gemGrad = safeGrad(ctx, 0, -1, 0, 0, 0, 5) || ctx.createRadialGradient(0, -1, 0, 0, 0, 5);
-          gemGrad.addColorStop(0, flashing ? '#fff' : '#ff8844');
-          gemGrad.addColorStop(0.6, flashing ? '#ff6600' : '#cc4400');
-          gemGrad.addColorStop(1, flashing ? '#cc2200' : '#661100');
-          ctx.fillStyle = gemGrad;
-          ctx.shadowColor = '#ff6600';
-          ctx.shadowBlur = flashing ? 15 : 5;
-          ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+          // Rings
+          ctx.strokeStyle = flash ? '#ffaa44' : '#5555aa';
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = flash ? 'rgba(255,180,80,0.7)' : 'rgba(80,80,150,0.35)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath(); ctx.arc(0, 0, r - 4, 0, Math.PI * 2); ctx.stroke();
+          // Center gem
+          const gem = radGrad(ctx, 0, -0.5, 0, 0, 0, 4);
+          if (gem) {
+            gem.addColorStop(0, flash ? '#fff' : '#ff7744');
+            gem.addColorStop(0.6, flash ? '#ff5500' : '#cc3300');
+            gem.addColorStop(1, flash ? '#aa1100' : '#551100');
+            ctx.fillStyle = gem;
+          }
+          ctx.shadowColor = '#ff5500';
+          ctx.shadowBlur = flash ? 12 : 4;
+          ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
-          // Score text
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 7px monospace';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.globalAlpha = 0.7;
-          ctx.fillText('100', 0, -BUMPER_R - 5);
-          ctx.globalAlpha = 1;
 
+        // ── Flippers ──
         } else if (body.label === 'leftFlipper' || body.label === 'rightFlipper') {
           const up = body.label === 'leftFlipper' ? g.leftUp : g.rightUp;
           const isLeft = body.label === 'leftFlipper';
-          // Metallic chrome flipper
-          const fg = ctx.createLinearGradient(-FW / 2, -FH / 2, FW / 2, FH / 2);
-          fg.addColorStop(0, up ? '#ff66aa' : '#884466');
-          fg.addColorStop(0.3, up ? '#ff88cc' : '#aa5577');
-          fg.addColorStop(0.5, up ? '#ffaadd' : '#cc7799');
-          fg.addColorStop(0.7, up ? '#ff88cc' : '#aa5577');
-          fg.addColorStop(1, up ? '#ff4488' : '#663355');
+          const fg = linGrad(ctx, -FW / 2, -FH / 2, FW / 2, FH / 2);
+          if (fg) {
+            fg.addColorStop(0, up ? '#ff5599' : '#774455');
+            fg.addColorStop(0.3, up ? '#ff77bb' : '#995566');
+            fg.addColorStop(0.5, up ? '#ff99cc' : '#bb6677');
+            fg.addColorStop(0.7, up ? '#ff77bb' : '#995566');
+            fg.addColorStop(1, up ? '#ff3377' : '#553344');
+            ctx.fillStyle = fg;
+          } else {
+            ctx.fillStyle = up ? '#ff5599' : '#774455';
+          }
           ctx.shadowColor = '#ff0066';
-          ctx.shadowBlur = up ? 25 : 8;
-          ctx.fillStyle = fg;
-          ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 6); ctx.fill();
+          ctx.shadowBlur = up ? 20 : 6;
+          ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 5); ctx.fill();
           ctx.shadowBlur = 0;
-          // Top highlight
-          ctx.fillStyle = `rgba(255,255,255,${up ? 0.35 : 0.1})`;
-          ctx.beginPath(); ctx.roundRect(-FW / 2 + 3, -FH / 2 + 1, FW - 6, 3, 2); ctx.fill();
-          // Outline
-          ctx.strokeStyle = `rgba(255,100,180,${up ? 0.9 : 0.4})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 6); ctx.stroke();
-          // Pivot joint indicator
-          const pivotX = isLeft ? -FW / 2 + 7 : FW / 2 - 7;
-          ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.4)';
-          ctx.beginPath(); ctx.arc(pivotX, 0, 3, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = `rgba(255,255,255,${up ? 0.3 : 0.08})`;
+          ctx.beginPath(); ctx.roundRect(-FW / 2 + 2, -FH / 2 + 1, FW - 4, 2.5, 2); ctx.fill();
+          ctx.strokeStyle = `rgba(255,80,160,${up ? 0.8 : 0.3})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 5); ctx.stroke();
+          // Pivot
+          const px = isLeft ? -FW / 2 + 6 : FW / 2 - 6;
+          ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.35)';
+          ctx.beginPath(); ctx.arc(px, 0, 2.5, 0, Math.PI * 2); ctx.fill();
 
-        } else if (body.label === 'wall' || body.label === 'orbit_wall' || body.label === 'ramp_guide') {
+        // ── Walls ──
+        } else if (body.label === 'wall') {
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          // Metallic wall fill
-          const wallGrad = ctx.createLinearGradient(verts[0].x, verts[0].y, verts[verts.length - 1].x, verts[verts.length - 1].y);
-          wallGrad.addColorStop(0, '#1e1a3a');
-          wallGrad.addColorStop(0.5, '#2a2650');
-          wallGrad.addColorStop(1, '#1e1a3a');
-          ctx.fillStyle = wallGrad;
+          if (verts.length < 2) { ctx.restore(); continue; }
+          ctx.fillStyle = '#1a1735';
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
-          for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
+          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
-          // Neon edge
-          const edgeColor = body.label === 'orbit_wall' ? '#7c3aed' : '#3355aa';
-          ctx.shadowColor = edgeColor;
-          ctx.shadowBlur = 4;
-          ctx.strokeStyle = body.label === 'orbit_wall'
-            ? `rgba(140, 80, 255, ${0.4 + Math.sin(t * 1.5 + body.position.y * 0.02) * 0.15})`
-            : `rgba(60, 100, 200, ${0.25 + Math.sin(t * 2 + body.position.x * 0.03) * 0.1})`;
-          ctx.lineWidth = 1.5; ctx.stroke();
-          ctx.shadowBlur = 0;
+          ctx.strokeStyle = `rgba(50, 80, 180, ${0.2 + Math.sin(t * 1.5 + body.position.y * 0.02) * 0.08})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
 
+        // ── Slingshots ──
         } else if (body.label === 'slingshot') {
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          // Metallic slingshot with pink/magenta glow like reference
-          const slGrad = ctx.createLinearGradient(verts[0].x, verts[0].y, verts[2]?.x || 0, verts[2]?.y || 0);
-          slGrad.addColorStop(0, '#aa3366');
-          slGrad.addColorStop(0.5, '#cc4488');
-          slGrad.addColorStop(1, '#882255');
-          ctx.fillStyle = slGrad;
+          ctx.fillStyle = '#993366';
           ctx.shadowColor = '#ff0088';
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 10;
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
-          for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
+          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.strokeStyle = 'rgba(255,150,200,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+          ctx.strokeStyle = 'rgba(255,120,180,0.45)'; ctx.lineWidth = 0.8; ctx.stroke();
 
-        } else if (body.label.startsWith('ramp_left') || body.label.startsWith('ramp_right')) {
-          if (!body.label.includes('hit') && !body.label.includes('guide')) {
-            const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-            const isLeft = body.label.includes('left');
-            // Ramp rail glow - cyan for left, orange for right (like reference)
-            const rampColor1 = isLeft ? '#00ccff' : '#ff8800';
-            const rampColor2 = isLeft ? 'rgba(0,200,255,0.3)' : 'rgba(255,140,0,0.3)';
-            ctx.shadowColor = rampColor1;
-            ctx.shadowBlur = 10;
-            ctx.strokeStyle = rampColor1;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(verts[0].x, verts[0].y);
-            for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
-            ctx.closePath(); ctx.stroke();
-            ctx.shadowBlur = 0;
-            // Animated energy flow
-            ctx.setLineDash([4, 10]);
-            ctx.lineDashOffset = -t * 40;
-            ctx.strokeStyle = rampColor2;
-            ctx.lineWidth = 1.5; ctx.stroke();
-            ctx.setLineDash([]);
-          }
+        // ── Ramps ──
+        } else if (body.label.startsWith('ramp_') && !body.isSensor) {
+          // skip
 
-        } else if (body.label.startsWith('cca_')) {
-          const idx = parseInt(body.label.split('_')[1]);
-          const lit = g.ccaLanes[idx];
-          // Glowing letter box (like reference)
-          if (lit) {
-            ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 22;
-            ctx.fillStyle = '#00ccff';
-            ctx.beginPath(); ctx.roundRect(-8, -12, 16, 24, 3); ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#003355';
-          } else {
-            ctx.fillStyle = `rgba(30, 40, 80, ${0.6 + Math.sin(t * 2 + idx) * 0.1})`;
-            ctx.beginPath(); ctx.roundRect(-8, -12, 16, 24, 3); ctx.fill();
-            ctx.strokeStyle = 'rgba(0, 150, 255, 0.3)';
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.roundRect(-8, -12, 16, 24, 3); ctx.stroke();
-            ctx.fillStyle = 'rgba(200,220,255,0.5)';
-          }
-          ctx.font = `bold ${lit ? 12 : 10}px monospace`;
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(['C', 'C', 'A'][idx], 0, 1);
-
+        // ── CYBER lane sensors ──
         } else if (body.label.startsWith('cyber_')) {
           const idx = parseInt(body.label.split('_')[1]);
-          const hit = g.cyberTargets[idx];
-          const isNext = idx === g.cyberIndex;
-          // CYBER target blocks (like reference letter blocks)
-          if (hit) {
-            ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 14;
-            ctx.fillStyle = '#00dd66';
-          } else if (isNext) {
-            ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 8;
-            ctx.fillStyle = `rgba(255, 170, 0, ${0.5 + Math.sin(t * 5) * 0.3})`;
+          const lit = g.cyberLetters[idx];
+          if (lit) {
+            ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 18;
+            ctx.fillStyle = '#00ddff';
           } else {
-            ctx.fillStyle = 'rgba(40, 40, 80, 0.6)';
+            ctx.fillStyle = `rgba(25, 35, 70, ${0.55 + Math.sin(t * 2 + idx) * 0.08})`;
           }
-          ctx.beginPath(); ctx.roundRect(-7, -11, 14, 22, 2); ctx.fill();
+          ctx.beginPath(); ctx.roundRect(-7, -10, 14, 20, 2); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.strokeStyle = hit ? '#00ff88' : isNext ? '#ffaa00' : 'rgba(100,100,160,0.4)';
-          ctx.lineWidth = 1.2;
-          ctx.beginPath(); ctx.roundRect(-7, -11, 14, 22, 2); ctx.stroke();
-          ctx.fillStyle = hit ? '#003322' : isNext ? '#442200' : 'rgba(200,200,220,0.5)';
-          ctx.font = 'bold 9px monospace';
+          if (!lit) {
+            ctx.strokeStyle = 'rgba(0, 120, 220, 0.25)';
+            ctx.lineWidth = 0.8;
+            ctx.beginPath(); ctx.roundRect(-7, -10, 14, 20, 2); ctx.stroke();
+          }
+          ctx.fillStyle = lit ? '#002233' : 'rgba(180,200,230,0.4)';
+          ctx.font = `bold ${lit ? 11 : 9}px monospace`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText('CYBER'[idx], 0, 1);
 
-        } else if (body.label === 'spinner') {
-          ctx.save();
-          ctx.rotate((g.spinnerAngle * Math.PI) / 180);
-          ctx.shadowColor = '#00ccff';
-          ctx.shadowBlur = g.spinnerSpeed > 2 ? 20 : 6;
-          ctx.strokeStyle = '#00ccff'; ctx.lineWidth = 3;
-          ctx.beginPath(); ctx.moveTo(-18, 0); ctx.lineTo(18, 0); ctx.stroke();
-          ctx.strokeStyle = 'rgba(0,200,255,0.3)'; ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
-          ctx.shadowBlur = 0;
-          ctx.restore();
-
-        } else if (body.label === 'kickback') {
-          const active = g.kickbackActive;
-          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.fillStyle = active ? '#ff0066' : 'rgba(100,30,60,0.3)';
-          ctx.shadowColor = '#ff0066';
-          ctx.shadowBlur = active ? 16 : 3;
-          ctx.beginPath();
-          ctx.moveTo(verts[0].x, verts[0].y);
-          for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i].x, verts[i].y);
-          ctx.closePath(); ctx.fill();
-          ctx.shadowBlur = 0;
-          if (active) {
-            ctx.fillStyle = `rgba(255,100,180,${Math.sin(t * 4) * 0.3 + 0.7})`;
-            ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-            ctx.fillText('▲', 0, 0);
+        // ── Demon drop targets ──
+        } else if (body.label.startsWith('demon_')) {
+          const side = body.label.includes('_l_') ? 'l' : 'r';
+          const idx = parseInt(body.label.split('_')[2]);
+          const hit = side === 'l' ? g.demonTargetsL[idx] : g.demonTargetsR[idx];
+          if (hit) {
+            ctx.shadowColor = '#ff2222'; ctx.shadowBlur = 12;
+            ctx.fillStyle = '#ff3333';
+          } else {
+            ctx.fillStyle = `rgba(100, 30, 30, ${0.5 + Math.sin(t * 3 + idx) * 0.15})`;
           }
+          ctx.beginPath(); ctx.roundRect(-5, -10, 10, 20, 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = hit ? '#ff5555' : 'rgba(150,50,50,0.4)';
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.roundRect(-5, -10, 10, 20, 2); ctx.stroke();
+          ctx.fillStyle = hit ? '#440000' : 'rgba(220,100,100,0.4)';
+          ctx.font = 'bold 7px monospace';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('▼', 0, 1);
 
+        // ── Reactor core ──
         } else if (body.label === 'reactor_core') {
-          // Glowing energy core (orange/red/gold like reference)
           const charge = g.reactorCharge / 100;
-          // Outer energy rings
+          // Energy rings
           for (let r = 0; r < 3; r++) {
-            const ringR = 18 + r * 10 + Math.sin(t * 4 + r * 2) * 3;
-            const ringAlpha = g.overdrive ? 0.3 : 0.1 + charge * 0.1;
-            ctx.strokeStyle = `rgba(255, ${120 + r * 40}, 0, ${ringAlpha - r * 0.03})`;
-            ctx.lineWidth = 1.5;
+            const ringR = 16 + r * 9 + Math.sin(t * 4 + r * 2) * 2.5;
+            const ra = g.overdriveActive ? 0.28 : 0.08 + charge * 0.1;
+            ctx.strokeStyle = `rgba(255, ${100 + r * 35}, 0, ${ra - r * 0.025})`;
+            ctx.lineWidth = 1.2;
             ctx.beginPath(); ctx.arc(0, 0, ringR, 0, Math.PI * 2); ctx.stroke();
           }
-          // Core gradient (bright orange center)
-          const coreGrad = safeGrad(ctx, 0, 0, 0, 0, 0, 14) || ctx.createRadialGradient(0, 0, 0, 0, 0, 14);
-          if (g.overdrive) {
-            coreGrad.addColorStop(0, '#ffffff');
-            coreGrad.addColorStop(0.2, '#ffdd44');
-            coreGrad.addColorStop(0.5, '#ff6600');
-            coreGrad.addColorStop(0.8, '#cc2200');
-            coreGrad.addColorStop(1, 'rgba(150,20,0,0.3)');
-          } else {
-            coreGrad.addColorStop(0, `rgba(255,200,100,${0.3 + charge * 0.7})`);
-            coreGrad.addColorStop(0.4, `rgba(255,100,20,${0.2 + charge * 0.6})`);
-            coreGrad.addColorStop(0.8, `rgba(180,30,0,${0.1 + charge * 0.3})`);
-            coreGrad.addColorStop(1, 'transparent');
+          const cg = radGrad(ctx, 0, 0, 0, 0, 0, 12);
+          if (cg) {
+            if (g.overdriveActive) {
+              cg.addColorStop(0, '#ffffff');
+              cg.addColorStop(0.2, '#ffcc33');
+              cg.addColorStop(0.5, '#ff5500');
+              cg.addColorStop(0.8, '#bb1100');
+              cg.addColorStop(1, 'rgba(120,10,0,0.3)');
+            } else {
+              cg.addColorStop(0, `rgba(255,180,80,${0.25 + charge * 0.7})`);
+              cg.addColorStop(0.4, `rgba(255,80,15,${0.15 + charge * 0.55})`);
+              cg.addColorStop(0.8, `rgba(160,20,0,${0.08 + charge * 0.25})`);
+              cg.addColorStop(1, 'transparent');
+            }
+            ctx.shadowColor = g.overdriveActive ? '#ff7700' : '#ff3300';
+            ctx.shadowBlur = g.overdriveActive ? 30 : 8 + charge * 12;
+            ctx.fillStyle = cg;
+            ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
           }
-          ctx.shadowColor = g.overdrive ? '#ff8800' : '#ff4400';
-          ctx.shadowBlur = g.overdrive ? 35 : 10 + charge * 15;
-          ctx.fillStyle = coreGrad;
-          ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
-          ctx.shadowBlur = 0;
-          // Charge indicator arc
-          ctx.strokeStyle = `rgba(255, 150, 0, ${0.5 + charge * 0.5})`;
-          ctx.lineWidth = 2.5;
+          // Charge arc
+          ctx.strokeStyle = `rgba(255, 130, 0, ${0.4 + charge * 0.5})`;
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.arc(0, 0, 16, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * charge));
+          ctx.arc(0, 0, 14, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * charge);
           ctx.stroke();
+
+        // ── Spinner ──
+        } else if (body.label === 'spinner') {
+          // static draw, no rotation tracking needed
+          ctx.strokeStyle = '#00bbdd'; ctx.lineWidth = 2.5;
+          ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 6;
+          ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(16, 0); ctx.stroke();
+          ctx.shadowBlur = 0;
+
+        // ── Kickback ──
+        } else if (body.label === 'kickback') {
+          ctx.fillStyle = 'rgba(255,0,80,0.4)';
+          ctx.shadowColor = '#ff0055';
+          ctx.shadowBlur = 6;
+          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
+          ctx.beginPath();
+          ctx.moveTo(verts[0].x, verts[0].y);
+          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
+          ctx.closePath(); ctx.fill();
+          ctx.shadowBlur = 0;
         }
 
         ctx.restore();
       }
 
-      // ── Plunger ──
+      // ── Plunger bar ──
       if (!g.launched && g.currentBall) {
-        const plY = TH - 12;
-        const plH = 55 * g.plungerPower;
-        ctx.fillStyle = 'rgba(255,0,110,0.06)';
-        ctx.fillRect(PLUNGER_X - 7, plY - 58, 14, 58);
-        const pg = ctx.createLinearGradient(0, plY, 0, plY - plH);
-        pg.addColorStop(0, '#ff006e'); pg.addColorStop(1, '#ff66aa');
-        ctx.fillStyle = pg;
-        ctx.shadowColor = '#ff006e'; ctx.shadowBlur = 10 + g.plungerPower * 12;
-        ctx.beginPath(); ctx.roundRect(PLUNGER_X - 4, plY - plH, 8, plH, 3); ctx.fill();
+        const plY = TH - 10;
+        const plH = 50 * sn(g.plungerPower, 0);
+        ctx.fillStyle = 'rgba(255,0,100,0.05)';
+        ctx.fillRect(PLUNGER_X - 6, plY - 54, 12, 54);
+        const pg = linGrad(ctx, 0, plY, 0, plY - plH);
+        if (pg) {
+          pg.addColorStop(0, '#ff006e');
+          pg.addColorStop(1, '#ff66aa');
+          ctx.fillStyle = pg;
+        } else {
+          ctx.fillStyle = '#ff006e';
+        }
+        ctx.shadowColor = '#ff006e';
+        ctx.shadowBlur = 8 + sn(g.plungerPower, 0) * 10;
+        if (plH > 1) {
+          ctx.beginPath(); ctx.roundRect(PLUNGER_X - 3, plY - plH, 6, plH, 2); ctx.fill();
+        }
+        ctx.beginPath(); ctx.arc(PLUNGER_X, plY - plH, 4, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.fillStyle = '#ff006e';
-        ctx.beginPath(); ctx.arc(PLUNGER_X, plY - plH, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(PLUNGER_X - 1, plY - plH - 1, 1.5, 0, Math.PI * 2); ctx.fill();
       }
 
       // ── Labels ──
+      ctx.globalAlpha = 0.65;
+      ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 3;
+      ctx.fillStyle = '#00ccff'; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
       ctx.save();
-      ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 4;
-      ctx.fillStyle = '#00ccff'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
-      ctx.globalAlpha = 0.75;
-      ctx.translate(38, 370); ctx.rotate(-0.22);
-      ctx.fillText('DOWNTOWN', 0, 0); ctx.fillText('RAMP', 0, 9);
+      ctx.translate(36, 360); ctx.rotate(-0.2);
+      ctx.fillText('DOWNTOWN', 0, 0); ctx.fillText('RAMP', 0, 8);
       ctx.restore();
-
       ctx.save();
-      ctx.shadowColor = '#ff8800'; ctx.shadowBlur = 4;
-      ctx.fillStyle = '#ff8800'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
-      ctx.globalAlpha = 0.75;
-      ctx.translate(TW - 65, 370); ctx.rotate(0.22);
-      ctx.fillText('NEON', 0, 0); ctx.fillText('HIGHWAY', 0, 9);
+      ctx.translate(TW - 58, 360); ctx.rotate(0.2);
+      ctx.fillText('NEON', 0, 0); ctx.fillText('HIGHWAY', 0, 8);
       ctx.restore();
-
-      // Reactor label
-      ctx.shadowColor = '#ff6600'; ctx.shadowBlur = 4;
-      ctx.fillStyle = '#ff8844'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
-      ctx.globalAlpha = 0.6 + (g.overdrive ? 0.4 : g.spinnerSpeed > 0 ? 0.2 : 0);
-      ctx.fillText('REACTOR', rcX, rcY + 50);
-      ctx.fillText('CORE', rcX, rcY + 59);
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;
 
-      // CYBER label above targets
-      ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 3;
-      ctx.fillStyle = 'rgba(255,170,0,0.5)'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('▼ CYBER TARGETS ▼', TW / 2, cyberY - 22);
-      ctx.shadowBlur = 0;
+      // Reactor label
+      ctx.fillStyle = '#ff7733'; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.55;
+      ctx.fillText('REACTOR CORE', bCX, bCY + 45);
+      ctx.globalAlpha = 1;
 
-      // Orbit labels
-      ctx.shadowColor = '#6644cc'; ctx.shadowBlur = 3;
-      ctx.fillStyle = 'rgba(140,100,255,0.5)'; ctx.font = 'bold 6px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('← ORBIT', 30, 155); ctx.fillText('ORBIT →', TW - 58, 155);
-      ctx.shadowBlur = 0;
+      // Demon targets label
+      ctx.fillStyle = 'rgba(255,80,80,0.45)'; ctx.font = 'bold 6px monospace';
+      ctx.fillText('DEMON', 82, dtY + 22);
+      ctx.fillText('DEMON', TW - 82, dtY + 22);
+
+      // CYBER label
+      ctx.fillStyle = 'rgba(0,200,255,0.4)'; ctx.font = 'bold 7px monospace';
+      ctx.fillText('▼ C · Y · B · E · R ▼', TW / 2, laneY + 22);
 
       // ── HUD overlays ──
+      // Tilt
       if (g.tilted) {
-        ctx.fillStyle = 'rgba(255,0,0,0.12)'; ctx.fillRect(0, 0, TW, TH);
-        ctx.globalAlpha = 0.08;
-        for (let y = 0; y < TH; y += 3) { ctx.fillStyle = '#ff0000'; ctx.fillRect(0, y, TW, 1); }
-        ctx.globalAlpha = 1;
-        ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 30;
-        ctx.fillStyle = '#ff0000'; ctx.font = 'bold 44px monospace'; ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255,0,0,0.1)'; ctx.fillRect(0, 0, TW, TH);
+        ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 25;
+        ctx.fillStyle = '#ff0000'; ctx.font = 'bold 40px monospace'; ctx.textAlign = 'center';
         ctx.fillText('TILT', TW / 2, TH / 2); ctx.shadowBlur = 0;
       }
 
+      // Message
       if (message) {
-        const mg = ctx.createLinearGradient(TW / 2 - 140, 0, TW / 2 + 140, 0);
-        mg.addColorStop(0, 'rgba(0,0,0,0)'); mg.addColorStop(0.15, 'rgba(0,0,0,0.85)');
-        mg.addColorStop(0.85, 'rgba(0,0,0,0.85)'); mg.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = mg; ctx.fillRect(TW / 2 - 140, TH / 2 - 22, 280, 44);
-        ctx.strokeStyle = C.target; ctx.shadowColor = C.target; ctx.shadowBlur = 6; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(TW / 2 - 110, TH / 2 - 19); ctx.lineTo(TW / 2 + 110, TH / 2 - 19); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(TW / 2 - 110, TH / 2 + 19); ctx.lineTo(TW / 2 + 110, TH / 2 + 19); ctx.stroke();
-        ctx.shadowBlur = 8; ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace';
+        const mg = linGrad(ctx, TW / 2 - 130, 0, TW / 2 + 130, 0);
+        if (mg) {
+          mg.addColorStop(0, 'rgba(0,0,0,0)');
+          mg.addColorStop(0.12, 'rgba(0,0,0,0.85)');
+          mg.addColorStop(0.88, 'rgba(0,0,0,0.85)');
+          mg.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = mg;
+        } else {
+          ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        }
+        ctx.fillRect(TW / 2 - 130, TH / 2 - 20, 260, 40);
+        ctx.strokeStyle = '#00e5ff'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 5; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(TW / 2 - 100, TH / 2 - 17); ctx.lineTo(TW / 2 + 100, TH / 2 - 17); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(TW / 2 - 100, TH / 2 + 17); ctx.lineTo(TW / 2 + 100, TH / 2 + 17); ctx.stroke();
+        ctx.shadowBlur = 6; ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(message, TW / 2, TH / 2); ctx.shadowBlur = 0;
       }
 
+      // Game over
       if (g.gameOver) {
         ctx.fillStyle = 'rgba(0,0,0,0.88)'; ctx.fillRect(0, 0, TW, TH);
-        ctx.globalAlpha = 0.04;
+        ctx.globalAlpha = 0.03;
         for (let y = 0; y < TH; y += 2) { ctx.fillStyle = '#fff'; ctx.fillRect(0, y, TW, 1); }
         ctx.globalAlpha = 1;
-        ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 35;
-        ctx.fillStyle = '#00e5ff'; ctx.font = 'bold 34px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', TW / 2, TH / 2 - 45);
-        ctx.shadowColor = '#ff00ff'; ctx.shadowBlur = 20;
-        ctx.fillStyle = '#ff00ff'; ctx.font = 'bold 24px monospace';
+        ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 30;
+        ctx.fillStyle = '#00e5ff'; ctx.font = 'bold 32px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', TW / 2, TH / 2 - 40);
+        ctx.shadowColor = '#ff00ff'; ctx.shadowBlur = 16;
+        ctx.fillStyle = '#ff00ff'; ctx.font = 'bold 22px monospace';
         ctx.fillText(g.score.toLocaleString(), TW / 2, TH / 2);
-        ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '10px monospace';
-        ctx.fillText('PRESS SPACE TO RESTART', TW / 2, TH / 2 + 40);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '9px monospace';
+        ctx.fillText('PRESS SPACE TO RESTART', TW / 2, TH / 2 + 35);
+        if (g.maxCombo > 1) {
+          ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '8px monospace';
+          ctx.fillText(`MAX COMBO: ${g.maxCombo}x`, TW / 2, TH / 2 + 52);
+        }
       }
 
+      // Demon mode banner
+      if (g.demonMode) {
+        const da = 0.55 + Math.sin(t * 7) * 0.35;
+        ctx.fillStyle = `rgba(200, 30, 30, ${da * 0.14})`;
+        ctx.fillRect(0, 0, TW, 16);
+        ctx.fillStyle = `rgba(255, 60, 60, ${da})`;
+        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('👹 DEMON MODE 3x 👹', TW / 2, 11);
+      }
       // Overdrive banner
-      if (g.overdrive) {
-        const oa = 0.6 + Math.sin(t * 8) * 0.3;
-        ctx.fillStyle = `rgba(168, 85, 247, ${oa * 0.15})`;
-        ctx.fillRect(0, 0, TW, 18);
-        ctx.fillStyle = `rgba(168, 85, 247, ${oa})`;
-        ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('⚡ OVERDRIVE 2x ⚡', TW / 2, 12);
-      }
-
-      // Cyber Surge banner
-      if (g.cyberSurge) {
-        const sa = 0.6 + Math.sin(t * 6) * 0.3;
-        ctx.fillStyle = `rgba(0, 229, 255, ${sa * 0.12})`;
-        ctx.fillRect(0, TH - 18, TW, 18);
-        ctx.fillStyle = `rgba(0, 229, 255, ${sa})`;
-        ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('⚡ CYBER SURGE 1.5x ⚡', TW / 2, TH - 6);
+      if (g.overdriveActive) {
+        const oa = 0.55 + Math.sin(t * 8) * 0.3;
+        ctx.fillStyle = `rgba(150, 70, 230, ${oa * 0.12})`;
+        ctx.fillRect(0, g.demonMode ? 16 : 0, TW, 16);
+        ctx.fillStyle = `rgba(150, 70, 230, ${oa})`;
+        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('⚡ OVERDRIVE 2x ⚡', TW / 2, (g.demonMode ? 16 : 0) + 11);
       }
 
       ctx.restore(); // shake
@@ -1205,7 +1069,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     animRef.current = requestAnimationFrame(renderLoop);
 
-    // ── Keyboard ──
+    // ═══════════════════════════════════════
+    // ── KEYBOARD ──
+    // ═══════════════════════════════════════
     const onKeyDown = (e: KeyboardEvent) => {
       const g = G.current;
       if (e.key === 'ArrowLeft' || e.key === 'z' || e.key === 'Z') { e.preventDefault(); g.leftUp = true; }
@@ -1213,50 +1079,49 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (e.key === ' ' || e.key === 'ArrowDown') {
         e.preventDefault();
         if (g.gameOver) {
-          // Reset
-          g.score = 0; g.balls = 3; g.gameOver = false; g.combo = 0;
-          g.ccaLanes = [false, false, false];
-          g.reactorCharge = 0; g.overdrive = false;
-          g.cyberTargets = [false, false, false, false, false]; g.cyberIndex = 0; g.cyberSurge = false;
-          g.downtownHits = 0; g.neonHits = 0; g.downtownRush = false;
-          g.lockedBalls = 0; g.multiball = false;
-          g.kickbackActive = false; g.buildingLit = new Array(12).fill(false);
+          // Full reset
+          g.score = 0; g.balls = 3; g.gameOver = false; g.combo = 0; g.maxCombo = 0;
+          g.cyberLetters.fill(false); g.cyberComplete = 0;
+          g.demonTargetsL.fill(false); g.demonTargetsR.fill(false);
+          g.demonMode = false; g.reactorCharge = 0; g.overdriveActive = false;
+          g.lockedBalls = 0; g.multiballActive = false;
+          g.buildingsLit = 0; g.trail = [];
           setScore(0); setBalls(3); setGameOver(false); setCombo(0);
-          setCcaLanes([false, false, false]); setReactorCharge(0); setOverdrive(false);
-          setCyberTargets([false, false, false, false, false]);
-          setDowntownHits(0); setNeonHits(0); setLockedBalls(0);
+          setCyberLetters([false, false, false, false, false]);
+          setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
           spawnBall();
           return;
         }
-        if (!g.launched && g.currentBall) g.plungerCharging = true;
       }
       if (e.key === 't' || e.key === 'T') {
         if (g.tilted || !g.currentBall) return;
         g.tiltWarnings++;
         setTiltW(g.tiltWarnings);
         if (g.tiltWarnings >= 3) {
-          g.tilted = true; setTilted(true);
+          g.tilted = true;
           showMsg('TILT! SCORE LOCKED');
           g.leftUp = false; g.rightUp = false;
         } else {
           showMsg(`TILT WARNING ${g.tiltWarnings}/3`);
-          if (g.currentBall) Body.applyForce(g.currentBall, g.currentBall.position, { x: (Math.random() - 0.5) * 0.003, y: -0.002 });
+          if (g.currentBall && fin(g.currentBall.position.x)) {
+            Body.applyForce(g.currentBall, g.currentBall.position, { x: (Math.random() - 0.5) * 0.003, y: -0.002 });
+          }
         }
       }
     };
+
     const onKeyUp = (e: KeyboardEvent) => {
       const g = G.current;
       if (e.key === 'ArrowLeft' || e.key === 'z' || e.key === 'Z') g.leftUp = false;
       if (e.key === 'ArrowRight' || e.key === '/' || e.key === 'm' || e.key === 'M') g.rightUp = false;
-      // Space now launches at current slider power
       if ((e.key === ' ' || e.key === 'Enter') && g.currentBall && !g.launched) {
-        const power = safeClamp(g.plungerPower, 0, 1);
+        const power = clamp(g.plungerPower, 0, 1);
         if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
         Body.setStatic(g.currentBall, false);
-        Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
+        Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.008 + power * 0.026) });
         g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
-        setPlungerDisplay(0); setIsCharging(false);
-        if (power > 0.65 && power < 0.82) showMsg('PERFECT LAUNCH!');
+        setPlungerDisplay(0);
+        if (power > 0.62 && power < 0.8) showMsg('PERFECT LAUNCH!');
       }
     };
 
@@ -1272,6 +1137,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Touch / click handlers ──
   const flipperTouch = useCallback((side: 'left' | 'right', down: boolean) => {
     if (side === 'left') G.current.leftUp = down;
     else G.current.rightUp = down;
@@ -1280,33 +1146,30 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const launchBall = useCallback(() => {
     const g = G.current;
     if (!g.currentBall || g.launched) return;
-    const power = safeClamp(g.plungerPower, 0, 1);
+    const power = clamp(g.plungerPower, 0, 1);
     if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
-    // Make ball dynamic before launching
     Body.setStatic(g.currentBall, false);
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
+    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.008 + power * 0.026) });
     g.plungerCharging = false;
     g.plungerPower = 0;
     g.launched = true;
     setPlungerDisplay(0);
-    setIsCharging(false);
-    if (power > 0.65 && power < 0.82) showMsg('PERFECT LAUNCH!');
+    if (power > 0.62 && power < 0.8) showMsg('PERFECT LAUNCH!');
   }, [showMsg]);
 
   const handleSliderChange = useCallback((value: number) => {
     const g = G.current;
     if (g.launched || g.gameOver) return;
-    const clamped = Math.max(0, Math.min(1, value));
-    g.plungerPower = clamped;
-    g.plungerCharging = clamped > 0;
-    setPlungerDisplay(clamped);
-    setIsCharging(clamped > 0);
+    const c = clamp(value, 0, 1);
+    g.plungerPower = c;
+    g.plungerCharging = c > 0;
+    setPlungerDisplay(c);
   }, []);
 
   return (
     <div className="flex flex-col items-center gap-3">
       {/* Score HUD */}
-      <div className="w-full max-w-[440px] bg-black/60 border border-neon-cyan/30 rounded-xl p-3">
+      <div className="w-full max-w-[420px] bg-black/60 border border-neon-cyan/30 rounded-xl p-3">
         <div className="flex justify-between items-center">
           <div>
             <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Score</p>
@@ -1323,35 +1186,44 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           <div className="text-right">
             <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Combo</p>
             <p className={`text-lg font-bold font-mono ${combo > 1 ? 'text-neon-pink' : 'text-muted-foreground'}`}>
-              {combo > 0 ? `${Math.min(combo, 5)}x` : '--'}
+              {combo > 0 ? `${Math.min(combo, 8)}x` : '--'}
             </p>
           </div>
         </div>
 
         {/* Status row */}
         <div className="flex items-center justify-between mt-2 gap-2">
-          {/* CCA */}
-          <div className="flex gap-1.5">
-            {['C', 'C', 'A'].map((l, i) => (
-              <span key={i} className={`text-[10px] font-bold font-mono px-1.5 py-0.5 rounded ${ccaLanes[i] ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50' : 'bg-muted/10 text-muted-foreground border border-muted/20'}`}>{l}</span>
+          {/* CYBER letters */}
+          <div className="flex gap-1">
+            {'CYBER'.split('').map((l, i) => (
+              <span key={i} className={`text-[10px] font-bold font-mono px-1 py-0.5 rounded ${cyberLetters[i] ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50' : 'bg-muted/10 text-muted-foreground border border-muted/20'}`}>{l}</span>
             ))}
           </div>
           {/* Reactor */}
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] text-muted-foreground">REACTOR</span>
-            <div className="w-16 h-2 bg-muted/20 rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all ${overdrive ? 'bg-purple-400 animate-pulse' : 'bg-purple-600'}`} style={{ width: `${reactorCharge}%` }} />
+            <span className="text-[8px] text-muted-foreground">REACTOR</span>
+            <div className="w-14 h-2 bg-muted/20 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${overdrive ? 'bg-purple-400 animate-pulse' : 'bg-orange-600'}`} style={{ width: `${reactorCharge}%` }} />
             </div>
-          </div>
-          {/* CYBER */}
-          <div className="flex gap-0.5">
-            {'CYBER'.split('').map((l, i) => (
-              <span key={i} className={`text-[9px] font-bold font-mono w-4 text-center ${cyberTargets[i] ? 'text-neon-cyan' : 'text-muted-foreground/40'}`}>{l}</span>
-            ))}
           </div>
         </div>
 
-        {/* Launch power slider (always visible) */}
+        {/* Mode indicators */}
+        <div className="flex justify-center gap-2 mt-1.5">
+          {demonMode && <span className="text-[9px] text-red-400 font-bold animate-pulse">👹 DEMON 3x</span>}
+          {overdrive && <span className="text-[9px] text-purple-400 font-bold animate-pulse">⚡ OVERDRIVE</span>}
+          {lockedBalls > 0 && <span className="text-[9px] text-neon-pink font-bold">🔒 {lockedBalls}/2</span>}
+          {tiltW > 0 && (
+            <div className="flex items-center gap-0.5">
+              {[0, 1, 2].map(i => (
+                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < tiltW ? 'bg-destructive' : 'bg-muted/30'}`} />
+              ))}
+              <span className="text-[9px] text-destructive ml-0.5">TILT</span>
+            </div>
+          )}
+        </div>
+
+        {/* Launch power slider */}
         <div className="mt-2 p-2 rounded-lg border border-neon-pink/40 bg-black/40">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[9px] uppercase tracking-widest text-neon-pink font-bold">Launch Power</span>
@@ -1371,7 +1243,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           />
           <div className="flex items-center justify-between mt-1">
             <p className="text-[9px] text-muted-foreground">Drag slider, then tap LAUNCH</p>
-            <div className="text-[8px] text-neon-cyan/50 font-mono">SKILL: 65-82%</div>
+            <div className="text-[8px] text-neon-cyan/50 font-mono">SKILL: 62-80%</div>
           </div>
           <button
             onClick={launchBall}
@@ -1381,20 +1253,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             {G.current.launched ? '🎯 LAUNCHED' : '🚀 LAUNCH'}
           </button>
         </div>
-
-        {/* Mode indicators */}
-        <div className="flex justify-center gap-2 mt-1.5">
-          {overdrive && <span className="text-[9px] text-purple-400 font-bold animate-pulse">⚡ OVERDRIVE</span>}
-          {lockedBalls > 0 && <span className="text-[9px] text-neon-pink font-bold">🔒 {lockedBalls}/2</span>}
-          {tiltW > 0 && (
-            <div className="flex items-center gap-0.5">
-              {[0, 1, 2].map(i => (
-                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < tiltW ? 'bg-destructive' : 'bg-muted/30'}`} />
-              ))}
-              <span className="text-[9px] text-destructive ml-0.5">TILT</span>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Canvas */}
@@ -1403,7 +1261,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       </div>
 
       {/* Mobile controls */}
-      <div className="w-full max-w-[440px] grid grid-cols-3 gap-2 md:hidden touch-none select-none">
+      <div className="w-full max-w-[420px] grid grid-cols-3 gap-2 md:hidden touch-none select-none">
         <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-5 rounded-xl active:bg-neon-cyan/40 select-none text-sm touch-none"
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('left', true); }}
           onTouchEnd={(e) => { e.preventDefault(); flipperTouch('left', false); }}
@@ -1417,7 +1275,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           onClick={launchBall}
           disabled={G.current.launched || gameOver || plungerDisplay === 0}
         >
-          {G.current.launched ? '🎯 LAUNCHED' : `🚀 ${Math.round(plungerDisplay * 100)}%`}
+          {G.current.launched ? '🎯' : `🚀 ${Math.round(plungerDisplay * 100)}%`}
         </button>
         <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-5 rounded-xl active:bg-neon-cyan/40 select-none text-sm touch-none"
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('right', true); }}
@@ -1428,7 +1286,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           onMouseLeave={() => flipperTouch('right', false)}>RIGHT ▶</button>
       </div>
 
-      {/* Desktop controls hint */}
+      {/* Desktop hints */}
       <div className="hidden md:flex gap-5 text-xs text-muted-foreground">
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">←</kbd>/<kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">Z</kbd> Left</span>
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">→</kbd>/<kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">M</kbd> Right</span>
