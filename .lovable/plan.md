@@ -1,58 +1,58 @@
 
-You should not restart the whole project. The issue is localized to the Cyber Pinball render loop, and we can fix it safely without losing your progress or spending more credits rebuilding from scratch.
 
-What I found:
-1) Your latest runtime error is:
-- Failed to execute createRadialGradient: provided value is non-finite
-- Source: src/components/games/CyberPinball.tsx inside renderLoop
-2) This means at least one value passed to canvas gradient drawing becomes NaN/Infinity at runtime.
-3) Cyber Pinball currently has many gradient calls using dynamic values (ball/trail/body positions, glow radii, etc.). If any physics value becomes invalid, rendering crashes immediately and the game appears broken/frozen.
-4) Recent launch changes (static spawn + dynamic release + slider launch) made gameplay better, but there are no defensive guards in rendering when physics data becomes invalid.
+# Cyber Pinball — Complete Rebuild
 
-Implementation approach (targeted, low-risk):
-1) Add numeric safety helpers in CyberPinball.tsx
-- Small utilities like isFiniteNumber and safeClamp.
-- Use these before passing coordinates/radius values to createRadialGradient, arc, fillRect, and similar draw calls that require finite numbers.
+## What We're Doing
+Deleting the entire current `CyberPinball.tsx` (1300 lines of broken code) and replacing it with a clean, working pinball game built from the ground up. The page wrapper (`CyberPinballPage.tsx`) stays as-is since it's fine.
 
-2) Harden the ball/trail drawing path (highest priority)
-- Before pushing trail points, validate currentBall.position.x/y.
-- Skip any invalid trail entry and purge stale/invalid entries.
-- Guard trail gradient creation so it never runs with invalid x/y/radius.
+## New Design — "Demon's Tilt meets Cyber City"
 
-3) Add recovery logic when physics goes invalid
-- In renderLoop, if currentBall position/velocity becomes non-finite:
-  - Remove that broken ball from world
-  - Clear currentBall reference
-  - Preserve game state (score/balls) as much as possible
-  - Spawn a replacement ball after a short delay if game is active
-- This prevents hard crashes and keeps the session playable.
+A vertically scrolling-style pinball table with a neon cyberpunk aesthetic. The focus is on **actually working physics** first, visual flair second.
 
-4) Make launch flow numerically safer
-- In launchBall and keyboard launch path, ensure power is always finite and clamped to [0,1] before force calculation.
-- Ignore launch action if power or ball state is invalid.
-- Keep existing slider UX intact.
+### Core Architecture (single file: `CyberPinball.tsx`)
 
-5) Guard high-risk dynamic gradients
-- Add finite checks around reactor/ambient/body-based radial gradients.
-- Fallback to a simple fill or skip that visual for the frame when inputs are invalid.
-- Visual quality remains nearly identical, but no fatal canvas exceptions.
+**Phase 1 — Working foundation (non-negotiable)**
+- Matter.js engine with proper gravity, timing, and cleanup
+- Ball spawns static in plunger lane, launches on Space (hold to charge, release to fire) or slider + button
+- Two flippers with proper pivot constraints (Arrow keys / Z / M)
+- Solid walls, plunger lane separator, drain with ball-loss detection
+- Score HUD, ball count, game over screen with restart
+- All canvas rendering wrapped in numeric safety helpers (`fin`, `sn`, `radGrad`) to prevent crashes
 
-Validation plan after fix:
-1) Open /games/cyber-pinball and verify no runtime errors in console.
-2) Set slider to multiple values (low/mid/high), launch repeatedly for at least 10-15 balls.
-3) Test keyboard launch (Space/Enter) and button launch.
-4) Verify:
-- no immediate crash
-- no premature game over
-- ball launches consistently
-- score/balls/combos continue updating
-5) Confirm rendering effects still appear (reactor glow, trail, HUD messages).
+**Phase 2 — Table elements**
+- 3 pop bumpers (circular, high restitution) — 100 pts each
+- 2 slingshots (triangular kickers near flippers) — 50 pts
+- 5 drop targets spelling C-Y-B-E-R — 200 pts each, complete set = 5000 bonus
+- 2 orbit lanes (left/right return lanes) — 300 pts, consecutive = combo multiplier
+- 1 center ramp sensor — 500 pts, locks balls for multiball
 
-Technical notes:
-- File to modify: src/components/games/CyberPinball.tsx
-- No backend/database changes needed.
-- This is a resilience fix first (stability), not a redesign.
-- If needed, I can also add lightweight debug logs for one iteration, then remove them once stable.
+**Phase 3 — Modes**
+- Combo system: hits within 3 seconds chain, multiplier up to 5x
+- Reactor charge: bumper hits fill a meter, 100% = Overdrive (2x scoring for 15s)
+- Demon Mode: clear both drop target banks = 3x scoring for 20s
+- Multiball: lock 2 balls = release 3 balls
 
-Fallback if you want instant recovery now:
-- You can restore the last known stable version from History, but this should not be necessary; a targeted patch should recover gameplay without rollback.
+**Phase 4 — Visuals**
+- Dark city background with simple building silhouettes (rectangles, no gradients that can crash)
+- Neon glow on bumpers/flippers using safe gradient helpers
+- Ball trail (last 8 positions)
+- Screen shake on bumper hits
+- Particle bursts on scoring events
+- All visual effects are optional — if any value is non-finite, skip that frame's effect entirely
+
+### Key Technical Decisions
+
+1. **Ball launch**: Ball spawns `isStatic: true`. On launch, `Body.setStatic(ball, false)` then `Body.applyForce` with clamped power. Minimum force = 0.015 (guarantees clearing the lane).
+
+2. **Flipper physics**: Each flipper is a rectangle body with a `Constraint` pinning one end. Flipper activation sets angular velocity. On release, gravity returns it. No `Body.setAngle` — pure physics.
+
+3. **Drain detection**: `Events.on(engine, 'beforeUpdate')` checks if ball.position.y > TH + 20. Removes ball, decrements count, respawns after 1s delay.
+
+4. **Crash prevention**: Every single `ctx.createRadialGradient`, `ctx.createLinearGradient`, `ctx.arc`, and coordinate-dependent draw call goes through safety wrappers. If invalid, that draw call is silently skipped.
+
+5. **Recovery**: Each frame checks ball position. If NaN/Infinity, remove ball from world, respawn fresh.
+
+### File Changes
+- **Replace**: `src/components/games/CyberPinball.tsx` — complete rewrite (~800 lines, focused and clean)
+- **No changes**: `src/pages/CyberPinballPage.tsx` — wrapper is fine as-is
+
