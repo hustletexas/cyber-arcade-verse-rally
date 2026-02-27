@@ -4,10 +4,9 @@ import Matter from 'matter-js';
 const { Engine, Runner, Bodies, Body, Composite, Events, Constraint, Vector } = Matter;
 
 // ═══════════════════════════════════════════════════════
-// CYBER CITY PINBALL — Full Neon Theme
+// CYBER PINBALL — Ultimate Neon Cyberpunk Edition
 // ═══════════════════════════════════════════════════════
 
-// ── Safe rendering helpers ──
 const fin = (v: number) => Number.isFinite(v);
 const sn = (v: number, fb = 0) => fin(v) ? v : fb;
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, sn(v, lo)));
@@ -23,12 +22,15 @@ const linGrad = (ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: numb
 // ── Dimensions ──
 const TW = 420;
 const TH = 820;
-const BALL_R = 6;
+const BALL_R = 7;
 const WALL = 8;
-const BUMPER_R = 15;
-const FW = 62;
-const FH = 11;
+const BUMPER_R = 16;
+const FW = 64;
+const FH = 12;
+const MINI_FW = 36;
+const MINI_FH = 8;
 const PLUNGER_X = TW - 16;
+const BG_COLOR = '#0b0f1a';
 
 // ── Neon color palette ──
 const NEON = {
@@ -41,6 +43,7 @@ const NEON = {
   blue: '#0080ff',
   purple: '#bf00ff',
   white: '#ffffff',
+  deepBlue: '#1a0a3e',
 };
 
 interface CyberPinballProps {
@@ -50,6 +53,7 @@ interface CyberPinballProps {
 }
 
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; color: string; size: number };
+type BGParticle = { x: number; y: number; vx: number; vy: number; size: number; color: string; alpha: number };
 
 export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBallLost, onGameOver }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,15 +62,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const animRef = useRef(0);
   const frame = useRef(0);
   const particles = useRef<Particle[]>([]);
+  const bgParticles = useRef<BGParticle[]>([]);
+  const touchStartY = useRef<number | null>(null);
 
   // ── Game state ref ──
   const G = useRef({
-    score: 0, balls: 3, gameOver: false, launched: false,
+    score: 0, balls: 3, gameOver: false, launched: false, started: false,
     currentBall: null as Matter.Body | null,
     leftFlipper: null as Matter.Body | null,
     rightFlipper: null as Matter.Body | null,
+    topLeftFlipper: null as Matter.Body | null,
+    topRightFlipper: null as Matter.Body | null,
     leftUp: false, rightUp: false,
-    combo: 0, comboTimer: 0, maxCombo: 0,
+    combo: 0, comboTimer: 0, maxCombo: 0, totalHits: 0,
+    // Anti-gravity
+    antiGravActive: false, antiGravTimer: 0, antiGravMeter: 0,
+    // Combo target bank (5 targets)
+    comboTargets: [false, false, false, false, false] as boolean[],
+    comboTargetComplete: 0,
+    // Magnet bumper
+    magnetActive: false, magnetTimer: 0,
+    // Rotating rail angle
+    railAngle: 0,
+    // Modes
     demonTargetsL: [false, false, false] as boolean[],
     demonTargetsR: [false, false, false] as boolean[],
     demonMode: false, demonTimer: 0,
@@ -82,13 +100,15 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     tiltWarnings: 0, tilted: false,
     cyberLetters: [false, false, false, false, false] as boolean[],
     cyberComplete: 0,
-    buildingsLit: 0,
+    highScore: parseInt(localStorage.getItem('cyberPinballHigh') || '0', 10),
+    screenPulse: 0,
   });
 
   const [score, setScore] = useState(0);
   const [balls, setBalls] = useState(3);
   const [combo, setCombo] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [started, setStarted] = useState(false);
   const [message, setMessage] = useState('');
   const [demonMode, setDemonMode] = useState(false);
   const [overdrive, setOverdrive] = useState(false);
@@ -96,6 +116,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const [cyberLetters, setCyberLetters] = useState([false, false, false, false, false]);
   const [lockedBalls, setLockedBalls] = useState(0);
   const [tiltW, setTiltW] = useState(0);
+  const [antiGrav, setAntiGrav] = useState(false);
+  const [antiGravMeter, setAntiGravMeter] = useState(0);
+  const [highScore, setHighScore] = useState(G.current.highScore);
 
   const showMsg = useCallback((msg: string, dur = 2000) => {
     setMessage(msg);
@@ -106,17 +129,37 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const g = G.current;
     if (g.tilted || g.gameOver) return;
     g.combo++;
+    g.totalHits++;
     g.comboTimer = Date.now() + 3000;
     if (g.combo > g.maxCombo) g.maxCombo = g.combo;
     const mult = Math.min(g.combo, 8);
     const dm = g.demonMode ? 3 : 1;
     const od = g.overdriveActive ? 2 : 1;
-    const total = Math.round(pts * mult * dm * od);
+    const ag = g.antiGravActive ? 2 : 1;
+    const total = Math.round(pts * mult * dm * od * ag);
     g.score += total;
     setScore(g.score);
     setCombo(g.combo);
+    // Anti-gravity meter
+    g.antiGravMeter = Math.min(g.antiGravMeter + 1, 10);
+    setAntiGravMeter(g.antiGravMeter);
+    if (g.antiGravMeter >= 10 && !g.antiGravActive) {
+      g.antiGravActive = true;
+      g.antiGravTimer = Date.now() + 8000;
+      g.antiGravMeter = 0;
+      setAntiGrav(true);
+      setAntiGravMeter(0);
+      showMsg('🌀 ANTI-GRAVITY ACTIVATED!', 3000);
+      g.lightFlash = 1.5;
+      g.shake.power = 6;
+      g.screenPulse = 1;
+      // Flip gravity
+      if (engineRef.current) {
+        engineRef.current.gravity.y = -1.0;
+      }
+    }
     onScoreUpdate?.(g.score);
-  }, [onScoreUpdate]);
+  }, [onScoreUpdate, showMsg]);
 
   const spawnParticles = useCallback((x: number, y: number, count: number, color: string, spread = 5) => {
     if (!fin(x) || !fin(y)) return;
@@ -129,6 +172,23 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         color, size: 1 + Math.random() * 2.5,
       });
     }
+  }, []);
+
+  // Init background particles
+  useEffect(() => {
+    const bps: BGParticle[] = [];
+    for (let i = 0; i < 60; i++) {
+      bps.push({
+        x: Math.random() * TW,
+        y: Math.random() * TH,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3 - 0.15,
+        size: 0.5 + Math.random() * 2,
+        color: [NEON.cyan, NEON.pink, NEON.purple, NEON.blue][Math.floor(Math.random() * 4)],
+        alpha: 0.1 + Math.random() * 0.3,
+      });
+    }
+    bgParticles.current = bps;
   }, []);
 
   // ═══════════════════════════════════════
@@ -154,19 +214,24 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(TW / 2, TH + 20, TW, 40, { isStatic: true, label: 'drain' }),
       Bodies.rectangle(TW - WALL / 2, TH / 2 - 140, WALL, TH - 280, wallOpts),
       Bodies.rectangle(TW - WALL / 2, TH - 55, WALL, 110, wallOpts),
+      // Plunger lane
       Bodies.rectangle(TW - 34, TH - 190, 4, 200, { ...wallOpts, angle: 0.03 }),
       Bodies.rectangle(TW - 48, TH - 310, 45, 4, { ...wallOpts, angle: -0.32 }),
+      // Inner guides
       Bodies.rectangle(30, TH - 170, 4, 130, { ...wallOpts, angle: 0.12 }),
       Bodies.rectangle(62, TH - 145, 4, 95, { ...wallOpts, angle: 0.16 }),
       Bodies.rectangle(TW - 58, TH - 170, 4, 130, { ...wallOpts, angle: -0.12 }),
       Bodies.rectangle(TW - 90, TH - 145, 4, 95, { ...wallOpts, angle: -0.16 }),
+      // Top area guides
       Bodies.rectangle(20, 195, 4, 230, wallOpts),
       Bodies.rectangle(38, 78, 42, 4, { ...wallOpts, angle: -0.3 }),
       Bodies.rectangle(TW - 46, 195, 4, 230, wallOpts),
       Bodies.rectangle(TW - 60, 78, 42, 4, { ...wallOpts, angle: 0.3 }),
+      // Anti-gravity top drain blocker (invisible ceiling bumper)
+      Bodies.rectangle(TW / 2, -10, TW - 50, 8, { ...wallOpts, restitution: 0.8, label: 'top_wall' }),
     ];
 
-    // ── Flippers ──
+    // ── Bottom Flippers ──
     const lfX = TW / 2 - 52, rfX = TW / 2 + 52, fY = TH - 68;
     const lf = Bodies.rectangle(lfX, fY, FW, FH, { label: 'leftFlipper', density: 0.02, frictionAir: 0.02, chamfer: { radius: 4 } });
     const rf = Bodies.rectangle(rfX, fY, FW, FH, { label: 'rightFlipper', density: 0.02, frictionAir: 0.02, chamfer: { radius: 4 } });
@@ -175,38 +240,66 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     G.current.leftFlipper = lf;
     G.current.rightFlipper = rf;
 
+    // ── Top Mini Flippers ──
+    const tlfX = TW / 2 - 70, trfX = TW / 2 + 70, tfY = 160;
+    const tlf = Bodies.rectangle(tlfX, tfY, MINI_FW, MINI_FH, { label: 'topLeftFlipper', density: 0.015, frictionAir: 0.02, chamfer: { radius: 3 } });
+    const trf = Bodies.rectangle(trfX, tfY, MINI_FW, MINI_FH, { label: 'topRightFlipper', density: 0.015, frictionAir: 0.02, chamfer: { radius: 3 } });
+    const tlp = Constraint.create({ bodyA: tlf, pointA: { x: -MINI_FW / 2 + 4, y: 0 }, pointB: { x: tlfX - MINI_FW / 2 + 4, y: tfY }, stiffness: 1, length: 0 });
+    const trp = Constraint.create({ bodyA: trf, pointA: { x: MINI_FW / 2 - 4, y: 0 }, pointB: { x: trfX + MINI_FW / 2 - 4, y: tfY }, stiffness: 1, length: 0 });
+    G.current.topLeftFlipper = tlf;
+    G.current.topRightFlipper = trf;
+
     // ── Slingshots ──
     const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
     const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
 
-    // ── Bumpers ──
-    const bCX = TW / 2, bCY = 225;
+    // ── 4 Neon Bumpers (high bounce) ──
+    const bCX = TW / 2, bCY = 240;
     const bumpers = [
-      Bodies.circle(bCX, bCY - 40, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.15 }),
-      Bodies.circle(bCX - 36, bCY + 18, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.15 }),
-      Bodies.circle(bCX + 36, bCY + 18, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.15 }),
-      Bodies.circle(bCX - 65, bCY - 55, 10, { isStatic: true, label: 'bumper_3', restitution: 1.2 }),
-      Bodies.circle(bCX + 65, bCY - 55, 10, { isStatic: true, label: 'bumper_4', restitution: 1.2 }),
+      Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.4 }),
+      Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.4 }),
+      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.4 }),
+      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 1.4 }),
     ];
 
     const reactorSensor = Bodies.circle(bCX, bCY, 8, sensorOpts('reactor_core'));
 
-    // ── CYBER letter lanes ──
+    // ── 3 Skill shot lanes at top ──
     const laneY = 52;
-    const cyberSensors = 'CYBER'.split('').map((_, i) =>
-      Bodies.rectangle(TW / 2 - 60 + i * 30, laneY, 10, 24, sensorOpts(`cyber_${i}`))
-    );
-    const laneGuides = [
-      Bodies.rectangle(TW / 2 - 78, laneY, 3, 34, wallOpts),
-      Bodies.rectangle(TW / 2 - 45, laneY, 3, 34, wallOpts),
-      Bodies.rectangle(TW / 2 - 15, laneY, 3, 34, wallOpts),
-      Bodies.rectangle(TW / 2 + 15, laneY, 3, 34, wallOpts),
-      Bodies.rectangle(TW / 2 + 45, laneY, 3, 34, wallOpts),
-      Bodies.rectangle(TW / 2 + 78, laneY, 3, 34, wallOpts),
+    const skillLaneSensors = [
+      Bodies.rectangle(TW / 2 - 40, laneY, 14, 24, sensorOpts('skill_lane_0')),
+      Bodies.rectangle(TW / 2, laneY, 14, 24, sensorOpts('skill_lane_1')),
+      Bodies.rectangle(TW / 2 + 40, laneY, 14, 24, sensorOpts('skill_lane_2')),
+    ];
+    const skillLaneGuides = [
+      Bodies.rectangle(TW / 2 - 55, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 - 25, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 + 25, laneY, 3, 34, wallOpts),
+      Bodies.rectangle(TW / 2 + 55, laneY, 3, 34, wallOpts),
     ];
 
+    // ── Combo target bank (5 targets in row) ──
+    const ctY = 420;
+    const comboTargets = [0, 1, 2, 3, 4].map(i =>
+      Bodies.rectangle(TW / 2 - 48 + i * 24, ctY, 5, 22, sensorOpts(`combo_target_${i}`))
+    );
+    walls.push(Bodies.rectangle(TW / 2, ctY - 15, 120, 3, wallOpts));
+
+    // ── Magnet bumper ──
+    const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
+
+    // ── Rotating rail ramp ──
+    const railRamp = Bodies.rectangle(TW / 2 - 80, 300, 80, 4, { isStatic: true, label: 'rail_ramp', angle: -0.15 });
+    const railSensor = Bodies.rectangle(TW / 2 - 80, 280, 18, 8, sensorOpts('rail_loop'));
+
+    // ── CYBER letter lanes ──
+    const cyberY = 130;
+    const cyberSensors = 'CYBER'.split('').map((_, i) =>
+      Bodies.rectangle(TW / 2 - 60 + i * 30, cyberY, 10, 24, sensorOpts(`cyber_${i}`))
+    );
+
     // ── Drop targets ──
-    const dtY = 410;
+    const dtY = 520;
     const demonTargetsL = [0, 1, 2].map(i =>
       Bodies.rectangle(60 + i * 22, dtY, 4, 20, sensorOpts(`demon_l_${i}`))
     );
@@ -221,12 +314,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const orbitR = Bodies.rectangle(TW - 52, 115, 16, 8, sensorOpts('orbit_right'));
 
     // ── Ramps ──
-    const rampL = Bodies.rectangle(52, 330, 4, 160, { ...wallOpts, angle: 0.2 });
-    const rampLGuide = Bodies.rectangle(76, 330, 4, 160, { ...wallOpts, angle: 0.2 });
-    const rampLSensor = Bodies.rectangle(52, 250, 12, 8, sensorOpts('ramp_left'));
-    const rampR = Bodies.rectangle(TW - 76, 330, 4, 160, { ...wallOpts, angle: -0.2 });
-    const rampRGuide = Bodies.rectangle(TW - 100, 330, 4, 160, { ...wallOpts, angle: -0.2 });
-    const rampRSensor = Bodies.rectangle(TW - 76, 250, 12, 8, sensorOpts('ramp_right'));
+    const rampL = Bodies.rectangle(52, 380, 4, 160, { ...wallOpts, angle: 0.2 });
+    const rampLGuide = Bodies.rectangle(76, 380, 4, 160, { ...wallOpts, angle: 0.2 });
+    const rampLSensor = Bodies.rectangle(52, 300, 12, 8, sensorOpts('ramp_left'));
+    const rampR = Bodies.rectangle(TW - 76, 380, 4, 160, { ...wallOpts, angle: -0.2 });
+    const rampRGuide = Bodies.rectangle(TW - 100, 380, 4, 160, { ...wallOpts, angle: -0.2 });
+    const rampRSensor = Bodies.rectangle(TW - 76, 300, 12, 8, sensorOpts('ramp_right'));
 
     const spinner = Bodies.rectangle(bCX, bCY - 78, 32, 3, sensorOpts('spinner'));
     const lockSensor = Bodies.rectangle(bCX, bCY + 60, 26, 6, sensorOpts('multiball_lock'));
@@ -234,9 +327,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     Composite.add(engine.world, [
       ...walls, lf, rf, lp, rp,
+      tlf, trf, tlp, trp,
       ...(lSling ? [lSling] : []), ...(rSling ? [rSling] : []),
       ...bumpers, reactorSensor,
-      ...cyberSensors, ...laneGuides,
+      ...skillLaneSensors, ...skillLaneGuides,
+      ...comboTargets, magnetBumper, railRamp, railSensor,
+      ...cyberSensors,
       ...demonTargetsL, ...demonTargetsR,
       orbitL, orbitR,
       rampL, rampLGuide, rampLSensor,
@@ -256,14 +352,14 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         if (labels.includes('drain')) { handleDrain(ball); continue; }
 
-        for (let i = 0; i < 5; i++) {
+        // Bumpers (strong impulse)
+        for (let i = 0; i < 4; i++) {
           if (labels.includes(`bumper_${i}`)) {
-            const pts = i < 3 ? 100 : 75;
-            addScore(pts);
-            g.bumperFlash.set(`bumper_${i}`, Date.now() + 250);
-            g.shake.power = 4;
-            g.lightFlash = 0.3;
-            g.reactorCharge = Math.min(g.reactorCharge + 10, 100);
+            addScore(100);
+            g.bumperFlash.set(`bumper_${i}`, Date.now() + 300);
+            g.shake.power = 5;
+            g.lightFlash = 0.4;
+            g.reactorCharge = Math.min(g.reactorCharge + 12, 100);
             setReactorCharge(g.reactorCharge);
             if (g.reactorCharge >= 100 && !g.overdriveActive) {
               g.overdriveActive = true;
@@ -275,19 +371,71 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             const bmp = pair.bodyA.label === `bumper_${i}` ? pair.bodyA : pair.bodyB;
             if (fin(ball.position.x) && fin(bmp.position.x)) {
               const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
-              Body.applyForce(ball, ball.position, { x: d.x * 0.008, y: d.y * 0.008 });
+              Body.applyForce(ball, ball.position, { x: d.x * 0.012, y: d.y * 0.012 });
             }
-            spawnParticles(ball.position.x, ball.position.y, 8, NEON.cyan, 5);
-            g.buildingsLit = Math.min(g.buildingsLit + 1, 14);
+            spawnParticles(ball.position.x, ball.position.y, 12, [NEON.cyan, NEON.pink, NEON.green, NEON.purple][i], 6);
           }
         }
 
         if (labels.includes('slingshot')) {
           addScore(50);
-          g.shake.power = 2;
-          spawnParticles(ball.position.x, ball.position.y, 4, NEON.yellow, 3);
+          g.shake.power = 3;
+          spawnParticles(ball.position.x, ball.position.y, 6, NEON.yellow, 4);
         }
 
+        // Skill shot lanes
+        for (let i = 0; i < 3; i++) {
+          if (labels.includes(`skill_lane_${i}`)) {
+            if (g.skillShot) {
+              addScore(3000);
+              showMsg('🎯 SKILL SHOT! +3000', 2500);
+              g.skillShot = false;
+              spawnParticles(ball.position.x, ball.position.y, 15, NEON.white, 8);
+            } else {
+              addScore(200);
+            }
+          }
+        }
+
+        // Combo target bank
+        for (let i = 0; i < 5; i++) {
+          if (labels.includes(`combo_target_${i}`) && !g.comboTargets[i]) {
+            g.comboTargets[i] = true;
+            addScore(400);
+            spawnParticles(ball.position.x, ball.position.y, 6, NEON.orange, 4);
+            if (g.comboTargets.every(Boolean)) {
+              g.comboTargetComplete++;
+              g.comboTargets.fill(false);
+              addScore(2000);
+              showMsg(`💥 COMBO BANK COMPLETE! +2000`, 3000);
+              g.lightFlash = 1;
+              g.shake.power = 10;
+              spawnParticles(TW / 2, ctY, 25, NEON.orange, 10);
+            }
+          }
+        }
+
+        // Magnet bumper
+        if (labels.includes('magnet_bumper')) {
+          addScore(75);
+          g.magnetActive = true;
+          g.magnetTimer = Date.now() + 600;
+          // Slow the ball briefly
+          if (fin(ball.velocity.x) && fin(ball.velocity.y)) {
+            Body.setVelocity(ball, { x: ball.velocity.x * 0.3, y: ball.velocity.y * 0.3 });
+          }
+          spawnParticles(ball.position.x, ball.position.y, 8, NEON.purple, 3);
+          showMsg('⚡ MAGNET!');
+        }
+
+        // Rail loop
+        if (labels.includes('rail_loop')) {
+          addScore(500);
+          showMsg('🌀 RAIL LOOP! +500');
+          spawnParticles(ball.position.x, ball.position.y, 10, NEON.green, 6);
+        }
+
+        // CYBER letters
         for (let i = 0; i < 5; i++) {
           if (labels.includes(`cyber_${i}`) && !g.cyberLetters[i]) {
             g.cyberLetters[i] = true;
@@ -301,14 +449,14 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
               setCyberLetters([false, false, false, false, false]);
               const bonus = 5000 * g.cyberComplete;
               addScore(bonus);
-              showMsg(`🌆 CYBER CITY JACKPOT x${g.cyberComplete}! +${bonus.toLocaleString()}`, 3000);
+              showMsg(`🌆 CYBER JACKPOT x${g.cyberComplete}! +${bonus.toLocaleString()}`, 3000);
               g.lightFlash = 1;
-              g.shake.power = 6;
-              g.buildingsLit = 14;
+              g.shake.power = 8;
             }
           }
         }
 
+        // Demon targets
         for (let i = 0; i < 3; i++) {
           if (labels.includes(`demon_l_${i}`) && !g.demonTargetsL[i]) {
             g.demonTargetsL[i] = true;
@@ -330,6 +478,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.shake.power = 8;
         }
 
+        // Orbits
         if (labels.includes('orbit_left') || labels.includes('orbit_right')) {
           const dir = labels.includes('orbit_left') ? 'left' : 'right';
           if (g.lastOrbitDir !== dir) { g.orbitCount++; g.lastOrbitDir = dir; }
@@ -338,6 +487,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           if (g.orbitCount > 1) showMsg(`ORBIT x${g.orbitCount}!`);
         }
 
+        // Ramps
         if (labels.includes('ramp_left') || labels.includes('ramp_right')) {
           addScore(300);
           showMsg(labels.includes('ramp_left') ? 'DOWNTOWN RAMP!' : 'NEON HIGHWAY!');
@@ -346,6 +496,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         if (labels.includes('spinner')) { addScore(25); }
 
+        // Multiball lock
         if (labels.includes('multiball_lock') && !g.multiballActive && g.lockedBalls < 2) {
           g.lockedBalls++;
           setLockedBalls(g.lockedBalls);
@@ -365,13 +516,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
               Body.applyForce(extra, extra.position, { x: (Math.random() - 0.5) * 0.004, y: 0.004 });
             }
           }
-        }
-
-        if (g.skillShot && labels.includes('cyber_2')) {
-          addScore(3000);
-          showMsg('🎯 SKILL SHOT! +3000', 2500);
-          g.skillShot = false;
-          spawnParticles(ball.position.x, ball.position.y, 12, NEON.white, 7);
         }
 
         if (labels.includes('kickback')) {
@@ -407,6 +551,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (g.balls <= 0) {
         g.gameOver = true;
         setGameOver(true);
+        // Save high score
+        if (g.score > g.highScore) {
+          g.highScore = g.score;
+          localStorage.setItem('cyberPinballHigh', String(g.score));
+          setHighScore(g.score);
+        }
         onGameOver?.(g.score);
         showMsg('GAME OVER');
       } else {
@@ -435,9 +585,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const doLaunch = () => {
       const g = G.current;
       if (g.launched || g.gameOver) return;
-
-      const engine = engineRef.current;
-      if (!engine) return;
+      if (!g.started) {
+        g.started = true;
+        setStarted(true);
+      }
 
       const worldBall = Composite.allBodies(engine.world).find((b) => b.label === 'ball') as Matter.Body | undefined;
       if (!g.currentBall && worldBall) g.currentBall = worldBall;
@@ -453,12 +604,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       Body.setStatic(g.currentBall, false);
       Body.setPosition(g.currentBall, { x: PLUNGER_X, y: TH - 44 });
-      Body.setVelocity(g.currentBall, { x: 0, y: -26 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.11 });
+      Body.setVelocity(g.currentBall, { x: 0, y: -28 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.12 });
       g.launched = true;
       showMsg('LAUNCH!');
-      g.shake.power = 3;
-      spawnParticles(PLUNGER_X, TH - 38, 10, NEON.cyan, 6);
+      g.shake.power = 4;
+      spawnParticles(PLUNGER_X, TH - 38, 14, NEON.cyan, 7);
     };
 
     setTimeout(() => spawnBall(), 400);
@@ -508,6 +659,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         g.demonTargetsR.fill(false);
         setDemonMode(false);
       }
+      // Anti-gravity timer
+      if (g.antiGravActive && now > g.antiGravTimer) {
+        g.antiGravActive = false;
+        setAntiGrav(false);
+        if (engineRef.current) {
+          engineRef.current.gravity.y = 1.3;
+        }
+        showMsg('GRAVITY RESTORED');
+      }
+      // Magnet timer
+      if (g.magnetActive && now > g.magnetTimer) {
+        g.magnetActive = false;
+      }
+
+      // Screen pulse decay
+      if (g.screenPulse > 0.01) {
+        g.screenPulse *= 0.95;
+        if (g.screenPulse < 0.02) g.screenPulse = 0;
+      }
+
+      // ── Rotating rail ramp ──
+      g.railAngle += 0.008;
+      Body.setAngle(railRamp, Math.sin(g.railAngle) * 0.25 - 0.15);
 
       // ── Flipper physics ──
       if (g.leftFlipper) {
@@ -517,6 +691,15 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (g.rightFlipper) {
         const ta = g.rightUp ? 0.52 : -0.38;
         Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.35);
+      }
+      // Top mini flippers follow main flippers
+      if (g.topLeftFlipper) {
+        const ta = g.leftUp ? -0.45 : 0.3;
+        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.3);
+      }
+      if (g.topRightFlipper) {
+        const ta = g.rightUp ? 0.45 : -0.3;
+        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.3);
       }
 
       // ═══════════════════════════════════════
@@ -533,43 +716,54 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (g.shake.power < 0.3) g.shake.power = 0;
       }
 
-      // ── NEON BLACK BACKGROUND ──
-      ctx.fillStyle = '#050510';
+      // ── DARK BACKGROUND ──
+      ctx.fillStyle = BG_COLOR;
       ctx.fillRect(0, 0, TW, TH);
 
+      // ── Animated background particles ──
+      for (const bp of bgParticles.current) {
+        bp.x += bp.vx;
+        bp.y += bp.vy;
+        if (bp.y < -5) bp.y = TH + 5;
+        if (bp.y > TH + 5) bp.y = -5;
+        if (bp.x < -5) bp.x = TW + 5;
+        if (bp.x > TW + 5) bp.x = -5;
+        ctx.globalAlpha = bp.alpha * (0.5 + Math.sin(t * 2 + bp.x * 0.01) * 0.5);
+        ctx.fillStyle = bp.color;
+        ctx.beginPath(); ctx.arc(bp.x, bp.y, bp.size, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
       // ── Neon grid ──
-      ctx.globalAlpha = 0.06;
-      ctx.strokeStyle = NEON.cyan;
+      ctx.globalAlpha = 0.04;
+      ctx.strokeStyle = NEON.blue;
       ctx.lineWidth = 0.5;
-      for (let y = 0; y < TH; y += 24) {
+      for (let y = 0; y < TH; y += 28) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(TW, y); ctx.stroke();
       }
-      for (let x = 0; x < TW; x += 24) {
+      for (let x = 0; x < TW; x += 28) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, TH); ctx.stroke();
       }
       ctx.globalAlpha = 1;
 
-      // ── NEON GRAFFITI TEXT BACKGROUND ──
+      // ── Neon graffiti text background ──
       ctx.save();
-      ctx.globalAlpha = 0.04;
-      const graffitiWords = ['CYBER', 'CITY', 'NEON', 'PINBALL', 'ARCADE', 'TILT', 'COMBO', 'BOOST', 'TURBO', 'HACK', 'GLITCH', 'PIXEL', 'GRID', 'FLUX', 'VOLT'];
-      const graffitiColors = [NEON.cyan, NEON.pink, NEON.green, NEON.yellow, NEON.purple, NEON.orange];
-      // Use frame-based seed for stable positions
-      for (let i = 0; i < 35; i++) {
+      ctx.globalAlpha = 0.03;
+      const graffitiWords = ['CYBER', 'CITY', 'NEON', 'PINBALL', 'ARCADE', 'TURBO', 'HACK', 'GLITCH', 'FLUX', 'VOLT'];
+      const graffitiColors = [NEON.cyan, NEON.pink, NEON.purple, NEON.blue, NEON.green, NEON.orange];
+      for (let i = 0; i < 25; i++) {
         const seed = i * 7919;
         const gx = (seed * 131) % TW;
         const gy = (seed * 97) % TH;
         const angle = ((seed * 37) % 120 - 60) * Math.PI / 180;
-        const size = 10 + (seed % 30);
-        const word = graffitiWords[i % graffitiWords.length];
-        const color = graffitiColors[i % graffitiColors.length];
+        const size = 12 + (seed % 28);
         ctx.save();
         ctx.translate(gx, gy);
         ctx.rotate(angle);
         ctx.font = `bold ${size}px monospace`;
-        ctx.fillStyle = color;
+        ctx.fillStyle = graffitiColors[i % graffitiColors.length];
         ctx.textAlign = 'center';
-        ctx.fillText(word, 0, 0);
+        ctx.fillText(graffitiWords[i % graffitiWords.length], 0, 0);
         ctx.restore();
       }
       ctx.globalAlpha = 1;
@@ -578,59 +772,64 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // ── Animated neon glow washes ──
       const nGlow1 = radGrad(ctx, TW * 0.3, TH * 0.3, 8, TW * 0.3, TH * 0.3, 160);
       if (nGlow1) {
-        nGlow1.addColorStop(0, `rgba(0, 255, 255, ${0.03 + Math.sin(t) * 0.015})`);
+        nGlow1.addColorStop(0, `rgba(0, 128, 255, ${0.035 + Math.sin(t) * 0.015})`);
         nGlow1.addColorStop(1, 'transparent');
         ctx.fillStyle = nGlow1; ctx.fillRect(0, 0, TW, TH);
       }
       const nGlow2 = radGrad(ctx, TW * 0.7, TH * 0.6, 8, TW * 0.7, TH * 0.6, 140);
       if (nGlow2) {
-        nGlow2.addColorStop(0, `rgba(255, 0, 255, ${0.025 + Math.sin(t * 1.3 + 2) * 0.012})`);
+        nGlow2.addColorStop(0, `rgba(255, 0, 255, ${0.03 + Math.sin(t * 1.3 + 2) * 0.012})`);
         nGlow2.addColorStop(1, 'transparent');
         ctx.fillStyle = nGlow2; ctx.fillRect(0, 0, TW, TH);
       }
-      const nGlow3 = radGrad(ctx, TW * 0.5, TH * 0.15, 8, TW * 0.5, TH * 0.15, 120);
+      const nGlow3 = radGrad(ctx, TW * 0.5, TH * 0.12, 8, TW * 0.5, TH * 0.12, 120);
       if (nGlow3) {
-        nGlow3.addColorStop(0, `rgba(57, 255, 20, ${0.02 + Math.sin(t * 0.7 + 4) * 0.01})`);
+        nGlow3.addColorStop(0, `rgba(191, 0, 255, ${0.025 + Math.sin(t * 0.7 + 4) * 0.01})`);
         nGlow3.addColorStop(1, 'transparent');
         ctx.fillStyle = nGlow3; ctx.fillRect(0, 0, TW, TH);
       }
 
-      // ── Large "CYBER CITY PINBALL" graffiti title (center, faint) ──
-      ctx.save();
-      ctx.globalAlpha = 0.035 + Math.sin(t * 0.5) * 0.01;
-      ctx.font = 'bold 42px monospace';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = NEON.cyan;
-      ctx.shadowBlur = 20;
-      ctx.fillStyle = NEON.cyan;
-      ctx.fillText('CYBER', TW / 2, TH * 0.42);
-      ctx.shadowColor = NEON.pink;
-      ctx.fillStyle = NEON.pink;
-      ctx.fillText('CITY', TW / 2, TH * 0.48);
-      ctx.shadowColor = NEON.green;
-      ctx.fillStyle = NEON.green;
-      ctx.font = 'bold 32px monospace';
-      ctx.fillText('PINBALL', TW / 2, TH * 0.53);
-      ctx.shadowBlur = 0;
-      ctx.restore();
+      // ── Anti-gravity screen effects ──
+      if (g.antiGravActive) {
+        const agPulse = Math.sin(t * 5) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(191, 0, 255, ${0.04 + agPulse * 0.03})`;
+        ctx.fillRect(0, 0, TW, TH);
+        // Upward particle streaks
+        ctx.globalAlpha = 0.15;
+        for (let i = 0; i < 8; i++) {
+          const sx = ((i * 53 + f * 2) % TW);
+          const sy = TH - (f * 3 + i * 100) % TH;
+          ctx.strokeStyle = NEON.purple;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx, sy - 20); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // ── Screen pulse effect ──
+      if (g.screenPulse > 0.01) {
+        ctx.fillStyle = `rgba(191, 0, 255, ${g.screenPulse * 0.15})`;
+        ctx.fillRect(0, 0, TW, TH);
+      }
 
       // ── Reactor core glow ──
+      const bCXd = bCX, bCYd = bCY;
       const rcSize = sn(85 + g.reactorCharge * 1.1, 85);
       const rcAlpha = clamp(g.overdriveActive ? 0.22 + Math.sin(t * 6) * 0.08 : 0.05 + g.reactorCharge * 0.002, 0, 1);
-      const rcGlow = radGrad(ctx, bCX, bCY, 2, bCX, bCY, rcSize);
+      const rcGlow = radGrad(ctx, bCXd, bCYd, 2, bCXd, bCYd, rcSize);
       if (rcGlow) {
-        rcGlow.addColorStop(0, `rgba(0, 255, 255, ${rcAlpha * 1.5})`);
+        rcGlow.addColorStop(0, `rgba(0, 128, 255, ${rcAlpha * 1.5})`);
         rcGlow.addColorStop(0.35, `rgba(255, 0, 255, ${rcAlpha})`);
-        rcGlow.addColorStop(0.7, `rgba(57, 255, 20, ${rcAlpha * 0.4})`);
+        rcGlow.addColorStop(0.7, `rgba(191, 0, 255, ${rcAlpha * 0.4})`);
         rcGlow.addColorStop(1, 'transparent');
         ctx.fillStyle = rcGlow;
-        ctx.fillRect(bCX - rcSize, bCY - rcSize, rcSize * 2, rcSize * 2);
+        ctx.fillRect(bCXd - rcSize, bCYd - rcSize, rcSize * 2, rcSize * 2);
       }
 
       // ── Flipper area glow ──
       const fGlow = radGrad(ctx, TW / 2, fY, 8, TW / 2, fY, 110);
       if (fGlow) {
-        fGlow.addColorStop(0, 'rgba(0, 255, 255, 0.04)');
+        fGlow.addColorStop(0, 'rgba(0, 128, 255, 0.04)');
         fGlow.addColorStop(0.5, 'rgba(255, 0, 255, 0.02)');
         fGlow.addColorStop(1, 'transparent');
         ctx.fillStyle = fGlow;
@@ -639,44 +838,45 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       // ── Lightning flash ──
       if (g.lightFlash > 0.02) {
-        ctx.fillStyle = `rgba(0, 255, 255, ${g.lightFlash * 0.12})`;
+        ctx.fillStyle = `rgba(0, 128, 255, ${g.lightFlash * 0.12})`;
         ctx.fillRect(0, 0, TW, TH);
         g.lightFlash *= 0.88;
         if (g.lightFlash < 0.03) g.lightFlash = 0;
       }
 
       // ── Table neon border ──
-      ctx.shadowColor = NEON.cyan;
-      ctx.shadowBlur = 10;
-      ctx.strokeStyle = NEON.cyan;
+      ctx.shadowColor = NEON.blue;
+      ctx.shadowBlur = 12;
+      ctx.strokeStyle = NEON.blue;
       ctx.lineWidth = 2;
       ctx.strokeRect(3, 3, TW - 6, TH - 6);
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = `rgba(0, 255, 255, 0.15)`;
+      ctx.strokeStyle = `rgba(0, 128, 255, 0.15)`;
       ctx.lineWidth = 1;
       ctx.strokeRect(7, 7, TW - 14, TH - 14);
 
       // ── Ball trail ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
         g.trail.push({ x: g.currentBall.position.x, y: g.currentBall.position.y, age: 0 });
-        if (g.trail.length > 25) g.trail.shift();
+        if (g.trail.length > 30) g.trail.shift();
       }
       for (let i = g.trail.length - 1; i >= 0; i--) {
         const pt = g.trail[i];
         pt.age++;
-        if (pt.age > 25 || !fin(pt.x) || !fin(pt.y)) { g.trail.splice(i, 1); continue; }
-        const a = 1 - pt.age / 25;
+        if (pt.age > 30 || !fin(pt.x) || !fin(pt.y)) { g.trail.splice(i, 1); continue; }
+        const a = 1 - pt.age / 30;
         const s = Math.max(0, BALL_R * a);
-        const tg = radGrad(ctx, pt.x, pt.y, 0, pt.x, pt.y, s + 4);
+        const trailColor = g.antiGravActive ? NEON.purple : NEON.cyan;
+        const tg = radGrad(ctx, pt.x, pt.y, 0, pt.x, pt.y, s + 5);
         if (!tg) continue;
-        tg.addColorStop(0, `rgba(0, 255, 255, ${a * 0.5})`);
-        tg.addColorStop(0.5, `rgba(255, 0, 255, ${a * 0.25})`);
+        tg.addColorStop(0, `rgba(${g.antiGravActive ? '191,0,255' : '0,128,255'}, ${a * 0.6})`);
+        tg.addColorStop(0.5, `rgba(255,0,255, ${a * 0.25})`);
         tg.addColorStop(1, 'transparent');
         ctx.fillStyle = tg;
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, s + 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, s + 5, 0, Math.PI * 2); ctx.fill();
       }
 
-      // ── Particles ──
+      // ── Game particles ──
       for (let i = particles.current.length - 1; i >= 0; i--) {
         const p = particles.current[i];
         p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life--;
@@ -685,7 +885,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillStyle = p.color;
         ctx.globalAlpha = clamp(a, 0, 1);
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 8;
         ctx.beginPath(); ctx.arc(p.x, p.y, p.size * a, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
       }
@@ -696,7 +896,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // ═══════════════════════════════════════
       const bodies = Composite.allBodies(engine.world);
       for (const body of bodies) {
-        if (body.label === 'drain') continue;
+        if (body.label === 'drain' || body.label === 'top_wall') continue;
         if (!fin(body.position.x) || !fin(body.position.y) || !fin(body.angle)) continue;
         ctx.save();
         ctx.translate(body.position.x, body.position.y);
@@ -704,71 +904,89 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         // ── Ball ──
         if (body.label === 'ball') {
+          const ballGlow = g.antiGravActive ? 1.5 : 1;
+          const ballColor = g.antiGravActive ? NEON.purple : NEON.cyan;
           for (let r = 3; r >= 1; r--) {
-            ctx.fillStyle = `rgba(0, 255, 255, ${0.03 * r})`;
-            ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(${g.antiGravActive ? '191,0,255' : '0,128,255'}, ${0.04 * r * ballGlow})`;
+            ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 7, 0, Math.PI * 2); ctx.fill();
           }
           const bg = radGrad(ctx, -1.5, -2.5, 0.5, 0, 0, BALL_R);
           if (bg) {
             bg.addColorStop(0, '#ffffff');
-            bg.addColorStop(0.15, '#ccffff');
-            bg.addColorStop(0.4, NEON.cyan);
-            bg.addColorStop(0.75, '#006666');
-            bg.addColorStop(1, '#001a1a');
-            ctx.shadowColor = NEON.cyan;
-            ctx.shadowBlur = 24;
+            bg.addColorStop(0.15, g.antiGravActive ? '#eeccff' : '#cceeff');
+            bg.addColorStop(0.4, ballColor);
+            bg.addColorStop(0.75, g.antiGravActive ? '#3a0066' : '#004466');
+            bg.addColorStop(1, '#000a1a');
+            ctx.shadowColor = ballColor;
+            ctx.shadowBlur = 28 * ballGlow;
             ctx.fillStyle = bg;
           } else {
-            ctx.fillStyle = NEON.cyan;
-            ctx.shadowColor = NEON.cyan;
-            ctx.shadowBlur = 24;
+            ctx.fillStyle = ballColor;
+            ctx.shadowColor = ballColor;
+            ctx.shadowBlur = 28;
           }
           ctx.beginPath(); ctx.arc(0, 0, BALL_R, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.fillStyle = 'rgba(255,255,255,0.85)';
-          ctx.beginPath(); ctx.arc(-1.5, -1.5, 1.8, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = `rgba(0, 255, 255, 0.5)`;
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.beginPath(); ctx.arc(-1.5, -1.5, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = `${ballColor}88`;
           ctx.lineWidth = 0.8;
           ctx.beginPath(); ctx.arc(0, 0, BALL_R + 0.3, 0, Math.PI * 2); ctx.stroke();
 
         // ── Bumpers ──
         } else if (body.label.startsWith('bumper_')) {
           const idx = parseInt(body.label.split('_')[1]);
-          const r = idx < 3 ? BUMPER_R : 10;
           const flash = g.bumperFlash.has(body.label) && now < (g.bumperFlash.get(body.label) || 0);
-          const neonCol = flash ? NEON.white : [NEON.cyan, NEON.pink, NEON.green, NEON.yellow, NEON.purple][idx];
-          const bg = radGrad(ctx, 0, -1.5, 1.5, 0, 1.5, r);
+          const neonCol = flash ? NEON.white : [NEON.cyan, NEON.pink, NEON.green, NEON.purple][idx];
+          const bg = radGrad(ctx, 0, -1.5, 1.5, 0, 1.5, BUMPER_R);
           if (bg) {
             bg.addColorStop(0, flash ? '#fff' : neonCol);
             bg.addColorStop(0.5, flash ? neonCol : `${neonCol}88`);
-            bg.addColorStop(1, '#050510');
+            bg.addColorStop(1, BG_COLOR);
             ctx.fillStyle = bg;
           } else {
             ctx.fillStyle = neonCol;
           }
           ctx.shadowColor = neonCol;
-          ctx.shadowBlur = flash ? 35 : 15;
-          ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = flash ? 40 : 18;
+          ctx.beginPath(); ctx.arc(0, 0, BUMPER_R, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
           ctx.strokeStyle = neonCol;
-          ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
-          ctx.strokeStyle = `${neonCol}66`;
-          ctx.lineWidth = 0.8;
-          ctx.beginPath(); ctx.arc(0, 0, r - 4, 0, Math.PI * 2); ctx.stroke();
-          // Center dot
+          ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(0, 0, BUMPER_R, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = `${neonCol}55`;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(0, 0, BUMPER_R - 5, 0, Math.PI * 2); ctx.stroke();
+          // Pulsing ring
+          const pulseR = BUMPER_R + 3 + Math.sin(t * 4 + idx) * 2;
+          ctx.globalAlpha = 0.2 + Math.sin(t * 3 + idx * 2) * 0.1;
+          ctx.strokeStyle = neonCol;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath(); ctx.arc(0, 0, pulseR, 0, Math.PI * 2); ctx.stroke();
+          ctx.globalAlpha = 1;
+          // Center
           ctx.fillStyle = flash ? '#fff' : neonCol;
           ctx.shadowColor = neonCol;
-          ctx.shadowBlur = flash ? 15 : 6;
+          ctx.shadowBlur = flash ? 18 : 8;
           ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
+          // Score text
+          if (flash) {
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 8px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('100', 0, -BUMPER_R - 5);
+          }
 
-        // ── Flippers ──
-        } else if (body.label === 'leftFlipper' || body.label === 'rightFlipper') {
-          const up = body.label === 'leftFlipper' ? g.leftUp : g.rightUp;
-          const isLeft = body.label === 'leftFlipper';
+        // ── Flippers (bottom + top mini) ──
+        } else if (body.label.includes('Flipper')) {
+          const isTop = body.label.startsWith('top');
+          const isLeft = body.label.includes('Left');
+          const up = isLeft ? g.leftUp : g.rightUp;
+          const fw = isTop ? MINI_FW : FW;
+          const fh = isTop ? MINI_FH : FH;
           const col = isLeft ? NEON.cyan : NEON.pink;
-          const fg = linGrad(ctx, -FW / 2, -FH / 2, FW / 2, FH / 2);
+          const fg = linGrad(ctx, -fw / 2, -fh / 2, fw / 2, fh / 2);
           if (fg) {
             fg.addColorStop(0, up ? col : `${col}55`);
             fg.addColorStop(0.5, up ? `${col}cc` : `${col}33`);
@@ -778,28 +996,86 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             ctx.fillStyle = up ? col : `${col}55`;
           }
           ctx.shadowColor = col;
-          ctx.shadowBlur = up ? 22 : 8;
-          ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 5); ctx.fill();
+          ctx.shadowBlur = up ? 25 : 10;
+          ctx.beginPath(); ctx.roundRect(-fw / 2, -fh / 2, fw, fh, isTop ? 3 : 5); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.fillStyle = `rgba(255,255,255,${up ? 0.3 : 0.08})`;
-          ctx.beginPath(); ctx.roundRect(-FW / 2 + 2, -FH / 2 + 1, FW - 4, 2.5, 2); ctx.fill();
+          ctx.fillStyle = `rgba(255,255,255,${up ? 0.35 : 0.08})`;
+          ctx.beginPath(); ctx.roundRect(-fw / 2 + 2, -fh / 2 + 1, fw - 4, 2, 2); ctx.fill();
           ctx.strokeStyle = col;
           ctx.lineWidth = 1.2;
-          ctx.beginPath(); ctx.roundRect(-FW / 2, -FH / 2, FW, FH, 5); ctx.stroke();
-          const px = isLeft ? -FW / 2 + 6 : FW / 2 - 6;
+          ctx.beginPath(); ctx.roundRect(-fw / 2, -fh / 2, fw, fh, isTop ? 3 : 5); ctx.stroke();
+          // Pivot dot
+          const px = isLeft ? -fw / 2 + (isTop ? 4 : 6) : fw / 2 - (isTop ? 4 : 6);
           ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.35)';
-          ctx.beginPath(); ctx.arc(px, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(px, 0, isTop ? 1.5 : 2.5, 0, Math.PI * 2); ctx.fill();
+
+        // ── Magnet bumper ──
+        } else if (body.label === 'magnet_bumper') {
+          const mFlash = g.magnetActive;
+          ctx.shadowColor = NEON.purple;
+          ctx.shadowBlur = mFlash ? 30 : 12;
+          const mg = radGrad(ctx, 0, 0, 0, 0, 0, 14);
+          if (mg) {
+            mg.addColorStop(0, mFlash ? '#fff' : NEON.purple);
+            mg.addColorStop(0.5, `${NEON.purple}88`);
+            mg.addColorStop(1, BG_COLOR);
+            ctx.fillStyle = mg;
+          } else {
+            ctx.fillStyle = NEON.purple;
+          }
+          ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = NEON.purple;
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.stroke();
+          // Magnetic field rings
+          for (let r = 0; r < 3; r++) {
+            const rr = 18 + r * 6 + Math.sin(t * 3 + r) * 2;
+            ctx.globalAlpha = 0.1 - r * 0.03;
+            ctx.strokeStyle = NEON.purple;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+          // ⚡ icon
+          ctx.fillStyle = mFlash ? '#fff' : NEON.purple;
+          ctx.font = 'bold 10px monospace';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('⚡', 0, 1);
+
+        // ── Rail ramp ──
+        } else if (body.label === 'rail_ramp') {
+          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
+          ctx.strokeStyle = NEON.green;
+          ctx.shadowColor = NEON.green;
+          ctx.shadowBlur = 10;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(verts[0].x, verts[0].y);
+          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
+          ctx.closePath(); ctx.stroke();
+          ctx.shadowBlur = 0;
+          // Animated dots along ramp
+          for (let d = 0; d < 5; d++) {
+            const dt = ((t * 2 + d * 0.2) % 1);
+            const dx = verts[0].x + (verts[1].x - verts[0].x) * dt;
+            const dy = verts[0].y + (verts[1].y - verts[0].y) * dt;
+            ctx.fillStyle = NEON.green;
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath(); ctx.arc(dx, dy, 1.5, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.globalAlpha = 1;
 
         // ── Walls ──
         } else if (body.label === 'wall') {
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
           if (verts.length < 2) { ctx.restore(); continue; }
-          ctx.fillStyle = '#0a0a1a';
+          ctx.fillStyle = '#080c18';
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
-          ctx.strokeStyle = `rgba(0, 255, 255, ${0.15 + Math.sin(t * 1.5 + body.position.y * 0.02) * 0.08})`;
+          ctx.strokeStyle = `rgba(0, 128, 255, ${0.12 + Math.sin(t * 1.5 + body.position.y * 0.02) * 0.06})`;
           ctx.lineWidth = 1;
           ctx.stroke();
 
@@ -808,17 +1084,47 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
           ctx.fillStyle = `${NEON.yellow}44`;
           ctx.shadowColor = NEON.yellow;
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 14;
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.strokeStyle = NEON.yellow; ctx.lineWidth = 1; ctx.stroke();
+          ctx.strokeStyle = NEON.yellow; ctx.lineWidth = 1.5; ctx.stroke();
 
-        // ── Ramps ──
-        } else if (body.label.startsWith('ramp_') && !body.isSensor) {
-          // skip
+        // ── Skill lane sensors ──
+        } else if (body.label.startsWith('skill_lane_')) {
+          const idx = parseInt(body.label.split('_')[2]);
+          const colors = [NEON.cyan, NEON.pink, NEON.green];
+          const col = colors[idx];
+          ctx.fillStyle = g.skillShot ? `${col}66` : `${col}22`;
+          ctx.shadowColor = col;
+          ctx.shadowBlur = g.skillShot ? 12 : 4;
+          ctx.beginPath(); ctx.roundRect(-7, -12, 14, 24, 3); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = g.skillShot ? col : `${col}44`;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.roundRect(-7, -12, 14, 24, 3); ctx.stroke();
+          ctx.fillStyle = g.skillShot ? col : `${col}88`;
+          ctx.font = 'bold 8px monospace';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(['I', 'II', 'III'][idx], 0, 1);
+
+        // ── Combo targets ──
+        } else if (body.label.startsWith('combo_target_')) {
+          const idx = parseInt(body.label.split('_')[2]);
+          const hit = g.comboTargets[idx];
+          if (hit) {
+            ctx.shadowColor = NEON.orange; ctx.shadowBlur = 16;
+            ctx.fillStyle = NEON.orange;
+          } else {
+            ctx.fillStyle = `${NEON.orange}33`;
+          }
+          ctx.beginPath(); ctx.roundRect(-4, -11, 8, 22, 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = hit ? NEON.orange : `${NEON.orange}55`;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.roundRect(-4, -11, 8, 22, 2); ctx.stroke();
 
         // ── CYBER lane sensors ──
         } else if (body.label.startsWith('cyber_')) {
@@ -826,7 +1132,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           const lit = g.cyberLetters[idx];
           const letterColor = [NEON.cyan, NEON.pink, NEON.green, NEON.yellow, NEON.purple][idx];
           if (lit) {
-            ctx.shadowColor = letterColor; ctx.shadowBlur = 20;
+            ctx.shadowColor = letterColor; ctx.shadowBlur = 22;
             ctx.fillStyle = letterColor;
           } else {
             ctx.fillStyle = `${letterColor}22`;
@@ -859,10 +1165,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.strokeStyle = hit ? NEON.red : `${NEON.red}55`;
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.roundRect(-5, -10, 10, 20, 2); ctx.stroke();
-          ctx.fillStyle = hit ? '#000' : `${NEON.red}66`;
-          ctx.font = 'bold 7px monospace';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText('▼', 0, 1);
 
         // ── Reactor core ──
         } else if (body.label === 'reactor_core') {
@@ -870,7 +1172,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           for (let r = 0; r < 3; r++) {
             const ringR = 16 + r * 9 + Math.sin(t * 4 + r * 2) * 2.5;
             const ra = g.overdriveActive ? 0.3 : 0.08 + charge * 0.12;
-            const ringCol = [NEON.cyan, NEON.pink, NEON.green][r];
+            const ringCol = [NEON.blue, NEON.pink, NEON.purple][r];
             ctx.strokeStyle = ringCol;
             ctx.globalAlpha = ra - r * 0.025;
             ctx.lineWidth = 1.2;
@@ -881,23 +1183,23 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           if (cg) {
             if (g.overdriveActive) {
               cg.addColorStop(0, '#ffffff');
-              cg.addColorStop(0.2, NEON.cyan);
+              cg.addColorStop(0.2, NEON.blue);
               cg.addColorStop(0.5, NEON.pink);
               cg.addColorStop(0.8, NEON.purple);
               cg.addColorStop(1, 'rgba(0,0,0,0.3)');
             } else {
-              cg.addColorStop(0, `rgba(0, 255, 255, ${0.25 + charge * 0.7})`);
+              cg.addColorStop(0, `rgba(0, 128, 255, ${0.25 + charge * 0.7})`);
               cg.addColorStop(0.4, `rgba(255, 0, 255, ${0.15 + charge * 0.55})`);
-              cg.addColorStop(0.8, `rgba(57, 255, 20, ${0.08 + charge * 0.25})`);
+              cg.addColorStop(0.8, `rgba(191, 0, 255, ${0.08 + charge * 0.25})`);
               cg.addColorStop(1, 'transparent');
             }
-            ctx.shadowColor = g.overdriveActive ? NEON.cyan : NEON.pink;
+            ctx.shadowColor = g.overdriveActive ? NEON.blue : NEON.pink;
             ctx.shadowBlur = g.overdriveActive ? 30 : 8 + charge * 12;
             ctx.fillStyle = cg;
             ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
             ctx.shadowBlur = 0;
           }
-          ctx.strokeStyle = NEON.cyan;
+          ctx.strokeStyle = NEON.blue;
           ctx.globalAlpha = 0.4 + charge * 0.5;
           ctx.lineWidth = 2;
           ctx.beginPath();
@@ -930,19 +1232,18 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       // ── Plunger ready indicator ──
       if (!g.launched && g.currentBall) {
-        const pulseA = 0.4 + Math.sin(t * 4) * 0.3;
+        const pulseA = 0.5 + Math.sin(t * 4) * 0.35;
         ctx.shadowColor = NEON.cyan;
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = `rgba(0, 255, 255, ${pulseA})`;
-        ctx.beginPath(); ctx.arc(PLUNGER_X, TH - 38, BALL_R + 4, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = `rgba(0, 128, 255, ${pulseA})`;
+        ctx.beginPath(); ctx.arc(PLUNGER_X, TH - 38, BALL_R + 5, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
-        // "TAP" text
         ctx.fillStyle = NEON.cyan;
-        ctx.font = 'bold 7px monospace';
+        ctx.font = 'bold 8px monospace';
         ctx.textAlign = 'center';
         ctx.globalAlpha = pulseA;
-        ctx.fillText('TAP', PLUNGER_X, TH - 52);
-        ctx.fillText('SPACE', PLUNGER_X, TH - 44);
+        ctx.fillText('TAP', PLUNGER_X, TH - 55);
+        ctx.fillText('SPACE', PLUNGER_X, TH - 46);
         ctx.globalAlpha = 1;
       }
 
@@ -951,21 +1252,25 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.shadowColor = NEON.green; ctx.shadowBlur = 4;
       ctx.fillStyle = NEON.green; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
       ctx.save();
-      ctx.translate(36, 360); ctx.rotate(-0.2);
+      ctx.translate(36, 410); ctx.rotate(-0.2);
       ctx.fillText('DOWNTOWN', 0, 0); ctx.fillText('RAMP', 0, 8);
       ctx.restore();
       ctx.save();
-      ctx.translate(TW - 58, 360); ctx.rotate(0.2);
+      ctx.translate(TW - 58, 410); ctx.rotate(0.2);
       ctx.shadowColor = NEON.pink;
       ctx.fillStyle = NEON.pink;
       ctx.fillText('NEON', 0, 0); ctx.fillText('HIGHWAY', 0, 8);
       ctx.restore();
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;
 
+      // Combo target label
+      ctx.fillStyle = `${NEON.orange}88`; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('▼ COMBO TARGETS ▼', TW / 2, ctY + 22);
+
       // Reactor label
-      ctx.fillStyle = NEON.cyan; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = NEON.blue; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
       ctx.globalAlpha = 0.55;
-      ctx.fillText('REACTOR CORE', bCX, bCY + 45);
+      ctx.fillText('REACTOR CORE', bCXd, bCYd + 45);
       ctx.globalAlpha = 1;
 
       // Demon targets label
@@ -975,9 +1280,55 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       // CYBER label
       ctx.fillStyle = `${NEON.cyan}66`; ctx.font = 'bold 7px monospace';
-      ctx.fillText('▼ C · Y · B · E · R ▼', TW / 2, laneY + 22);
+      ctx.fillText('▼ C · Y · B · E · R ▼', TW / 2, cyberY + 22);
 
       // ── HUD overlays ──
+      // In-canvas score display (neon digital font)
+      if (g.started && !g.gameOver) {
+        ctx.save();
+        ctx.shadowColor = NEON.cyan;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = NEON.cyan;
+        ctx.font = 'bold 18px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(g.score.toLocaleString(), TW / 2, 22);
+        ctx.shadowBlur = 0;
+        // Multiplier
+        if (g.combo > 1) {
+          ctx.fillStyle = NEON.pink;
+          ctx.shadowColor = NEON.pink;
+          ctx.shadowBlur = 6;
+          ctx.font = 'bold 11px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`${Math.min(g.combo, 8)}x`, 14, 20);
+          ctx.shadowBlur = 0;
+        }
+        // Balls remaining
+        ctx.textAlign = 'right';
+        for (let i = 0; i < 3; i++) {
+          ctx.fillStyle = i < g.balls ? NEON.cyan : 'rgba(255,255,255,0.15)';
+          if (i < g.balls) { ctx.shadowColor = NEON.cyan; ctx.shadowBlur = 6; }
+          ctx.beginPath(); ctx.arc(TW - 18 - i * 14, 16, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+        // Anti-gravity meter (top right)
+        ctx.textAlign = 'right';
+        ctx.fillStyle = g.antiGravActive ? NEON.purple : `${NEON.purple}88`;
+        ctx.font = 'bold 7px monospace';
+        ctx.fillText(g.antiGravActive ? 'ANTI-GRAV!' : `AG: ${g.antiGravMeter}/10`, TW - 14, 34);
+        // AG meter bar
+        const agBarW = 50;
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(TW - 14 - agBarW, 37, agBarW, 4);
+        const agFill = g.antiGravActive ? 1 : g.antiGravMeter / 10;
+        ctx.fillStyle = g.antiGravActive ? NEON.purple : `${NEON.purple}cc`;
+        ctx.shadowColor = NEON.purple;
+        ctx.shadowBlur = g.antiGravActive ? 8 : 0;
+        ctx.fillRect(TW - 14 - agBarW, 37, agBarW * agFill, 4);
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+
       if (g.tilted) {
         ctx.fillStyle = 'rgba(255,0,0,0.1)'; ctx.fillRect(0, 0, TW, TH);
         ctx.shadowColor = NEON.red; ctx.shadowBlur = 30;
@@ -985,7 +1336,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillText('TILT', TW / 2, TH / 2); ctx.shadowBlur = 0;
       }
 
-      if (message) {
+      if (message && !g.gameOver && g.started) {
         const mg = linGrad(ctx, TW / 2 - 130, 0, TW / 2 + 130, 0);
         if (mg) {
           mg.addColorStop(0, 'rgba(0,0,0,0)');
@@ -997,7 +1348,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.fillStyle = 'rgba(0,0,0,0.9)';
         }
         ctx.fillRect(TW / 2 - 130, TH / 2 - 20, 260, 40);
-        ctx.strokeStyle = NEON.cyan; ctx.shadowColor = NEON.cyan; ctx.shadowBlur = 8; ctx.lineWidth = 1;
+        ctx.strokeStyle = NEON.blue; ctx.shadowColor = NEON.blue; ctx.shadowBlur = 8; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(TW / 2 - 100, TH / 2 - 17); ctx.lineTo(TW / 2 + 100, TH / 2 - 17); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(TW / 2 - 100, TH / 2 + 17); ctx.lineTo(TW / 2 + 100, TH / 2 + 17); ctx.stroke();
         ctx.shadowBlur = 8; ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
@@ -1005,25 +1356,101 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillText(message, TW / 2, TH / 2); ctx.shadowBlur = 0;
       }
 
-      if (g.gameOver) {
-        ctx.fillStyle = 'rgba(0,0,0,0.92)'; ctx.fillRect(0, 0, TW, TH);
+      // ── START SCREEN ──
+      if (!g.started) {
+        ctx.fillStyle = 'rgba(11, 15, 26, 0.92)'; ctx.fillRect(0, 0, TW, TH);
         // Scanlines
         ctx.globalAlpha = 0.03;
-        for (let y = 0; y < TH; y += 2) { ctx.fillStyle = NEON.cyan; ctx.fillRect(0, y, TW, 1); }
+        for (let y = 0; y < TH; y += 2) { ctx.fillStyle = NEON.blue; ctx.fillRect(0, y, TW, 1); }
         ctx.globalAlpha = 1;
-        ctx.shadowColor = NEON.cyan; ctx.shadowBlur = 35;
-        ctx.fillStyle = NEON.cyan; ctx.font = 'bold 32px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', TW / 2, TH / 2 - 40);
-        ctx.shadowColor = NEON.pink; ctx.shadowBlur = 20;
-        ctx.fillStyle = NEON.pink; ctx.font = 'bold 22px monospace';
-        ctx.fillText(g.score.toLocaleString(), TW / 2, TH / 2);
+        // Title
+        ctx.shadowColor = NEON.blue; ctx.shadowBlur = 40;
+        ctx.fillStyle = NEON.blue; ctx.font = 'bold 38px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('CYBER', TW / 2, TH / 2 - 80);
+        ctx.shadowColor = NEON.pink; ctx.shadowBlur = 40;
+        ctx.fillStyle = NEON.pink; ctx.font = 'bold 38px monospace';
+        ctx.fillText('PINBALL', TW / 2, TH / 2 - 40);
         ctx.shadowBlur = 0;
-        ctx.fillStyle = `${NEON.green}88`; ctx.font = '9px monospace';
-        ctx.fillText('PRESS SPACE TO RESTART', TW / 2, TH / 2 + 35);
-        if (g.maxCombo > 1) {
-          ctx.fillStyle = `${NEON.yellow}55`; ctx.font = '8px monospace';
-          ctx.fillText(`MAX COMBO: ${g.maxCombo}x`, TW / 2, TH / 2 + 52);
+        // Subtitle
+        ctx.fillStyle = `${NEON.purple}cc`; ctx.font = '10px monospace';
+        ctx.fillText('NEON CYBERPUNK EDITION', TW / 2, TH / 2 - 15);
+        // Press start (pulsing)
+        const startPulse = 0.4 + Math.sin(t * 3) * 0.4;
+        ctx.globalAlpha = startPulse;
+        ctx.shadowColor = NEON.green; ctx.shadowBlur = 20;
+        ctx.fillStyle = NEON.green; ctx.font = 'bold 16px monospace';
+        ctx.fillText('PRESS START', TW / 2, TH / 2 + 30);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+        // Instructions
+        ctx.fillStyle = `${NEON.cyan}88`; ctx.font = '8px monospace';
+        ctx.fillText('SPACE to Launch  |  ←→ Flippers', TW / 2, TH / 2 + 65);
+        ctx.fillText('Touch: Left/Right = Flippers  |  Swipe Up = Launch', TW / 2, TH / 2 + 80);
+        // High score
+        if (g.highScore > 0) {
+          ctx.fillStyle = NEON.yellow;
+          ctx.font = 'bold 10px monospace';
+          ctx.fillText(`HIGH SCORE: ${g.highScore.toLocaleString()}`, TW / 2, TH / 2 + 110);
         }
+      }
+
+      // ── GAME OVER SCREEN ──
+      if (g.gameOver) {
+        ctx.fillStyle = 'rgba(11, 15, 26, 0.94)'; ctx.fillRect(0, 0, TW, TH);
+        // Scanlines
+        ctx.globalAlpha = 0.03;
+        for (let y = 0; y < TH; y += 2) { ctx.fillStyle = NEON.blue; ctx.fillRect(0, y, TW, 1); }
+        ctx.globalAlpha = 1;
+        ctx.shadowColor = NEON.red; ctx.shadowBlur = 40;
+        ctx.fillStyle = NEON.red; ctx.font = 'bold 36px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', TW / 2, TH / 2 - 60);
+        ctx.shadowBlur = 0;
+        // Final score
+        ctx.shadowColor = NEON.cyan; ctx.shadowBlur = 20;
+        ctx.fillStyle = NEON.cyan; ctx.font = 'bold 14px monospace';
+        ctx.fillText('FINAL SCORE', TW / 2, TH / 2 - 25);
+        ctx.fillStyle = NEON.pink; ctx.font = 'bold 28px monospace';
+        ctx.shadowColor = NEON.pink; ctx.shadowBlur = 25;
+        ctx.fillText(g.score.toLocaleString(), TW / 2, TH / 2 + 5);
+        ctx.shadowBlur = 0;
+        // High score
+        ctx.fillStyle = NEON.yellow; ctx.font = 'bold 11px monospace';
+        ctx.fillText(`HIGH SCORE: ${g.highScore.toLocaleString()}`, TW / 2, TH / 2 + 35);
+        if (g.score >= g.highScore && g.score > 0) {
+          const newPulse = 0.5 + Math.sin(t * 5) * 0.5;
+          ctx.globalAlpha = newPulse;
+          ctx.shadowColor = NEON.yellow; ctx.shadowBlur = 15;
+          ctx.fillStyle = NEON.yellow; ctx.font = 'bold 14px monospace';
+          ctx.fillText('★ NEW HIGH SCORE! ★', TW / 2, TH / 2 + 55);
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+        }
+        if (g.maxCombo > 1) {
+          ctx.fillStyle = `${NEON.purple}aa`; ctx.font = '9px monospace';
+          ctx.fillText(`MAX COMBO: ${g.maxCombo}x`, TW / 2, TH / 2 + 75);
+        }
+        // Play again
+        const rPulse = 0.4 + Math.sin(t * 3) * 0.35;
+        ctx.globalAlpha = rPulse;
+        ctx.shadowColor = NEON.green; ctx.shadowBlur = 15;
+        ctx.fillStyle = NEON.green; ctx.font = 'bold 13px monospace';
+        ctx.fillText('PRESS SPACE TO PLAY AGAIN', TW / 2, TH / 2 + 105);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
+
+      // ── Bottom title ──
+      if (g.started && !g.gameOver) {
+        ctx.save();
+        ctx.globalAlpha = 0.12 + Math.sin(t * 0.8) * 0.04;
+        ctx.shadowColor = NEON.blue;
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = NEON.blue;
+        ctx.font = 'bold 14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CYBER PINBALL', TW / 2, TH - 12);
+        ctx.shadowBlur = 0;
+        ctx.restore();
       }
 
       // Demon mode banner
@@ -1050,6 +1477,19 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillText('⚡ OVERDRIVE 2x ⚡', TW / 2, (g.demonMode ? 16 : 0) + 11);
         ctx.globalAlpha = 1; ctx.shadowBlur = 0;
       }
+      // Anti-gravity banner
+      if (g.antiGravActive) {
+        const aa = 0.6 + Math.sin(t * 6) * 0.35;
+        const bannerY = (g.demonMode ? 16 : 0) + (g.overdriveActive ? 16 : 0);
+        ctx.fillStyle = `rgba(191, 0, 255, ${aa * 0.15})`;
+        ctx.fillRect(0, bannerY, TW, 16);
+        ctx.shadowColor = NEON.purple; ctx.shadowBlur = 8;
+        ctx.fillStyle = NEON.purple;
+        ctx.globalAlpha = aa;
+        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('🌀 ANTI-GRAVITY x2 🌀', TW / 2, bannerY + 11);
+        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+      }
 
       ctx.restore(); // shake
 
@@ -1068,19 +1508,23 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (e.key === ' ' || e.key === 'ArrowDown') {
         e.preventDefault();
         if (g.gameOver) {
-          g.score = 0; g.balls = 3; g.gameOver = false; g.combo = 0; g.maxCombo = 0;
+          // Reset
+          g.score = 0; g.balls = 3; g.gameOver = false; g.combo = 0; g.maxCombo = 0; g.totalHits = 0;
           g.cyberLetters.fill(false); g.cyberComplete = 0;
           g.demonTargetsL.fill(false); g.demonTargetsR.fill(false);
           g.demonMode = false; g.reactorCharge = 0; g.overdriveActive = false;
           g.lockedBalls = 0; g.multiballActive = false;
-          g.buildingsLit = 0; g.trail = [];
+          g.comboTargets.fill(false); g.comboTargetComplete = 0;
+          g.antiGravActive = false; g.antiGravMeter = 0;
+          g.trail = []; g.screenPulse = 0;
+          if (engineRef.current) engineRef.current.gravity.y = 1.3;
           setScore(0); setBalls(3); setGameOver(false); setCombo(0);
           setCyberLetters([false, false, false, false, false]);
           setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
+          setAntiGrav(false); setAntiGravMeter(0);
           spawnBall();
           return;
         }
-        // Instant launch on tap
         doLaunch();
       }
       if (e.key === 't' || e.key === 'T') {
@@ -1127,6 +1571,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const launchBall = useCallback(() => {
     const g = G.current;
     if (g.launched || g.gameOver) return;
+    if (!g.started) {
+      g.started = true;
+      setStarted(true);
+    }
 
     const engine = engineRef.current;
     if (!engine) return;
@@ -1145,108 +1593,46 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     Body.setStatic(g.currentBall, false);
     Body.setPosition(g.currentBall, { x: PLUNGER_X, y: TH - 44 });
-    Body.setVelocity(g.currentBall, { x: 0, y: -26 });
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.11 });
+    Body.setVelocity(g.currentBall, { x: 0, y: -28 });
+    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.12 });
     g.launched = true;
     showMsg('LAUNCH!');
-    g.shake.power = 3;
-    spawnParticles(PLUNGER_X, g.currentBall.position.y, 10, NEON.cyan, 6);
+    g.shake.power = 4;
+    spawnParticles(PLUNGER_X, g.currentBall.position.y, 14, NEON.cyan, 7);
   }, [showMsg, spawnParticles]);
+
+  // Mobile swipe-to-launch
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartY.current !== null) {
+      const dy = touchStartY.current - (e.changedTouches[0]?.clientY ?? touchStartY.current);
+      if (dy > 30) {
+        // Swipe up detected
+        launchBall();
+      }
+      touchStartY.current = null;
+    }
+  }, [launchBall]);
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Score HUD */}
-      <div className="w-full max-w-[420px] bg-black/80 border border-[hsl(180,100%,50%)]/30 rounded-xl p-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Score</p>
-            <p className="text-2xl font-bold text-[hsl(180,100%,50%)] font-mono">{score.toLocaleString()}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Balls</p>
-            <div className="flex gap-1 justify-center mt-1">
-              {[0, 1, 2].map(i => (
-                <div key={i} className={`w-3 h-3 rounded-full ${i < balls ? 'bg-[hsl(180,100%,50%)] shadow-[0_0_6px_hsl(180,100%,50%)]' : 'bg-muted/30'}`} />
-              ))}
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Combo</p>
-            <p className={`text-lg font-bold font-mono ${combo > 1 ? 'text-[hsl(300,100%,50%)]' : 'text-muted-foreground'}`}>
-              {combo > 0 ? `${Math.min(combo, 8)}x` : '--'}
-            </p>
-          </div>
-        </div>
-
-        {/* Status row */}
-        <div className="flex items-center justify-between mt-2 gap-2">
-          <div className="flex gap-1">
-            {'CYBER'.split('').map((l, i) => {
-              const cols = ['hsl(180,100%,50%)', 'hsl(300,100%,50%)', 'hsl(110,100%,54%)', 'hsl(55,100%,47%)', 'hsl(280,100%,50%)'];
-              return (
-                <span key={i} className={`text-[10px] font-bold font-mono px-1 py-0.5 rounded border`}
-                  style={{
-                    color: cyberLetters[i] ? cols[i] : 'var(--muted-foreground)',
-                    borderColor: cyberLetters[i] ? `${cols[i]}` : 'rgba(255,255,255,0.1)',
-                    backgroundColor: cyberLetters[i] ? `${cols[i]}22` : 'rgba(255,255,255,0.03)',
-                    textShadow: cyberLetters[i] ? `0 0 8px ${cols[i]}` : 'none',
-                  }}>{l}</span>
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[8px] text-muted-foreground">REACTOR</span>
-            <div className="w-14 h-2 bg-muted/20 rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all`}
-                style={{
-                  width: `${reactorCharge}%`,
-                  background: overdrive ? 'linear-gradient(90deg, hsl(180,100%,50%), hsl(300,100%,50%))' : 'hsl(180,100%,50%)',
-                  boxShadow: overdrive ? '0 0 8px hsl(180,100%,50%)' : 'none',
-                }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Mode indicators */}
-        <div className="flex justify-center gap-2 mt-1.5">
-          {demonMode && <span className="text-[9px] font-bold animate-pulse" style={{ color: NEON.red, textShadow: `0 0 6px ${NEON.red}` }}>👹 DEMON 3x</span>}
-          {overdrive && <span className="text-[9px] font-bold animate-pulse" style={{ color: NEON.purple, textShadow: `0 0 6px ${NEON.purple}` }}>⚡ OVERDRIVE</span>}
-          {lockedBalls > 0 && <span className="text-[9px] font-bold" style={{ color: NEON.pink }}>🔒 {lockedBalls}/2</span>}
-          {tiltW > 0 && (
-            <div className="flex items-center gap-0.5">
-              {[0, 1, 2].map(i => (
-                <div key={i} className={`w-1.5 h-1.5 rounded-full`} style={{ background: i < tiltW ? NEON.red : 'rgba(255,255,255,0.15)' }} />
-              ))}
-              <span className="text-[9px] ml-0.5" style={{ color: NEON.red }}>TILT</span>
-            </div>
-          )}
-        </div>
-
-        {/* Launch button - simple tap */}
-        <button
-          onClick={launchBall}
-          disabled={G.current.launched || gameOver}
-          className="w-full mt-2 py-3 rounded-lg font-bold text-sm border active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-          style={{
-            background: G.current.launched ? 'rgba(255,255,255,0.05)' : 'rgba(0,255,255,0.15)',
-            borderColor: G.current.launched ? 'rgba(255,255,255,0.1)' : 'rgba(0,255,255,0.5)',
-            color: G.current.launched ? 'rgba(255,255,255,0.3)' : NEON.cyan,
-            textShadow: G.current.launched ? 'none' : `0 0 10px ${NEON.cyan}`,
-          }}
-        >
-          {G.current.launched ? '🎯 IN PLAY' : '🚀 LAUNCH'}
-        </button>
-      </div>
-
       {/* Canvas */}
-      <div className="relative rounded-xl overflow-hidden border-2 border-[hsl(180,100%,50%)]/30 shadow-[0_0_40px_rgba(0,255,255,0.15)]">
+      <div
+        className="relative rounded-xl overflow-hidden shadow-[0_0_60px_rgba(0,128,255,0.2)]"
+        style={{ border: '2px solid rgba(0, 128, 255, 0.3)' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <canvas ref={canvasRef} className="block" style={{ width: TW, height: TH }} />
       </div>
 
       {/* Mobile controls */}
       <div className="w-full max-w-[420px] grid grid-cols-3 gap-2 md:hidden touch-none select-none">
-        <button className="font-bold py-5 rounded-xl select-none text-sm touch-none border"
-          style={{ background: 'rgba(0,255,255,0.15)', borderColor: 'rgba(0,255,255,0.4)', color: NEON.cyan }}
+        <button className="font-bold py-5 rounded-xl select-none text-sm touch-none"
+          style={{ background: 'rgba(0,128,255,0.15)', border: '1px solid rgba(0,128,255,0.4)', color: NEON.cyan }}
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('left', true); }}
           onTouchEnd={(e) => { e.preventDefault(); flipperTouch('left', false); }}
           onTouchCancel={(e) => { e.preventDefault(); flipperTouch('left', false); }}
@@ -1255,10 +1641,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           onMouseLeave={() => flipperTouch('left', false)}>◀ LEFT</button>
         <button
           type="button"
-          className="rounded-xl touch-none select-none font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed border"
+          className="rounded-xl touch-none select-none font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed"
           style={{
-            background: G.current.launched ? 'rgba(255,255,255,0.05)' : 'rgba(0,255,255,0.15)',
-            borderColor: 'rgba(0,255,255,0.4)',
+            background: G.current.launched ? 'rgba(255,255,255,0.05)' : 'rgba(0,128,255,0.15)',
+            border: '1px solid rgba(0,128,255,0.4)',
             color: NEON.cyan,
           }}
           onClick={launchBall}
@@ -1266,8 +1652,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         >
           {G.current.launched ? '🎯' : '🚀 LAUNCH'}
         </button>
-        <button className="font-bold py-5 rounded-xl select-none text-sm touch-none border"
-          style={{ background: 'rgba(255,0,255,0.15)', borderColor: 'rgba(255,0,255,0.4)', color: NEON.pink }}
+        <button className="font-bold py-5 rounded-xl select-none text-sm touch-none"
+          style={{ background: 'rgba(255,0,255,0.15)', border: '1px solid rgba(255,0,255,0.4)', color: NEON.pink }}
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('right', true); }}
           onTouchEnd={(e) => { e.preventDefault(); flipperTouch('right', false); }}
           onTouchCancel={(e) => { e.preventDefault(); flipperTouch('right', false); }}
