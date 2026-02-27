@@ -21,8 +21,8 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
     ghostRow = row;
   }
 
-  // Bigger cells — matches other arcade games
-  const cellSize = 'w-12 h-12 sm:w-14 sm:h-14';
+  // Big crystal orb cells
+  const cellSize = 'w-14 h-14 sm:w-16 sm:h-16';
 
   return (
     <div className="cyber-columns-board p-2">

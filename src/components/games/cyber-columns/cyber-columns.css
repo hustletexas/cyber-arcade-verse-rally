@@ -169,19 +169,19 @@
 .cyber-columns-board {
   position: relative;
   border-radius: 0.75rem;
-  background: hsl(240 30% 8% / 0.4);
+  background: hsl(240 30% 6% / 0.6);
   backdrop-filter: blur(12px);
   overflow: hidden;
 }
 
-/* Gradient neon border */
+/* Gradient neon border — brighter like reference */
 .cyber-columns-board::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 0.75rem;
-  padding: 2px;
-  background: linear-gradient(180deg, hsl(199 100% 50% / 0.6), hsl(270 60% 50% / 0.3), hsl(330 100% 60% / 0.6));
+  padding: 2.5px;
+  background: linear-gradient(180deg, hsl(199 100% 55% / 0.8), hsl(270 60% 55% / 0.4), hsl(330 100% 65% / 0.8));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -195,218 +195,248 @@
   inset: 0;
   border-radius: 0.75rem;
   background:
-    radial-gradient(circle at 0% 0%, hsl(199 100% 50% / 0.15), transparent 30%),
-    radial-gradient(circle at 100% 0%, hsl(330 100% 60% / 0.15), transparent 30%),
-    radial-gradient(circle at 0% 100%, hsl(270 60% 50% / 0.1), transparent 30%),
-    radial-gradient(circle at 100% 100%, hsl(199 100% 50% / 0.1), transparent 30%);
+    radial-gradient(circle at 0% 0%, hsl(199 100% 50% / 0.2), transparent 30%),
+    radial-gradient(circle at 100% 0%, hsl(330 100% 60% / 0.2), transparent 30%),
+    radial-gradient(circle at 0% 100%, hsl(270 60% 50% / 0.15), transparent 30%),
+    radial-gradient(circle at 100% 100%, hsl(199 100% 50% / 0.15), transparent 30%);
   pointer-events: none;
 }
 
 /* Grid cell background */
 .cc-grid-cell {
-  border: 1px solid hsl(220 40% 40% / 0.1);
-  background: hsl(220 30% 15% / 0.15);
-  border-radius: 3px;
+  border: 1px solid hsl(240 40% 40% / 0.08);
+  background: hsl(240 20% 12% / 0.2);
+  border-radius: 50%;
 }
 
-/* ===== Gem Styles — Galaxy Edition (Realistic Shiny) ===== */
+/* ===== Gem Styles — Realistic Crystal Sphere Orbs ===== */
 .cyber-gem {
   position: relative;
-  border-radius: 6px;
+  border-radius: 50%;
   transition: opacity 0.15s ease, transform 0.15s ease;
-  overflow: hidden;
+  overflow: visible;
 }
 
-/* Top specular highlight — makes gems look 3D and glassy */
+/* Top specular highlight — bright crescent for realistic 3D sphere */
 .cyber-gem::after {
   content: '';
   position: absolute;
-  top: 6%;
-  left: 15%;
-  width: 55%;
-  height: 38%;
+  top: 8%;
+  left: 18%;
+  width: 48%;
+  height: 32%;
   border-radius: 50%;
   background: linear-gradient(
-    180deg,
-    hsl(0 0% 100% / 0.7) 0%,
-    hsl(0 0% 100% / 0.3) 40%,
+    175deg,
+    hsl(0 0% 100% / 0.95) 0%,
+    hsl(0 0% 100% / 0.6) 25%,
+    hsl(0 0% 100% / 0.15) 55%,
     transparent 100%
   );
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
+  filter: blur(0.5px);
 }
 
-/* Inner depth + glow pulse */
+/* Secondary bottom-right reflection for realism */
 .cyber-gem::before {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 6px;
-  animation: cc-gem-pulse 2.5s ease-in-out infinite;
+  border-radius: 50%;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
+  animation: cc-gem-pulse 3s ease-in-out infinite;
 }
 
 @keyframes cc-gem-pulse {
-  0%, 100% { box-shadow: inset 0 0 6px hsl(0 0% 100% / 0.08), inset 0 -4px 8px hsl(0 0% 0% / 0.2); }
-  50% { box-shadow: inset 0 0 14px hsl(0 0% 100% / 0.3), inset 0 -4px 8px hsl(0 0% 0% / 0.15); }
+  0%, 100% {
+    box-shadow:
+      inset 0 0 10px hsl(0 0% 100% / 0.08),
+      inset 0 -8px 16px hsl(0 0% 0% / 0.4),
+      inset 4px 4px 8px hsl(0 0% 100% / 0.05),
+      inset -2px 2px 4px hsl(0 0% 100% / 0.03);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 20px hsl(0 0% 100% / 0.25),
+      inset 0 -8px 16px hsl(0 0% 0% / 0.3),
+      inset 4px 4px 8px hsl(0 0% 100% / 0.1),
+      inset -2px 2px 4px hsl(0 0% 100% / 0.08);
+  }
 }
 
-/* ── Plasma Core (Blue) ── */
+/* ── Plasma Core (Blue) — deep rich sapphire sphere ── */
 .cyber-gem--energy {
   background:
-    radial-gradient(circle at 35% 30%, hsl(199 100% 85%) 0%, transparent 40%),
-    radial-gradient(circle at 60% 70%, hsl(210 100% 30%) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, hsl(199 100% 55%), hsl(210 100% 35%));
+    radial-gradient(circle at 30% 22%, hsl(200 100% 92%) 0%, transparent 28%),
+    radial-gradient(circle at 65% 72%, hsl(220 100% 25%) 0%, transparent 45%),
+    radial-gradient(circle at 42% 40%, hsl(210 100% 70%) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, hsl(200 100% 55%), hsl(225 100% 25%));
   box-shadow:
-    0 0 8px hsl(199 100% 60% / 0.8),
-    0 0 18px hsl(199 100% 50% / 0.4),
-    inset 0 1px 1px hsl(0 0% 100% / 0.3);
-  border: 1px solid hsl(199 100% 70% / 0.4);
+    0 0 12px 3px hsl(199 100% 60% / 0.9),
+    0 0 30px 6px hsl(199 100% 50% / 0.5),
+    0 0 60px 12px hsl(199 100% 50% / 0.2),
+    0 4px 8px hsl(0 0% 0% / 0.5),
+    inset 0 2px 4px hsl(0 0% 100% / 0.25);
+  border: 1px solid hsl(199 100% 75% / 0.4);
 }
 
-/* ── Nova Shard (Pink) ── */
+/* ── Nova Shard (Pink/Magenta) — hot gem like reference ── */
 .cyber-gem--data {
   background:
-    radial-gradient(circle at 35% 30%, hsl(330 100% 88%) 0%, transparent 40%),
-    radial-gradient(circle at 60% 70%, hsl(340 100% 35%) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, hsl(330 100% 65%), hsl(340 100% 40%));
+    radial-gradient(circle at 30% 22%, hsl(330 100% 95%) 0%, transparent 28%),
+    radial-gradient(circle at 65% 72%, hsl(340 100% 25%) 0%, transparent 45%),
+    radial-gradient(circle at 42% 40%, hsl(335 100% 65%) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, hsl(330 100% 60%), hsl(345 100% 25%));
   box-shadow:
-    0 0 8px hsl(330 100% 65% / 0.8),
-    0 0 18px hsl(330 100% 55% / 0.4),
-    inset 0 1px 1px hsl(0 0% 100% / 0.3);
+    0 0 12px 3px hsl(330 100% 65% / 0.9),
+    0 0 30px 6px hsl(330 100% 55% / 0.5),
+    0 0 60px 12px hsl(330 100% 55% / 0.2),
+    0 4px 8px hsl(0 0% 0% / 0.5),
+    inset 0 2px 4px hsl(0 0% 100% / 0.25);
   border: 1px solid hsl(330 100% 75% / 0.4);
 }
 
-/* ── Quantum Orb (Purple) ── */
+/* ── Quantum Orb (Purple) — deep amethyst sphere ── */
 .cyber-gem--quantum {
   background:
-    radial-gradient(circle at 35% 30%, hsl(280 80% 82%) 0%, transparent 40%),
-    radial-gradient(circle at 60% 70%, hsl(260 80% 30%) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, hsl(270 80% 58%), hsl(260 80% 35%));
+    radial-gradient(circle at 30% 22%, hsl(275 85% 90%) 0%, transparent 28%),
+    radial-gradient(circle at 65% 72%, hsl(260 80% 20%) 0%, transparent 45%),
+    radial-gradient(circle at 42% 40%, hsl(270 80% 60%) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, hsl(270 80% 55%), hsl(260 80% 22%));
   box-shadow:
-    0 0 8px hsl(270 80% 60% / 0.8),
-    0 0 18px hsl(270 80% 50% / 0.4),
-    inset 0 1px 1px hsl(0 0% 100% / 0.3);
+    0 0 12px 3px hsl(270 80% 60% / 0.9),
+    0 0 30px 6px hsl(270 80% 50% / 0.5),
+    0 0 60px 12px hsl(270 80% 50% / 0.2),
+    0 4px 8px hsl(0 0% 0% / 0.5),
+    inset 0 2px 4px hsl(0 0% 100% / 0.25);
   border: 1px solid hsl(270 80% 70% / 0.4);
 }
-.cyber-gem--quantum::before {
-  background:
-    conic-gradient(from 0deg at 50% 50%, hsl(280 80% 70% / 0.12), transparent 30%, hsl(250 80% 60% / 0.08), transparent 60%);
-  animation: cc-galaxy-swirl 4s linear infinite;
-}
 
-@keyframes cc-galaxy-swirl {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* ── Ion Fragment (Cyan) ── */
+/* ── Ion Fragment (Cyan/Teal) — ice crystal ── */
 .cyber-gem--circuit {
   background:
-    radial-gradient(circle at 35% 30%, hsl(180 100% 88%) 0%, transparent 40%),
-    radial-gradient(circle at 60% 70%, hsl(190 80% 30%) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, hsl(180 90% 58%), hsl(190 80% 35%));
+    radial-gradient(circle at 30% 22%, hsl(180 100% 92%) 0%, transparent 28%),
+    radial-gradient(circle at 65% 72%, hsl(190 80% 22%) 0%, transparent 45%),
+    radial-gradient(circle at 42% 40%, hsl(180 90% 55%) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, hsl(180 90% 50%), hsl(195 80% 22%));
   box-shadow:
-    0 0 8px hsl(180 90% 55% / 0.8),
-    0 0 18px hsl(180 90% 45% / 0.4),
-    inset 0 1px 1px hsl(0 0% 100% / 0.3);
+    0 0 12px 3px hsl(180 90% 55% / 0.9),
+    0 0 30px 6px hsl(180 90% 45% / 0.5),
+    0 0 60px 12px hsl(180 90% 45% / 0.2),
+    0 4px 8px hsl(0 0% 0% / 0.5),
+    inset 0 2px 4px hsl(0 0% 100% / 0.25);
   border: 1px solid hsl(180 90% 70% / 0.4);
 }
 
-/* ── Stellar Burst (Gold rare) ── */
+/* ── Stellar Burst (Gold) — rare golden crystal ── */
 .cyber-gem--bonus {
   background:
-    radial-gradient(circle at 35% 30%, hsl(50 100% 90%) 0%, transparent 35%),
-    radial-gradient(circle at 60% 70%, hsl(35 100% 35%) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, hsl(45 100% 65%), hsl(35 100% 40%));
+    radial-gradient(circle at 30% 22%, hsl(50 100% 97%) 0%, transparent 25%),
+    radial-gradient(circle at 65% 72%, hsl(35 100% 25%) 0%, transparent 45%),
+    radial-gradient(circle at 42% 40%, hsl(45 100% 65%) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, hsl(45 100% 60%), hsl(30 100% 25%));
   box-shadow:
-    0 0 10px hsl(45 100% 55% / 0.9),
-    0 0 24px hsl(45 100% 50% / 0.5),
-    0 0 40px hsl(45 100% 45% / 0.2),
-    inset 0 1px 1px hsl(0 0% 100% / 0.4);
+    0 0 14px 4px hsl(45 100% 55% / 1),
+    0 0 35px 8px hsl(45 100% 50% / 0.6),
+    0 0 70px 14px hsl(45 100% 45% / 0.25),
+    0 4px 8px hsl(0 0% 0% / 0.5),
+    inset 0 2px 4px hsl(0 0% 100% / 0.35);
   border: 1px solid hsl(45 100% 75% / 0.5);
 }
 .cyber-gem--bonus::before {
-  animation: cc-gem-pulse 1s ease-in-out infinite;
+  animation: cc-gem-pulse 1.2s ease-in-out infinite;
 }
 
-/* ===== Burst particle effect on match ===== */
+/* ===== MATCH BURST — Explosive clearing effect ===== */
 .cyber-gem--clearing {
-  animation: cc-gem-explode 0.45s ease-out forwards;
+  animation: cc-gem-explode 0.55s ease-out forwards;
+  z-index: 10;
 }
 
+/* Expanding white shockwave ring */
 .cyber-gem--clearing::before {
-  animation: cc-burst-ring 0.5s ease-out forwards !important;
-  background: hsl(0 0% 100% / 0.6) !important;
+  animation: cc-burst-ring 0.6s ease-out forwards !important;
+  background: hsl(0 0% 100% / 0.7) !important;
   border-radius: 50% !important;
-  inset: -50% !important;
+  inset: -80% !important;
+  box-shadow: none !important;
 }
 
 @keyframes cc-burst-ring {
-  0% { transform: scale(0.2); opacity: 1; }
-  60% { transform: scale(2.5); opacity: 0.5; }
-  100% { transform: scale(3.5); opacity: 0; }
+  0% { transform: scale(0.1); opacity: 1; }
+  40% { transform: scale(2.2); opacity: 0.7; }
+  100% { transform: scale(4.5); opacity: 0; }
 }
 
-/* Burst sparkle rays */
+/* Sparkle rays shooting outward */
 .cyber-gem--clearing::after {
-  animation: cc-burst-sparkle 0.45s ease-out forwards !important;
-  width: 100% !important;
-  height: 100% !important;
-  top: 0 !important;
-  left: 0 !important;
-  border-radius: 0 !important;
+  animation: cc-burst-sparkle 0.55s ease-out forwards !important;
+  width: 250% !important;
+  height: 250% !important;
+  top: -75% !important;
+  left: -75% !important;
+  border-radius: 50% !important;
   background:
-    radial-gradient(circle at 20% 20%, hsl(0 0% 100%) 1px, transparent 2px),
-    radial-gradient(circle at 80% 15%, hsl(0 0% 100%) 1px, transparent 2px),
-    radial-gradient(circle at 85% 80%, hsl(0 0% 100%) 1px, transparent 2px),
-    radial-gradient(circle at 15% 75%, hsl(0 0% 100%) 1px, transparent 2px),
-    radial-gradient(circle at 50% 5%, hsl(0 0% 100%) 1px, transparent 2px),
-    radial-gradient(circle at 50% 95%, hsl(0 0% 100%) 1px, transparent 2px) !important;
+    conic-gradient(
+      from 0deg,
+      hsl(0 0% 100% / 0.9) 0deg, transparent 8deg,
+      transparent 42deg, hsl(0 0% 100% / 0.8) 45deg, transparent 48deg,
+      transparent 87deg, hsl(0 0% 100% / 0.7) 90deg, transparent 93deg,
+      transparent 132deg, hsl(0 0% 100% / 0.8) 135deg, transparent 138deg,
+      transparent 177deg, hsl(0 0% 100% / 0.7) 180deg, transparent 183deg,
+      transparent 222deg, hsl(0 0% 100% / 0.8) 225deg, transparent 228deg,
+      transparent 267deg, hsl(0 0% 100% / 0.7) 270deg, transparent 273deg,
+      transparent 312deg, hsl(0 0% 100% / 0.8) 315deg, transparent 318deg,
+      transparent 360deg
+    ) !important;
+  filter: blur(0.5px) !important;
 }
 
-/* ===== Active piece — subtle falling trail ===== */
+@keyframes cc-burst-sparkle {
+  0% { transform: scale(0.15) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.6) rotate(25deg); opacity: 0.8; }
+  100% { transform: scale(3.5) rotate(55deg); opacity: 0; }
+}
+
+/* ===== Active piece glow ===== */
 .cc-gem-active {
-  animation: cc-gem-enter 0.15s ease-out;
+  animation: cc-gem-enter 0.2s ease-out;
 }
 
 @keyframes cc-gem-enter {
-  0% { opacity: 0.7; transform: translateY(-2px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0.6; transform: translateY(-3px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes cc-gem-explode {
   0% { transform: scale(1); opacity: 1; filter: brightness(1); }
-  20% { transform: scale(1.5); filter: brightness(2.5); }
-  40% { transform: scale(1.3); opacity: 0.8; filter: brightness(2); }
-  100% { transform: scale(0); opacity: 0; filter: brightness(4); }
-}
-
-@keyframes cc-burst-sparkle {
-  0% { transform: scale(0.5); opacity: 1; }
-  100% { transform: scale(2.5); opacity: 0; }
+  15% { transform: scale(1.7); filter: brightness(3.5); }
+  35% { transform: scale(1.4); opacity: 0.85; filter: brightness(2.5); }
+  100% { transform: scale(0); opacity: 0; filter: brightness(6); }
 }
 
 /* Match flash overlay */
 .cc-match-flash {
   position: absolute;
   inset: 0;
-  border-radius: 5px;
-  background: hsl(0 0% 100% / 0.8);
-  animation: cc-flash 0.3s ease-out forwards;
+  border-radius: 50%;
+  background: hsl(0 0% 100% / 0.9);
+  animation: cc-flash 0.25s ease-out forwards;
   pointer-events: none;
 }
 
 @keyframes cc-flash {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.4); }
 }
 
 /* ===== Ghost / drop preview ===== */
 .cyber-gem--ghost {
   opacity: 0.15;
-  border: 1px dashed currentColor;
+  border: 1px dashed hsl(270 60% 60% / 0.5);
+  border-radius: 50%;
   background: transparent !important;
   box-shadow: none !important;
 }
