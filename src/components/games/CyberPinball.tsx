@@ -604,9 +604,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (!g.currentBall || !fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
 
       Body.setStatic(g.currentBall, false);
-      Body.setPosition(g.currentBall, { x: PLUNGER_X, y: TH - 44 });
-      Body.setVelocity(g.currentBall, { x: 0, y: -22 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.08 });
+      Body.setPosition(g.currentBall, { x: PLUNGER_X - 2, y: TH - 320 });
+      Body.setVelocity(g.currentBall, { x: -4, y: -18 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.003, y: -0.06 });
       g.launched = true;
       showMsg('LAUNCH!');
       g.shake.power = 4;
@@ -627,12 +627,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const f = frame.current++;
       const t = f * 0.016;
 
-      // ── Ball recovery & bounds check ──
+      // ── Ball recovery ──
       if (g.currentBall) {
         const p = g.currentBall.position;
         const v = g.currentBall.velocity;
-        const oob = p.x < -50 || p.x > TW + 50 || p.y < -100 || p.y > TH + 100;
-        if (!fin(p.x) || !fin(p.y) || !fin(v.x) || !fin(v.y) || oob) {
+        if (!fin(p.x) || !fin(p.y) || !fin(v.x) || !fin(v.y)) {
           try { Composite.remove(engine.world, g.currentBall); } catch {}
           g.currentBall = null;
           g.launched = false;
@@ -1651,9 +1650,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     if (!g.currentBall || !fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
 
     Body.setStatic(g.currentBall, false);
-    Body.setPosition(g.currentBall, { x: PLUNGER_X, y: TH - 44 });
-    Body.setVelocity(g.currentBall, { x: 0, y: -22 });
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -0.08 });
+    Body.setPosition(g.currentBall, { x: PLUNGER_X - 2, y: TH - 320 });
+    Body.setVelocity(g.currentBall, { x: -4, y: -18 });
+    Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.003, y: -0.06 });
     g.launched = true;
     showMsg('LAUNCH!');
     g.shake.power = 4;
