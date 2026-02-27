@@ -104,6 +104,8 @@ interface Brick {
   wobble: number; wobbleSpeed: number;
   alive: boolean;
   special: BrickSpecial;
+  pattern: number; // 0-5 visual pattern variant
+  seed: number; // random seed for circuit lines
 }
 
 interface PowerUp { type: PowerUpType; x: number; y: number; vy: number; }
@@ -163,13 +165,42 @@ function createStars(w: number, h: number): Star[] {
   }));
 }
 
+// Layout patterns for variety each game
+type LayoutPattern = 'full' | 'diamond' | 'checkerboard' | 'vShape' | 'pyramid' | 'fortress' | 'stripes' | 'cross';
+
+function pickLayout(level: number): LayoutPattern {
+  const layouts: LayoutPattern[] = ['full', 'diamond', 'checkerboard', 'vShape', 'pyramid', 'fortress', 'stripes', 'cross'];
+  // Shuffle based on level + random so it feels different each game
+  return layouts[(level + Math.floor(Math.random() * layouts.length)) % layouts.length];
+}
+
+function shouldPlace(layout: LayoutPattern, r: number, c: number, rows: number, cols: number): boolean {
+  const midC = (cols - 1) / 2;
+  const midR = (rows - 1) / 2;
+  switch (layout) {
+    case 'full': return true;
+    case 'diamond': return Math.abs(c - midC) + Math.abs(r - midR) <= Math.max(midC, midR);
+    case 'checkerboard': return (r + c) % 2 === 0;
+    case 'vShape': return r >= Math.abs(c - midC) * (rows / midC) * 0.4;
+    case 'pyramid': return c >= r && c < cols - r;
+    case 'fortress': return r === 0 || r === rows - 1 || c === 0 || c === cols - 1 || (r === Math.floor(midR) && c > 2 && c < cols - 3);
+    case 'stripes': return c % 3 !== 1;
+    case 'cross': return Math.abs(c - midC) <= 1.5 || Math.abs(r - midR) <= 0.5;
+    default: return true;
+  }
+}
+
 function buildBricks(level: number, cw: number): Brick[] {
   const bricks: Brick[] = [];
   const totalPadX = 20;
   const bw = (cw - totalPadX * 2 - (BRICK_COLS - 1) * BRICK_PAD) / BRICK_COLS;
   const bh = 18;
+  const layout = pickLayout(level);
+
   for (let r = 0; r < BRICK_ROWS; r++) {
     for (let c = 0; c < BRICK_COLS; c++) {
+      if (!shouldPlace(layout, r, c, BRICK_ROWS, BRICK_COLS)) continue;
+
       let hp = 1;
       if (level >= 2 && Math.random() < 0.3 + level * 0.05) hp = 2;
       if (level >= 4 && Math.random() < 0.1 + (level - 4) * 0.03) hp = 3;
@@ -192,6 +223,8 @@ function buildBricks(level: number, cw: number): Brick[] {
         wobbleSpeed: 0.3 + Math.random() * 0.4,
         alive: true,
         special,
+        pattern: Math.floor(Math.random() * 6),
+        seed: Math.random() * 1000,
       });
     }
   }
@@ -912,26 +945,113 @@ const PortalBreakerGame: React.FC = () => {
       else if (b.special === 'freeze') { hue = 200; lightness = 70; borderExtra = '#88ddff'; }
       else if (b.special === 'combo') { hue = 50; lightness = 60; borderExtra = '#ffdd00'; }
 
-      // Target lock highlight
       const isTargeted = now < s.tactical.activeTargetLock && b.hp === 1;
 
-      ctx.fillStyle = `hsl(${hue}, 90%, ${lightness}%)`;
-      ctx.strokeStyle = borderExtra || `hsla(${hue}, 100%, 70%, ${0.5 + hpRatio * 0.5})`;
+      // ── Cybernetic brick body ──
+      // Dark base fill
+      const baseGrad = ctx.createLinearGradient(bx, b.y, bx, b.y + b.h);
+      baseGrad.addColorStop(0, `hsl(${hue}, 60%, ${lightness * 0.35}%)`);
+      baseGrad.addColorStop(0.5, `hsl(${hue}, 70%, ${lightness * 0.5}%)`);
+      baseGrad.addColorStop(1, `hsl(${hue}, 60%, ${lightness * 0.3}%)`);
+
+      ctx.fillStyle = baseGrad;
+      ctx.strokeStyle = borderExtra || `hsla(${hue}, 100%, 65%, ${0.6 + hpRatio * 0.4})`;
       ctx.lineWidth = isTargeted ? 2.5 : 1.5;
       ctx.beginPath();
-      const r = 3;
-      ctx.moveTo(bx + r, b.y);
-      ctx.lineTo(bx + b.w - r, b.y);
-      ctx.quadraticCurveTo(bx + b.w, b.y, bx + b.w, b.y + r);
-      ctx.lineTo(bx + b.w, b.y + b.h - r);
-      ctx.quadraticCurveTo(bx + b.w, b.y + b.h, bx + b.w - r, b.y + b.h);
-      ctx.lineTo(bx + r, b.y + b.h);
-      ctx.quadraticCurveTo(bx, b.y + b.h, bx, b.y + b.h - r);
-      ctx.lineTo(bx, b.y + r);
-      ctx.quadraticCurveTo(bx, b.y, bx + r, b.y);
+      const cr = 3;
+      ctx.moveTo(bx + cr, b.y);
+      ctx.lineTo(bx + b.w - cr, b.y); ctx.quadraticCurveTo(bx + b.w, b.y, bx + b.w, b.y + cr);
+      ctx.lineTo(bx + b.w, b.y + b.h - cr); ctx.quadraticCurveTo(bx + b.w, b.y + b.h, bx + b.w - cr, b.y + b.h);
+      ctx.lineTo(bx + cr, b.y + b.h); ctx.quadraticCurveTo(bx, b.y + b.h, bx, b.y + b.h - cr);
+      ctx.lineTo(bx, b.y + cr); ctx.quadraticCurveTo(bx, b.y, bx + cr, b.y);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+
+      // ── Inner circuit pattern based on b.pattern ──
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(bx + 1, b.y + 1, b.w - 2, b.h - 2);
+      ctx.clip();
+
+      ctx.strokeStyle = `hsla(${hue}, 100%, 75%, ${0.25 + hpRatio * 0.2})`;
+      ctx.lineWidth = 0.7;
+      const s2 = b.seed;
+
+      if (b.pattern === 0) {
+        // Horizontal circuit lines with nodes
+        const cy1 = b.y + b.h * 0.35;
+        const cy2 = b.y + b.h * 0.7;
+        ctx.beginPath(); ctx.moveTo(bx + 3, cy1); ctx.lineTo(bx + b.w * 0.4, cy1);
+        ctx.lineTo(bx + b.w * 0.45, cy2); ctx.lineTo(bx + b.w - 3, cy2); ctx.stroke();
+        // Nodes
+        ctx.fillStyle = `hsla(${hue}, 100%, 80%, 0.6)`;
+        ctx.beginPath(); ctx.arc(bx + b.w * 0.4, cy1, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + b.w * 0.75, cy2, 1.5, 0, Math.PI * 2); ctx.fill();
+      } else if (b.pattern === 1) {
+        // Grid chip pattern
+        for (let i = 0; i < 3; i++) {
+          const px = bx + 4 + i * (b.w - 8) / 2.5;
+          ctx.strokeRect(px, b.y + 4, 6, b.h - 8);
+        }
+        ctx.beginPath(); ctx.moveTo(bx + 3, b.y + b.h / 2); ctx.lineTo(bx + b.w - 3, b.y + b.h / 2); ctx.stroke();
+      } else if (b.pattern === 2) {
+        // Diagonal traces
+        ctx.beginPath(); ctx.moveTo(bx + 2, b.y + 2); ctx.lineTo(bx + b.w - 2, b.y + b.h - 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx + b.w * 0.3, b.y + 2); ctx.lineTo(bx + b.w - 2, b.y + b.h * 0.5); ctx.stroke();
+        ctx.fillStyle = `hsla(${hue}, 100%, 80%, 0.5)`;
+        ctx.beginPath(); ctx.arc(bx + b.w / 2, b.y + b.h / 2, 2, 0, Math.PI * 2); ctx.fill();
+      } else if (b.pattern === 3) {
+        // Center chip with pins
+        const chipW = b.w * 0.3; const chipH = b.h * 0.5;
+        const chipX = bx + (b.w - chipW) / 2; const chipY = b.y + (b.h - chipH) / 2;
+        ctx.strokeRect(chipX, chipY, chipW, chipH);
+        for (let i = 0; i < 3; i++) {
+          const py = chipY + chipH * (i + 0.5) / 3;
+          ctx.beginPath(); ctx.moveTo(bx + 2, py); ctx.lineTo(chipX, py); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(chipX + chipW, py); ctx.lineTo(bx + b.w - 2, py); ctx.stroke();
+        }
+      } else if (b.pattern === 4) {
+        // Hexagonal nodes
+        const cx1 = bx + b.w * 0.25; const cx2 = bx + b.w * 0.75;
+        const cy = b.y + b.h / 2;
+        ctx.beginPath(); ctx.moveTo(cx1, cy); ctx.lineTo(cx2, cy); ctx.stroke();
+        for (const cx of [cx1, cx2]) {
+          ctx.beginPath();
+          for (let a = 0; a < 6; a++) {
+            const ax = cx + Math.cos(a * Math.PI / 3) * 4;
+            const ay = cy + Math.sin(a * Math.PI / 3) * 4;
+            a === 0 ? ctx.moveTo(ax, ay) : ctx.lineTo(ax, ay);
+          }
+          ctx.closePath(); ctx.stroke();
+        }
+      } else {
+        // Data stream dots
+        for (let i = 0; i < 5; i++) {
+          const dx = bx + 4 + (i / 4) * (b.w - 8);
+          const dy = b.y + b.h * (0.3 + Math.sin(s2 + i * 1.7) * 0.2);
+          ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${0.3 + (i % 2) * 0.3})`;
+          ctx.beginPath(); ctx.arc(dx, dy, 1.2, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.beginPath(); ctx.moveTo(bx + 4, b.y + b.h * 0.5);
+        ctx.lineTo(bx + b.w - 4, b.y + b.h * 0.5); ctx.stroke();
+      }
+      ctx.restore();
+
+      // ── Glowing edge highlight (top) ──
+      ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.15 + hpRatio * 0.15})`;
+      ctx.fillRect(bx + 3, b.y + 1, b.w - 6, 2);
+
+      // ── Pulse glow for high-HP bricks ──
+      if (b.maxHp >= 2) {
+        const pulse = 0.12 + Math.sin(now * 0.004 + b.seed) * 0.08;
+        ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
+        ctx.shadowBlur = 8 * pulse * 10;
+        ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${pulse})`;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, b.y, b.w, b.h);
+        ctx.shadowBlur = 0;
+      }
 
       if (isTargeted) {
         ctx.strokeStyle = 'rgba(255,68,68,0.8)';
@@ -949,11 +1069,6 @@ const PortalBreakerGame: React.FC = () => {
         const icon = b.special === 'explosive' ? '💣' : b.special === 'charge' ? '🔋' : b.special === 'freeze' ? '🧊' : '🔥';
         ctx.fillText(icon, bx + b.w / 2, b.y + b.h / 2 + 3);
       }
-
-      ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
-      ctx.shadowBlur = 6 * hpRatio;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
     });
 
     // Power-ups
