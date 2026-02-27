@@ -22,7 +22,9 @@ const linGrad = (ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: numb
 // ── Dimensions ──
 const TW = 420;
 const TH = 820;
-const BALL_R = 7;
+const BALL_R = 6;
+// Ping-pong ball physics constants
+const BALL_OPTS = { label: 'ball', restitution: 0.92, friction: 0.002, frictionAir: 0.0004, density: 0.0025 };
 const WALL = 8;
 const BUMPER_R = 16;
 const FW = 64;
@@ -204,7 +206,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const engine = Engine.create({ gravity: { x: 0, y: 1.3, scale: 0.001 } });
     engineRef.current = engine;
 
-    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.3 };
+    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.7 };
     const sensorOpts = (label: string) => ({ isStatic: true, isSensor: true, label });
 
     // ── Walls ──
@@ -250,16 +252,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     G.current.topRightFlipper = trf;
 
     // ── Slingshots ──
-    const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
-    const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.3 });
+    const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.6 });
+    const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.6 });
 
     // ── 4 Neon Bumpers (high bounce) ──
     const bCX = TW / 2, bCY = 240;
     const bumpers = [
-      Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.4 }),
-      Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.4 }),
-      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.4 }),
-      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 1.4 }),
+      Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.8 }),
+      Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.8 }),
+      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.8 }),
+      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 1.8 }),
     ];
 
     const reactorSensor = Bodies.circle(bCX, bCY, 8, sensorOpts('reactor_core'));
@@ -371,7 +373,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             const bmp = pair.bodyA.label === `bumper_${i}` ? pair.bodyA : pair.bodyB;
             if (fin(ball.position.x) && fin(bmp.position.x)) {
               const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
-              Body.applyForce(ball, ball.position, { x: d.x * 0.012, y: d.y * 0.012 });
+              Body.applyForce(ball, ball.position, { x: d.x * 0.018, y: d.y * 0.018 });
             }
             spawnParticles(ball.position.x, ball.position.y, 12, [NEON.cyan, NEON.pink, NEON.green, NEON.purple][i], 6);
           }
@@ -509,7 +511,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             showMsg('🌩 CYBER STORM MULTIBALL!', 4000);
             for (let b = 0; b < 2; b++) {
               const extra = Bodies.circle(TW / 2 + (b - 0.5) * 35, 100, BALL_R, {
-                label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
+                ...BALL_OPTS,
               });
               Composite.add(engine.world, extra);
               g.extraBalls.push(extra);
@@ -570,8 +572,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const g = G.current;
       if (g.currentBall || g.gameOver) return;
       const ball = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
-        label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
-        isStatic: true,
+        ...BALL_OPTS, isStatic: true,
       });
       Composite.add(engine.world, ball);
       g.currentBall = ball;
@@ -595,7 +596,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       if (!g.currentBall) {
         const emergencyBall = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
-          label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
+          ...BALL_OPTS,
         });
         Composite.add(engine.world, emergencyBall);
         g.currentBall = emergencyBall;
@@ -1594,7 +1595,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         g.currentBall = null;
         g.launched = false;
         const ball = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
-          label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004, isStatic: true,
+          ...BALL_OPTS, isStatic: true,
         });
         Composite.add(engine.world, ball);
         g.currentBall = ball;
@@ -1615,7 +1616,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     if (!g.currentBall) {
       const emergencyBall = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
-        label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004,
+        ...BALL_OPTS,
       });
       Composite.add(engine.world, emergencyBall);
       g.currentBall = emergencyBall;
