@@ -979,25 +979,105 @@ const PortalBreakerGame: React.FC = () => {
     });
     ctx.globalAlpha = 1;
 
-    // Portal ring
+    // ── Real Swirling Portal ──
     const portalCx = cw / 2;
     const portalCy = BRICK_TOP_OFFSET + (BRICK_ROWS * 22) / 2;
     const portalR = Math.min(cw * 0.35, 150);
-    for (let i = 0; i < 3; i++) {
+
+    // Deep vortex background - dark core
+    const vortexBg = ctx.createRadialGradient(portalCx, portalCy, 0, portalCx, portalCy, portalR * 1.2);
+    vortexBg.addColorStop(0, `hsla(${theme.portalHue + 180}, 80%, 3%, 0.6)`);
+    vortexBg.addColorStop(0.3, `hsla(${theme.portalHue}, 60%, 8%, 0.3)`);
+    vortexBg.addColorStop(0.7, `hsla(${theme.portalHue}, 40%, 5%, 0.1)`);
+    vortexBg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = vortexBg;
+    ctx.beginPath(); ctx.arc(portalCx, portalCy, portalR * 1.2, 0, Math.PI * 2); ctx.fill();
+
+    // Swirling spiral arms (6 arms, rotating)
+    for (let arm = 0; arm < 6; arm++) {
       ctx.save();
       ctx.translate(portalCx, portalCy);
-      ctx.rotate(s.portalAngle + i * (Math.PI * 2 / 3));
-      ctx.strokeStyle = `hsla(${theme.portalHue + i * 40}, 100%, 65%, ${0.15 + Math.sin(now * 0.002 + i) * 0.1})`;
-      ctx.lineWidth = 2.5;
+      const armAngle = s.portalAngle * (arm % 2 === 0 ? 1 : -0.7) + arm * (Math.PI / 3);
+      ctx.rotate(armAngle);
+      const armAlpha = 0.08 + Math.sin(now * 0.003 + arm * 1.2) * 0.05;
+      const armHue = theme.portalHue + arm * 25;
+      ctx.strokeStyle = `hsla(${armHue}, 100%, 65%, ${armAlpha})`;
+      ctx.lineWidth = 2 + Math.sin(now * 0.004 + arm) * 0.8;
       ctx.beginPath();
-      ctx.arc(0, 0, portalR + i * 6, 0, Math.PI * 1.2);
+      for (let t = 0; t < 80; t++) {
+        const frac = t / 80;
+        const spiralR = portalR * 0.15 + frac * portalR * 0.85;
+        const spiralAngle = frac * Math.PI * 3;
+        const sx = Math.cos(spiralAngle) * spiralR;
+        const sy = Math.sin(spiralAngle) * spiralR * 0.55; // oval squash for depth
+        t === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+      }
       ctx.stroke();
       ctx.restore();
     }
-    const portalGlow = ctx.createRadialGradient(portalCx, portalCy, 0, portalCx, portalCy, portalR);
-    portalGlow.addColorStop(0, theme.glowRgba + '0.08)');
-    portalGlow.addColorStop(1, theme.glowRgba + '0)');
+
+    // Concentric depth rings - elliptical for 3D perspective
+    for (let ring = 0; ring < 8; ring++) {
+      const ringFrac = ring / 8;
+      const ringR = portalR * (0.2 + ringFrac * 0.8);
+      const squash = 0.45 + ringFrac * 0.15; // inner rings more squashed = deeper
+      const ringAlpha = 0.06 + (1 - ringFrac) * 0.12 + Math.sin(now * 0.005 + ring * 0.8) * 0.04;
+      const ringHue = theme.portalHue + ring * 12;
+
+      ctx.save();
+      ctx.translate(portalCx, portalCy);
+      ctx.rotate(s.portalAngle * 0.3 + ring * 0.15);
+      ctx.scale(1, squash);
+      ctx.strokeStyle = `hsla(${ringHue}, 100%, ${55 + ring * 3}%, ${ringAlpha})`;
+      ctx.lineWidth = 1.5 - ringFrac * 0.8;
+      ctx.beginPath();
+      ctx.arc(0, 0, ringR, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Bright event horizon edge ring
+    ctx.save();
+    ctx.translate(portalCx, portalCy);
+    ctx.scale(1, 0.55);
+    const edgePulse = 0.25 + Math.sin(now * 0.004) * 0.1;
+    ctx.shadowColor = `hsl(${theme.portalHue}, 100%, 60%)`;
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = `hsla(${theme.portalHue}, 100%, 70%, ${edgePulse})`;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(0, 0, portalR, 0, Math.PI * 2); ctx.stroke();
+    // Second brighter inner edge
+    ctx.strokeStyle = `hsla(${theme.portalHue + 30}, 100%, 80%, ${edgePulse * 0.7})`;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(0, 0, portalR * 0.92, 0, Math.PI * 2); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // Portal energy particles orbiting the vortex
+    for (let p = 0; p < 12; p++) {
+      const pAngle = s.portalAngle * (1.5 + p * 0.1) + p * (Math.PI * 2 / 12);
+      const pDist = portalR * (0.3 + (p % 4) * 0.18) + Math.sin(now * 0.006 + p * 2) * 8;
+      const px = portalCx + Math.cos(pAngle) * pDist;
+      const py = portalCy + Math.sin(pAngle) * pDist * 0.5;
+      const pAlpha = 0.3 + Math.sin(now * 0.008 + p) * 0.25;
+      const pSize = 1 + Math.sin(now * 0.01 + p * 3) * 0.8;
+      ctx.fillStyle = `hsla(${theme.portalHue + p * 15}, 100%, 75%, ${pAlpha})`;
+      ctx.beginPath(); ctx.arc(px, py, pSize, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Central bright core glow
+    const portalGlow = ctx.createRadialGradient(portalCx, portalCy, 0, portalCx, portalCy, portalR * 0.35);
+    portalGlow.addColorStop(0, `hsla(${theme.portalHue + 60}, 100%, 85%, 0.12)`);
+    portalGlow.addColorStop(0.5, theme.glowRgba + '0.06)');
+    portalGlow.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = portalGlow;
+    ctx.beginPath(); ctx.arc(portalCx, portalCy, portalR * 0.35, 0, Math.PI * 2); ctx.fill();
+
+    // Outer aura glow
+    const outerGlow = ctx.createRadialGradient(portalCx, portalCy, portalR * 0.8, portalCx, portalCy, portalR * 1.4);
+    outerGlow.addColorStop(0, theme.glowRgba + '0.05)');
+    outerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = outerGlow;
     ctx.fillRect(0, 0, cw, ch);
 
     // Black hole effect
@@ -1404,19 +1484,109 @@ const PortalBreakerGame: React.FC = () => {
       ctx.shadowBlur = 0;
     }
 
-    // Paddle
+    // ── Detailed Metallic Paddle ──
     const paddleY = ch - 36;
-    const padGrad = ctx.createLinearGradient(s.paddleX, paddleY, s.paddleX + s.paddleW, paddleY);
-    padGrad.addColorStop(0, theme.paddleA);
-    padGrad.addColorStop(0.5, theme.paddleB);
-    padGrad.addColorStop(1, theme.paddleA);
-    ctx.fillStyle = padGrad;
+    const px = s.paddleX;
+    const pw = s.paddleW;
+    const ph = PADDLE_HEIGHT;
+
+    // Base metal body gradient (dark steel)
+    const metalGrad = ctx.createLinearGradient(px, paddleY, px, paddleY + ph);
+    metalGrad.addColorStop(0, 'hsl(220, 10%, 35%)');
+    metalGrad.addColorStop(0.3, 'hsl(220, 8%, 22%)');
+    metalGrad.addColorStop(0.5, 'hsl(220, 12%, 30%)');
+    metalGrad.addColorStop(0.7, 'hsl(220, 8%, 18%)');
+    metalGrad.addColorStop(1, 'hsl(220, 10%, 12%)');
+    ctx.fillStyle = metalGrad;
     ctx.shadowColor = theme.paddleA;
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = 16;
     ctx.beginPath();
-    ctx.roundRect(s.paddleX, paddleY, s.paddleW, PADDLE_HEIGHT, 7);
+    ctx.roundRect(px, paddleY, pw, ph, 4);
     ctx.fill();
     ctx.shadowBlur = 0;
+
+    // Metal highlight strip (top edge shine)
+    const shineGrad = ctx.createLinearGradient(px, paddleY, px + pw, paddleY);
+    shineGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    shineGrad.addColorStop(0.3, 'rgba(255,255,255,0.15)');
+    shineGrad.addColorStop(0.5, 'rgba(255,255,255,0.25)');
+    shineGrad.addColorStop(0.7, 'rgba(255,255,255,0.15)');
+    shineGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shineGrad;
+    ctx.fillRect(px + 4, paddleY, pw - 8, 2);
+
+    // Neon energy channel through center
+    const neonGrad = ctx.createLinearGradient(px, paddleY, px + pw, paddleY);
+    neonGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    neonGrad.addColorStop(0.1, theme.paddleA);
+    neonGrad.addColorStop(0.5, theme.paddleB);
+    neonGrad.addColorStop(0.9, theme.paddleA);
+    neonGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = neonGrad;
+    ctx.fillRect(px + 8, paddleY + ph * 0.35, pw - 16, 3);
+    // Neon glow on channel
+    ctx.shadowColor = theme.paddleA;
+    ctx.shadowBlur = 8;
+    ctx.fillRect(px + 8, paddleY + ph * 0.35, pw - 16, 3);
+    ctx.shadowBlur = 0;
+
+    // Metal panel segments (3 sections with grooves)
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 0.5;
+    const seg1 = px + pw * 0.3;
+    const seg2 = px + pw * 0.7;
+    ctx.beginPath(); ctx.moveTo(seg1, paddleY + 2); ctx.lineTo(seg1, paddleY + ph - 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(seg2, paddleY + 2); ctx.lineTo(seg2, paddleY + ph - 2); ctx.stroke();
+    // Darker groove shadow
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath(); ctx.moveTo(seg1 + 1, paddleY + 2); ctx.lineTo(seg1 + 1, paddleY + ph - 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(seg2 + 1, paddleY + 2); ctx.lineTo(seg2 + 1, paddleY + ph - 2); ctx.stroke();
+
+    // Rivets (bolts at key positions)
+    const rivetPositions = [px + 6, px + pw * 0.3 - 5, px + pw * 0.3 + 5, px + pw * 0.5, px + pw * 0.7 - 5, px + pw * 0.7 + 5, px + pw - 6];
+    for (const rx of rivetPositions) {
+      // Rivet base
+      ctx.fillStyle = 'hsl(220, 8%, 40%)';
+      ctx.beginPath(); ctx.arc(rx, paddleY + ph * 0.5, 1.8, 0, Math.PI * 2); ctx.fill();
+      // Rivet highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath(); ctx.arc(rx - 0.4, paddleY + ph * 0.5 - 0.4, 0.8, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Edge caps (reinforced metal bumpers on each end)
+    const capW = 5;
+    // Left cap
+    const leftCapGrad = ctx.createLinearGradient(px, paddleY, px + capW, paddleY);
+    leftCapGrad.addColorStop(0, 'hsl(220, 12%, 40%)');
+    leftCapGrad.addColorStop(1, 'hsl(220, 8%, 25%)');
+    ctx.fillStyle = leftCapGrad;
+    ctx.beginPath(); ctx.roundRect(px, paddleY, capW, ph, [4, 0, 0, 4]); ctx.fill();
+    // Right cap
+    const rightCapGrad = ctx.createLinearGradient(px + pw - capW, paddleY, px + pw, paddleY);
+    rightCapGrad.addColorStop(0, 'hsl(220, 8%, 25%)');
+    rightCapGrad.addColorStop(1, 'hsl(220, 12%, 40%)');
+    ctx.fillStyle = rightCapGrad;
+    ctx.beginPath(); ctx.roundRect(px + pw - capW, paddleY, capW, ph, [0, 4, 4, 0]); ctx.fill();
+
+    // Neon edge glow (colored outline)
+    ctx.strokeStyle = theme.paddleA;
+    ctx.lineWidth = 1.2;
+    ctx.globalAlpha = 0.5 + Math.sin(now * 0.004) * 0.15;
+    ctx.shadowColor = theme.paddleA;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.roundRect(px, paddleY, pw, ph, 4);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+
+    // Bottom edge dark bevel
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px + 4, paddleY + ph);
+    ctx.lineTo(px + pw - 4, paddleY + ph);
+    ctx.stroke();
 
     // Boost slide visual
     if (hasPower(s, 'boostslide', now)) {
@@ -1424,16 +1594,17 @@ const PortalBreakerGame: React.FC = () => {
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.roundRect(s.paddleX - 2, paddleY - 2, s.paddleW + 4, PADDLE_HEIGHT + 4, 9);
+      ctx.roundRect(px - 2, paddleY - 2, pw + 4, ph + 4, 6);
       ctx.stroke();
       ctx.setLineDash([]);
     }
 
-    ctx.globalAlpha = 0.25;
+    // Outer aura ring
+    ctx.globalAlpha = 0.15;
     ctx.strokeStyle = theme.paddleA;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(s.paddleX - 3, paddleY - 3, s.paddleW + 6, PADDLE_HEIGHT + 6, 10);
+    ctx.roundRect(px - 3, paddleY - 3, pw + 6, ph + 6, 7);
     ctx.stroke();
     ctx.globalAlpha = 1;
 
