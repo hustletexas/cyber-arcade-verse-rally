@@ -55,7 +55,16 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
 
                 {/* Placed gem */}
                 {cell && !pieceGem && (
-                  <div className={`absolute inset-[1px] ${gemClass(cell.type)} ${cell.clearing ? 'cyber-gem--clearing' : ''}`} />
+                  <div className={`absolute inset-[1px] ${gemClass(cell.type)} ${cell.clearing ? 'cyber-gem--clearing' : ''}`}>
+                    {cell.clearing && (
+                      <>
+                        <div className="cc-electric-arc cc-electric-arc--1" />
+                        <div className="cc-electric-arc cc-electric-arc--2" />
+                        <div className="cc-electric-arc cc-electric-arc--3" />
+                        <div className="cc-electric-arc cc-electric-arc--4" />
+                      </>
+                    )}
+                  </div>
                 )}
 
                 {/* Active piece gem */}
