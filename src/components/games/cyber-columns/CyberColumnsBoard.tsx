@@ -21,12 +21,13 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
     ghostRow = row;
   }
 
-  const cellSize = 'w-8 h-8 sm:w-10 sm:h-10';
+  // Bigger cells to match other games
+  const cellSize = 'w-10 h-10 sm:w-12 sm:h-12';
 
   return (
-    <div className="cyber-columns-board p-1">
+    <div className="cyber-columns-board p-2">
       <div
-        className="grid gap-[2px]"
+        className="grid gap-[2px] relative z-10"
         style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gridTemplateRows: `repeat(${ROWS}, 1fr)` }}
       >
         {Array.from({ length: ROWS }).map((_, r) =>
@@ -49,8 +50,8 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
 
             return (
               <div key={`${r}-${c}`} className={`${cellSize} relative`}>
-                {/* Grid background */}
-                <div className="absolute inset-0 rounded border border-white/5 bg-white/[0.02]" />
+                {/* Grid cell background */}
+                <div className="absolute inset-0 cc-grid-cell" />
 
                 {/* Placed gem */}
                 {cell && !pieceGem && (
@@ -59,7 +60,7 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
 
                 {/* Active piece gem */}
                 {pieceGem && (
-                  <div className={`absolute inset-[1px] ${gemClass(pieceGem)}`} />
+                  <div className={`absolute inset-[1px] ${gemClass(pieceGem)} cc-gem-active`} />
                 )}
 
                 {/* Ghost */}

@@ -18,9 +18,9 @@ export const CyberColumnsEndModal: React.FC<CyberColumnsEndModalProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="bg-black/90 border-neon-cyan/30 backdrop-blur-xl max-w-sm text-center">
+      <DialogContent className="bg-[hsl(240_30%_6%/0.95)] border-[hsl(270_60%_50%/0.3)] backdrop-blur-xl max-w-sm text-center">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-neon-cyan flex items-center justify-center gap-2">
+          <DialogTitle className="text-2xl font-bold text-[hsl(330_100%_65%)] flex items-center justify-center gap-2">
             <Trophy className="w-6 h-6" /> GAME OVER
           </DialogTitle>
         </DialogHeader>
@@ -30,25 +30,25 @@ export const CyberColumnsEndModal: React.FC<CyberColumnsEndModalProps> = ({
           <p className="text-muted-foreground text-sm">points</p>
 
           <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-              <div className="text-lg font-bold text-neon-cyan">{level}</div>
+            <div className="bg-[hsl(199_100%_50%/0.1)] rounded-lg p-3 border border-[hsl(199_100%_50%/0.2)]">
+              <div className="text-lg font-bold text-[hsl(199_100%_60%)]">{level}</div>
               <div className="text-xs text-muted-foreground">Level</div>
             </div>
-            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-              <div className="text-lg font-bold text-neon-pink">{linesCleared}</div>
+            <div className="bg-[hsl(330_100%_60%/0.1)] rounded-lg p-3 border border-[hsl(330_100%_60%/0.2)]">
+              <div className="text-lg font-bold text-[hsl(330_100%_65%)]">{linesCleared}</div>
               <div className="text-xs text-muted-foreground">Cleared</div>
             </div>
-            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-              <div className="text-lg font-bold text-accent">{chainCount}x</div>
+            <div className="bg-[hsl(270_60%_50%/0.1)] rounded-lg p-3 border border-[hsl(270_60%_50%/0.2)]">
+              <div className="text-lg font-bold text-[hsl(270_80%_75%)]">{chainCount}x</div>
               <div className="text-xs text-muted-foreground">Best Chain</div>
             </div>
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button onClick={onPlayAgain} className="flex-1 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 hover:bg-neon-cyan/30" variant="outline">
+            <Button onClick={onPlayAgain} className="flex-1 bg-gradient-to-r from-[hsl(270_60%_50%/0.3)] to-[hsl(330_100%_60%/0.3)] text-[hsl(330_100%_75%)] border border-[hsl(330_100%_60%/0.5)] hover:from-[hsl(270_60%_50%/0.4)] hover:to-[hsl(330_100%_60%/0.4)]" variant="outline">
               <RotateCcw className="w-4 h-4 mr-2" /> Play Again
             </Button>
-            <Button onClick={onBackToMenu} variant="outline" className="flex-1 border-muted-foreground/30 text-muted-foreground hover:bg-white/5">
+            <Button onClick={onBackToMenu} variant="outline" className="flex-1 border-muted-foreground/30 text-muted-foreground hover:bg-[hsl(0_0%_100%/0.05)]">
               <Home className="w-4 h-4 mr-2" /> Menu
             </Button>
           </div>

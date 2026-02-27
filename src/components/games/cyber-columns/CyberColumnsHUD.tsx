@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { GemType, GEM_COLORS } from '@/types/cyber-columns';
+import { GemType } from '@/types/cyber-columns';
 import { Zap, Layers, Trophy, Hash } from 'lucide-react';
 
 interface CyberColumnsHUDProps {
@@ -13,25 +13,23 @@ interface CyberColumnsHUDProps {
 }
 
 const MiniGem: React.FC<{ type: GemType }> = ({ type }) => (
-  <div
-    className={`w-6 h-6 rounded cyber-gem cyber-gem--${type}`}
-  />
+  <div className={`w-6 h-6 rounded cyber-gem cyber-gem--${type}`} />
 );
 
 export const CyberColumnsHUD: React.FC<CyberColumnsHUDProps> = ({
   score, level, linesCleared, chainCount, nextPiece, isPaused,
 }) => {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 mb-3 p-3 rounded-lg bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
+    <div className="cc-hud-panel flex flex-wrap items-center justify-between gap-3 mb-3 p-3">
       {/* Score */}
       <div className="flex items-center gap-2">
-        <Trophy className="w-4 h-4 text-accent" />
+        <Trophy className="w-4 h-4 text-[hsl(330_100%_65%)]" />
         <span className="text-xs text-muted-foreground">Score</span>
         <span className="text-lg font-bold text-foreground font-mono">{score.toLocaleString()}</span>
       </div>
 
       {/* Level */}
-      <Badge variant="outline" className="border-neon-cyan/50 text-neon-cyan gap-1.5">
+      <Badge variant="outline" className="border-[hsl(270_60%_50%/0.5)] text-[hsl(270_80%_75%)] gap-1.5">
         <Zap className="w-3 h-3" /> LVL {level}
       </Badge>
 
@@ -42,7 +40,7 @@ export const CyberColumnsHUD: React.FC<CyberColumnsHUDProps> = ({
 
       {/* Best chain */}
       {chainCount > 0 && (
-        <Badge variant="outline" className="border-neon-pink/50 text-neon-pink gap-1">
+        <Badge variant="outline" className="border-[hsl(330_100%_60%/0.5)] text-[hsl(330_100%_65%)] gap-1">
           <Hash className="w-3 h-3" /> {chainCount}x Chain
         </Badge>
       )}
@@ -58,7 +56,7 @@ export const CyberColumnsHUD: React.FC<CyberColumnsHUDProps> = ({
       </div>
 
       {isPaused && (
-        <Badge className="bg-accent text-accent-foreground animate-pulse">PAUSED</Badge>
+        <Badge className="bg-[hsl(330_100%_60%)] text-white animate-pulse">PAUSED</Badge>
       )}
     </div>
   );
