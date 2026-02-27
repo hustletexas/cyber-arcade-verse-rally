@@ -504,6 +504,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         setDemonMode(false);
       }
 
+      // ── Plunger charging ──
+      if (g.plungerCharging && g.currentBall && !g.launched) {
+        g.plungerPower = Math.min(g.plungerPower + 0.015, 1);
+        setPlungerDisplay(g.plungerPower);
+      }
+
       // ── Flipper physics ──
       if (g.leftFlipper) {
         const ta = g.leftUp ? -0.52 : 0.38;
@@ -1092,6 +1098,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           spawnBall();
           return;
         }
+        if (!g.gameOver && g.currentBall && !g.launched) {
+          g.plungerCharging = true;
+        }
       }
       if (e.key === 't' || e.key === 'T') {
         if (g.tilted || !g.currentBall) return;
@@ -1118,7 +1127,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         const power = clamp(g.plungerPower, 0, 1);
         if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
         Body.setStatic(g.currentBall, false);
-        Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.008 + power * 0.026) });
+Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.014 + power * 0.026) });
         g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
         setPlungerDisplay(0);
         if (power > 0.62 && power < 0.8) showMsg('PERFECT LAUNCH!');
@@ -1149,7 +1158,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const power = clamp(g.plungerPower, 0, 1);
     if (!fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
     Body.setStatic(g.currentBall, false);
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.008 + power * 0.026) });
+Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.014 + power * 0.026) });
     g.plungerCharging = false;
     g.plungerPower = 0;
     g.launched = true;
@@ -1247,7 +1256,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           </div>
           <button
             onClick={launchBall}
-            disabled={G.current.launched || gameOver || plungerDisplay === 0}
+            disabled={G.current.launched || gameOver}
             className="w-full mt-2 py-2.5 rounded-lg font-bold text-sm bg-neon-pink/20 border border-neon-pink/50 text-neon-pink active:bg-neon-pink/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
             {G.current.launched ? '🎯 LAUNCHED' : '🚀 LAUNCH'}
@@ -1273,7 +1282,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           type="button"
           className="border border-neon-pink/40 rounded-xl touch-none select-none bg-neon-pink/20 font-bold text-sm text-neon-pink active:bg-neon-pink/40 disabled:opacity-30 disabled:cursor-not-allowed"
           onClick={launchBall}
-          disabled={G.current.launched || gameOver || plungerDisplay === 0}
+disabled={G.current.launched || gameOver}
         >
           {G.current.launched ? '🎯' : `🚀 ${Math.round(plungerDisplay * 100)}%`}
         </button>
