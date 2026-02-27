@@ -1301,6 +1301,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           </div>
         </div>
 
+        {/* Launch power meter (always visible) */}
+        <div className="mt-2 p-2 rounded-lg border border-neon-pink/40 bg-black/40">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] uppercase tracking-widest text-neon-pink font-bold">Launch Power</span>
+            <span className="text-[11px] font-mono font-bold text-neon-pink">⚡ {Math.round(plungerDisplay * 100)}%</span>
+          </div>
+          <div className="h-2.5 rounded-full bg-muted/20 overflow-hidden border border-neon-pink/20">
+            <div
+              className="h-full transition-all duration-75"
+              style={{
+                width: `${Math.max(plungerDisplay * 100, 2)}%`,
+                background: plungerDisplay < 0.5
+                  ? 'linear-gradient(to right, rgba(255,0,110,0.65), rgba(255,0,110,0.35))'
+                  : plungerDisplay < 0.8
+                    ? 'linear-gradient(to right, rgba(255,170,0,0.7), rgba(255,100,0,0.4))'
+                    : 'linear-gradient(to right, rgba(255,80,80,0.85), rgba(255,0,110,0.45))',
+                boxShadow: plungerDisplay > 0.5 ? `0 0 ${plungerDisplay * 18}px rgba(255,0,110,0.45)` : 'none',
+              }}
+            />
+          </div>
+          <p className="text-[9px] text-muted-foreground mt-1">Hold ⬇ launch to charge, release to fire.</p>
+        </div>
+
         {/* Mode indicators */}
         <div className="flex justify-center gap-2 mt-1.5">
           {overdrive && <span className="text-[9px] text-purple-400 font-bold animate-pulse">⚡ OVERDRIVE</span>}
