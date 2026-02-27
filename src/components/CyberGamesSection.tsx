@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Gamepad2, Brain, Zap, ArrowRight } from 'lucide-react';
 import cyberColumnsBanner from '@/assets/cyber-columns-banner.png';
+import cyberPinballBanner from '@/assets/cyber-pinball-banner.png';
 interface GameCardProps {
   title: string;
   description: string;
@@ -89,15 +90,7 @@ export const CyberGamesSection: React.FC = () => {
         
         {/* Cyber Pinball - Image Card */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30" onClick={() => navigate('/games/cyber-pinball')}>
-          <div className="w-full h-[200px] bg-gradient-to-br from-[#0a0a12] via-[#1a0a2e] to-[#0a0a12] flex items-center justify-center relative overflow-hidden">
-            {/* Neon pinball visual */}
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 50% 30%, rgba(147,51,234,0.4), transparent 60%), radial-gradient(circle at 30% 70%, rgba(0,229,255,0.3), transparent 50%), radial-gradient(circle at 70% 60%, rgba(255,0,110,0.3), transparent 50%)' }} />
-            <div className="text-center z-10">
-              <span className="text-5xl block mb-2">🎰</span>
-              <span className="text-lg font-bold text-foreground tracking-wider">CYBER PINBALL</span>
-              <span className="text-[10px] block text-neon-pink mt-1">REALISTIC PHYSICS</span>
-            </div>
-          </div>
+          <img src={cyberPinballBanner} alt="Cyber Pinball" className="w-full h-[200px] object-cover" />
           <Badge className="absolute top-3 right-3 bg-neon-pink text-black font-bold text-xs">
             NEW
           </Badge>
