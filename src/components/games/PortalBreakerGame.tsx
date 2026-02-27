@@ -58,7 +58,7 @@ type TacticalType = 'shockwave' | 'timeslow' | 'targetlock';
 type UltimateType = 'overdrive' | 'blackhole' | 'lasersweep';
 
 // Special brick types
-type BrickSpecial = 'normal' | 'explosive' | 'charge' | 'freeze' | 'combo';
+type BrickSpecial = 'normal' | 'explosive' | 'charge' | 'freeze' | 'combo' | 'crystal' | 'shielded' | 'magnet' | 'glitch' | 'boss';
 
 const POWER_UP_META: Record<PowerUpType, { label: string; color: string; duration: number; category: string }> = {
   // Ball Modifiers
@@ -209,11 +209,20 @@ function buildBricks(level: number, cw: number): Brick[] {
       let special: BrickSpecial = 'normal';
       if (level >= 2) {
         const roll = Math.random();
-        if (roll < 0.08) special = 'explosive';
-        else if (roll < 0.14) special = 'charge';
-        else if (roll < 0.19) special = 'freeze';
-        else if (roll < 0.24) special = 'combo';
+        if (roll < 0.06) special = 'explosive';
+        else if (roll < 0.10) special = 'charge';
+        else if (roll < 0.14) special = 'freeze';
+        else if (roll < 0.18) special = 'combo';
+        else if (roll < 0.23) special = 'crystal';
+        else if (roll < 0.27 && level >= 3) special = 'shielded';
+        else if (roll < 0.30 && level >= 3) special = 'magnet';
+        else if (roll < 0.33 && level >= 4) special = 'glitch';
       }
+
+      // Crystal bricks always 1hp, shielded get extra hp
+      if (special === 'crystal') hp = 1;
+      if (special === 'shielded') hp = Math.max(hp, 2);
+      if (special === 'glitch') hp = 1;
 
       bricks.push({
         x: totalPadX + c * (bw + BRICK_PAD),
@@ -228,6 +237,25 @@ function buildBricks(level: number, cw: number): Brick[] {
       });
     }
   }
+
+  // Boss brick: one per level >= 3, large double-width brick at center
+  if (level >= 3 && Math.random() < 0.5 + level * 0.1) {
+    const bossW = bw * 2.2 + BRICK_PAD;
+    const bossH = bh * 2;
+    const bossHp = 3 + Math.floor(level / 2);
+    bricks.push({
+      x: cw / 2 - bossW / 2,
+      y: BRICK_TOP_OFFSET + BRICK_ROWS * (bh + BRICK_PAD) + 8,
+      w: bossW, h: bossH, hp: bossHp, maxHp: bossHp,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.15,
+      alive: true,
+      special: 'boss',
+      pattern: 0,
+      seed: Math.random() * 1000,
+    });
+  }
+
   return bricks;
 }
 
@@ -544,7 +572,6 @@ const PortalBreakerGame: React.FC = () => {
       s.ultimateMeter = Math.min(ULTIMATE_MAX, s.ultimateMeter + 20);
       spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#00ffcc', 10);
     } else if (brick.special === 'freeze') {
-      // Apply slow to all balls for 3s
       activatePower(s, 'freeze_brick', 3000, now);
     } else if (brick.special === 'combo') {
       if (now - s.lastComboBrickTime < 2000) {
@@ -552,6 +579,44 @@ const PortalBreakerGame: React.FC = () => {
         s.scoreMultiplierEnd = now + 5000;
       }
       s.lastComboBrickTime = now;
+    } else if (brick.special === 'crystal') {
+      // Always drops a power-up + bonus points
+      s.powerUps.push({ type: getRandomPowerUp(), x: brick.x + brick.w / 2, y: brick.y + brick.h, vy: 2 });
+      s.score += 50;
+      spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#00ffff', 14);
+      s.overlayText = '💎 CRYSTAL BONUS';
+      s.overlayEnd = now + 800;
+    } else if (brick.special === 'shielded') {
+      spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#4488ff', 10);
+    } else if (brick.special === 'magnet') {
+      // nothing extra on destroy, effect is during gameplay
+      spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#00aaff', 10);
+    } else if (brick.special === 'glitch') {
+      // Random effect
+      const effects = ['split', 'slow', 'powersurge', 'fireball'] as PowerUpType[];
+      const chosen = effects[Math.floor(Math.random() * effects.length)];
+      if (chosen === 'split') {
+        const ref = s.balls[0];
+        if (ref) { s.balls.push(makeBall(ref.x, ref.y)); }
+      } else {
+        activatePower(s, chosen, POWER_UP_META[chosen].duration, now);
+      }
+      s.overlayText = '🧬 GLITCH!';
+      s.overlayEnd = now + 800;
+      s.shakeEnd = now + 150;
+      spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, '#ff00ff', 12);
+    } else if (brick.special === 'boss') {
+      // Big explosion + bonus
+      s.score += 100;
+      s.shakeEnd = now + 400;
+      s.overlayText = '👾 BOSS DESTROYED';
+      s.overlayEnd = now + 1200;
+      for (let i = 0; i < 3; i++) {
+        spawnParticles(brick.x + brick.w * Math.random(), brick.y + brick.h * Math.random(), '#ffdd00', 10);
+      }
+      // Drop 2 power-ups
+      s.powerUps.push({ type: getRandomPowerUp(), x: brick.x + brick.w * 0.3, y: brick.y + brick.h, vy: 2 });
+      s.powerUps.push({ type: getRandomPowerUp(), x: brick.x + brick.w * 0.7, y: brick.y + brick.h, vy: 2 });
     }
   };
 
@@ -637,6 +702,19 @@ const PortalBreakerGame: React.FC = () => {
       // Skip caught balls
       if (s.caughtBall === ball) return;
 
+      // Magnet brick pull effect - slightly bend ball toward magnet bricks
+      for (const mb of s.bricks) {
+        if (!mb.alive || mb.special !== 'magnet') continue;
+        const mdx = (mb.x + mb.w / 2) - ball.x;
+        const mdy = (mb.y + mb.h / 2) - ball.y;
+        const mDist = Math.sqrt(mdx * mdx + mdy * mdy) || 1;
+        if (mDist < 150) {
+          const pull = 0.15 * (1 - mDist / 150);
+          ball.vx += (mdx / mDist) * pull;
+          ball.vy += (mdy / mDist) * pull;
+        }
+      }
+
       ball.x += ball.vx * dt * 60 * speedMult;
       ball.y += ball.vy * dt * 60 * speedMult;
 
@@ -673,6 +751,28 @@ const PortalBreakerGame: React.FC = () => {
 
       for (const brick of s.bricks) {
         if (!brick.alive) continue;
+        // Shielded bricks: immune while any adjacent normal brick is alive
+        if (brick.special === 'shielded') {
+          const hasNeighbor = s.bricks.some(nb => nb.alive && nb !== brick && nb.special !== 'shielded'
+            && Math.abs((nb.x + nb.w / 2) - (brick.x + brick.w / 2)) < brick.w * 1.8
+            && Math.abs((nb.y + nb.h / 2) - (brick.y + brick.h / 2)) < brick.h * 1.8);
+          if (hasNeighbor) {
+            // Bounce ball off but don't damage
+            const bx2 = brick.x + Math.sin(brick.wobble) * 2;
+            if (ball.x + BALL_RADIUS > bx2 && ball.x - BALL_RADIUS < bx2 + brick.w
+                && ball.y + BALL_RADIUS > brick.y && ball.y - BALL_RADIUS < brick.y + brick.h) {
+              if (!isPhase) {
+                const overlapTop = ball.y + BALL_RADIUS - brick.y;
+                const overlapBot = brick.y + brick.h - (ball.y - BALL_RADIUS);
+                if (Math.min(overlapTop, overlapBot) < Math.min(ball.x + BALL_RADIUS - bx2, bx2 + brick.w - (ball.x - BALL_RADIUS)))
+                  ball.vy = -ball.vy;
+                else ball.vx = -ball.vx;
+              }
+              break;
+            }
+            continue;
+          }
+        }
         const bx = brick.x + Math.sin(brick.wobble) * 2;
         if (ball.x + BALL_RADIUS > bx && ball.x - BALL_RADIUS < bx + brick.w
             && ball.y + BALL_RADIUS > brick.y && ball.y - BALL_RADIUS < brick.y + brick.h) {
@@ -938,32 +1038,67 @@ const PortalBreakerGame: React.FC = () => {
       let hue = theme.brickHues[(b.maxHp - 1) % 3];
       let lightness = 40 + hpRatio * 25;
       let borderExtra = '';
+      let glowColor = '';
 
-      if (b.special === 'explosive') { hue = 20; lightness = 55; borderExtra = '#ff4400'; }
-      else if (b.special === 'charge') { hue = 160; lightness = 60; borderExtra = '#00ffcc'; }
-      else if (b.special === 'freeze') { hue = 200; lightness = 70; borderExtra = '#88ddff'; }
-      else if (b.special === 'combo') { hue = 50; lightness = 60; borderExtra = '#ffdd00'; }
+      // ── Per-type color overrides ──
+      if (b.special === 'normal') {
+        // Standard neon - holographic shimmer
+      } else if (b.special === 'explosive') { hue = 15; lightness = 55; borderExtra = '#ff4400'; glowColor = '#ff4400'; }
+      else if (b.special === 'charge') { hue = 160; lightness = 60; borderExtra = '#00ffcc'; glowColor = '#00ffcc'; }
+      else if (b.special === 'freeze') { hue = 200; lightness = 70; borderExtra = '#88ddff'; glowColor = '#88ddff'; }
+      else if (b.special === 'combo') { hue = 50; lightness = 60; borderExtra = '#ffdd00'; glowColor = '#ffdd00'; }
+      else if (b.special === 'crystal') { hue = 185; lightness = 70; borderExtra = '#00ffee'; glowColor = '#00ffee'; }
+      else if (b.special === 'shielded') { hue = 220; lightness = 50; borderExtra = '#4488ff'; glowColor = '#4488ff'; }
+      else if (b.special === 'magnet') { hue = 210; lightness = 55; borderExtra = '#00aaff'; glowColor = '#00ccff'; }
+      else if (b.special === 'glitch') { hue = 300; lightness = 55; borderExtra = '#ff00ff'; glowColor = '#ff00ff'; }
+      else if (b.special === 'boss') { hue = 0; borderExtra = '#ffdd00'; glowColor = '#ffdd00'; }
 
       const isTargeted = now < s.tactical.activeTargetLock && b.hp === 1;
 
+      // ── Boss brick: phase color based on HP ratio ──
+      if (b.special === 'boss') {
+        if (hpRatio > 0.66) { hue = 0; lightness = 50; borderExtra = '#ff2244'; glowColor = '#ff2244'; }
+        else if (hpRatio > 0.33) { hue = 30; lightness = 55; borderExtra = '#ff8800'; glowColor = '#ff8800'; }
+        else { hue = 60; lightness = 60; borderExtra = '#ffdd00'; glowColor = '#ffdd00'; }
+      }
+
       // ── Dark cyber base with neon edges ──
       const baseGrad = ctx.createLinearGradient(bx, b.y, bx, b.y + b.h);
-      baseGrad.addColorStop(0, `hsl(${hue}, 50%, ${lightness * 0.25 + 4}%)`);
-      baseGrad.addColorStop(0.5, `hsl(${hue}, 40%, ${lightness * 0.18}%)`);
-      baseGrad.addColorStop(1, `hsl(${hue}, 50%, ${lightness * 0.12}%)`);
+
+      if (b.special === 'crystal') {
+        // Faceted gem: multi-stop gradient
+        baseGrad.addColorStop(0, `hsla(${hue}, 80%, 30%, 0.9)`);
+        baseGrad.addColorStop(0.3, `hsla(${hue + 20}, 90%, 50%, 0.7)`);
+        baseGrad.addColorStop(0.7, `hsla(${hue - 10}, 85%, 40%, 0.8)`);
+        baseGrad.addColorStop(1, `hsla(${hue}, 70%, 25%, 0.9)`);
+      } else if (b.special === 'glitch') {
+        // RGB glitch offset
+        const glitchOff = Math.sin(now * 0.02 + b.seed) * 3;
+        baseGrad.addColorStop(0, `hsl(${hue + glitchOff * 20}, 50%, 15%)`);
+        baseGrad.addColorStop(0.5, `hsl(${hue}, 40%, 10%)`);
+        baseGrad.addColorStop(1, `hsl(${hue - glitchOff * 15}, 50%, 12%)`);
+      } else if (b.special === 'boss') {
+        baseGrad.addColorStop(0, `hsl(${hue}, 60%, 18%)`);
+        baseGrad.addColorStop(0.5, `hsl(${hue}, 50%, 12%)`);
+        baseGrad.addColorStop(1, `hsl(${hue}, 60%, 8%)`);
+      } else {
+        baseGrad.addColorStop(0, `hsl(${hue}, 50%, ${lightness * 0.25 + 4}%)`);
+        baseGrad.addColorStop(0.5, `hsl(${hue}, 40%, ${lightness * 0.18}%)`);
+        baseGrad.addColorStop(1, `hsl(${hue}, 50%, ${lightness * 0.12}%)`);
+      }
 
       ctx.fillStyle = baseGrad;
       const neonAlpha = 0.7 + hpRatio * 0.3;
       const neonColor = borderExtra || `hsla(${hue}, 100%, 60%, ${neonAlpha})`;
       ctx.strokeStyle = neonColor;
-      ctx.lineWidth = isTargeted ? 2.5 : 1.5;
+      ctx.lineWidth = b.special === 'boss' ? 2.5 : (isTargeted ? 2.5 : 1.5);
 
       // Outer neon glow
-      ctx.shadowColor = borderExtra || `hsl(${hue}, 100%, 55%)`;
-      ctx.shadowBlur = 6 + hpRatio * 6;
+      ctx.shadowColor = glowColor || `hsl(${hue}, 100%, 55%)`;
+      ctx.shadowBlur = b.special === 'boss' ? 14 : (b.special === 'crystal' ? 12 : 6 + hpRatio * 6);
 
       ctx.beginPath();
-      const cr = 3;
+      const cr = b.special === 'boss' ? 5 : 3;
       ctx.moveTo(bx + cr, b.y);
       ctx.lineTo(bx + b.w - cr, b.y); ctx.quadraticCurveTo(bx + b.w, b.y, bx + b.w, b.y + cr);
       ctx.lineTo(bx + b.w, b.y + b.h - cr); ctx.quadraticCurveTo(bx + b.w, b.y + b.h, bx + b.w - cr, b.y + b.h);
@@ -974,104 +1109,256 @@ const PortalBreakerGame: React.FC = () => {
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // ── Inner neon circuit pattern ──
+      // ── Type-specific overlays ──
       ctx.save();
       ctx.beginPath();
       ctx.rect(bx + 1, b.y + 1, b.w - 2, b.h - 2);
       ctx.clip();
 
-      const traceAlpha = 0.4 + hpRatio * 0.35;
-      ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${traceAlpha})`;
-      ctx.lineWidth = 0.8;
-      ctx.shadowColor = `hsl(${hue}, 100%, 65%)`;
-      ctx.shadowBlur = 3;
-      const s2 = b.seed;
-
-      if (b.pattern === 0) {
-        // H-bridge circuit
-        const cy1 = b.y + b.h * 0.33; const cy2 = b.y + b.h * 0.67;
-        ctx.beginPath(); ctx.moveTo(bx + 3, cy1); ctx.lineTo(bx + b.w * 0.35, cy1);
-        ctx.lineTo(bx + b.w * 0.35, cy2); ctx.lineTo(bx + b.w * 0.65, cy2);
-        ctx.lineTo(bx + b.w * 0.65, cy1); ctx.lineTo(bx + b.w - 3, cy1); ctx.stroke();
-        ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${traceAlpha + 0.2})`;
-        ctx.beginPath(); ctx.arc(bx + b.w * 0.35, cy1, 1.8, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx + b.w * 0.65, cy2, 1.8, 0, Math.PI * 2); ctx.fill();
-      } else if (b.pattern === 1) {
-        // Parallel data lanes
-        for (let i = 0; i < 3; i++) {
-          const ly = b.y + b.h * (0.25 + i * 0.25);
-          ctx.beginPath(); ctx.moveTo(bx + 3, ly); ctx.lineTo(bx + b.w - 3, ly); ctx.stroke();
-          // Animated pulse dot
-          const dotX = bx + 3 + ((now * 0.03 + s2 + i * 20) % (b.w - 6));
-          ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.6 + Math.sin(now * 0.01 + i) * 0.3})`;
-          ctx.beginPath(); ctx.arc(dotX, ly, 1.5, 0, Math.PI * 2); ctx.fill();
+      if (b.special === 'normal') {
+        // Standard neon: holographic shimmer line
+        const shimmer = (now * 0.05 + b.seed * 10) % (b.w + 20) - 10;
+        ctx.strokeStyle = `hsla(${hue}, 100%, 85%, ${0.15 + Math.sin(now * 0.003 + b.seed) * 0.1})`;
+        ctx.lineWidth = 0.8;
+        // Circuit pattern
+        const traceAlpha = 0.4 + hpRatio * 0.35;
+        ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${traceAlpha})`;
+        ctx.shadowColor = `hsl(${hue}, 100%, 65%)`;
+        ctx.shadowBlur = 3;
+        if (b.pattern % 3 === 0) {
+          const cy1 = b.y + b.h * 0.33; const cy2 = b.y + b.h * 0.67;
+          ctx.beginPath(); ctx.moveTo(bx + 3, cy1); ctx.lineTo(bx + b.w * 0.35, cy1);
+          ctx.lineTo(bx + b.w * 0.35, cy2); ctx.lineTo(bx + b.w * 0.65, cy2);
+          ctx.lineTo(bx + b.w * 0.65, cy1); ctx.lineTo(bx + b.w - 3, cy1); ctx.stroke();
+        } else if (b.pattern % 3 === 1) {
+          for (let i = 0; i < 3; i++) {
+            const ly = b.y + b.h * (0.25 + i * 0.25);
+            ctx.beginPath(); ctx.moveTo(bx + 3, ly); ctx.lineTo(bx + b.w - 3, ly); ctx.stroke();
+          }
+        } else {
+          ctx.beginPath(); ctx.moveTo(bx + 2, b.y + 2); ctx.lineTo(bx + b.w - 2, b.y + b.h - 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx + b.w - 2, b.y + 2); ctx.lineTo(bx + 2, b.y + b.h - 2); ctx.stroke();
         }
-      } else if (b.pattern === 2) {
-        // Cross-hatch grid
-        for (let i = 0; i < 3; i++) {
-          const gx = bx + b.w * (0.25 + i * 0.25);
-          ctx.beginPath(); ctx.moveTo(gx, b.y + 2); ctx.lineTo(gx, b.y + b.h - 2); ctx.stroke();
+        // Shimmer sweep
+        const sg = ctx.createLinearGradient(bx + shimmer - 5, b.y, bx + shimmer + 5, b.y);
+        sg.addColorStop(0, 'rgba(255,255,255,0)');
+        sg.addColorStop(0.5, 'rgba(255,255,255,0.12)');
+        sg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sg;
+        ctx.fillRect(bx, b.y, b.w, b.h);
+        ctx.shadowBlur = 0;
+      } else if (b.special === 'explosive') {
+        // Pulsing energy core + warning blink
+        const pulse = 0.5 + Math.sin(now * 0.008 + b.seed) * 0.5;
+        const warn = Math.sin(now * 0.012) > 0.7;
+        const coreGlow = ctx.createRadialGradient(bx + b.w / 2, b.y + b.h / 2, 0, bx + b.w / 2, b.y + b.h / 2, b.w * 0.4);
+        coreGlow.addColorStop(0, `rgba(255, 100, 0, ${0.4 * pulse})`);
+        coreGlow.addColorStop(1, 'rgba(255, 50, 0, 0)');
+        ctx.fillStyle = coreGlow;
+        ctx.fillRect(bx, b.y, b.w, b.h);
+        if (warn) {
+          ctx.fillStyle = 'rgba(255,0,0,0.15)';
+          ctx.fillRect(bx, b.y, b.w, b.h);
         }
+      } else if (b.special === 'crystal') {
+        // Faceted gem sparkle
+        ctx.strokeStyle = `hsla(${hue}, 100%, 80%, 0.4)`;
+        ctx.lineWidth = 0.6;
+        // Facet lines
+        ctx.beginPath(); ctx.moveTo(bx + b.w * 0.3, b.y); ctx.lineTo(bx + b.w * 0.5, b.y + b.h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx + b.w * 0.7, b.y); ctx.lineTo(bx + b.w * 0.5, b.y + b.h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx, b.y + b.h * 0.4); ctx.lineTo(bx + b.w, b.y + b.h * 0.4); ctx.stroke();
+        // Sparkle particles
+        for (let i = 0; i < 3; i++) {
+          const sx = bx + b.w * (0.2 + (b.seed * 7 + i * 0.3) % 0.6);
+          const sy = b.y + b.h * (0.2 + (b.seed * 3 + i * 0.4) % 0.6);
+          const sparkle = Math.sin(now * 0.01 + b.seed + i * 2) * 0.5 + 0.5;
+          ctx.fillStyle = `rgba(255,255,255,${sparkle * 0.8})`;
+          ctx.beginPath(); ctx.arc(sx, sy, 1 + sparkle, 0, Math.PI * 2); ctx.fill();
+        }
+        // Pulsing glow
+        const gemPulse = 0.1 + Math.sin(now * 0.004 + b.seed) * 0.08;
+        ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${gemPulse})`;
+        ctx.fillRect(bx, b.y, b.w, b.h);
+      } else if (b.special === 'shielded') {
+        // Rotating hex grid shield ring
+        const hasNeighbor = s.bricks.some(nb => nb.alive && nb !== b && nb.special !== 'shielded'
+          && Math.abs((nb.x + nb.w / 2) - (b.x + b.w / 2)) < b.w * 1.8
+          && Math.abs((nb.y + nb.h / 2) - (b.y + b.h / 2)) < b.h * 1.8);
+        if (hasNeighbor) {
+          // Shield ring
+          ctx.strokeStyle = `hsla(220, 100%, 70%, ${0.4 + Math.sin(now * 0.005) * 0.2})`;
+          ctx.lineWidth = 1.5;
+          const cx = bx + b.w / 2; const cy = b.y + b.h / 2;
+          const hexR = Math.min(b.w, b.h) * 0.45;
+          ctx.beginPath();
+          for (let a = 0; a < 6; a++) {
+            const angle = a * Math.PI / 3 + now * 0.002;
+            const hx = cx + Math.cos(angle) * hexR;
+            const hy = cy + Math.sin(angle) * hexR * 0.7;
+            a === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+          }
+          ctx.closePath(); ctx.stroke();
+          // Inner shield shimmer
+          ctx.fillStyle = `hsla(220, 100%, 75%, 0.08)`;
+          ctx.fillRect(bx, b.y, b.w, b.h);
+        } else {
+          // Shield broken - show cracks
+          ctx.strokeStyle = 'rgba(100,150,255,0.3)';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath(); ctx.moveTo(bx + 3, b.y + 3); ctx.lineTo(bx + b.w / 2, b.y + b.h / 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx + b.w - 3, b.y + b.h - 3); ctx.lineTo(bx + b.w / 2, b.y + b.h / 2); ctx.stroke();
+        }
+      } else if (b.special === 'magnet') {
+        // Magnetic poles + energy arcs
+        const poleW = 3;
+        ctx.fillStyle = `hsla(210, 100%, 65%, 0.6)`;
+        ctx.fillRect(bx + 2, b.y + 2, poleW, b.h - 4); // left pole
+        ctx.fillStyle = `hsla(0, 100%, 65%, 0.6)`;
+        ctx.fillRect(bx + b.w - 2 - poleW, b.y + 2, poleW, b.h - 4); // right pole
+        // Floating arcs between poles
+        ctx.strokeStyle = `hsla(200, 100%, 70%, ${0.3 + Math.sin(now * 0.006 + b.seed) * 0.2})`;
+        ctx.lineWidth = 0.8;
         for (let i = 0; i < 2; i++) {
-          const gy = b.y + b.h * (0.33 + i * 0.33);
-          ctx.beginPath(); ctx.moveTo(bx + 2, gy); ctx.lineTo(bx + b.w - 2, gy); ctx.stroke();
+          const arcY = b.y + b.h * (0.3 + i * 0.4);
+          const arcAmp = 3 * Math.sin(now * 0.008 + b.seed + i);
+          ctx.beginPath();
+          ctx.moveTo(bx + 5, arcY);
+          ctx.quadraticCurveTo(bx + b.w / 2, arcY + arcAmp, bx + b.w - 5, arcY);
+          ctx.stroke();
         }
-        // Center glow node
-        ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.5 + Math.sin(now * 0.005 + s2) * 0.3})`;
-        ctx.beginPath(); ctx.arc(bx + b.w / 2, b.y + b.h / 2, 2.2, 0, Math.PI * 2); ctx.fill();
-      } else if (b.pattern === 3) {
-        // Microchip with pins
-        const chipW = b.w * 0.28; const chipH = b.h * 0.45;
-        const chipX = bx + (b.w - chipW) / 2; const chipY = b.y + (b.h - chipH) / 2;
-        ctx.strokeRect(chipX, chipY, chipW, chipH);
-        ctx.fillStyle = `hsla(${hue}, 100%, 75%, 0.15)`;
-        ctx.fillRect(chipX, chipY, chipW, chipH);
+      } else if (b.special === 'glitch') {
+        // RGB glitch + flickering pixels
+        const glitchIntensity = Math.sin(now * 0.015 + b.seed) > 0.3 ? 1 : 0.3;
+        // Horizontal glitch lines
         for (let i = 0; i < 3; i++) {
-          const py = chipY + chipH * (i + 0.5) / 3;
-          ctx.beginPath(); ctx.moveTo(bx + 2, py); ctx.lineTo(chipX, py); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(chipX + chipW, py); ctx.lineTo(bx + b.w - 2, py); ctx.stroke();
+          const gy = b.y + b.h * ((b.seed * 7 + i * 0.3) % 1);
+          const offset = Math.sin(now * 0.02 + i * 5 + b.seed) * 4 * glitchIntensity;
+          ctx.fillStyle = `rgba(255,0,${Math.floor(Math.random() * 255)},${0.2 * glitchIntensity})`;
+          ctx.fillRect(bx + offset, gy, b.w * 0.6, 1.5);
         }
-      } else if (b.pattern === 4) {
-        // Scanner sweep line
-        const sweepX = bx + 3 + ((now * 0.04 + s2 * 10) % (b.w - 6));
-        ctx.strokeStyle = `hsla(${hue}, 100%, 80%, 0.6)`;
-        ctx.beginPath(); ctx.moveTo(sweepX, b.y + 2); ctx.lineTo(sweepX, b.y + b.h - 2); ctx.stroke();
-        // Corner brackets
-        const cb = 5;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(bx + 3, b.y + cb + 2); ctx.lineTo(bx + 3, b.y + 2); ctx.lineTo(bx + cb + 3, b.y + 2); ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(bx + b.w - cb - 3, b.y + 2); ctx.lineTo(bx + b.w - 3, b.y + 2); ctx.lineTo(bx + b.w - 3, b.y + cb + 2); ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(bx + 3, b.y + b.h - cb - 2); ctx.lineTo(bx + 3, b.y + b.h - 2); ctx.lineTo(bx + cb + 3, b.y + b.h - 2); ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(bx + b.w - cb - 3, b.y + b.h - 2); ctx.lineTo(bx + b.w - 3, b.y + b.h - 2); ctx.lineTo(bx + b.w - 3, b.y + b.h - cb - 2); ctx.stroke();
-      } else {
-        // Binary stream dots
-        for (let i = 0; i < 6; i++) {
-          const dx = bx + 4 + (i / 5) * (b.w - 8);
-          const dy = b.y + b.h * (0.3 + Math.sin(s2 + i * 1.4) * 0.2);
-          const blink = Math.sin(now * 0.008 + s2 + i * 2.1) > 0;
-          ctx.fillStyle = `hsla(${hue}, 100%, ${blink ? 85 : 50}%, ${blink ? 0.8 : 0.25})`;
-          ctx.beginPath(); ctx.arc(dx, dy, 1.3, 0, Math.PI * 2); ctx.fill();
+        // RGB channel offset rectangles
+        if (glitchIntensity > 0.5) {
+          ctx.fillStyle = 'rgba(255,0,0,0.1)';
+          ctx.fillRect(bx - 1, b.y, b.w, b.h);
+          ctx.fillStyle = 'rgba(0,255,0,0.08)';
+          ctx.fillRect(bx + 1, b.y - 0.5, b.w, b.h);
+          ctx.fillStyle = 'rgba(0,0,255,0.08)';
+          ctx.fillRect(bx, b.y + 0.5, b.w, b.h);
         }
+        // Flickering pixel dots
+        for (let i = 0; i < 4; i++) {
+          const px = bx + (b.seed * 17 + i * 13) % b.w;
+          const py = b.y + (b.seed * 11 + i * 7) % b.h;
+          const flick = Math.sin(now * 0.03 + i * 3 + b.seed) > 0;
+          if (flick) {
+            ctx.fillStyle = `hsl(${(now * 0.5 + i * 90) % 360}, 100%, 70%)`;
+            ctx.fillRect(px, py, 2, 2);
+          }
+        }
+      } else if (b.special === 'boss') {
+        // Reactor core + multiple hit phases
+        const cx = bx + b.w / 2; const cy = b.y + b.h / 2;
+        // Inner reactor rings
+        const reactPulse = Math.sin(now * 0.006 + b.seed) * 0.3 + 0.7;
+        ctx.strokeStyle = `hsla(${hue}, 100%, 65%, ${0.4 * reactPulse})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(cx, cy, b.h * 0.35, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, b.h * 0.2, 0, Math.PI * 2); ctx.stroke();
+        // Core glow
+        const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, b.h * 0.4);
+        coreGrad.addColorStop(0, `hsla(${hue}, 100%, 70%, ${0.4 * reactPulse})`);
+        coreGrad.addColorStop(1, `hsla(${hue}, 100%, 50%, 0)`);
+        ctx.fillStyle = coreGrad;
+        ctx.fillRect(bx, b.y, b.w, b.h);
+        // Eye/reactor center
+        ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${reactPulse * 0.8})`;
+        ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+        // HP bar inside boss
+        const barW = b.w * 0.6;
+        const barH = 3;
+        const barX = bx + (b.w - barW) / 2;
+        const barY = b.y + b.h - 6;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(barX, barY, barW, barH);
+        ctx.fillStyle = borderExtra || '#ffdd00';
+        ctx.fillRect(barX, barY, barW * hpRatio, barH);
+      } else if (b.special === 'charge') {
+        // Lightning flickers
+        ctx.strokeStyle = `hsla(160, 100%, 70%, ${0.3 + Math.sin(now * 0.01 + b.seed) * 0.2})`;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(bx + 3, b.y + b.h * 0.3);
+        ctx.lineTo(bx + b.w * 0.4, b.y + b.h * 0.5);
+        ctx.lineTo(bx + b.w * 0.3, b.y + b.h * 0.5);
+        ctx.lineTo(bx + b.w - 3, b.y + b.h * 0.7); ctx.stroke();
+      } else if (b.special === 'freeze') {
+        // Ice crystal pattern
+        ctx.strokeStyle = `hsla(200, 100%, 80%, 0.35)`;
+        ctx.lineWidth = 0.6;
+        const cx = bx + b.w / 2; const cy = b.y + b.h / 2;
+        for (let a = 0; a < 6; a++) {
+          const angle = a * Math.PI / 3;
+          ctx.beginPath(); ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + Math.cos(angle) * b.w * 0.35, cy + Math.sin(angle) * b.h * 0.35); ctx.stroke();
+        }
+      } else if (b.special === 'combo') {
+        // Multiplier rings
+        ctx.strokeStyle = `hsla(50, 100%, 70%, 0.4)`;
+        ctx.lineWidth = 0.7;
+        ctx.beginPath(); ctx.arc(bx + b.w / 2, b.y + b.h / 2, b.h * 0.3, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = `hsla(50, 100%, 80%, 0.3)`;
+        ctx.font = `${b.h * 0.5}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText('×', bx + b.w / 2, b.y + b.h * 0.7);
       }
+
       ctx.shadowBlur = 0;
       ctx.restore();
 
       // ── Neon edge highlights ──
-      // Top bright edge
       ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.25 + hpRatio * 0.2})`;
       ctx.fillRect(bx + 4, b.y + 1, b.w - 8, 1.5);
-      // Bottom subtle edge
       ctx.fillStyle = `hsla(${hue}, 100%, 40%, 0.3)`;
       ctx.fillRect(bx + 4, b.y + b.h - 2, b.w - 8, 1);
 
-      // ── Neon pulse glow for high-HP bricks ──
+      // ── Plasma bricks (multi-hit): crack + lightning ──
+      if (b.maxHp >= 2 && b.special === 'normal') {
+        // Crack lines when damaged
+        if (hpRatio < 1) {
+          ctx.strokeStyle = `hsla(${hue}, 60%, 80%, ${0.3 * (1 - hpRatio)})`;
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(bx + b.w * 0.3, b.y);
+          ctx.lineTo(bx + b.w * 0.45, b.y + b.h * 0.5);
+          ctx.lineTo(bx + b.w * 0.35, b.y + b.h);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(bx + b.w * 0.7, b.y);
+          ctx.lineTo(bx + b.w * 0.55, b.y + b.h * 0.6);
+          ctx.stroke();
+        }
+        // Lightning flicker inside
+        const lFlick = Math.sin(now * 0.012 + b.seed) > 0.5;
+        if (lFlick) {
+          ctx.strokeStyle = `hsla(${hue}, 100%, 85%, 0.4)`;
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(bx + 4, b.y + b.h * 0.4);
+          ctx.lineTo(bx + b.w * 0.5, b.y + b.h * 0.3);
+          ctx.lineTo(bx + b.w * 0.4, b.y + b.h * 0.6);
+          ctx.lineTo(bx + b.w - 4, b.y + b.h * 0.5);
+          ctx.stroke();
+        }
+        // Core glow brighter after each hit
+        const glow = (1 - hpRatio) * 0.2;
+        ctx.fillStyle = `hsla(${hue}, 100%, 70%, ${glow})`;
+        ctx.fillRect(bx, b.y, b.w, b.h);
+      }
+
+      // ── Neon pulse for all multi-HP bricks ──
       if (b.maxHp >= 2) {
         const pulse = 0.15 + Math.sin(now * 0.005 + b.seed) * 0.1;
-        ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
+        ctx.shadowColor = glowColor || `hsl(${hue}, 100%, 60%)`;
         ctx.shadowBlur = 10 + pulse * 20;
         ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${pulse})`;
         ctx.lineWidth = 1;
@@ -1085,17 +1372,6 @@ const PortalBreakerGame: React.FC = () => {
         ctx.setLineDash([3, 3]);
         ctx.strokeRect(bx - 2, b.y - 2, b.w + 4, b.h + 4);
         ctx.setLineDash([]);
-      }
-
-      // Special brick indicator (simple dot)
-      if (b.special !== 'normal') {
-        ctx.fillStyle = borderExtra || '#fff';
-        ctx.shadowColor = borderExtra || '#fff';
-        ctx.shadowBlur = 6;
-        ctx.beginPath();
-        ctx.arc(bx + b.w / 2, b.y + b.h / 2, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
       }
     });
 
