@@ -349,28 +349,22 @@
   animation: cc-gem-pulse 1.2s ease-in-out infinite;
 }
 
-/* ===== MATCH BURST — Explosive clearing effect ===== */
+/* ===== MATCH BURST — Color-matched supernova ===== */
 .cyber-gem--clearing {
   animation: cc-gem-explode 0.55s ease-out forwards;
   z-index: 10;
 }
 
-/* Expanding white shockwave ring */
+/* Base clearing burst ring */
 .cyber-gem--clearing::before {
   animation: cc-burst-ring 0.6s ease-out forwards !important;
-  background: hsl(0 0% 100% / 0.7) !important;
   border-radius: 50% !important;
   inset: -80% !important;
   box-shadow: none !important;
+  background: hsl(0 0% 100% / 0.7) !important;
 }
 
-@keyframes cc-burst-ring {
-  0% { transform: scale(0.1); opacity: 1; }
-  40% { transform: scale(2.2); opacity: 0.7; }
-  100% { transform: scale(4.5); opacity: 0; }
-}
-
-/* Sparkle rays shooting outward */
+/* Base clearing sparkle rays */
 .cyber-gem--clearing::after {
   animation: cc-burst-sparkle 0.55s ease-out forwards !important;
   width: 250% !important;
@@ -378,20 +372,53 @@
   top: -75% !important;
   left: -75% !important;
   border-radius: 50% !important;
-  background:
-    conic-gradient(
-      from 0deg,
-      hsl(0 0% 100% / 0.9) 0deg, transparent 8deg,
-      transparent 42deg, hsl(0 0% 100% / 0.8) 45deg, transparent 48deg,
-      transparent 87deg, hsl(0 0% 100% / 0.7) 90deg, transparent 93deg,
-      transparent 132deg, hsl(0 0% 100% / 0.8) 135deg, transparent 138deg,
-      transparent 177deg, hsl(0 0% 100% / 0.7) 180deg, transparent 183deg,
-      transparent 222deg, hsl(0 0% 100% / 0.8) 225deg, transparent 228deg,
-      transparent 267deg, hsl(0 0% 100% / 0.7) 270deg, transparent 273deg,
-      transparent 312deg, hsl(0 0% 100% / 0.8) 315deg, transparent 318deg,
-      transparent 360deg
-    ) !important;
   filter: blur(0.5px) !important;
+}
+
+/* Blue supernova */
+.cyber-gem--energy.cyber-gem--clearing::before {
+  background: radial-gradient(circle, hsl(199 100% 85% / 0.95), hsl(210 100% 60% / 0.5), transparent 70%) !important;
+}
+.cyber-gem--energy.cyber-gem--clearing::after {
+  background: conic-gradient(from 0deg, hsl(199 100% 85% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(210 100% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(199 100% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(210 100% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(199 100% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(210 100% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(199 100% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(210 100% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+}
+
+/* Pink supernova */
+.cyber-gem--data.cyber-gem--clearing::before {
+  background: radial-gradient(circle, hsl(330 100% 88% / 0.95), hsl(340 100% 60% / 0.5), transparent 70%) !important;
+}
+.cyber-gem--data.cyber-gem--clearing::after {
+  background: conic-gradient(from 0deg, hsl(330 100% 88% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(340 100% 80% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(330 100% 85% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(340 100% 88% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(330 100% 80% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(340 100% 85% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(330 100% 88% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(340 100% 80% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+}
+
+/* Purple supernova */
+.cyber-gem--quantum.cyber-gem--clearing::before {
+  background: radial-gradient(circle, hsl(270 80% 85% / 0.95), hsl(260 80% 55% / 0.5), transparent 70%) !important;
+}
+.cyber-gem--quantum.cyber-gem--clearing::after {
+  background: conic-gradient(from 0deg, hsl(270 80% 85% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(280 80% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(270 80% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(280 80% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(270 80% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(280 80% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(270 80% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(280 80% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+}
+
+/* Cyan supernova */
+.cyber-gem--circuit.cyber-gem--clearing::before {
+  background: radial-gradient(circle, hsl(180 90% 85% / 0.95), hsl(185 90% 55% / 0.5), transparent 70%) !important;
+}
+.cyber-gem--circuit.cyber-gem--clearing::after {
+  background: conic-gradient(from 0deg, hsl(180 90% 85% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(185 90% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(180 90% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(185 90% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(180 90% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(185 90% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(180 90% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(185 90% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+}
+
+/* Gold supernova */
+.cyber-gem--bonus.cyber-gem--clearing::before {
+  background: radial-gradient(circle, hsl(45 100% 90% / 0.95), hsl(40 100% 55% / 0.6), transparent 70%) !important;
+}
+.cyber-gem--bonus.cyber-gem--clearing::after {
+  background: conic-gradient(from 0deg, hsl(45 100% 88% / 0.9) 0deg, transparent 8deg, transparent 42deg, hsl(40 100% 78% / 0.8) 45deg, transparent 48deg, transparent 87deg, hsl(50 100% 82% / 0.7) 90deg, transparent 93deg, transparent 132deg, hsl(40 100% 85% / 0.8) 135deg, transparent 138deg, transparent 177deg, hsl(50 100% 78% / 0.7) 180deg, transparent 183deg, transparent 222deg, hsl(40 100% 82% / 0.8) 225deg, transparent 228deg, transparent 267deg, hsl(50 100% 85% / 0.7) 270deg, transparent 273deg, transparent 312deg, hsl(40 100% 78% / 0.8) 315deg, transparent 318deg, transparent 360deg) !important;
+}
+
+@keyframes cc-burst-ring {
+  0% { transform: scale(0.1); opacity: 1; }
+  40% { transform: scale(2.2); opacity: 0.7; }
+  100% { transform: scale(4.5); opacity: 0; }
 }
 
 @keyframes cc-burst-sparkle {

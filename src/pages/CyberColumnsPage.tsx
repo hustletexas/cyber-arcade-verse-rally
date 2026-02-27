@@ -88,7 +88,7 @@ const CyberColumnsPage: React.FC = () => {
               />
 
               <div className="flex justify-center">
-                <CyberColumnsBoard board={state.board} currentPiece={state.currentPiece} />
+                <CyberColumnsBoard board={state.board} currentPiece={state.currentPiece} onTapBoard={rotate} />
               </div>
 
               <CyberColumnsTouchControls
