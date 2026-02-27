@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Wallet, ExternalLink, ChevronRight, Sparkles, Smartphone, ShieldCheck, Mail, User, Loader2 } from 'lucide-react';
-import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo } from '@/types/wallet';
+import { ChainType, WalletType, CHAINS, WALLETS, WalletInfo, getWalletsByChain } from '@/types/wallet';
 import {
   StellarWalletsKit,
   WalletNetwork,
@@ -37,6 +37,9 @@ const WALLET_KIT_IDS: Record<string, string> = {
   hotwallet: HOTWALLET_ID,
 };
 
+// Chain display order for the wallet modal
+const CHAIN_ORDER: ChainType[] = ['stellar', 'solana', 'hedera', 'xrpl'];
+
 export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   isOpen,
   onClose,
@@ -58,6 +61,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     lobstr: false,
     freighter: false,
     hotwallet: false,
+    phantom: false,
+    hashpack: false,
+    xaman: false,
   });
 
   // Build a shared StellarWalletsKit with all modules
@@ -95,17 +101,25 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       if (mobile) {
         const detected = await detectMobileWallets();
         setMobileWallets(detected);
-        // On mobile, mark all as available (they use WalletConnect / web-based)
+        // On mobile, mark all as available (they use WalletConnect / deep links)
         setWalletAvailability({
           lobstr: true,
           freighter: true,
           hotwallet: true,
+          phantom: true,
+          hashpack: true,
+          xaman: true,
         });
       } else {
+        // Desktop: detect extensions
+        const phantomAvailable = !!window.phantom?.solana?.isPhantom;
         setWalletAvailability({
           lobstr: true,
           freighter: true,
           hotwallet: true,
+          phantom: phantomAvailable,
+          hashpack: true, // Uses WalletConnect
+          xaman: true,    // Uses WalletConnect / deep link
         });
       }
     };
@@ -150,23 +164,35 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const completeConnection = (walletType: WalletType, address: string) => {
-    onWalletConnected(walletType, address, 'stellar');
+    const chain = WALLETS.find(w => w.id === walletType)?.chain || 'stellar';
+    onWalletConnected(walletType, address, chain);
     onClose();
+    const chainName = CHAINS[chain]?.name || chain;
     toast({
-      title: "Wallet Connected & Verified! ✦",
-      description: `${walletType.charAt(0).toUpperCase() + walletType.slice(1)} wallet verified: ${address.slice(0, 8)}...${address.slice(-4)}`,
+      title: `Wallet Connected! ${CHAINS[chain]?.icon || '✦'}`,
+      description: `${walletType.charAt(0).toUpperCase() + walletType.slice(1)} on ${chainName}: ${address.slice(0, 8)}...${address.slice(-4)}`,
     });
   };
 
-  // Unified connection via Stellar Wallets Kit for all wallets
+  // Unified connection via Stellar Wallets Kit for Stellar wallets
   const connectWithKit = async (walletType: WalletType) => {
+    // Handle non-Stellar wallets
+    if (walletType === 'phantom') {
+      return connectPhantom();
+    }
+    if (walletType === 'hashpack') {
+      return connectHashPack();
+    }
+    if (walletType === 'xaman') {
+      return connectXaman();
+    }
+
     const kitId = WALLET_KIT_IDS[walletType];
     if (!kitId) {
       throw new Error(`Unknown wallet type: ${walletType}`);
     }
 
     if (isMobile && (walletType === 'lobstr' || walletType === 'freighter')) {
-      // On mobile, use WalletConnect for native app wallets
       const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
       if (!wcProjectId) {
         throw new Error('WalletConnect not configured. Please contact support.');
@@ -202,14 +228,11 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         throw new Error('No address returned. Make sure the wallet app is installed.');
       }
     } else if (isMobile && walletType === 'hotwallet') {
-      // Hot Wallet on mobile: use deep link redirect to open the app/web wallet
       toast({
         title: "Opening Hot Wallet...",
         description: "Connecting via Hot Wallet mobile",
       });
 
-      // Try the kit module first with a timeout — Hot Wallet is web-based so it 
-      // should work on mobile, but if the popup is blocked we fall back to redirect
       try {
         const kit = buildKit(HOTWALLET_ID);
         kit.setWallet(HOTWALLET_ID);
@@ -222,14 +245,10 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         console.warn('Hot Wallet kit module failed on mobile, trying deep link redirect...', kitError);
       }
 
-      // Fallback: redirect to Hot Wallet web app directly
-      // Hot Wallet uses its web interface — open it so the user can authorize
       const callbackUrl = encodeURIComponent(window.location.href);
       const hotWalletUrl = `https://hotwallet.app/connect?callback=${callbackUrl}&app=Cyber+City+Arcade`;
       window.location.href = hotWalletUrl;
     } else if (walletType === 'freighter') {
-      // Freighter: bypass kit's isAvailable check which fails in iframes
-      // Use the Freighter API directly — it communicates via postMessage
       const accessResult = await freighterApi.requestAccess();
       if (accessResult.error) {
         throw new Error(accessResult.error);
@@ -244,7 +263,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         throw new Error('No address returned from Freighter. Make sure the extension is unlocked.');
       }
     } else {
-      // Desktop: use the native kit module for other wallets
       const kit = buildKit(kitId);
       kit.setWallet(kitId);
 
@@ -254,6 +272,66 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       } else {
         throw new Error(`No address returned from ${walletType}`);
       }
+    }
+  };
+
+  // Phantom (Solana) connection
+  const connectPhantom = async () => {
+    const provider = window.phantom?.solana;
+    
+    if (provider?.isPhantom) {
+      // Desktop extension detected
+      const response = await provider.connect();
+      const address = response.publicKey.toString();
+      completeConnection('phantom', address);
+    } else if (isMobile) {
+      // Mobile: deep link to Phantom app
+      const currentUrl = encodeURIComponent(window.location.href);
+      const phantomUrl = `https://phantom.app/ul/browse/${currentUrl}?ref=${currentUrl}`;
+      window.location.href = phantomUrl;
+    } else {
+      // Desktop: extension not installed
+      window.open('https://phantom.app/', '_blank');
+      throw new Error('Phantom wallet not found. Please install the Phantom extension.');
+    }
+  };
+
+  // HashPack (Hedera) connection via deep link / WalletConnect
+  const connectHashPack = async () => {
+    if (isMobile) {
+      // Deep link to HashPack app
+      toast({
+        title: "Opening HashPack...",
+        description: "Approve the connection in HashPack",
+      });
+      window.open('https://www.hashpack.app/download', '_blank');
+      throw new Error('Please install HashPack and connect via the app. Deep link pairing coming soon.');
+    } else {
+      // Desktop: attempt extension or redirect
+      toast({
+        title: "Connecting HashPack...",
+        description: "Opening HashPack wallet connection",
+      });
+      window.open('https://www.hashpack.app/download', '_blank');
+      throw new Error('HashPack browser extension required. Install it from hashpack.app');
+    }
+  };
+
+  // Xaman (XRPL) connection via deep link
+  const connectXaman = async () => {
+    toast({
+      title: "Opening Xaman...",
+      description: "Scan the QR or approve in Xaman app",
+    });
+    
+    if (isMobile) {
+      // Deep link to Xaman app  
+      const xamanUrl = `https://xaman.app/detect/xapp:cybercityarcade`;
+      window.location.href = xamanUrl;
+      throw new Error('Please approve the connection in Xaman. If Xaman is not installed, download it from xaman.app');
+    } else {
+      window.open('https://xaman.app/', '_blank');
+      throw new Error('Xaman wallet required. Install it from xaman.app and use the mobile app to scan.');
     }
   };
 
@@ -273,7 +351,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const getWalletOptions = (): WalletOption[] => {
-    const walletIds: WalletType[] = ['lobstr', 'freighter', 'hotwallet'];
+    const walletIds: WalletType[] = ['lobstr', 'freighter', 'hotwallet', 'phantom', 'hashpack', 'xaman'];
 
     const allOptions: WalletOption[] = walletIds.map(id => ({
       ...WALLETS.find(w => w.id === id)!,
@@ -295,8 +373,12 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const walletOptions = getWalletOptions();
-  const popularWallets = walletOptions.filter(w => w.isPopular);
-  const otherWallets = walletOptions.filter(w => !w.isPopular);
+  
+  // Group wallets by chain
+  const walletsByChain = CHAIN_ORDER.map(chainId => ({
+    chain: CHAINS[chainId],
+    wallets: walletOptions.filter(w => w.chain === chainId),
+  })).filter(group => group.wallets.length > 0);
 
   const handleWalletConnect = async (wallet: WalletOption) => {
     if (!wallet.isInstalled && isMobile) {
@@ -412,7 +494,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             </div>
             {authMode === 'magic_link' 
               ? 'Sign In with Email'
-              : isMobile ? 'Connect Mobile Wallet' : 'Connect Stellar Wallet'
+              : isMobile ? 'Connect Mobile Wallet' : 'Connect Wallet'
             }
           </DialogTitle>
           <p className="text-sm text-white/50 mt-2">
@@ -420,7 +502,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               ? "We'll send you a magic link to sign in — no password needed"
               : isMobile 
                 ? 'Tap a wallet to open it and sign in instantly' 
-                : 'Choose a Stellar wallet to connect to Cyber City Arcade'
+                : 'Choose a wallet to connect with USDC'
             }
           </p>
           {authMode === 'wallets' && (
@@ -547,29 +629,29 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                 </div>
               )}
 
-              {/* Popular Wallets */}
-              {popularWallets.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-4 px-1">
-                    <Sparkles size={14} className="text-yellow-500" />
-                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Recommended</span>
+              {/* Wallets grouped by chain */}
+              {walletsByChain.map(({ chain, wallets }) => (
+                <div key={chain.id}>
+                  <div className="flex items-center gap-2 mb-3 px-1">
+                    {chain.logoUrl ? (
+                      <img src={chain.logoUrl} alt={chain.name} className="w-4 h-4 rounded-full" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    ) : (
+                      <span className="text-sm" style={{ color: chain.color }}>{chain.icon}</span>
+                    )}
+                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">{chain.name}</span>
+                    {chain.usdcSupported && (
+                      <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/20 text-[9px] px-1.5 py-0 font-medium">
+                        USDC
+                      </Badge>
+                    )}
                   </div>
-                  <div className="space-y-3">
-                    {popularWallets.map(wallet => (
+                  <div className="space-y-2">
+                    {wallets.map(wallet => (
                       <WalletButton key={wallet.id} wallet={wallet} />
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* Other Wallets - no header */}
-              {otherWallets.length > 0 && (
-                <div className="space-y-3">
-                  {otherWallets.map(wallet => (
-                    <WalletButton key={wallet.id} wallet={wallet} />
-                  ))}
-                </div>
-              )}
+              ))}
             </>
           )}
         </div>
@@ -578,41 +660,15 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         {authMode === 'wallets' && (
           <div className="p-4 border-t border-white/5 bg-white/[0.02]">
             <p className="text-xs text-white/30 text-center">
-              {isMobile ? (
-                <>
-                  Don't have a wallet?{' '}
-                  <a 
-                    href="https://lobstr.co/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                  >
-                    Download LOBSTR
-                  </a>
-                  {' '}— the best Stellar wallet for mobile
-                </>
-              ) : (
-                <>
-                  New to Stellar?{' '}
-                  <a 
-                    href="https://lobstr.co/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                  >
-                    Get LOBSTR wallet
-                  </a>
-                  {' '}and/or{' '}
-                  <a 
-                    href="https://www.freighter.app/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                  >
-                    Freighter wallet
-                  </a>
-                </>
-              )}
+              Connect with USDC on Stellar, Solana, Hedera, or XRPL.{' '}
+              <a 
+                href="https://lobstr.co/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-cyan-400 hover:text-cyan-300 transition-colors"
+              >
+                Get started →
+              </a>
             </p>
           </div>
         )}
