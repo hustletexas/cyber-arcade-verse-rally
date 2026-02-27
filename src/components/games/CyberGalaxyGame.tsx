@@ -29,7 +29,7 @@ const ENEMY_SHOOT_INTERVAL_BASE = 2200;
 
 // ─── Types ───────────────────────────────────────────────────────────
 type EnemyType = 'scout' | 'striker' | 'core';
-type PowerUpType = 'overcharge' | 'shield' | 'bomb' | 'rapidfire' | 'extralife' | 'photonburst' | 'rapidpulse' | 'missileswarm' | 'guardiandrone';
+type PowerUpType = 'overcharge' | 'shield' | 'rapidfire' | 'extralife' | 'photonburst' | 'rapidpulse' | 'missileswarm' | 'guardiandrone';
 type GameStatus = 'idle' | 'running' | 'paused' | 'gameover';
 
 interface Star { x: number; y: number; r: number; a: number; speed: number; }
@@ -484,21 +484,33 @@ const CyberGalaxyGame: React.FC = () => {
     
     s.enemies.forEach(e => {
       e.shootTimer -= dtMs;
-      // Only diving enemies can shoot
       if (!e.isDiving) return;
-      // Guarantee 2-3 shots per dive with short intervals (~400-600ms apart)
       if (e.shootTimer <= 0 && (!e.diveShots || e.diveShots < (e.diveShotsMax || 2))) {
         e.diveShots = (e.diveShots || 0) + 1;
         e.shootTimer = 400 + Math.random() * 200;
-        const dx = (p.x + p.w / 2) - (e.x + e.w / 2);
-        const dy = (p.y + p.h / 2) - (e.y + e.h);
+        const ex = e.x + e.w / 2, ey = e.y + e.h;
+        const dx = (p.x + p.w / 2) - ex;
+        const dy = (p.y + p.h / 2) - ey;
         const mag = Math.sqrt(dx * dx + dy * dy) || 1;
-        // Aim directly at player with full directional tracking
-        s.enemyBullets.push({
-          x: e.x + e.w / 2, y: e.y + e.h,
-          vx: (dx / mag) * enemyBulletSpeed,
-          vy: (dy / mag) * enemyBulletSpeed,
-        });
+
+        if (e.type === 'scout') {
+          // Scout: single aimed shot
+          s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed, vy: (dy / mag) * enemyBulletSpeed });
+        } else if (e.type === 'striker') {
+          // Striker: 3-way spread
+          const baseAngle = Math.atan2(dy, dx);
+          for (const offset of [-0.2, 0, 0.2]) {
+            const a = baseAngle + offset;
+            s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed, vy: Math.sin(a) * enemyBulletSpeed });
+          }
+        } else {
+          // Core: 5-way burst
+          const baseAngle = Math.atan2(dy, dx);
+          for (const offset of [-0.35, -0.17, 0, 0.17, 0.35]) {
+            const a = baseAngle + offset;
+            s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * 0.9, vy: Math.sin(a) * enemyBulletSpeed * 0.9 });
+          }
+        }
       }
     });
 
@@ -555,8 +567,8 @@ const CyberGalaxyGame: React.FC = () => {
             s.score += meta.score + bonus;
             spawnParticles(s.particles, e.x + e.w / 2, e.y + e.h / 2, meta.color, 15);
             if (Math.random() < POWER_UP_DROP_CHANCE) {
-              const types: PowerUpType[] = ['overcharge', 'shield', 'bomb', 'rapidfire', 'extralife', 'photonburst', 'rapidpulse', 'missileswarm', 'guardiandrone'];
-              const weights = [0.18, 0.16, 0.13, 0.11, 0.07, 0.1, 0.09, 0.07, 0.09];
+              const types: PowerUpType[] = ['overcharge', 'shield', 'rapidfire', 'extralife', 'photonburst', 'rapidpulse', 'missileswarm', 'guardiandrone'];
+              const weights = [0.20, 0.18, 0.13, 0.08, 0.12, 0.10, 0.09, 0.10];
               let r = Math.random();
               let selectedType: PowerUpType = 'overcharge';
               for (let ti = 0; ti < types.length; ti++) {
@@ -652,22 +664,6 @@ const CyberGalaxyGame: React.FC = () => {
       p.shieldHits = SHIELD_HITS;
       s.activePowerLabel = 'SHIELD';
       s.activePowerEnd = 0;
-    } else if (type === 'bomb') {
-      s.enemyBullets = [];
-      for (let i = s.enemies.length - 1; i >= 0; i--) {
-        s.enemies[i].hp--;
-        if (s.enemies[i].hp <= 0) {
-          const e = s.enemies[i];
-          s.score += ENEMY_META[e.type].score;
-          spawnParticles(s.particles, e.x + e.w / 2, e.y + e.h / 2, ENEMY_META[e.type].color, 10);
-          s.enemies.splice(i, 1);
-        }
-      }
-      for (let i = 0; i < 30; i++) {
-        spawnParticles(s.particles, Math.random() * s.cw, Math.random() * s.ch, '#ffffff', 1);
-      }
-      s.activePowerLabel = 'BOMB!';
-      s.activePowerEnd = performance.now() + 1000;
     } else if (type === 'rapidfire') {
       p.rapidFire = true;
       p.rapidFireEnd = now + 10000;
@@ -801,7 +797,8 @@ const CyberGalaxyGame: React.FC = () => {
     });
     ctx.globalAlpha = 1;
 
-    // Enemies
+    // Enemies — shapes evolve every 3 waves (tier 0-4+)
+    const shapeTier = Math.min(Math.floor((s.wave - 1) / 3), 4);
     s.enemies.forEach(e => {
       const meta = ENEMY_META[e.type];
       ctx.save();
@@ -812,88 +809,163 @@ const CyberGalaxyGame: React.FC = () => {
       ctx.lineWidth = 1.5;
       ctx.fillStyle = `${meta.color}33`;
 
+      const hw = e.w / 2, hh = e.h / 2;
+
       if (e.type === 'scout') {
-        // Small fighter ship — nose pointing down (toward player)
-        const hw = e.w / 2, hh = e.h / 2;
-        ctx.beginPath();
-        ctx.moveTo(0, hh);              // nose (bottom center)
-        ctx.lineTo(-hw * 0.3, -hh * 0.1);  // left body
-        ctx.lineTo(-hw, -hh);           // left wing tip
-        ctx.lineTo(-hw * 0.4, -hh * 0.5);  // left wing inner
-        ctx.lineTo(0, -hh * 0.7);      // top center
-        ctx.lineTo(hw * 0.4, -hh * 0.5);   // right wing inner
-        ctx.lineTo(hw, -hh);            // right wing tip
-        ctx.lineTo(hw * 0.3, -hh * 0.1);   // right body
-        ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        // Engine glow
-        ctx.fillStyle = meta.color;
-        ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.ellipse(0, -hh * 0.5, 3, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (e.type === 'striker') {
-        // Medium assault ship — broader wings, more aggressive
-        const hw = e.w / 2, hh = e.h / 2;
-        ctx.beginPath();
-        ctx.moveTo(0, hh);              // nose
-        ctx.lineTo(-hw * 0.25, hh * 0.2);  // left fuselage
-        ctx.lineTo(-hw * 0.7, -hh * 0.1);  // left wing root
-        ctx.lineTo(-hw, -hh * 0.7);     // left wing tip
-        ctx.lineTo(-hw * 0.6, -hh * 0.4);  // left wing notch
-        ctx.lineTo(-hw * 0.3, -hh * 0.6);  // left body top
-        ctx.lineTo(0, -hh);             // tail center
-        ctx.lineTo(hw * 0.3, -hh * 0.6);   // right body top
-        ctx.lineTo(hw * 0.6, -hh * 0.4);   // right wing notch
-        ctx.lineTo(hw, -hh * 0.7);      // right wing tip
-        ctx.lineTo(hw * 0.7, -hh * 0.1);   // right wing root
-        ctx.lineTo(hw * 0.25, hh * 0.2);   // right fuselage
-        ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        // Twin engines
-        ctx.fillStyle = meta.color;
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.ellipse(-hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        // Core — heavy capital ship / mini-boss
-        const hw = e.w / 2, hh = e.h / 2;
-        ctx.beginPath();
-        ctx.moveTo(0, hh);              // nose
-        ctx.lineTo(-hw * 0.2, hh * 0.5);   // left chin
-        ctx.lineTo(-hw * 0.5, hh * 0.3);   // left body
-        ctx.lineTo(-hw, 0);             // left wing tip
-        ctx.lineTo(-hw * 0.8, -hh * 0.3);  // left wing back
-        ctx.lineTo(-hw * 0.5, -hh * 0.5);  // left hull
-        ctx.lineTo(-hw * 0.3, -hh);     // left tail
-        ctx.lineTo(0, -hh * 0.7);       // tail center
-        ctx.lineTo(hw * 0.3, -hh);      // right tail
-        ctx.lineTo(hw * 0.5, -hh * 0.5);   // right hull
-        ctx.lineTo(hw * 0.8, -hh * 0.3);   // right wing back
-        ctx.lineTo(hw, 0);              // right wing tip
-        ctx.lineTo(hw * 0.5, hh * 0.3);    // right body
-        ctx.lineTo(hw * 0.2, hh * 0.5);    // right chin
-        ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        // Central core glow
-        ctx.fillStyle = meta.color;
-        ctx.shadowBlur = 16;
-        ctx.globalAlpha = 0.6 + Math.sin(now * 0.005) * 0.3;
-        ctx.beginPath();
-        ctx.arc(0, 0, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        // Triple engines
-        ctx.shadowBlur = 8;
-        for (const ox of [-hw * 0.25, 0, hw * 0.25]) {
+        if (shapeTier === 0) {
+          // Basic dart
           ctx.beginPath();
-          ctx.ellipse(ox, -hh * 0.6, 2, 4, 0, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.moveTo(0, hh); ctx.lineTo(-hw, -hh); ctx.lineTo(0, -hh * 0.4); ctx.lineTo(hw, -hh);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+        } else if (shapeTier === 1) {
+          // Swept-wing fighter
+          ctx.beginPath();
+          ctx.moveTo(0, hh); ctx.lineTo(-hw * 0.3, 0); ctx.lineTo(-hw, -hh);
+          ctx.lineTo(-hw * 0.4, -hh * 0.5); ctx.lineTo(0, -hh * 0.7);
+          ctx.lineTo(hw * 0.4, -hh * 0.5); ctx.lineTo(hw, -hh);
+          ctx.lineTo(hw * 0.3, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+        } else if (shapeTier === 2) {
+          // Crescent drone
+          ctx.beginPath();
+          ctx.arc(0, 0, hw, Math.PI * 0.2, Math.PI * 0.8, false);
+          ctx.lineTo(0, hh * 0.6);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, -hh * 0.2, hw * 0.4, 0, Math.PI * 2); ctx.stroke();
+        } else if (shapeTier === 3) {
+          // Tri-blade
+          for (let i = 0; i < 3; i++) {
+            const a = (i * Math.PI * 2 / 3) + Math.PI / 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(a - 0.3) * hw, Math.sin(a - 0.3) * hh);
+            ctx.lineTo(Math.cos(a) * hw * 1.2, Math.sin(a) * hh * 1.2);
+            ctx.lineTo(Math.cos(a + 0.3) * hw, Math.sin(a + 0.3) * hh);
+            ctx.closePath(); ctx.fill(); ctx.stroke();
+          }
+        } else {
+          // Hex insect
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI / 3) - Math.PI / 6;
+            const px = Math.cos(a) * hw, py = Math.sin(a) * hh;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Antennae
+          ctx.beginPath(); ctx.moveTo(-hw * 0.3, -hh); ctx.lineTo(-hw * 0.5, -hh * 1.4);
+          ctx.moveTo(hw * 0.3, -hh); ctx.lineTo(hw * 0.5, -hh * 1.4); ctx.stroke();
         }
+      } else if (e.type === 'striker') {
+        if (shapeTier <= 1) {
+          // Standard striker ship
+          ctx.beginPath();
+          ctx.moveTo(0, hh); ctx.lineTo(-hw * 0.25, hh * 0.2);
+          ctx.lineTo(-hw, -hh * 0.7); ctx.lineTo(-hw * 0.3, -hh * 0.6);
+          ctx.lineTo(0, -hh); ctx.lineTo(hw * 0.3, -hh * 0.6);
+          ctx.lineTo(hw, -hh * 0.7); ctx.lineTo(hw * 0.25, hh * 0.2);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+        } else if (shapeTier === 2) {
+          // Hammerhead
+          ctx.beginPath();
+          ctx.moveTo(0, hh); ctx.lineTo(-hw * 0.3, hh * 0.3);
+          ctx.lineTo(-hw, hh * 0.1); ctx.lineTo(-hw, -hh * 0.5);
+          ctx.lineTo(-hw * 0.4, -hh); ctx.lineTo(hw * 0.4, -hh);
+          ctx.lineTo(hw, -hh * 0.5); ctx.lineTo(hw, hh * 0.1);
+          ctx.lineTo(hw * 0.3, hh * 0.3);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+        } else if (shapeTier === 3) {
+          // X-wing
+          ctx.beginPath();
+          ctx.moveTo(0, hh); ctx.lineTo(-hw * 0.2, 0); ctx.lineTo(-hw, -hh);
+          ctx.lineTo(-hw * 0.4, -hh * 0.3); ctx.lineTo(0, -hh * 0.6);
+          ctx.lineTo(hw * 0.4, -hh * 0.3); ctx.lineTo(hw, -hh);
+          ctx.lineTo(hw * 0.2, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Cannons
+          ctx.beginPath();
+          ctx.moveTo(-hw, -hh); ctx.lineTo(-hw * 1.1, -hh * 1.3);
+          ctx.moveTo(hw, -hh); ctx.lineTo(hw * 1.1, -hh * 1.3); ctx.stroke();
+        } else {
+          // Scorpion — body + tail
+          ctx.beginPath();
+          ctx.ellipse(0, 0, hw * 0.7, hh * 0.6, 0, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+          // Claws
+          ctx.beginPath();
+          ctx.moveTo(-hw * 0.5, hh * 0.3); ctx.lineTo(-hw, hh);
+          ctx.moveTo(hw * 0.5, hh * 0.3); ctx.lineTo(hw, hh); ctx.stroke();
+          // Tail
+          ctx.beginPath();
+          ctx.moveTo(0, -hh * 0.6); ctx.quadraticCurveTo(-hw * 0.5, -hh * 1.3, 0, -hh * 1.5);
+          ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, -hh * 1.5, 3, 0, Math.PI * 2); ctx.fill();
+        }
+        // Twin engines for all tiers
+        ctx.fillStyle = meta.color; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.ellipse(-hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2); ctx.fill();
+      } else {
+        // Core — evolves through tiers
+        if (shapeTier <= 1) {
+          // Classic capital ship
+          ctx.beginPath();
+          ctx.moveTo(0, hh); ctx.lineTo(-hw * 0.5, hh * 0.3);
+          ctx.lineTo(-hw, 0); ctx.lineTo(-hw * 0.5, -hh * 0.5);
+          ctx.lineTo(-hw * 0.3, -hh); ctx.lineTo(0, -hh * 0.7);
+          ctx.lineTo(hw * 0.3, -hh); ctx.lineTo(hw * 0.5, -hh * 0.5);
+          ctx.lineTo(hw, 0); ctx.lineTo(hw * 0.5, hh * 0.3);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+        } else if (shapeTier === 2) {
+          // Ring fortress
+          ctx.beginPath(); ctx.arc(0, 0, hw * 0.9, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, hw * 0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // Turrets
+          for (let i = 0; i < 4; i++) {
+            const a = (i * Math.PI / 2) + now * 0.001;
+            ctx.beginPath(); ctx.arc(Math.cos(a) * hw * 0.7, Math.sin(a) * hh * 0.7, 3, 0, Math.PI * 2); ctx.fill();
+          }
+        } else if (shapeTier === 3) {
+          // Star destroyer shape
+          ctx.beginPath();
+          ctx.moveTo(0, hh * 1.1); ctx.lineTo(-hw * 0.8, -hh * 0.2);
+          ctx.lineTo(-hw, -hh); ctx.lineTo(0, -hh * 0.5);
+          ctx.lineTo(hw, -hh); ctx.lineTo(hw * 0.8, -hh * 0.2);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Bridge
+          ctx.fillStyle = meta.color;
+          ctx.beginPath(); ctx.rect(-hw * 0.15, -hh * 0.7, hw * 0.3, hh * 0.3); ctx.fill();
+        } else {
+          // Eldritch eye
+          ctx.beginPath();
+          ctx.ellipse(0, 0, hw, hh * 0.5, 0, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+          // Pupil
+          ctx.fillStyle = meta.color; ctx.shadowBlur = 16;
+          ctx.globalAlpha = 0.8 + Math.sin(now * 0.006) * 0.2;
+          ctx.beginPath(); ctx.arc(0, 0, hw * 0.3, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+          // Tentacles
+          for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI / 3) + now * 0.0008;
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(a) * hw * 0.8, Math.sin(a) * hh * 0.4);
+            ctx.quadraticCurveTo(
+              Math.cos(a + 0.3) * hw * 1.5, Math.sin(a + 0.3) * hh,
+              Math.cos(a) * hw * 1.8, Math.sin(a) * hh * 0.8
+            );
+            ctx.stroke();
+          }
+        }
+        // Core glow
+        ctx.fillStyle = meta.color; ctx.shadowBlur = 16;
+        ctx.globalAlpha = 0.6 + Math.sin(now * 0.005) * 0.3;
+        ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // Engine glow for scouts
+      if (e.type === 'scout') {
+        ctx.fillStyle = meta.color; ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.ellipse(0, -hh * 0.5, 3, 4, 0, 0, Math.PI * 2); ctx.fill();
       }
 
       if (e.maxHp > 1) {
@@ -945,7 +1017,7 @@ const CyberGalaxyGame: React.FC = () => {
     });
     ctx.shadowBlur = 0;
 
-    // Enemy bullets
+    // Enemy bullets — varied colors
     s.enemyBullets.forEach(b => {
       ctx.fillStyle = '#ff3d7f';
       ctx.shadowColor = '#ff3d7f';
@@ -957,8 +1029,8 @@ const CyberGalaxyGame: React.FC = () => {
     ctx.shadowBlur = 0;
 
     // Power-ups
-    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', bomb: '#ff3d7f', rapidfire: '#00ff88', extralife: '#ff69b4', photonburst: '#aa66ff', rapidpulse: '#ffee00', missileswarm: '#ff6600', guardiandrone: '#00ddff' };
-    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', bomb: 'B', rapidfire: 'R', extralife: '♥', photonburst: 'P', rapidpulse: 'Z', missileswarm: 'M', guardiandrone: 'D' };
+    const puColors: Record<PowerUpType, string> = { overcharge: '#f59e0b', shield: '#00ccff', rapidfire: '#00ff88', extralife: '#ff69b4', photonburst: '#aa66ff', rapidpulse: '#ffee00', missileswarm: '#ff6600', guardiandrone: '#00ddff' };
+    const puLabels: Record<PowerUpType, string> = { overcharge: 'W', shield: 'S', rapidfire: 'R', extralife: '♥', photonburst: 'P', rapidpulse: 'Z', missileswarm: 'M', guardiandrone: 'D' };
     s.powerUps.forEach(pu => {
       ctx.fillStyle = puColors[pu.type];
       ctx.shadowColor = puColors[pu.type];
@@ -1270,7 +1342,6 @@ const CyberGalaxyGame: React.FC = () => {
       <div className="w-full flex flex-wrap justify-center gap-3 text-xs font-mono text-muted-foreground">
         <span><span className="text-amber-400">W</span> Overcharge</span>
         <span><span className="text-cyan-400">S</span> Shield</span>
-        <span><span className="text-pink-400">B</span> Bomb</span>
         <span><span className="text-green-400">R</span> Rapid Fire</span>
         <span><span className="text-pink-300">♥</span> Extra Life</span>
       </div>
