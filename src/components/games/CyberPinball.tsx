@@ -647,6 +647,48 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
+      // ── Boundary clamping — keep ball inside playfield ──
+      if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
+        const bx = g.currentBall.position.x;
+        const by = g.currentBall.position.y;
+        const margin = WALL + BALL_R + 2;
+        let clamped = false;
+        let cx = bx, cy = by;
+        if (bx < margin) { cx = margin; clamped = true; }
+        if (bx > TW - margin) { cx = TW - margin; clamped = true; }
+        if (by < margin) { cy = margin; clamped = true; }
+        // Don't clamp bottom — drain handles that
+        if (clamped) {
+          Body.setPosition(g.currentBall, { x: cx, y: cy });
+          // Bounce velocity away from wall
+          const vx = g.currentBall.velocity.x;
+          const vy = g.currentBall.velocity.y;
+          Body.setVelocity(g.currentBall, {
+            x: bx < margin ? Math.abs(vx) : bx > TW - margin ? -Math.abs(vx) : vx,
+            y: by < margin ? Math.abs(vy) : vy,
+          });
+          spawnParticles(cx, cy, 4, NEON.cyan, 3);
+        }
+      }
+      // Also clamp extra balls
+      for (const eb of g.extraBalls) {
+        if (fin(eb.position.x) && fin(eb.position.y)) {
+          const margin = WALL + BALL_R + 2;
+          let cx = eb.position.x, cy = eb.position.y;
+          let clamped = false;
+          if (cx < margin) { cx = margin; clamped = true; }
+          if (cx > TW - margin) { cx = TW - margin; clamped = true; }
+          if (cy < margin) { cy = margin; clamped = true; }
+          if (clamped) {
+            Body.setPosition(eb, { x: cx, y: cy });
+            Body.setVelocity(eb, {
+              x: eb.position.x < margin ? Math.abs(eb.velocity.x) : eb.position.x > TW - margin ? -Math.abs(eb.velocity.x) : eb.velocity.x,
+              y: eb.position.y < margin ? Math.abs(eb.velocity.y) : eb.velocity.y,
+            });
+          }
+        }
+      }
+
       // ── Minimum ball speed enforcement (Cyber Breaker style) ──
       if (g.currentBall && g.launched && fin(g.currentBall.velocity.x) && fin(g.currentBall.velocity.y)) {
         const vx = g.currentBall.velocity.x;
@@ -871,16 +913,38 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (g.lightFlash < 0.03) g.lightFlash = 0;
       }
 
-      // ── Table neon border ──
-      ctx.shadowColor = NEON.blue;
-      ctx.shadowBlur = 12;
-      ctx.strokeStyle = NEON.blue;
-      ctx.lineWidth = 2;
+      // ── Electric table border ──
+      const borderPulse = 0.6 + Math.sin(t * 3) * 0.3;
+      ctx.shadowColor = NEON.cyan;
+      ctx.shadowBlur = 14 + Math.sin(t * 5) * 6;
+      ctx.strokeStyle = `rgba(0, 255, 255, ${borderPulse * 0.8})`;
+      ctx.lineWidth = 2.5;
       ctx.strokeRect(3, 3, TW - 6, TH - 6);
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = `rgba(0, 128, 255, 0.15)`;
+      // Inner electric border
+      ctx.strokeStyle = `rgba(255, 0, 255, ${borderPulse * 0.25})`;
       ctx.lineWidth = 1;
-      ctx.strokeRect(7, 7, TW - 14, TH - 14);
+      ctx.strokeRect(5, 5, TW - 10, TH - 10);
+      // Corner sparks
+      const corners = [[6, 6], [TW - 6, 6], [6, TH - 6], [TW - 6, TH - 6]];
+      for (let ci = 0; ci < corners.length; ci++) {
+        const [cx, cy] = corners[ci];
+        const sparkA = 0.4 + Math.sin(t * 9 + ci * 1.5) * 0.4;
+        ctx.fillStyle = `rgba(0, 255, 255, ${sparkA})`;
+        ctx.shadowColor = NEON.cyan;
+        ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.arc(cx, cy, 2 + Math.sin(t * 7 + ci) * 1, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      // Travelling electric arc along top edge
+      const arcX = 6 + ((t * 80) % (TW - 12));
+      ctx.strokeStyle = `rgba(0, 255, 255, 0.5)`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(arcX, 3);
+      ctx.lineTo(arcX + Math.sin(t * 15) * 4, 3 + Math.sin(t * 12) * 3);
+      ctx.lineTo(arcX + 6, 3);
+      ctx.stroke();
 
       // ── Ball trail ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
@@ -1093,18 +1157,48 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
           ctx.globalAlpha = 1;
 
-        // ── Walls ──
+        // ── Walls (Electric) ──
         } else if (body.label === 'wall') {
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
           if (verts.length < 2) { ctx.restore(); continue; }
+          // Dark fill
           ctx.fillStyle = '#080c18';
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
-          ctx.strokeStyle = `rgba(0, 128, 255, ${0.12 + Math.sin(t * 1.5 + body.position.y * 0.02) * 0.06})`;
-          ctx.lineWidth = 1;
+          // Electric glow border
+          const elecPulse = 0.25 + Math.sin(t * 4 + body.position.y * 0.03) * 0.2;
+          ctx.shadowColor = NEON.cyan;
+          ctx.shadowBlur = 8 + Math.sin(t * 6 + body.position.x * 0.05) * 4;
+          ctx.strokeStyle = `rgba(0, 255, 255, ${elecPulse})`;
+          ctx.lineWidth = 1.5;
           ctx.stroke();
+          ctx.shadowBlur = 0;
+          // Secondary pink electric layer
+          ctx.strokeStyle = `rgba(255, 0, 255, ${elecPulse * 0.4})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+          // Lightning crackle segments along wall edges
+          const wallLen = Math.sqrt((verts[1].x - verts[0].x) ** 2 + (verts[1].y - verts[0].y) ** 2);
+          if (wallLen > 20) {
+            const segments = Math.floor(wallLen / 12);
+            ctx.strokeStyle = NEON.cyan;
+            ctx.lineWidth = 0.6;
+            ctx.globalAlpha = 0.3 + Math.sin(t * 8 + body.position.y * 0.1) * 0.2;
+            for (let s = 0; s < segments; s++) {
+              const prog = (s + 0.5) / segments;
+              const sx = verts[0].x + (verts[1].x - verts[0].x) * prog;
+              const sy = verts[0].y + (verts[1].y - verts[0].y) * prog;
+              const jx = (Math.sin(t * 12 + s * 3.7 + body.position.x) * 3);
+              const jy = (Math.cos(t * 10 + s * 2.3 + body.position.y) * 3);
+              ctx.beginPath();
+              ctx.moveTo(sx, sy);
+              ctx.lineTo(sx + jx, sy + jy);
+              ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+          }
 
         // ── Slingshots ──
         } else if (body.label === 'slingshot') {
