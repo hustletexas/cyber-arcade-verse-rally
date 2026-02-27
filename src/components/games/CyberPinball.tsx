@@ -24,7 +24,7 @@ const TW = 420;
 const TH = 820;
 const BALL_R = 6;
 // Ping-pong ball physics constants
-const BALL_OPTS = { label: 'ball', restitution: 0.95, friction: 0.001, frictionAir: 0.0002, density: 0.002 };
+const BALL_OPTS = { label: 'ball', restitution: 0.85, friction: 0.005, frictionAir: 0.0008, density: 0.003 };
 const WALL = 8;
 const BUMPER_R = 16;
 const FW = 64;
@@ -605,8 +605,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       Body.setStatic(g.currentBall, false);
       Body.setPosition(g.currentBall, { x: PLUNGER_X - 2, y: TH - 320 });
-      Body.setVelocity(g.currentBall, { x: -4, y: -18 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.003, y: -0.06 });
+      Body.setVelocity(g.currentBall, { x: -2, y: -7 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.001, y: -0.02 });
       g.launched = true;
       showMsg('LAUNCH!');
       g.shake.power = 4;
@@ -689,17 +689,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
-      // ── Minimum ball speed enforcement (Cyber Breaker style) ──
+      // ── Ball speed cap only (Cyber Breaker style: natural fall, cap max) ──
       if (g.currentBall && g.launched && fin(g.currentBall.velocity.x) && fin(g.currentBall.velocity.y)) {
         const vx = g.currentBall.velocity.x;
         const vy = g.currentBall.velocity.y;
         const speed = Math.sqrt(vx * vx + vy * vy);
-        const MIN_SPEED = 5;
-        const MAX_SPEED = 14;
-        if (speed < MIN_SPEED && speed > 0.1) {
-          const scale = MIN_SPEED / speed;
-          Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
-        } else if (speed > MAX_SPEED) {
+        const MAX_SPEED = 12;
+        if (speed > MAX_SPEED) {
           const scale = MAX_SPEED / speed;
           Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
         }
@@ -708,8 +704,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       for (const eb of g.extraBalls) {
         if (fin(eb.velocity.x) && fin(eb.velocity.y)) {
           const speed = Math.sqrt(eb.velocity.x ** 2 + eb.velocity.y ** 2);
-          if (speed < 4 && speed > 0.1) {
-            const scale = 4 / speed;
+          if (speed > 12) {
+            const scale = 12 / speed;
             Body.setVelocity(eb, { x: eb.velocity.x * scale, y: eb.velocity.y * scale });
           }
         }
