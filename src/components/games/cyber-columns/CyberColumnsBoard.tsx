@@ -4,11 +4,12 @@ import { BoardCell, FallingPiece, COLS, ROWS, GemType } from '@/types/cyber-colu
 interface CyberColumnsBoardProps {
   board: BoardCell[][];
   currentPiece: FallingPiece | null;
+  onTapBoard?: () => void;
 }
 
 const gemClass = (type: GemType) => `cyber-gem cyber-gem--${type}`;
 
-export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, currentPiece }) => {
+export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, currentPiece, onTapBoard }) => {
   // Calculate ghost position
   let ghostRow: number | null = null;
   if (currentPiece) {
@@ -25,7 +26,7 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
   const cellSize = 'w-14 h-14 sm:w-16 sm:h-16';
 
   return (
-    <div className="cyber-columns-board p-2">
+    <div className="cyber-columns-board p-2" onClick={onTapBoard}>
       <div
         className="grid gap-[2px] relative z-10"
         style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gridTemplateRows: `repeat(${ROWS}, 1fr)` }}
