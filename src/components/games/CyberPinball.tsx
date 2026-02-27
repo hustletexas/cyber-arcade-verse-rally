@@ -1148,16 +1148,34 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       </div>
 
       {/* Mobile controls */}
-      <div className="w-full max-w-[440px] grid grid-cols-3 gap-2 md:hidden">
-        <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-4 rounded-xl active:bg-neon-cyan/40 select-none text-sm"
-          onTouchStart={() => flipperTouch('left', true)} onTouchEnd={() => flipperTouch('left', false)}
-          onMouseDown={() => flipperTouch('left', true)} onMouseUp={() => flipperTouch('left', false)}>◀ LEFT</button>
-        <button className="bg-neon-pink/20 border border-neon-pink/40 text-neon-pink font-bold py-4 rounded-xl active:bg-neon-pink/40 select-none text-sm"
-          onTouchStart={() => plungerTouch(true)} onTouchEnd={() => plungerTouch(false)}
-          onMouseDown={() => plungerTouch(true)} onMouseUp={() => plungerTouch(false)}>🎯 LAUNCH</button>
-        <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-4 rounded-xl active:bg-neon-cyan/40 select-none text-sm"
-          onTouchStart={() => flipperTouch('right', true)} onTouchEnd={() => flipperTouch('right', false)}
-          onMouseDown={() => flipperTouch('right', true)} onMouseUp={() => flipperTouch('right', false)}>RIGHT ▶</button>
+      <div className="w-full max-w-[440px] grid grid-cols-3 gap-2 md:hidden touch-none select-none">
+        <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-5 rounded-xl active:bg-neon-cyan/40 select-none text-sm touch-none"
+          onTouchStart={(e) => { e.preventDefault(); flipperTouch('left', true); }}
+          onTouchEnd={(e) => { e.preventDefault(); flipperTouch('left', false); }}
+          onTouchCancel={(e) => { e.preventDefault(); flipperTouch('left', false); }}
+          onMouseDown={() => flipperTouch('left', true)}
+          onMouseUp={() => flipperTouch('left', false)}
+          onMouseLeave={() => flipperTouch('left', false)}>◀ LEFT</button>
+        <button className={`border font-bold py-5 rounded-xl select-none text-sm touch-none transition-colors ${
+          G.current.plungerCharging
+            ? 'bg-neon-pink/40 border-neon-pink/70 text-neon-pink scale-95'
+            : 'bg-neon-pink/20 border-neon-pink/40 text-neon-pink'
+        }`}
+          onTouchStart={(e) => { e.preventDefault(); plungerTouch(true); }}
+          onTouchEnd={(e) => { e.preventDefault(); plungerTouch(false); }}
+          onTouchCancel={(e) => { e.preventDefault(); plungerTouch(false); }}
+          onMouseDown={() => plungerTouch(true)}
+          onMouseUp={() => plungerTouch(false)}
+          onMouseLeave={() => plungerTouch(false)}>
+          {G.current.launched ? '🎯 LAUNCH' : '⬇ HOLD'}
+        </button>
+        <button className="bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan font-bold py-5 rounded-xl active:bg-neon-cyan/40 select-none text-sm touch-none"
+          onTouchStart={(e) => { e.preventDefault(); flipperTouch('right', true); }}
+          onTouchEnd={(e) => { e.preventDefault(); flipperTouch('right', false); }}
+          onTouchCancel={(e) => { e.preventDefault(); flipperTouch('right', false); }}
+          onMouseDown={() => flipperTouch('right', true)}
+          onMouseUp={() => flipperTouch('right', false)}
+          onMouseLeave={() => flipperTouch('right', false)}>RIGHT ▶</button>
       </div>
 
       {/* Desktop controls hint */}
