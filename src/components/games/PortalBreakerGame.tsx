@@ -939,7 +939,6 @@ const PortalBreakerGame: React.FC = () => {
       let lightness = 40 + hpRatio * 25;
       let borderExtra = '';
 
-      // Special brick visuals
       if (b.special === 'explosive') { hue = 20; lightness = 55; borderExtra = '#ff4400'; }
       else if (b.special === 'charge') { hue = 160; lightness = 60; borderExtra = '#00ffcc'; }
       else if (b.special === 'freeze') { hue = 200; lightness = 70; borderExtra = '#88ddff'; }
@@ -947,15 +946,22 @@ const PortalBreakerGame: React.FC = () => {
 
       const isTargeted = now < s.tactical.activeTargetLock && b.hp === 1;
 
-      // ── Cybernetic brick body ──
+      // ── Dark cyber base with neon edges ──
       const baseGrad = ctx.createLinearGradient(bx, b.y, bx, b.y + b.h);
-      baseGrad.addColorStop(0, `hsl(${hue}, 90%, ${lightness + 8}%)`);
-      baseGrad.addColorStop(0.5, `hsl(${hue}, 90%, ${lightness}%)`);
-      baseGrad.addColorStop(1, `hsl(${hue}, 85%, ${lightness - 5}%)`);
+      baseGrad.addColorStop(0, `hsl(${hue}, 50%, ${lightness * 0.25 + 4}%)`);
+      baseGrad.addColorStop(0.5, `hsl(${hue}, 40%, ${lightness * 0.18}%)`);
+      baseGrad.addColorStop(1, `hsl(${hue}, 50%, ${lightness * 0.12}%)`);
 
       ctx.fillStyle = baseGrad;
-      ctx.strokeStyle = borderExtra || `hsla(${hue}, 100%, 65%, ${0.6 + hpRatio * 0.4})`;
+      const neonAlpha = 0.7 + hpRatio * 0.3;
+      const neonColor = borderExtra || `hsla(${hue}, 100%, 60%, ${neonAlpha})`;
+      ctx.strokeStyle = neonColor;
       ctx.lineWidth = isTargeted ? 2.5 : 1.5;
+
+      // Outer neon glow
+      ctx.shadowColor = borderExtra || `hsl(${hue}, 100%, 55%)`;
+      ctx.shadowBlur = 6 + hpRatio * 6;
+
       ctx.beginPath();
       const cr = 3;
       ctx.moveTo(bx + cr, b.y);
@@ -966,86 +972,107 @@ const PortalBreakerGame: React.FC = () => {
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+      ctx.shadowBlur = 0;
 
-      // ── Inner circuit pattern based on b.pattern ──
+      // ── Inner neon circuit pattern ──
       ctx.save();
       ctx.beginPath();
       ctx.rect(bx + 1, b.y + 1, b.w - 2, b.h - 2);
       ctx.clip();
 
-      ctx.strokeStyle = `hsla(${hue}, 100%, 75%, ${0.25 + hpRatio * 0.2})`;
-      ctx.lineWidth = 0.7;
+      const traceAlpha = 0.4 + hpRatio * 0.35;
+      ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${traceAlpha})`;
+      ctx.lineWidth = 0.8;
+      ctx.shadowColor = `hsl(${hue}, 100%, 65%)`;
+      ctx.shadowBlur = 3;
       const s2 = b.seed;
 
       if (b.pattern === 0) {
-        // Horizontal circuit lines with nodes
-        const cy1 = b.y + b.h * 0.35;
-        const cy2 = b.y + b.h * 0.7;
-        ctx.beginPath(); ctx.moveTo(bx + 3, cy1); ctx.lineTo(bx + b.w * 0.4, cy1);
-        ctx.lineTo(bx + b.w * 0.45, cy2); ctx.lineTo(bx + b.w - 3, cy2); ctx.stroke();
-        // Nodes
-        ctx.fillStyle = `hsla(${hue}, 100%, 80%, 0.6)`;
-        ctx.beginPath(); ctx.arc(bx + b.w * 0.4, cy1, 1.5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx + b.w * 0.75, cy2, 1.5, 0, Math.PI * 2); ctx.fill();
+        // H-bridge circuit
+        const cy1 = b.y + b.h * 0.33; const cy2 = b.y + b.h * 0.67;
+        ctx.beginPath(); ctx.moveTo(bx + 3, cy1); ctx.lineTo(bx + b.w * 0.35, cy1);
+        ctx.lineTo(bx + b.w * 0.35, cy2); ctx.lineTo(bx + b.w * 0.65, cy2);
+        ctx.lineTo(bx + b.w * 0.65, cy1); ctx.lineTo(bx + b.w - 3, cy1); ctx.stroke();
+        ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${traceAlpha + 0.2})`;
+        ctx.beginPath(); ctx.arc(bx + b.w * 0.35, cy1, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + b.w * 0.65, cy2, 1.8, 0, Math.PI * 2); ctx.fill();
       } else if (b.pattern === 1) {
-        // Grid chip pattern
+        // Parallel data lanes
         for (let i = 0; i < 3; i++) {
-          const px = bx + 4 + i * (b.w - 8) / 2.5;
-          ctx.strokeRect(px, b.y + 4, 6, b.h - 8);
+          const ly = b.y + b.h * (0.25 + i * 0.25);
+          ctx.beginPath(); ctx.moveTo(bx + 3, ly); ctx.lineTo(bx + b.w - 3, ly); ctx.stroke();
+          // Animated pulse dot
+          const dotX = bx + 3 + ((now * 0.03 + s2 + i * 20) % (b.w - 6));
+          ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.6 + Math.sin(now * 0.01 + i) * 0.3})`;
+          ctx.beginPath(); ctx.arc(dotX, ly, 1.5, 0, Math.PI * 2); ctx.fill();
         }
-        ctx.beginPath(); ctx.moveTo(bx + 3, b.y + b.h / 2); ctx.lineTo(bx + b.w - 3, b.y + b.h / 2); ctx.stroke();
       } else if (b.pattern === 2) {
-        // Diagonal traces
-        ctx.beginPath(); ctx.moveTo(bx + 2, b.y + 2); ctx.lineTo(bx + b.w - 2, b.y + b.h - 2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(bx + b.w * 0.3, b.y + 2); ctx.lineTo(bx + b.w - 2, b.y + b.h * 0.5); ctx.stroke();
-        ctx.fillStyle = `hsla(${hue}, 100%, 80%, 0.5)`;
-        ctx.beginPath(); ctx.arc(bx + b.w / 2, b.y + b.h / 2, 2, 0, Math.PI * 2); ctx.fill();
+        // Cross-hatch grid
+        for (let i = 0; i < 3; i++) {
+          const gx = bx + b.w * (0.25 + i * 0.25);
+          ctx.beginPath(); ctx.moveTo(gx, b.y + 2); ctx.lineTo(gx, b.y + b.h - 2); ctx.stroke();
+        }
+        for (let i = 0; i < 2; i++) {
+          const gy = b.y + b.h * (0.33 + i * 0.33);
+          ctx.beginPath(); ctx.moveTo(bx + 2, gy); ctx.lineTo(bx + b.w - 2, gy); ctx.stroke();
+        }
+        // Center glow node
+        ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.5 + Math.sin(now * 0.005 + s2) * 0.3})`;
+        ctx.beginPath(); ctx.arc(bx + b.w / 2, b.y + b.h / 2, 2.2, 0, Math.PI * 2); ctx.fill();
       } else if (b.pattern === 3) {
-        // Center chip with pins
-        const chipW = b.w * 0.3; const chipH = b.h * 0.5;
+        // Microchip with pins
+        const chipW = b.w * 0.28; const chipH = b.h * 0.45;
         const chipX = bx + (b.w - chipW) / 2; const chipY = b.y + (b.h - chipH) / 2;
         ctx.strokeRect(chipX, chipY, chipW, chipH);
+        ctx.fillStyle = `hsla(${hue}, 100%, 75%, 0.15)`;
+        ctx.fillRect(chipX, chipY, chipW, chipH);
         for (let i = 0; i < 3; i++) {
           const py = chipY + chipH * (i + 0.5) / 3;
           ctx.beginPath(); ctx.moveTo(bx + 2, py); ctx.lineTo(chipX, py); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(chipX + chipW, py); ctx.lineTo(bx + b.w - 2, py); ctx.stroke();
         }
       } else if (b.pattern === 4) {
-        // Hexagonal nodes
-        const cx1 = bx + b.w * 0.25; const cx2 = bx + b.w * 0.75;
-        const cy = b.y + b.h / 2;
-        ctx.beginPath(); ctx.moveTo(cx1, cy); ctx.lineTo(cx2, cy); ctx.stroke();
-        for (const cx of [cx1, cx2]) {
-          ctx.beginPath();
-          for (let a = 0; a < 6; a++) {
-            const ax = cx + Math.cos(a * Math.PI / 3) * 4;
-            const ay = cy + Math.sin(a * Math.PI / 3) * 4;
-            a === 0 ? ctx.moveTo(ax, ay) : ctx.lineTo(ax, ay);
-          }
-          ctx.closePath(); ctx.stroke();
-        }
+        // Scanner sweep line
+        const sweepX = bx + 3 + ((now * 0.04 + s2 * 10) % (b.w - 6));
+        ctx.strokeStyle = `hsla(${hue}, 100%, 80%, 0.6)`;
+        ctx.beginPath(); ctx.moveTo(sweepX, b.y + 2); ctx.lineTo(sweepX, b.y + b.h - 2); ctx.stroke();
+        // Corner brackets
+        const cb = 5;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(bx + 3, b.y + cb + 2); ctx.lineTo(bx + 3, b.y + 2); ctx.lineTo(bx + cb + 3, b.y + 2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bx + b.w - cb - 3, b.y + 2); ctx.lineTo(bx + b.w - 3, b.y + 2); ctx.lineTo(bx + b.w - 3, b.y + cb + 2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bx + 3, b.y + b.h - cb - 2); ctx.lineTo(bx + 3, b.y + b.h - 2); ctx.lineTo(bx + cb + 3, b.y + b.h - 2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bx + b.w - cb - 3, b.y + b.h - 2); ctx.lineTo(bx + b.w - 3, b.y + b.h - 2); ctx.lineTo(bx + b.w - 3, b.y + b.h - cb - 2); ctx.stroke();
       } else {
-        // Data stream dots
-        for (let i = 0; i < 5; i++) {
-          const dx = bx + 4 + (i / 4) * (b.w - 8);
-          const dy = b.y + b.h * (0.3 + Math.sin(s2 + i * 1.7) * 0.2);
-          ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${0.3 + (i % 2) * 0.3})`;
-          ctx.beginPath(); ctx.arc(dx, dy, 1.2, 0, Math.PI * 2); ctx.fill();
+        // Binary stream dots
+        for (let i = 0; i < 6; i++) {
+          const dx = bx + 4 + (i / 5) * (b.w - 8);
+          const dy = b.y + b.h * (0.3 + Math.sin(s2 + i * 1.4) * 0.2);
+          const blink = Math.sin(now * 0.008 + s2 + i * 2.1) > 0;
+          ctx.fillStyle = `hsla(${hue}, 100%, ${blink ? 85 : 50}%, ${blink ? 0.8 : 0.25})`;
+          ctx.beginPath(); ctx.arc(dx, dy, 1.3, 0, Math.PI * 2); ctx.fill();
         }
-        ctx.beginPath(); ctx.moveTo(bx + 4, b.y + b.h * 0.5);
-        ctx.lineTo(bx + b.w - 4, b.y + b.h * 0.5); ctx.stroke();
       }
+      ctx.shadowBlur = 0;
       ctx.restore();
 
-      // ── Glowing edge highlight (top) ──
-      ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.15 + hpRatio * 0.15})`;
-      ctx.fillRect(bx + 3, b.y + 1, b.w - 6, 2);
+      // ── Neon edge highlights ──
+      // Top bright edge
+      ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${0.25 + hpRatio * 0.2})`;
+      ctx.fillRect(bx + 4, b.y + 1, b.w - 8, 1.5);
+      // Bottom subtle edge
+      ctx.fillStyle = `hsla(${hue}, 100%, 40%, 0.3)`;
+      ctx.fillRect(bx + 4, b.y + b.h - 2, b.w - 8, 1);
 
-      // ── Pulse glow for high-HP bricks ──
+      // ── Neon pulse glow for high-HP bricks ──
       if (b.maxHp >= 2) {
-        const pulse = 0.12 + Math.sin(now * 0.004 + b.seed) * 0.08;
+        const pulse = 0.15 + Math.sin(now * 0.005 + b.seed) * 0.1;
         ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
-        ctx.shadowBlur = 8 * pulse * 10;
+        ctx.shadowBlur = 10 + pulse * 20;
         ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${pulse})`;
         ctx.lineWidth = 1;
         ctx.strokeRect(bx, b.y, b.w, b.h);
@@ -1063,9 +1090,12 @@ const PortalBreakerGame: React.FC = () => {
       // Special brick indicator (simple dot)
       if (b.special !== 'normal') {
         ctx.fillStyle = borderExtra || '#fff';
+        ctx.shadowColor = borderExtra || '#fff';
+        ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.arc(bx + b.w / 2, b.y + b.h / 2, 2.5, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
       }
     });
 
