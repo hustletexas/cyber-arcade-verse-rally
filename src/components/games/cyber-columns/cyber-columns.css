@@ -442,10 +442,11 @@
 }
 
 @keyframes cc-gem-explode {
-  0% { transform: scale(1); opacity: 1; filter: brightness(1); }
-  15% { transform: scale(1.7); filter: brightness(3.5); }
-  35% { transform: scale(1.4); opacity: 0.85; filter: brightness(2.5); }
-  100% { transform: scale(0); opacity: 0; filter: brightness(6); }
+  0% { transform: scale(1); opacity: 1; filter: brightness(1) saturate(1); }
+  10% { transform: scale(1.8); filter: brightness(4) saturate(2); }
+  25% { transform: scale(1.5); opacity: 0.9; filter: brightness(3) saturate(1.5); }
+  50% { transform: scale(1.2); opacity: 0.6; filter: brightness(2) saturate(1.2); }
+  100% { transform: scale(0); opacity: 0; filter: brightness(8) saturate(0.5); }
 }
 
 /* Match flash overlay */
@@ -463,7 +464,65 @@
   100% { opacity: 0; transform: scale(1.4); }
 }
 
-/* ===== Electric Arc Animation on Match ===== */
+/* ===== Color burst overlay per gem type ===== */
+.cc-burst-color {
+  position: absolute;
+  inset: -120%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 15;
+  animation: cc-color-burst 0.55s ease-out forwards;
+}
+
+.cc-burst-color--energy {
+  background: radial-gradient(circle,
+    hsl(199 100% 90% / 0.8) 0%,
+    hsl(210 100% 70% / 0.5) 25%,
+    hsl(199 100% 50% / 0.3) 45%,
+    transparent 65%);
+  box-shadow: 0 0 30px 10px hsl(199 100% 60% / 0.6);
+}
+.cc-burst-color--data {
+  background: radial-gradient(circle,
+    hsl(330 100% 92% / 0.8) 0%,
+    hsl(340 100% 72% / 0.5) 25%,
+    hsl(330 100% 50% / 0.3) 45%,
+    transparent 65%);
+  box-shadow: 0 0 30px 10px hsl(330 100% 60% / 0.6);
+}
+.cc-burst-color--quantum {
+  background: radial-gradient(circle,
+    hsl(270 85% 90% / 0.8) 0%,
+    hsl(280 80% 68% / 0.5) 25%,
+    hsl(270 80% 48% / 0.3) 45%,
+    transparent 65%);
+  box-shadow: 0 0 30px 10px hsl(270 80% 60% / 0.6);
+}
+.cc-burst-color--circuit {
+  background: radial-gradient(circle,
+    hsl(180 95% 90% / 0.8) 0%,
+    hsl(185 90% 68% / 0.5) 25%,
+    hsl(180 90% 48% / 0.3) 45%,
+    transparent 65%);
+  box-shadow: 0 0 30px 10px hsl(180 90% 55% / 0.6);
+}
+.cc-burst-color--bonus {
+  background: radial-gradient(circle,
+    hsl(45 100% 95% / 0.9) 0%,
+    hsl(40 100% 72% / 0.6) 25%,
+    hsl(45 100% 50% / 0.3) 45%,
+    transparent 60%);
+  box-shadow: 0 0 40px 15px hsl(45 100% 55% / 0.7);
+}
+
+@keyframes cc-color-burst {
+  0% { transform: scale(0.1); opacity: 1; }
+  30% { transform: scale(1.5); opacity: 0.9; }
+  60% { transform: scale(2.5); opacity: 0.5; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+/* ===== Electric Arc Animation — Cyber Lightning ===== */
 .cc-electric-arc {
   position: absolute;
   pointer-events: none;
@@ -471,94 +530,173 @@
   border-radius: 50%;
 }
 
+/* Ring 1 — outer electric pulse (cyan) */
 .cc-electric-arc--1 {
-  top: -40%;
-  left: -40%;
-  width: 180%;
-  height: 180%;
-  background: transparent;
-  border: 2px solid hsl(199 100% 70% / 0);
-  animation: cc-arc-pulse-1 0.5s ease-out forwards;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  border: 2.5px solid hsl(199 100% 70% / 0);
+  animation: cc-arc-pulse-1 0.6s ease-out forwards;
   box-shadow:
-    0 0 8px 2px hsl(199 100% 70% / 0.6),
-    inset 0 0 8px 2px hsl(199 100% 70% / 0.3);
+    0 0 12px 3px hsl(199 100% 75% / 0.7),
+    0 0 25px 5px hsl(199 100% 60% / 0.3),
+    inset 0 0 10px 2px hsl(199 100% 70% / 0.4);
 }
 
+/* Ring 2 — inner electric pulse (pink/purple, rotated) */
 .cc-electric-arc--2 {
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-  border: 1.5px solid hsl(270 80% 70% / 0);
-  animation: cc-arc-pulse-2 0.45s 0.05s ease-out forwards;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  border: 2px solid hsl(330 100% 70% / 0);
+  animation: cc-arc-pulse-2 0.55s 0.03s ease-out forwards;
   box-shadow:
-    0 0 6px 1px hsl(270 80% 70% / 0.5),
-    inset 0 0 6px 1px hsl(270 80% 70% / 0.2);
+    0 0 10px 2px hsl(330 100% 70% / 0.6),
+    0 0 20px 4px hsl(270 80% 60% / 0.3),
+    inset 0 0 8px 2px hsl(330 100% 70% / 0.3);
 }
 
+/* Ring 3 — spinning lightning wheel (multi-color) */
 .cc-electric-arc--3 {
-  top: 10%;
-  left: 10%;
-  width: 80%;
-  height: 80%;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
   background:
     conic-gradient(
       from 0deg,
       transparent 0deg,
-      hsl(199 100% 80% / 0.8) 15deg,
-      transparent 30deg,
-      transparent 80deg,
-      hsl(330 100% 75% / 0.7) 95deg,
-      transparent 110deg,
-      transparent 170deg,
-      hsl(270 80% 80% / 0.8) 185deg,
-      transparent 200deg,
-      transparent 250deg,
-      hsl(199 100% 80% / 0.7) 265deg,
-      transparent 280deg,
-      transparent 340deg,
-      hsl(330 100% 75% / 0.6) 355deg,
+      hsl(199 100% 85% / 0.9) 8deg,
+      hsl(270 80% 80% / 0.7) 16deg,
+      transparent 24deg,
+      transparent 60deg,
+      hsl(330 100% 80% / 0.9) 68deg,
+      hsl(45 100% 75% / 0.7) 76deg,
+      transparent 84deg,
+      transparent 120deg,
+      hsl(180 90% 80% / 0.9) 128deg,
+      hsl(199 100% 85% / 0.7) 136deg,
+      transparent 144deg,
+      transparent 180deg,
+      hsl(270 80% 85% / 0.9) 188deg,
+      hsl(330 100% 80% / 0.7) 196deg,
+      transparent 204deg,
+      transparent 240deg,
+      hsl(45 100% 80% / 0.9) 248deg,
+      hsl(180 90% 75% / 0.7) 256deg,
+      transparent 264deg,
+      transparent 300deg,
+      hsl(199 100% 85% / 0.9) 308deg,
+      hsl(330 100% 80% / 0.7) 316deg,
+      transparent 324deg,
       transparent 360deg
     );
-  animation: cc-arc-spin 0.4s linear forwards;
+  animation: cc-arc-spin 0.5s linear forwards;
   filter: blur(0.5px);
 }
 
+/* Ring 4 — outer glow flash (multi-color) */
 .cc-electric-arc--4 {
-  top: -60%;
-  left: -60%;
-  width: 220%;
-  height: 220%;
+  top: -70%;
+  left: -70%;
+  width: 240%;
+  height: 240%;
   background: transparent;
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
   box-shadow:
-    0 0 15px 4px hsl(199 100% 70% / 0.4),
-    0 0 30px 8px hsl(330 100% 65% / 0.2);
-  animation: cc-arc-flash 0.35s ease-out forwards;
+    0 0 20px 6px hsl(199 100% 70% / 0.5),
+    0 0 35px 10px hsl(330 100% 65% / 0.3),
+    0 0 50px 14px hsl(270 80% 60% / 0.15);
+  animation: cc-arc-flash 0.45s ease-out forwards;
+}
+
+/* Ring 5 — zigzag lightning bolts (SVG-like via border trick) */
+.cc-electric-arc--5 {
+  top: -40%;
+  left: -40%;
+  width: 180%;
+  height: 180%;
+  border: none;
+  background:
+    conic-gradient(
+      from 30deg,
+      transparent 0deg,
+      hsl(199 100% 90% / 1) 2deg, transparent 4deg,
+      transparent 28deg, hsl(330 100% 85% / 1) 30deg, transparent 32deg,
+      transparent 58deg, hsl(270 80% 90% / 1) 60deg, transparent 62deg,
+      transparent 88deg, hsl(45 100% 85% / 1) 90deg, transparent 92deg,
+      transparent 118deg, hsl(180 90% 90% / 1) 120deg, transparent 122deg,
+      transparent 148deg, hsl(199 100% 85% / 1) 150deg, transparent 152deg,
+      transparent 178deg, hsl(330 100% 90% / 1) 180deg, transparent 182deg,
+      transparent 208deg, hsl(270 80% 85% / 1) 210deg, transparent 212deg,
+      transparent 238deg, hsl(45 100% 90% / 1) 240deg, transparent 242deg,
+      transparent 268deg, hsl(180 90% 85% / 1) 270deg, transparent 272deg,
+      transparent 298deg, hsl(199 100% 90% / 1) 300deg, transparent 302deg,
+      transparent 328deg, hsl(330 100% 85% / 1) 330deg, transparent 332deg,
+      transparent 360deg
+    );
+  animation: cc-arc-lightning 0.4s ease-out forwards;
+  filter: blur(0.3px);
+}
+
+/* Ring 6 — pulsing energy wave (alternating colors) */
+.cc-electric-arc--6 {
+  top: -90%;
+  left: -90%;
+  width: 280%;
+  height: 280%;
+  border: 1px solid transparent;
+  background: radial-gradient(circle,
+    transparent 40%,
+    hsl(199 100% 80% / 0.15) 50%,
+    hsl(330 100% 75% / 0.1) 55%,
+    hsl(270 80% 70% / 0.08) 60%,
+    transparent 70%);
+  animation: cc-arc-wave 0.7s ease-out forwards;
 }
 
 @keyframes cc-arc-pulse-1 {
-  0% { transform: scale(0.3); opacity: 1; border-color: hsl(199 100% 70% / 0.9); }
-  50% { transform: scale(1); opacity: 0.8; border-color: hsl(199 100% 70% / 0.6); }
-  100% { transform: scale(1.5); opacity: 0; border-color: hsl(199 100% 70% / 0); }
+  0% { transform: scale(0.2); opacity: 1; border-color: hsl(199 100% 80% / 1); }
+  30% { transform: scale(0.8); opacity: 0.9; border-color: hsl(199 100% 75% / 0.8); }
+  60% { transform: scale(1.3); opacity: 0.6; border-color: hsl(270 80% 70% / 0.5); }
+  100% { transform: scale(2); opacity: 0; border-color: hsl(330 100% 70% / 0); }
 }
 
 @keyframes cc-arc-pulse-2 {
-  0% { transform: scale(0.5) rotate(45deg); opacity: 1; border-color: hsl(270 80% 70% / 0.9); }
-  60% { transform: scale(1.2) rotate(90deg); opacity: 0.7; border-color: hsl(330 100% 70% / 0.5); }
-  100% { transform: scale(1.8) rotate(135deg); opacity: 0; border-color: hsl(330 100% 70% / 0); }
+  0% { transform: scale(0.3) rotate(0deg); opacity: 1; border-color: hsl(330 100% 80% / 1); }
+  40% { transform: scale(1) rotate(60deg); opacity: 0.8; border-color: hsl(270 80% 75% / 0.7); }
+  70% { transform: scale(1.5) rotate(100deg); opacity: 0.5; border-color: hsl(199 100% 70% / 0.4); }
+  100% { transform: scale(2.2) rotate(150deg); opacity: 0; border-color: hsl(199 100% 70% / 0); }
 }
 
 @keyframes cc-arc-spin {
-  0% { transform: scale(0.5) rotate(0deg); opacity: 1; }
-  100% { transform: scale(2) rotate(180deg); opacity: 0; }
+  0% { transform: scale(0.3) rotate(0deg); opacity: 1; filter: brightness(2); }
+  50% { transform: scale(1.5) rotate(120deg); opacity: 0.8; filter: brightness(1.5); }
+  100% { transform: scale(2.5) rotate(240deg); opacity: 0; filter: brightness(1); }
 }
 
 @keyframes cc-arc-flash {
-  0% { transform: scale(0.2); opacity: 0; }
-  20% { opacity: 1; }
-  50% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(1.5); opacity: 0; }
+  0% { transform: scale(0.15); opacity: 0; }
+  15% { opacity: 1; filter: brightness(2.5); }
+  40% { transform: scale(0.8); opacity: 0.8; filter: brightness(2); }
+  70% { transform: scale(1.2); opacity: 0.4; filter: brightness(1.5); }
+  100% { transform: scale(1.8); opacity: 0; filter: brightness(1); }
+}
+
+@keyframes cc-arc-lightning {
+  0% { transform: scale(0.2) rotate(0deg); opacity: 1; filter: brightness(3); }
+  30% { transform: scale(1.2) rotate(15deg); opacity: 0.9; filter: brightness(2); }
+  60% { transform: scale(1.8) rotate(30deg); opacity: 0.5; filter: brightness(1.5); }
+  100% { transform: scale(2.5) rotate(45deg); opacity: 0; filter: brightness(1); }
+}
+
+@keyframes cc-arc-wave {
+  0% { transform: scale(0.3); opacity: 0; }
+  20% { opacity: 0.8; }
+  50% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.8); opacity: 0; }
 }
 
 

@@ -63,6 +63,9 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
                         <div className="cc-electric-arc cc-electric-arc--2" />
                         <div className="cc-electric-arc cc-electric-arc--3" />
                         <div className="cc-electric-arc cc-electric-arc--4" />
+                        <div className="cc-electric-arc cc-electric-arc--5" />
+                        <div className="cc-electric-arc cc-electric-arc--6" />
+                        <div className={`cc-burst-color cc-burst-color--${cell.type}`} />
                       </>
                     )}
                   </div>
