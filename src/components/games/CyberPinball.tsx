@@ -1236,6 +1236,23 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     }
   }, [releasePlunger]);
 
+  useEffect(() => {
+    if (!isCharging) return;
+
+    const forceRelease = () => plungerTouch(false);
+    window.addEventListener('pointerup', forceRelease, { passive: true });
+    window.addEventListener('mouseup', forceRelease, { passive: true });
+    window.addEventListener('touchend', forceRelease, { passive: true });
+    window.addEventListener('blur', forceRelease);
+
+    return () => {
+      window.removeEventListener('pointerup', forceRelease);
+      window.removeEventListener('mouseup', forceRelease);
+      window.removeEventListener('touchend', forceRelease);
+      window.removeEventListener('blur', forceRelease);
+    };
+  }, [isCharging, plungerTouch]);
+
   return (
     <div className="flex flex-col items-center gap-3">
       {/* Score HUD */}
@@ -1318,7 +1335,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           className="relative overflow-hidden border border-neon-pink/40 rounded-xl touch-none select-none"
           onPointerDown={(e) => {
             e.preventDefault();
-            e.currentTarget.setPointerCapture(e.pointerId);
+            if (typeof e.currentTarget.setPointerCapture === 'function') {
+              try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+            }
             plungerTouch(true);
           }}
           onPointerUp={(e) => {
@@ -1330,6 +1349,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             plungerTouch(false);
           }}
           onLostPointerCapture={() => plungerTouch(false)}
+          onTouchStart={(e) => { e.preventDefault(); plungerTouch(true); }}
+          onTouchEnd={(e) => { e.preventDefault(); plungerTouch(false); }}
+          onTouchCancel={(e) => { e.preventDefault(); plungerTouch(false); }}
+          onMouseDown={() => plungerTouch(true)}
+          onMouseUp={() => plungerTouch(false)}
+          onMouseLeave={() => plungerTouch(false)}
         >
           {/* Power meter fill */}
           <div
