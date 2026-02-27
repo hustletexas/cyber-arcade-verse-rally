@@ -478,6 +478,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (g.currentBall || g.gameOver) return;
       const ball = Bodies.circle(PLUNGER_X, TH - 40, BALL_R, {
         label: 'ball', restitution: 0.45, friction: 0.01, frictionAir: 0.001, density: 0.004,
+        isStatic: true, // Hold ball in place until launched
       });
       Composite.add(engine.world, ball);
       g.currentBall = ball;
@@ -486,6 +487,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.tiltWarnings = 0;
       setTilted(false);
       setTiltW(0);
+      setPlungerDisplay(0);
+      setIsCharging(false);
     };
 
     setTimeout(() => spawnBall(), 500);
@@ -1182,6 +1185,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // Space now launches at current slider power
       if ((e.key === ' ' || e.key === 'Enter') && g.currentBall && !g.launched) {
         const power = g.plungerPower;
+        Body.setStatic(g.currentBall, false);
         Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
         g.plungerCharging = false; g.plungerPower = 0; g.launched = true;
         setPlungerDisplay(0); setIsCharging(false);
@@ -1210,6 +1214,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const g = G.current;
     if (!g.currentBall || g.launched) return;
     const power = g.plungerPower;
+    // Make ball dynamic before launching
+    Body.setStatic(g.currentBall, false);
     Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: -(0.009 + power * 0.028) });
     g.plungerCharging = false;
     g.plungerPower = 0;
