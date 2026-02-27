@@ -74,11 +74,11 @@ const CyberPinballPage: React.FC = () => {
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between"><span className="text-muted-foreground">Bumper</span><span className="text-neon-cyan">100</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Slingshot</span><span className="text-neon-cyan">50</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Ramp Shot</span><span className="text-neon-cyan">250</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Ramp Shot</span><span className="text-neon-cyan">300</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">CCA Lane</span><span className="text-neon-cyan">500</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">CCA Complete</span><span className="text-neon-pink">5,000</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Skill Shot</span><span className="text-neon-pink">2,000</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Spinner</span><span className="text-neon-cyan">25</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Skyline Jackpot</span><span className="text-neon-pink">10,000</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">CYBER Target</span><span className="text-neon-cyan">400</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Skill Shot</span><span className="text-neon-pink">3,000</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Combo Max</span><span className="text-neon-pink">5x</span></div>
               </div>
             </CardContent>
@@ -87,13 +87,15 @@ const CyberPinballPage: React.FC = () => {
           {/* Table features */}
           <Card className="arcade-frame">
             <CardContent className="p-4 space-y-3">
-              <h3 className="text-sm font-bold text-foreground">TABLE FEATURES</h3>
+              <h3 className="text-sm font-bold text-foreground">TABLE ZONES</h3>
               <div className="space-y-1.5 text-xs text-muted-foreground">
-                <p>🏙 <strong className="text-foreground">Downtown Rush</strong> — Left ramp</p>
-                <p>🛣 <strong className="text-foreground">Neon Highway</strong> — Right ramp</p>
-                <p>⚡ <strong className="text-foreground">Galaxy Core Reactor</strong> — Center spinner</p>
-                <p>🔤 <strong className="text-foreground">C-C-A Lanes</strong> — Top rollovers</p>
-                <p>💥 <strong className="text-foreground">Pop Bumpers</strong> — Triangle formation</p>
+                <p>🌆 <strong className="text-foreground">Skyline Rollovers</strong> — C-C-A top lanes</p>
+                <p>🌀 <strong className="text-foreground">Orbit Lanes</strong> — Loop combos</p>
+                <p>⚡ <strong className="text-foreground">Reactor Core</strong> — Charge → Overdrive 2x</p>
+                <p>🏙 <strong className="text-foreground">Downtown Rush</strong> — 3 hits = bonus mode</p>
+                <p>🛣 <strong className="text-foreground">Neon Highway</strong> — Combo ladder</p>
+                <p>🎯 <strong className="text-foreground">CYBER Targets</strong> — Hit in sequence</p>
+                <p>🌩 <strong className="text-foreground">Multiball Lock</strong> — Lock 2 = Storm!</p>
               </div>
             </CardContent>
           </Card>
