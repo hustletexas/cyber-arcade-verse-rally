@@ -1243,7 +1243,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.textAlign = 'center';
         ctx.globalAlpha = pulseA;
         ctx.fillText('TAP', PLUNGER_X, TH - 55);
-        ctx.fillText('SPACE', PLUNGER_X, TH - 46);
+        ctx.fillText('HERE', PLUNGER_X, TH - 46);
         ctx.globalAlpha = 1;
       }
 
@@ -1379,13 +1379,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.globalAlpha = startPulse;
         ctx.shadowColor = NEON.green; ctx.shadowBlur = 20;
         ctx.fillStyle = NEON.green; ctx.font = 'bold 16px monospace';
-        ctx.fillText('PRESS START', TW / 2, TH / 2 + 30);
+        ctx.fillText('TAP TO LAUNCH', TW / 2, TH / 2 + 30);
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
         // Instructions
         ctx.fillStyle = `${NEON.cyan}88`; ctx.font = '8px monospace';
-        ctx.fillText('SPACE to Launch  |  ←→ Flippers', TW / 2, TH / 2 + 65);
-        ctx.fillText('Touch: Left/Right = Flippers  |  Swipe Up = Launch', TW / 2, TH / 2 + 80);
+        ctx.fillText('Click/Tap to Launch  |  ←→ Flippers', TW / 2, TH / 2 + 65);
+        ctx.fillText('Mobile: Tap Canvas = Launch  |  Buttons = Flippers', TW / 2, TH / 2 + 80);
         // High score
         if (g.highScore > 0) {
           ctx.fillStyle = NEON.yellow;
@@ -1434,7 +1434,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.globalAlpha = rPulse;
         ctx.shadowColor = NEON.green; ctx.shadowBlur = 15;
         ctx.fillStyle = NEON.green; ctx.font = 'bold 13px monospace';
-        ctx.fillText('PRESS SPACE TO PLAY AGAIN', TW / 2, TH / 2 + 105);
+        ctx.fillText('TAP TO PLAY AGAIN', TW / 2, TH / 2 + 105);
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
       }
@@ -1525,7 +1525,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           spawnBall();
           return;
         }
-        doLaunch();
       }
       if (e.key === 't' || e.key === 'T') {
         if (g.tilted || !g.currentBall) return;
@@ -1570,7 +1569,39 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
   const launchBall = useCallback(() => {
     const g = G.current;
-    if (g.launched || g.gameOver) return;
+    if (g.gameOver) {
+      // Restart game on tap
+      g.score = 0; g.balls = 3; g.gameOver = false; g.combo = 0; g.maxCombo = 0; g.totalHits = 0;
+      g.cyberLetters.fill(false); g.cyberComplete = 0;
+      g.demonTargetsL.fill(false); g.demonTargetsR.fill(false);
+      g.demonMode = false; g.reactorCharge = 0; g.overdriveActive = false;
+      g.lockedBalls = 0; g.multiballActive = false;
+      g.comboTargets.fill(false); g.comboTargetComplete = 0;
+      g.antiGravActive = false; g.antiGravMeter = 0;
+      g.trail = []; g.screenPulse = 0;
+      if (engineRef.current) engineRef.current.gravity.y = 1.3;
+      setScore(0); setBalls(3); setGameOver(false); setCombo(0);
+      setCyberLetters([false, false, false, false, false]);
+      setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
+      setAntiGrav(false); setAntiGravMeter(0);
+      // spawnBall will be called via the effect since we need the engine's spawnBall
+      // Instead, create a new ball directly
+      const engine = engineRef.current;
+      if (engine) {
+        // Remove any existing balls
+        const oldBalls = Composite.allBodies(engine.world).filter(b => b.label === 'ball');
+        oldBalls.forEach(b => { try { Composite.remove(engine.world, b); } catch {} });
+        g.currentBall = null;
+        g.launched = false;
+        const ball = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
+          label: 'ball', restitution: 0.5, friction: 0.01, frictionAir: 0.001, density: 0.004, isStatic: true,
+        });
+        Composite.add(engine.world, ball);
+        g.currentBall = ball;
+      }
+      return;
+    }
+    if (g.launched) return;
     if (!g.started) {
       g.started = true;
       setStarted(true);
@@ -1625,8 +1656,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         style={{ border: '2px solid rgba(0, 128, 255, 0.3)' }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onClick={launchBall}
+        role="button"
+        tabIndex={0}
       >
-        <canvas ref={canvasRef} className="block" style={{ width: TW, height: TH }} />
+        <canvas ref={canvasRef} className="block cursor-pointer" style={{ width: TW, height: TH }} />
       </div>
 
       {/* Mobile controls */}
@@ -1666,7 +1700,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       <div className="hidden md:flex gap-5 text-xs text-muted-foreground">
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">←</kbd>/<kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">Z</kbd> Left</span>
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">→</kbd>/<kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">M</kbd> Right</span>
-        <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">Space</kbd> Launch</span>
+        <span>🖱️ Click to Launch</span>
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">T</kbd> Nudge</span>
       </div>
     </div>
