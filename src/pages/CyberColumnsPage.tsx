@@ -11,7 +11,7 @@ import {
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 import { GalaxyBackground } from '@/components/games/GalaxyBackground';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pause, Play } from 'lucide-react';
+import { ArrowLeft, Pause, Play, RotateCcw, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import '@/components/games/cyber-columns/cyber-columns.css';
@@ -73,8 +73,11 @@ const CyberColumnsPage: React.FC = () => {
                   {state.isPaused ? <Play className="w-4 h-4 mr-1" /> : <Pause className="w-4 h-4 mr-1" />}
                   {state.isPaused ? 'Resume' : 'Pause'}
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => { resetGame(); startGame(); }} className="border-[hsl(270_60%_50%/0.4)] text-[hsl(270_80%_75%)] hover:bg-[hsl(270_60%_50%/0.1)]">
+                  <RotateCcw className="w-4 h-4 mr-1" /> Restart
+                </Button>
                 <Button variant="outline" size="sm" onClick={resetGame} className="border-muted-foreground/30 text-muted-foreground hover:bg-[hsl(0_0%_100%/0.05)]">
-                  <ArrowLeft className="w-4 h-4 mr-1" /> Quit
+                  <Trophy className="w-4 h-4 mr-1" /> Leaderboard
                 </Button>
               </div>
             </motion.div>
