@@ -23,7 +23,7 @@ export const CyberColumnsBoard: React.FC<CyberColumnsBoardProps> = ({ board, cur
   }
 
   // Big crystal orb cells
-  const cellSize = 'w-14 h-14 sm:w-16 sm:h-16';
+  const cellSize = 'w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16';
 
   return (
     <div className="cyber-columns-board p-2" onClick={onTapBoard}>
