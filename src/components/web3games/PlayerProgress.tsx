@@ -22,7 +22,7 @@ const gameEmoji: Record<string, string> = {
 
 const gameRoute: Record<string, string> = {
   'Cyber Match': '/cyber-match',
-  'Cyber Trivia': '/cyber-trivia',
+  'Cyber Trivia': '/#community-hub',
   'Cyber Sequence': '/cyber-sequence',
 };
 

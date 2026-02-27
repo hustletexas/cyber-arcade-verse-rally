@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Send, Users, Crown, Gamepad2, Brain, Zap, Loader2, RefreshCw, Trophy, Share2, Disc3, Award, Swords } from 'lucide-react';
+import { CyberTriviaChallenge } from '@/components/cyber-trivia';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
@@ -233,13 +234,20 @@ export const CommunityHub = () => {
         {/* Main Tabs */}
         <CardHeader className="pb-2">
           <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
+            <TabsList className="grid w-full grid-cols-3 bg-black/40 backdrop-blur-sm border border-neon-cyan/20">
               <TabsTrigger
                 value="feed"
                 className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green data-[state=active]:shadow-neon-glow font-mono text-xs sm:text-sm"
               >
                 <Share2 className="w-3 h-3 mr-1 sm:mr-2" />
                 Feed & Chat
+              </TabsTrigger>
+              <TabsTrigger
+                value="trivia"
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-neon-purple data-[state=active]:shadow-neon-glow font-mono text-xs sm:text-sm"
+              >
+                <Brain className="w-3 h-3 mr-1 sm:mr-2" />
+                Trivia
               </TabsTrigger>
               <TabsTrigger
                 value="leaderboard"
@@ -390,6 +398,13 @@ export const CommunityHub = () => {
                   <Swords className="w-3 h-3 mr-1" /> Tournaments
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* ============ TRIVIA TAB ============ */}
+          {mainTab === 'trivia' && (
+            <div className="space-y-2">
+              <CyberTriviaChallenge />
             </div>
           )}
 
