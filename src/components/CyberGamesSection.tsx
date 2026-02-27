@@ -6,6 +6,7 @@ import { Gamepad2, Brain, Zap, ArrowRight } from 'lucide-react';
 import cyberColumnsBanner from '@/assets/cyber-columns-banner.png';
 import cyberPinballBanner from '@/assets/cyber-pinball-banner.png';
 import cyberSequenceBanner from '@/assets/cyber-sequence-banner.png';
+import cyberMatchBanner from '@/assets/cyber-match-banner.png';
 interface GameCardProps {
   title: string;
   description: string;
@@ -63,7 +64,7 @@ export const CyberGamesSection: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Cyber Match - Image Card */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30" onClick={() => navigate('/games/cyber-match')}>
-          <img src="/images/games/cyber-match-card.png" alt="Cyber Match" className="w-full h-full object-cover" />
+          <img src={cyberMatchBanner} alt="Cyber Match" className="w-full h-[200px] object-contain bg-black" />
           <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
             POPULAR
           </Badge>
