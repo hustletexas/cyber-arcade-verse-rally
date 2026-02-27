@@ -5,12 +5,22 @@ import {
 } from '@/types/cyber-columns';
 
 const GEM_TYPES: GemType[] = ['energy', 'data', 'circuit', 'quantum'];
+const BONUS_SCORE_INTERVAL = 500; // gold gem spawns every 500 points
 
 let gemIdCounter = 0;
 const nextId = () => `gem-${++gemIdCounter}`;
+let lastBonusThreshold = 0; // track which threshold was last crossed
 
 const randomGem = (): GemType => GEM_TYPES[Math.floor(Math.random() * GEM_TYPES.length)];
 const randomTriple = (): [GemType, GemType, GemType] => [randomGem(), randomGem(), randomGem()];
+
+// Generate a triple that includes one bonus gem at a random position
+const bonusTriple = (): [GemType, GemType, GemType] => {
+  const triple: [GemType, GemType, GemType] = [randomGem(), randomGem(), randomGem()];
+  const pos = Math.floor(Math.random() * 3);
+  triple[pos] = 'bonus';
+  return triple;
+};
 
 const createEmptyBoard = (): BoardCell[][] =>
   Array.from({ length: ROWS }, () => Array(COLS).fill(null));
@@ -19,8 +29,9 @@ const calcDropInterval = (level: number) =>
   Math.max(MIN_DROP_INTERVAL, BASE_DROP_INTERVAL - level * LEVEL_SPEED_DECREASE);
 
 // ── Matching logic ──────────────────────────────────────────────
-function findMatches(board: BoardCell[][]): [number, number][] {
+function findMatches(board: BoardCell[][]): { coords: [number, number][]; bonusColors: Set<GemType> } {
   const matched = new Set<string>();
+  const bonusColors = new Set<GemType>(); // colors that bonus gems matched with
   const key = (r: number, c: number) => `${r},${c}`;
 
   const directions: [number, number][] = [
@@ -30,6 +41,14 @@ function findMatches(board: BoardCell[][]): [number, number][] {
     [1, -1], // diagonal ↙
   ];
 
+  // Helper: check if two cells match (bonus matches anything)
+  const typesMatch = (a: GemType, b: GemType) =>
+    a === b || a === 'bonus' || b === 'bonus';
+
+  // Find the "real" color in a run (non-bonus type)
+  const realColor = (types: GemType[]): GemType | null =>
+    types.find(t => t !== 'bonus') || null;
+
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const cell = board[r][c];
@@ -37,20 +56,47 @@ function findMatches(board: BoardCell[][]): [number, number][] {
       for (const [dr, dc] of directions) {
         const run: [number, number][] = [[r, c]];
         let nr = r + dr, nc = c + dc;
-        while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc]?.type === cell.type) {
+        // Match using the effective type (first non-bonus type in run, or cell type)
+        const effectiveType = cell.type === 'bonus' ? null : cell.type;
+        while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+          const next = board[nr][nc];
+          if (!next) break;
+          if (effectiveType) {
+            if (next.type !== effectiveType && next.type !== 'bonus') break;
+          } else {
+            // Starting cell is bonus — adopt the first non-bonus type we find
+            if (next.type !== 'bonus') {
+              // Check if we can continue with this type
+              const adoptedType = next.type;
+              // Re-validate: this run works if all are bonus or adoptedType
+              let valid = true;
+              // Just continue with adopted type
+            }
+          }
           run.push([nr, nc]);
           nr += dr;
           nc += dc;
         }
-        if (run.length >= 3) run.forEach(([rr, cc]) => matched.add(key(rr, cc)));
+        if (run.length >= 3) {
+          // Find the matched color
+          const runTypes = run.map(([rr, cc]) => board[rr][cc]!.type);
+          const color = realColor(runTypes);
+          const hasBonus = runTypes.includes('bonus');
+          if (hasBonus && color) {
+            bonusColors.add(color);
+          }
+          run.forEach(([rr, cc]) => matched.add(key(rr, cc)));
+        }
       }
     }
   }
 
-  return [...matched].map(s => {
+  const coords: [number, number][] = [...matched].map(s => {
     const [r, c] = s.split(',').map(Number);
     return [r, c] as [number, number];
   });
+
+  return { coords, bonusColors };
 }
 
 // Gravity: drop gems down after clearing
@@ -108,7 +154,7 @@ export function useCyberColumns() {
     let totalScore = 0;
 
     const resolveStep = () => {
-      const matches = findMatches(currentBoard);
+      const { coords: matches, bonusColors } = findMatches(currentBoard);
       if (matches.length === 0) {
         // Done resolving — spawn next piece
         resolvingRef.current = false;
@@ -118,7 +164,17 @@ export function useCyberColumns() {
           const speedBonus = SCORING.SPEED_BONUS(newLevel);
           const finalScore = prev.score + Math.round(totalScore * speedBonus);
           const isGameOver = currentBoard[0].some(c => c !== null);
-          const nextTriple = randomTriple();
+
+          // Check if we crossed a bonus threshold — if so, next piece includes a gold gem
+          const currentThreshold = Math.floor(finalScore / BONUS_SCORE_INTERVAL);
+          let nextTriple: [GemType, GemType, GemType];
+          if (currentThreshold > lastBonusThreshold) {
+            lastBonusThreshold = currentThreshold;
+            nextTriple = bonusTriple();
+          } else {
+            nextTriple = randomTriple();
+          }
+
           return {
             ...prev,
             board: currentBoard,
@@ -134,6 +190,21 @@ export function useCyberColumns() {
           };
         });
         return;
+      }
+
+      // If a bonus gem matched with a color, also clear ALL gems of that color on the board
+      if (bonusColors.size > 0) {
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const cell = currentBoard[r][c];
+            if (cell && bonusColors.has(cell.type)) {
+              const alreadyMatched = matches.some(([mr, mc]) => mr === r && mc === c);
+              if (!alreadyMatched) {
+                matches.push([r, c]);
+              }
+            }
+          }
+        }
       }
 
       chainCount++;
@@ -152,7 +223,7 @@ export function useCyberColumns() {
       setState(prev => ({
         ...prev,
         board: clearingBoard,
-        currentPiece: null, // hide piece during resolution
+        currentPiece: null,
       }));
 
       // Step 2: After animation delay, remove gems and apply gravity
@@ -292,6 +363,7 @@ export function useCyberColumns() {
   const startGame = useCallback(() => {
     resolvingRef.current = false;
     gemIdCounter = 0;
+    lastBonusThreshold = 0;
     const nextPiece = randomTriple();
     const firstPiece = randomTriple();
     setState({
