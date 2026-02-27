@@ -127,9 +127,7 @@ export const CyberGamesSection: React.FC = () => {
 
         {/* Cyber Columns — NEW */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30" onClick={() => navigate('/games/cyber-columns')}>
-          <div className="w-full h-48 relative">
-            <img src={cyberColumnsBanner} alt="Cyber Columns - Falling gem puzzle" className="w-full h-full object-cover" />
-          </div>
+          <img src={cyberColumnsBanner} alt="Cyber Columns - Falling gem puzzle" className="w-full h-auto object-cover" />
           <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
             NEW
           </Badge>
