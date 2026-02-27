@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Gamepad2, Brain, Zap, ArrowRight } from 'lucide-react';
 import cyberColumnsBanner from '@/assets/cyber-columns-banner.png';
 import cyberPinballBanner from '@/assets/cyber-pinball-banner.png';
+import cyberSequenceBanner from '@/assets/cyber-sequence-banner.png';
 interface GameCardProps {
   title: string;
   description: string;
@@ -76,7 +77,7 @@ export const CyberGamesSection: React.FC = () => {
         
         {/* Cyber Sequence - Image Card */}
         <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-purple/30" onClick={() => navigate('/games/cyber-sequence')}>
-          <img src="/images/games/cyber-sequence-card.png" alt="Cyber Sequence" className="w-full h-full object-cover" />
+          <img src={cyberSequenceBanner} alt="Cyber Sequence" className="w-full h-[200px] object-contain bg-black" />
           <Badge className="absolute top-3 right-3 bg-neon-purple text-black font-bold text-xs">
             NEW
           </Badge>
