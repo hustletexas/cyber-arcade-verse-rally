@@ -38,7 +38,7 @@ const WALLET_KIT_IDS: Record<string, string> = {
 };
 
 // Chain display order for the wallet modal
-const CHAIN_ORDER: ChainType[] = ['stellar', 'solana', 'hedera', 'xrpl'];
+const CHAIN_ORDER: ChainType[] = ['stellar', 'solana'];
 
 export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   isOpen,
@@ -62,8 +62,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     freighter: false,
     hotwallet: false,
     phantom: false,
-    hashpack: false,
-    xaman: false,
   });
 
   // Build a shared StellarWalletsKit with all modules
@@ -107,8 +105,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           freighter: true,
           hotwallet: true,
           phantom: true,
-          hashpack: true,
-          xaman: true,
         });
       } else {
         // Desktop: detect extensions
@@ -118,8 +114,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           freighter: true,
           hotwallet: true,
           phantom: phantomAvailable,
-          hashpack: true, // Uses WalletConnect
-          xaman: true,    // Uses WalletConnect / deep link
         });
       }
     };
@@ -180,12 +174,8 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     if (walletType === 'phantom') {
       return connectPhantom();
     }
-    if (walletType === 'hashpack') {
-      return connectHashPack();
-    }
-    if (walletType === 'xaman') {
-      return connectXaman();
-    }
+
+
 
     const kitId = WALLET_KIT_IDS[walletType];
     if (!kitId) {
@@ -296,44 +286,6 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     }
   };
 
-  // HashPack (Hedera) connection via deep link / WalletConnect
-  const connectHashPack = async () => {
-    if (isMobile) {
-      // Deep link to HashPack app
-      toast({
-        title: "Opening HashPack...",
-        description: "Approve the connection in HashPack",
-      });
-      window.open('https://www.hashpack.app/download', '_blank');
-      throw new Error('Please install HashPack and connect via the app. Deep link pairing coming soon.');
-    } else {
-      // Desktop: attempt extension or redirect
-      toast({
-        title: "Connecting HashPack...",
-        description: "Opening HashPack wallet connection",
-      });
-      window.open('https://www.hashpack.app/download', '_blank');
-      throw new Error('HashPack browser extension required. Install it from hashpack.app');
-    }
-  };
-
-  // Xaman (XRPL) connection via deep link
-  const connectXaman = async () => {
-    toast({
-      title: "Opening Xaman...",
-      description: "Scan the QR or approve in Xaman app",
-    });
-    
-    if (isMobile) {
-      // Deep link to Xaman app  
-      const xamanUrl = `https://xaman.app/detect/xapp:cybercityarcade`;
-      window.location.href = xamanUrl;
-      throw new Error('Please approve the connection in Xaman. If Xaman is not installed, download it from xaman.app');
-    } else {
-      window.open('https://xaman.app/', '_blank');
-      throw new Error('Xaman wallet required. Install it from xaman.app and use the mobile app to scan.');
-    }
-  };
 
   // Connection handler per wallet type
   const connectWallet = async (walletType: WalletType) => {
@@ -351,7 +303,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const getWalletOptions = (): WalletOption[] => {
-    const walletIds: WalletType[] = ['lobstr', 'freighter', 'hotwallet', 'phantom', 'hashpack', 'xaman'];
+    const walletIds: WalletType[] = ['lobstr', 'freighter', 'hotwallet', 'phantom'];
 
     const allOptions: WalletOption[] = walletIds.map(id => ({
       ...WALLETS.find(w => w.id === id)!,

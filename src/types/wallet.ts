@@ -1,14 +1,12 @@
 // Multi-chain wallet types
 
-export type ChainType = 'stellar' | 'solana' | 'hedera' | 'xrpl';
+export type ChainType = 'stellar' | 'solana';
 
 export type WalletType = 
   | 'lobstr'
   | 'freighter'
   | 'hotwallet'
   | 'phantom'
-  | 'hashpack'
-  | 'xaman'
   | 'created';
 
 export interface ChainInfo {
@@ -60,24 +58,6 @@ export const CHAINS: Record<ChainType, ChainInfo> = {
     logoUrl: '/images/wallets/solana.png',
     usdcSupported: true
   },
-  hedera: {
-    id: 'hedera',
-    name: 'Hedera',
-    symbol: 'HBAR',
-    icon: 'ℏ',
-    color: 'rgb(130, 71, 229)',
-    logoUrl: '/images/wallets/hedera.png',
-    usdcSupported: true
-  },
-  xrpl: {
-    id: 'xrpl',
-    name: 'XRPL',
-    symbol: 'XRP',
-    icon: '✕',
-    color: 'rgb(35, 41, 47)',
-    logoUrl: '/images/wallets/xrpl.png',
-    usdcSupported: true
-  }
 };
 
 // Default wallet for new users - LOBSTR is the primary wallet
@@ -124,26 +104,6 @@ export const WALLETS: WalletInfo[] = [
     description: 'The #1 Solana wallet with USDC support',
     isPopular: true
   },
-  // Hedera wallet
-  {
-    id: 'hashpack',
-    name: 'HashPack',
-    icon: '🔷',
-    logoUrl: '/images/wallets/hashpack.png',
-    chain: 'hedera',
-    downloadUrl: 'https://www.hashpack.app/',
-    description: 'Leading Hedera wallet with USDC support'
-  },
-  // XRPL wallet
-  {
-    id: 'xaman',
-    name: 'Xaman',
-    icon: '🔵',
-    logoUrl: '/images/wallets/xaman.png',
-    chain: 'xrpl',
-    downloadUrl: 'https://xaman.app/',
-    description: 'Premier XRPL wallet (formerly Xumm)'
-  }
 ];
 
 export const getChainForWallet = (walletType: WalletType): ChainType => {
@@ -170,7 +130,7 @@ export const PAYMENT_CONFIG = {
   passGatingChain: 'stellar' as ChainType,
   
   // Supported USDC chains
-  usdcChains: ['stellar', 'solana', 'hedera', 'xrpl'] as ChainType[],
+  usdcChains: ['stellar', 'solana'] as ChainType[],
 };
 
 export const getWalletsByChain = (chain: ChainType): WalletInfo[] => {

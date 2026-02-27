@@ -179,8 +179,6 @@ export const useMultiChainWallet = () => {
       case 'lobstr': return '🌟';
       case 'freighter': return '🚀';
       case 'phantom': return '👻';
-      case 'hashpack': return '🔷';
-      case 'xaman': return '🔵';
       case 'created': return '💰';
       default: return '🔗';
     }
