@@ -192,20 +192,7 @@ export function useCyberColumns() {
         return;
       }
 
-      // If a bonus gem matched with a color, also clear ALL gems of that color on the board
-      if (bonusColors.size > 0) {
-        for (let r = 0; r < ROWS; r++) {
-          for (let c = 0; c < COLS; c++) {
-            const cell = currentBoard[r][c];
-            if (cell && bonusColors.has(cell.type)) {
-              const alreadyMatched = matches.some(([mr, mc]) => mr === r && mc === c);
-              if (!alreadyMatched) {
-                matches.push([r, c]);
-              }
-            }
-          }
-        }
-      }
+      // Bonus gem only affects the gems it directly touches in the match — not all of that color
 
       chainCount++;
       totalCleared += matches.length;
