@@ -948,11 +948,10 @@ const PortalBreakerGame: React.FC = () => {
       const isTargeted = now < s.tactical.activeTargetLock && b.hp === 1;
 
       // ── Cybernetic brick body ──
-      // Dark base fill
       const baseGrad = ctx.createLinearGradient(bx, b.y, bx, b.y + b.h);
-      baseGrad.addColorStop(0, `hsl(${hue}, 60%, ${lightness * 0.35}%)`);
-      baseGrad.addColorStop(0.5, `hsl(${hue}, 70%, ${lightness * 0.5}%)`);
-      baseGrad.addColorStop(1, `hsl(${hue}, 60%, ${lightness * 0.3}%)`);
+      baseGrad.addColorStop(0, `hsl(${hue}, 90%, ${lightness + 8}%)`);
+      baseGrad.addColorStop(0.5, `hsl(${hue}, 90%, ${lightness}%)`);
+      baseGrad.addColorStop(1, `hsl(${hue}, 85%, ${lightness - 5}%)`);
 
       ctx.fillStyle = baseGrad;
       ctx.strokeStyle = borderExtra || `hsla(${hue}, 100%, 65%, ${0.6 + hpRatio * 0.4})`;
