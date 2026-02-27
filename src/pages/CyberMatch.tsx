@@ -16,6 +16,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
+import { GalaxyBackground } from '@/components/games/GalaxyBackground';
 
 import '@/components/games/cyber-match/cyber-match.css';
 
@@ -60,13 +61,8 @@ const CyberMatch: React.FC = () => {
   };
 
   return (
-    <div className="cyber-match-container min-h-screen bg-gradient-to-br from-black via-purple-950/50 to-blue-950/50">
-      {/* Animated background grid */}
-      <div className="cyber-grid-bg" />
-      
-      {/* Animated Glow Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
+    <div className="cyber-columns-container min-h-screen">
+      <GalaxyBackground />
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-4xl">
         {/* Navigation + CCC Balance Bar */}

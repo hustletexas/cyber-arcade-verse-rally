@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Trophy, RotateCcw } from 'lucide-react';
 import { CyberPinball } from '@/components/games/CyberPinball';
+import { GalaxyBackground } from '@/components/games/GalaxyBackground';
 
 const CyberPinballPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,9 +21,10 @@ const CyberPinballPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="cyber-columns-container min-h-screen">
+      <GalaxyBackground />
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/90 backdrop-blur border-b border-border/50">
+      <div className="sticky top-0 z-50 bg-black/50 backdrop-blur border-b border-border/50">
         <div className="max-w-5xl mx-auto flex items-center justify-between p-3">
           <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="gap-2">
             <ArrowLeft size={16} />
@@ -40,7 +42,7 @@ const CyberPinballPage: React.FC = () => {
       </div>
 
       {/* Game area */}
-      <div className="max-w-5xl mx-auto p-4 flex flex-col lg:flex-row gap-6 items-start justify-center">
+      <div className="relative z-10 max-w-5xl mx-auto p-4 flex flex-col lg:flex-row gap-6 items-start justify-center">
         {/* Main game */}
         <div className="flex-shrink-0">
           <CyberPinball
