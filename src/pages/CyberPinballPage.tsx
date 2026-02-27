@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Trophy, RotateCcw } from 'lucide-react';
-import { CyberPinballGame } from '@/components/games/cyber-pinball/CyberPinballGame';
+import { CyberPinball } from '@/components/games/CyberPinball';
 
 const CyberPinballPage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ const CyberPinballPage: React.FC = () => {
       <div className="max-w-5xl mx-auto p-4 flex flex-col lg:flex-row gap-6 items-start justify-center">
         {/* Main game */}
         <div className="flex-shrink-0">
-          <CyberPinballGame
+          <CyberPinball
             key={key}
             onGameOver={handleGameOver}
           />

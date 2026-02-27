@@ -1,106 +1,58 @@
 
+You should not restart the whole project. The issue is localized to the Cyber Pinball render loop, and we can fix it safely without losing your progress or spending more credits rebuilding from scratch.
 
-# Cyber Spinball 3D — Retro Arcade Pinball
+What I found:
+1) Your latest runtime error is:
+- Failed to execute createRadialGradient: provided value is non-finite
+- Source: src/components/games/CyberPinball.tsx inside renderLoop
+2) This means at least one value passed to canvas gradient drawing becomes NaN/Infinity at runtime.
+3) Cyber Pinball currently has many gradient calls using dynamic values (ball/trail/body positions, glow radii, etc.). If any physics value becomes invalid, rendering crashes immediately and the game appears broken/frozen.
+4) Recent launch changes (static spawn + dynamic release + slider launch) made gameplay better, but there are no defensive guards in rendering when physics data becomes invalid.
 
-## Vision
-A **3D retro-styled pinball game** inspired by Sonic Spinball and classic 90s pinball, set in the Cyber City arcade universe. Uses **React Three Fiber** for 3D rendering with a tilted top-down camera angle, flat-shaded retro geometry (no photorealism), and neon glow effects. Physics handled by **Matter.js** (2D physics projected into the 3D scene).
+Implementation approach (targeted, low-risk):
+1) Add numeric safety helpers in CyberPinball.tsx
+- Small utilities like isFiniteNumber and safeClamp.
+- Use these before passing coordinates/radius values to createRadialGradient, arc, fillRect, and similar draw calls that require finite numbers.
 
-The aesthetic is chunky polygonal shapes, scanline overlays, CRT-style bloom — think "what if a Genesis game ran in 3D."
+2) Harden the ball/trail drawing path (highest priority)
+- Before pushing trail points, validate currentBall.position.x/y.
+- Skip any invalid trail entry and purge stale/invalid entries.
+- Guard trail gradient creation so it never runs with invalid x/y/radius.
 
-## Architecture
+3) Add recovery logic when physics goes invalid
+- In renderLoop, if currentBall position/velocity becomes non-finite:
+  - Remove that broken ball from world
+  - Clear currentBall reference
+  - Preserve game state (score/balls) as much as possible
+  - Spawn a replacement ball after a short delay if game is active
+- This prevents hard crashes and keeps the session playable.
 
-### Approach: 2D Physics + 3D Rendering
-- Matter.js handles all collision/physics in 2D (proven, stable)
-- React Three Fiber renders the table and objects in 3D using the 2D positions
-- Camera is fixed at a ~60-degree angle looking down the table, giving the classic pinball perspective
-- All game objects are simple 3D primitives (boxes, cylinders, spheres) with emissive neon materials
+4) Make launch flow numerically safer
+- In launchBall and keyboard launch path, ensure power is always finite and clamped to [0,1] before force calculation.
+- Ignore launch action if power or ball state is invalid.
+- Keep existing slider UX intact.
 
-### File Structure
-- **Delete**: `src/components/games/CyberPinball.tsx` (1300 lines of broken 2D canvas code)
-- **Create**: `src/components/games/cyber-pinball/CyberPinballGame.tsx` — main game component with Matter.js engine + R3F scene
-- **Create**: `src/components/games/cyber-pinball/PinballTable.tsx` — 3D table geometry (walls, ramps, lanes)
-- **Create**: `src/components/games/cyber-pinball/PinballObjects.tsx` — bumpers, flippers, ball, targets
-- **Create**: `src/components/games/cyber-pinball/PinballHUD.tsx` — score overlay, ball count, combo display
-- **Create**: `src/components/games/cyber-pinball/pinballPhysics.ts` — Matter.js setup, collision handlers, game logic
-- **Update**: `src/pages/CyberPinballPage.tsx` — point import to new component
-- **Update**: `src/components/CyberGamesSection.tsx` — re-add pinball card to game grid
+5) Guard high-risk dynamic gradients
+- Add finite checks around reactor/ambient/body-based radial gradients.
+- Fallback to a simple fill or skip that visual for the frame when inputs are invalid.
+- Visual quality remains nearly identical, but no fatal canvas exceptions.
 
-### New Dependency
-- `@react-three/fiber@^8.18` and `@react-three/drei@^9.122.0` and `three@^0.133` for 3D rendering
+Validation plan after fix:
+1) Open /games/cyber-pinball and verify no runtime errors in console.
+2) Set slider to multiple values (low/mid/high), launch repeatedly for at least 10-15 balls.
+3) Test keyboard launch (Space/Enter) and button launch.
+4) Verify:
+- no immediate crash
+- no premature game over
+- ball launches consistently
+- score/balls/combos continue updating
+5) Confirm rendering effects still appear (reactor glow, trail, HUD messages).
 
-## Game Design
+Technical notes:
+- File to modify: src/components/games/CyberPinball.tsx
+- No backend/database changes needed.
+- This is a resilience fix first (stability), not a redesign.
+- If needed, I can also add lightweight debug logs for one iteration, then remove them once stable.
 
-### Table Layout (Sonic Spinball inspired)
-- **Bottom**: Two flippers with drain gap, slingshot kickers on each side
-- **Mid-field**: 3 pop bumpers in triangle formation, "CYBER" drop target bank (5 targets)
-- **Upper**: Orbit loop lanes (left/right), ramp to upper platform
-- **Plunger lane**: Right side, spring launcher
-
-### Controls
-- **Space**: Hold to charge plunger, release to launch
-- **Left Arrow / Z**: Left flipper
-- **Right Arrow / M**: Right flipper
-- **Mobile**: On-screen flipper buttons + launch slider
-
-### Scoring
-- Pop bumpers: 100 pts
-- Slingshots: 50 pts
-- Drop targets: 200 pts each, full CYBER set = 5,000 bonus
-- Orbit lanes: 300 pts, consecutive = combo multiplier (up to 5x)
-- Ramp shot: 500 pts
-- Skill shot (launch into top lane): 3,000 pts
-
-### Modes
-- **Overdrive**: Fill reactor meter via bumper hits, 100% = 2x scoring for 15s
-- **Demon Mode**: Clear all drop targets twice = 3x scoring for 20s
-- **Multiball**: Lock 2 balls via ramp = release 3 balls
-
-### Retro 3D Visuals
-- Flat-shaded low-poly geometry (MeshStandardMaterial with flatShading)
-- Neon emissive materials on bumpers, flippers, rails (cyan, pink, purple)
-- Dark metallic table surface with grid lines
-- Ball has a chrome/metallic look with environment reflections
-- Simple particle effects on hits (instanced meshes, not canvas)
-- Subtle CRT scanline overlay via a post-processing pass or CSS
-- City skyline silhouettes as backdrop geometry behind the table
-
-### Stability Guarantees
-- All physics values validated before applying to 3D transforms
-- Ball recovery: if position becomes NaN/Infinity, respawn automatically
-- Minimum launch force ensures ball always clears the lane
-- Flipper physics use constraints + angular velocity (no manual angle hacks)
-- 3D render is completely decoupled from physics — if physics glitches, scene just holds last valid frame
-
-## Technical Details
-
-### `pinballPhysics.ts`
-- Creates Matter.js engine with gravity {x: 0, y: 1.2}
-- Builds all static bodies (walls, bumpers, targets, lanes)
-- Flipper bodies with pivot constraints
-- Collision event handler that maps body labels to scoring/game logic
-- Exposes: `createEngine()`, `launchBall(power)`, `activateFlipper(side)`, `releaseFlipper(side)`, `getGameState()`, `cleanup()`
-
-### `CyberPinballGame.tsx`
-- React component wrapping a `<Canvas>` from R3F
-- Runs Matter.js engine in `useFrame` loop
-- Reads body positions each frame, updates 3D object positions via refs
-- Manages game state (score, balls, modes) via refs for performance
-- Keyboard/touch event listeners for controls
-- HUD overlay positioned absolutely over the canvas
-
-### `PinballTable.tsx`
-- R3F component rendering table surface, walls, lane guides as `<mesh>` elements
-- Static geometry — no per-frame updates needed
-- Uses `<meshStandardMaterial>` with dark colors and subtle metallic finish
-
-### `PinballObjects.tsx`
-- Dynamic objects: ball (sphere), flippers (rounded boxes), bumpers (cylinders)
-- Each reads position from physics refs in `useFrame`
-- Bumpers flash emissive color on hit
-- Ball leaves a short trail (last 5 positions rendered as fading spheres)
-
-### `PinballHUD.tsx`
-- HTML overlay (not 3D) showing score, ball count, combo multiplier, mode status
-- Game over screen with final score and restart button
-- Styled with existing Tailwind classes to match arcade theme
-
+Fallback if you want instant recovery now:
+- You can restore the last known stable version from History, but this should not be necessary; a targeted patch should recover gameplay without rollback.
