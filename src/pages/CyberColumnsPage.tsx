@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCyberColumns } from '@/hooks/useCyberColumns';
 import {
@@ -9,21 +9,12 @@ import {
   CyberColumnsTouchControls,
 } from '@/components/games/cyber-columns';
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
+import { GalaxyBackground } from '@/components/games/GalaxyBackground';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Pause, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import '@/components/games/cyber-columns/cyber-columns.css';
-
-// Generate particle data once
-const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
-  id: i,
-  left: `${Math.random() * 100}%`,
-  duration: `${6 + Math.random() * 8}s`,
-  delay: `${Math.random() * 6}s`,
-  size: `${2 + Math.random() * 3}px`,
-  color: ['hsl(330 100% 65%)', 'hsl(199 100% 60%)', 'hsl(270 80% 65%)', 'hsl(180 90% 55%)', 'hsl(45 100% 60%)'][Math.floor(Math.random() * 5)],
-}));
 
 const CyberColumnsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,29 +25,7 @@ const CyberColumnsPage: React.FC = () => {
 
   return (
     <div className="cyber-columns-container min-h-screen">
-      {/* ── Galaxy Background Layers ── */}
-      <div className="cc-starfield" />
-      <div className="cc-nebula" />
-      <div className="cc-orbit-ring" />
-
-      {/* Floating particles */}
-      <div className="cc-particles">
-        {PARTICLES.map((p) => (
-          <div
-            key={p.id}
-            className="cc-particle"
-            style={{
-              left: p.left,
-              width: p.size,
-              height: p.size,
-              backgroundColor: p.color,
-              boxShadow: `0 0 6px ${p.color}`,
-              animationDuration: p.duration,
-              animationDelay: p.delay,
-            }}
-          />
-        ))}
-      </div>
+      <GalaxyBackground />
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-2xl">
         {/* Nav */}

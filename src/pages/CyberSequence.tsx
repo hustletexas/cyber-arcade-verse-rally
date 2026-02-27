@@ -16,6 +16,7 @@ import { CyberSequencePlayerStats } from '@/components/games/cyber-sequence/Cybe
 import { GameMode, GAME_ENTRY_FEE, SCORING } from '@/types/cyber-sequence';
 import { toast } from 'sonner';
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
+import { GalaxyBackground } from '@/components/games/GalaxyBackground';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -99,9 +100,8 @@ const CyberSequence: React.FC = () => {
   const ticketsEarned = calculateTickets() + (isNewPersonalBest ? SCORING.ticketsNewPersonalBest : 0);
 
   return (
-    <div className="cyber-sequence-container min-h-screen">
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
+    <div className="cyber-columns-container min-h-screen">
+      <GalaxyBackground />
 
       <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
         <div className="relative z-20 mb-4 sm:mb-6">

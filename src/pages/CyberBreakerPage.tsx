@@ -5,15 +5,17 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
+import { GalaxyBackground } from '@/components/games/GalaxyBackground';
 
 
 const CyberBreakerPage = () => {
   return (
-    <div className="min-h-screen bg-transparent relative">
+    <div className="cyber-columns-container min-h-screen relative">
+      <GalaxyBackground />
       <TopBar />
       <CartDrawer />
 
-      <main className="max-w-5xl mx-auto px-4 pt-24 pb-16">
+      <main className="relative z-10 max-w-5xl mx-auto px-4 pt-24 pb-16">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-neon-cyan transition-colors mb-6"
