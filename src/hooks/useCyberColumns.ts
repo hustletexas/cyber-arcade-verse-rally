@@ -15,7 +15,7 @@ const randomTriple = (): [GemType, GemType, GemType] => [randomGem(), randomGem(
 const createEmptyBoard = (): BoardCell[][] =>
   Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 
-const dropInterval = (level: number) =>
+const calcDropInterval = (level: number) =>
   Math.max(MIN_DROP_INTERVAL, BASE_DROP_INTERVAL - level * LEVEL_SPEED_DECREASE);
 
 // ── Matching logic ──────────────────────────────────────────────
@@ -68,6 +68,8 @@ function applyGravity(board: BoardCell[][]): BoardCell[][] {
   return newBoard;
 }
 
+const CLEAR_ANIMATION_MS = 550; // match the CSS animation duration
+
 export function useCyberColumns() {
   const [state, setState] = useState<CyberColumnsState>({
     board: createEmptyBoard(),
@@ -86,6 +88,7 @@ export function useCyberColumns() {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const resolvingRef = useRef(false);
 
   // ── Spawn new piece ───────────────────────────────────────────
   const spawnPiece = useCallback((next: [GemType, GemType, GemType]): FallingPiece => ({
@@ -93,6 +96,84 @@ export function useCyberColumns() {
     col: Math.floor(COLS / 2),
     row: 0,
   }), []);
+
+  // ── Async chain resolution with visible clearing phase ────────
+  const resolveChains = useCallback((board: BoardCell[][], prevState: CyberColumnsState) => {
+    if (resolvingRef.current) return;
+    resolvingRef.current = true;
+
+    let currentBoard = board.map(row => [...row]);
+    let totalCleared = 0;
+    let chainCount = 0;
+    let totalScore = 0;
+
+    const resolveStep = () => {
+      const matches = findMatches(currentBoard);
+      if (matches.length === 0) {
+        // Done resolving — spawn next piece
+        resolvingRef.current = false;
+        setState(prev => {
+          const newLinesCleared = prev.linesCleared + totalCleared;
+          const newLevel = Math.floor(newLinesCleared / 15) + 1;
+          const speedBonus = SCORING.SPEED_BONUS(newLevel);
+          const finalScore = prev.score + Math.round(totalScore * speedBonus);
+          const isGameOver = currentBoard[0].some(c => c !== null);
+          const nextTriple = randomTriple();
+          return {
+            ...prev,
+            board: currentBoard,
+            score: finalScore,
+            level: newLevel,
+            linesCleared: newLinesCleared,
+            chainCount: Math.max(prev.chainCount, chainCount),
+            dropInterval: calcDropInterval(newLevel),
+            isGameOver,
+            isPlaying: !isGameOver,
+            currentPiece: isGameOver ? null : spawnPiece(prev.nextPiece),
+            nextPiece: nextTriple,
+          };
+        });
+        return;
+      }
+
+      chainCount++;
+      totalCleared += matches.length;
+      const chainMultiplier = SCORING.CHAIN_MULTIPLIER(chainCount);
+      totalScore += matches.length * SCORING.BASE_CLEAR * chainMultiplier;
+
+      // Step 1: Mark matched gems as clearing (visible to UI)
+      for (const [r, c] of matches) {
+        if (currentBoard[r][c]) {
+          currentBoard[r][c] = { ...currentBoard[r][c]!, clearing: true };
+        }
+      }
+      const clearingBoard = currentBoard.map(row => [...row]);
+
+      setState(prev => ({
+        ...prev,
+        board: clearingBoard,
+        currentPiece: null, // hide piece during resolution
+      }));
+
+      // Step 2: After animation delay, remove gems and apply gravity
+      setTimeout(() => {
+        for (const [r, c] of matches) {
+          currentBoard[r][c] = null;
+        }
+        currentBoard = applyGravity(currentBoard);
+
+        setState(prev => ({
+          ...prev,
+          board: currentBoard,
+        }));
+
+        // Step 3: Check for more matches (chain reaction)
+        setTimeout(() => resolveStep(), 100);
+      }, CLEAR_ANIMATION_MS);
+    };
+
+    resolveStep();
+  }, [spawnPiece]);
 
   // ── Lock piece into board, then resolve chains ────────────────
   const lockAndResolve = useCallback((piece: FallingPiece, board: BoardCell[][]) => {
@@ -104,76 +185,24 @@ export function useCyberColumns() {
       }
     }
 
-    // Check game over — if any part of piece is above row 0
-    if (piece.row < 0 || newBoard[0][piece.col] !== null && piece.row <= 0) {
-      // Check if top row in the column was already occupied before locking
-      let gameOver = false;
-      for (let i = 0; i < 3; i++) {
-        const r = piece.row + i;
-        if (r < 0) { gameOver = true; break; }
-      }
-      if (newBoard[0].some(c => c !== null) && piece.row <= 0) {
-        // Simplified: game over if piece locked at row 0 and overlap
-        const topOccupied = board[piece.row]?.[piece.col] !== null && piece.row <= 0;
-        if (topOccupied || piece.row < 0) gameOver = true;
-      }
-    }
+    setState(prev => ({
+      ...prev,
+      board: newBoard,
+      currentPiece: null,
+    }));
 
-    // Resolve chains
-    let resolvedBoard = newBoard;
-    let totalCleared = 0;
-    let chainCount = 0;
-    let totalScore = 0;
-
-    while (true) {
-      const matches = findMatches(resolvedBoard);
-      if (matches.length === 0) break;
-      chainCount++;
-      totalCleared += matches.length;
-      const chainMultiplier = SCORING.CHAIN_MULTIPLIER(chainCount);
-      totalScore += matches.length * SCORING.BASE_CLEAR * chainMultiplier;
-      
-      for (const [r, c] of matches) {
-        resolvedBoard[r][c] = null;
-      }
-      resolvedBoard = applyGravity(resolvedBoard);
-    }
-
-    setState(prev => {
-      const newLinesCleared = prev.linesCleared + totalCleared;
-      const newLevel = Math.floor(newLinesCleared / 15) + 1;
-      const speedBonus = SCORING.SPEED_BONUS(newLevel);
-      const finalScore = prev.score + Math.round(totalScore * speedBonus);
-
-      // Check game over: top row has gems
-      const isGameOver = resolvedBoard[0].some(c => c !== null);
-
-      const nextTriple = randomTriple();
-      return {
-        ...prev,
-        board: resolvedBoard,
-        score: finalScore,
-        level: newLevel,
-        linesCleared: newLinesCleared,
-        chainCount: Math.max(prev.chainCount, chainCount),
-        dropInterval: dropInterval(newLevel),
-        isGameOver,
-        isPlaying: !isGameOver,
-        currentPiece: isGameOver ? null : spawnPiece(prev.nextPiece),
-        nextPiece: nextTriple,
-      };
-    });
-  }, [spawnPiece]);
+    // Start async chain resolution
+    setTimeout(() => resolveChains(newBoard, stateRef.current), 50);
+  }, [resolveChains]);
 
   // ── Tick (auto-drop) ──────────────────────────────────────────
   const tick = useCallback(() => {
     const s = stateRef.current;
-    if (!s.isPlaying || s.isPaused || !s.currentPiece) return;
+    if (!s.isPlaying || s.isPaused || !s.currentPiece || resolvingRef.current) return;
 
     const piece = s.currentPiece;
     const nextRow = piece.row + 1;
 
-    // Check if piece can drop
     const bottomGemRow = nextRow + 2;
     if (bottomGemRow >= ROWS || s.board[bottomGemRow]?.[piece.col] !== null) {
       lockAndResolve(piece, s.board);
@@ -196,11 +225,11 @@ export function useCyberColumns() {
 
   // ── Controls ──────────────────────────────────────────────────
   const moveLeft = useCallback(() => {
+    if (resolvingRef.current) return;
     setState(prev => {
       if (!prev.currentPiece || !prev.isPlaying || prev.isPaused) return prev;
       const newCol = prev.currentPiece.col - 1;
       if (newCol < 0) return prev;
-      // Check collision
       for (let i = 0; i < 3; i++) {
         const r = prev.currentPiece.row + i;
         if (r >= 0 && r < ROWS && prev.board[r][newCol] !== null) return prev;
@@ -210,6 +239,7 @@ export function useCyberColumns() {
   }, []);
 
   const moveRight = useCallback(() => {
+    if (resolvingRef.current) return;
     setState(prev => {
       if (!prev.currentPiece || !prev.isPlaying || prev.isPaused) return prev;
       const newCol = prev.currentPiece.col + 1;
@@ -223,6 +253,7 @@ export function useCyberColumns() {
   }, []);
 
   const rotate = useCallback(() => {
+    if (resolvingRef.current) return;
     setState(prev => {
       if (!prev.currentPiece || !prev.isPlaying || prev.isPaused) return prev;
       const [a, b, c] = prev.currentPiece.gems;
@@ -234,24 +265,23 @@ export function useCyberColumns() {
   }, []);
 
   const softDrop = useCallback(() => {
+    if (resolvingRef.current) return;
     tick();
   }, [tick]);
 
   const hardDrop = useCallback(() => {
-    setState(prev => {
-      if (!prev.currentPiece || !prev.isPlaying || prev.isPaused) return prev;
-      const piece = { ...prev.currentPiece };
-      let row = piece.row;
-      while (true) {
-        const bottomRow = row + 3;
-        if (bottomRow >= ROWS || prev.board[bottomRow]?.[piece.col] !== null) break;
-        row++;
-      }
-      piece.row = row;
-      // We'll lock synchronously via lockAndResolve
-      setTimeout(() => lockAndResolve(piece, prev.board), 0);
-      return { ...prev, currentPiece: { ...piece, row } };
-    });
+    if (resolvingRef.current) return;
+    const s = stateRef.current;
+    if (!s.currentPiece || !s.isPlaying || s.isPaused) return;
+    const piece = { ...s.currentPiece };
+    let row = piece.row;
+    while (true) {
+      const bottomRow = row + 3;
+      if (bottomRow >= ROWS || s.board[bottomRow]?.[piece.col] !== null) break;
+      row++;
+    }
+    piece.row = row;
+    lockAndResolve(piece, s.board);
   }, [lockAndResolve]);
 
   const togglePause = useCallback(() => {
@@ -260,6 +290,7 @@ export function useCyberColumns() {
 
   // ── Start / Restart ───────────────────────────────────────────
   const startGame = useCallback(() => {
+    resolvingRef.current = false;
     gemIdCounter = 0;
     const nextPiece = randomTriple();
     const firstPiece = randomTriple();
@@ -279,6 +310,7 @@ export function useCyberColumns() {
   }, []);
 
   const resetGame = useCallback(() => {
+    resolvingRef.current = false;
     if (tickRef.current) clearInterval(tickRef.current);
     setState({
       board: createEmptyBoard(),
