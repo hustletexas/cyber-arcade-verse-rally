@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -732,11 +733,15 @@ export const UnifiedWalletDropdown = () => {
 
             {activeAction === 'receive' && <div className="space-y-4">
                 <div className="flex flex-col items-center p-5">
-                  <div className="w-28 h-28 bg-white rounded-lg p-2 mb-4">
-                    <div className="w-full h-full flex items-center justify-center">
-                      <QrCode size={80} className="text-black" />
-                    </div>
-                  </div>
+                   <div className="w-32 h-32 bg-white rounded-lg p-2 mb-4">
+                     {primaryWallet?.address ? (
+                       <QRCodeSVG value={primaryWallet.address} size={112} level="M" />
+                     ) : (
+                       <div className="w-full h-full flex items-center justify-center">
+                         <QrCode size={80} className="text-black" />
+                       </div>
+                     )}
+                   </div>
                   <p className="text-sm text-muted-foreground mb-3">Your Wallet Address</p>
                   <div className="flex items-center gap-2 p-3 bg-black/50 rounded-lg border border-neon-cyan/30 w-full">
                     <code className="flex-1 text-xs text-neon-cyan overflow-hidden text-ellipsis whitespace-nowrap">
