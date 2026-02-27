@@ -5,15 +5,21 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
+import '@/components/games/cyber-columns/cyber-columns.css';
 
 
 const CyberGalaxyPage = () => {
   return (
-    <div className="min-h-screen bg-transparent relative">
+    <div className="cyber-columns-container min-h-screen relative">
+      {/* ── Galaxy Background Layers ── */}
+      <div className="cc-starfield" />
+      <div className="cc-nebula" />
+      <div className="cc-orbit-ring" />
+
       <TopBar />
       <CartDrawer />
 
-      <main className="max-w-5xl mx-auto px-4 pt-24 pb-16">
+      <main className="relative z-10 max-w-5xl mx-auto px-4 pt-24 pb-16">
         {/* Back navigation */}
         <Link
           to="/"
