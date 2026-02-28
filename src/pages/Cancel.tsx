@@ -30,7 +30,7 @@ const Cancel = () => {
 
           {/* Actions */}
           <div className="flex flex-col gap-3">
-            <Link to="/">
+            <Link to="/" onClick={() => window.scrollTo(0, 0)}>
               <Button variant="outline" className="w-full gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Return to Arcade

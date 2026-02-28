@@ -30,7 +30,7 @@ const CyberColumnsPage: React.FC = () => {
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-2xl">
         {/* Nav */}
         <div className="mb-4 flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-[hsl(270_80%_75%)] hover:text-[hsl(330_100%_70%)] hover:bg-[hsl(270_60%_50%/0.1)]">
+          <Button variant="ghost" size="sm" onClick={() => { navigate('/'); window.scrollTo(0, 0); }} className="text-[hsl(270_80%_75%)] hover:text-[hsl(330_100%_70%)] hover:bg-[hsl(270_60%_50%/0.1)]">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Arcade
           </Button>
         </div>

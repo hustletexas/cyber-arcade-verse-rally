@@ -66,7 +66,7 @@ const Success = () => {
           )}
 
           {/* CTA */}
-          <Link to="/">
+          <Link to="/" onClick={() => window.scrollTo(0, 0)}>
             <Button className="w-full gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
               <ArrowLeft className="w-4 h-4" />
               Return to Arcade
