@@ -689,6 +689,20 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
+      // ── Top curve: arc ball across at full speed when near ceiling ──
+      if (g.currentBall && g.launched && fin(g.currentBall.position.y) && fin(g.currentBall.velocity.y)) {
+        const by = g.currentBall.position.y;
+        const bx = g.currentBall.position.x;
+        const vy = g.currentBall.velocity.y;
+        // When ball is in the top zone and moving upward, curve it horizontally
+        if (by < 80 && vy < -2) {
+          // Push ball toward center with a strong horizontal curve
+          const dirX = bx > TW / 2 ? -1 : 1;
+          const curvePower = 0.006 * Math.abs(vy / 12);
+          Body.applyForce(g.currentBall, g.currentBall.position, { x: dirX * curvePower, y: 0.002 });
+        }
+      }
+
       // ── Ball speed cap only (Cyber Breaker style: natural fall, cap max) ──
       if (g.currentBall && g.launched && fin(g.currentBall.velocity.x) && fin(g.currentBall.velocity.y)) {
         const vx = g.currentBall.velocity.x;
