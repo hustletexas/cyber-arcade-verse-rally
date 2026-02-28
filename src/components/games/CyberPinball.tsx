@@ -287,6 +287,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     );
     walls.push(Bodies.rectangle(TW / 2, ctY - 15, 120, 3, wallOpts));
 
+    // ── Portal hole (between lower bumpers) ──
+    const portalHole = Bodies.circle(bCX, bCY + 25, 10, sensorOpts('portal_hole'));
+
     // ── Magnet bumper ──
     const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
 
@@ -331,7 +334,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...walls, lf, rf, lp, rp,
       tlf, trf, tlp, trp,
       ...(lSling ? [lSling] : []), ...(rSling ? [rSling] : []),
-      ...bumpers, reactorSensor,
+      ...bumpers, reactorSensor, portalHole,
       ...skillLaneSensors, ...skillLaneGuides,
       ...comboTargets, magnetBumper, railRamp, railSensor,
       ...cyberSensors,
@@ -497,6 +500,19 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
 
         if (labels.includes('spinner')) { addScore(25); }
+
+        // Portal hole — teleport ball to top of screen
+        if (labels.includes('portal_hole')) {
+          addScore(250);
+          showMsg('🌀 PORTAL! +250');
+          g.shake.power = 6;
+          g.lightFlash = 0.6;
+          spawnParticles(ball.position.x, ball.position.y, 15, NEON.purple, 8);
+          // Teleport ball to top center with downward velocity
+          Body.setPosition(ball, { x: TW / 2, y: 30 });
+          Body.setVelocity(ball, { x: (Math.random() - 0.5) * 3, y: 2 });
+          spawnParticles(TW / 2, 30, 12, NEON.purple, 6);
+        }
 
         // Multiball lock
         if (labels.includes('multiball_lock') && !g.multiballActive && g.lockedBalls < 2) {
@@ -1073,6 +1089,30 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             ctx.textAlign = 'center';
             ctx.fillText('100', 0, -BUMPER_R - 5);
           }
+
+        // ── Portal hole ──
+        } else if (body.label === 'portal_hole') {
+          const pulseP = 10 + Math.sin(t * 5) * 2;
+          // Outer glow
+          ctx.shadowColor = NEON.purple;
+          ctx.shadowBlur = 20;
+          ctx.strokeStyle = NEON.purple;
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, 0, pulseP, 0, Math.PI * 2); ctx.stroke();
+          // Inner swirl
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = `${NEON.cyan}aa`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(0, 0, pulseP - 4, t * 3, t * 3 + Math.PI * 1.5); ctx.stroke();
+          // Dark center
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#0b0f1a';
+          ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+          // Center dot
+          ctx.fillStyle = NEON.purple;
+          ctx.globalAlpha = 0.6 + Math.sin(t * 6) * 0.3;
+          ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
 
         // ── Flippers (bottom + top mini) ──
         } else if (body.label.includes('Flipper')) {
