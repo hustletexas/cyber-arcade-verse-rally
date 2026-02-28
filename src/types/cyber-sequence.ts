@@ -21,7 +21,7 @@ export const BUTTON_CONFIG: Record<ButtonColor, { hue: number; label: string }> 
   gold: { hue: 42, label: 'Gold' },
 };
 
-export const BUTTON_ORDER: ButtonColor[] = ['cyan', 'purple', 'green', 'red', 'orange', 'pink', 'yellow', 'blue', 'teal', 'magenta', 'lime', 'gold'];
+export const BUTTON_ORDER: ButtonColor[] = ['cyan', 'purple', 'green', 'red', 'orange', 'pink', 'teal', 'blue', 'yellow', 'magenta', 'lime', 'gold'];
 
 export interface GameState {
   sequence: ButtonColor[];
