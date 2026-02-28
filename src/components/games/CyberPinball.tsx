@@ -291,8 +291,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // Inner guides
       Bodies.rectangle(30, TH - 170, 4, 130, { ...wallOpts, angle: 0.12 }),
       Bodies.rectangle(62, TH - 145, 4, 95, { ...wallOpts, angle: 0.16 }),
-      Bodies.rectangle(TW - 58, TH - 170, 4, 130, { ...wallOpts, angle: -0.12 }),
-      Bodies.rectangle(TW - 90, TH - 145, 4, 95, { ...wallOpts, angle: -0.16 }),
+      // removed: right inner guide (was crossing demon targets)
       // Top area guides
       Bodies.rectangle(20, 195, 4, 230, wallOpts),
       // removed: top-left guide wall (was touching cannon)
@@ -381,7 +380,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(TW - 104 + i * 22, dtY, 4, 20, sensorOpts(`demon_r_${i}`))
     );
     walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, wallOpts));
-    
+    walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, wallOpts));
 
     // ── Orbit sensors ──
     const orbitL = Bodies.rectangle(28, 115, 16, 8, sensorOpts('orbit_left'));
