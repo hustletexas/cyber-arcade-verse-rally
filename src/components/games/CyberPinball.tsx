@@ -288,7 +288,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     walls.push(Bodies.rectangle(TW / 2, ctY - 15, 120, 3, wallOpts));
 
     // ── Portal hole (between lower bumpers) ──
-    const portalHole = Bodies.circle(bCX, bCY + 100, 10, sensorOpts('portal_hole'));
+    const portalHole = Bodies.circle(bCX, 480, 10, sensorOpts('portal_hole'));
 
     // ── Magnet bumper ──
     const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
