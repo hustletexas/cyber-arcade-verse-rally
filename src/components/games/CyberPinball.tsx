@@ -352,9 +352,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // ── Magnet bumper ──
     const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
 
-    // ── Rotating rail ramp ──
+    // ── Rotating rail ramps ──
     const railRamp = Bodies.rectangle(TW / 2 - 80, 300, 80, 4, { isStatic: true, label: 'rail_ramp', angle: -0.15 });
     const railSensor = Bodies.rectangle(TW / 2 - 80, 280, 18, 8, sensorOpts('rail_loop'));
+    const railRampR = Bodies.rectangle(TW / 2 + 80, 300, 80, 4, { isStatic: true, label: 'rail_ramp_r', angle: 0.15 });
+    const railSensorR = Bodies.rectangle(TW / 2 + 80, 280, 18, 8, sensorOpts('rail_loop_r'));
 
     // ── CYBER letter lanes ──
     const cyberY = 130;
@@ -388,7 +390,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...(lSling ? [lSling] : []), ...(rSling ? [rSling] : []),
       ...bumpers, reactorSensor, portalHole,
       ...skillLaneSensors, ...skillLaneGuides,
-      ...comboTargets, magnetBumper, railRamp, railSensor,
+      ...comboTargets, magnetBumper, railRamp, railSensor, railRampR, railSensorR,
       ...cyberSensors,
       ...demonTargetsL, ...demonTargetsR,
       orbitL, orbitR,
@@ -482,11 +484,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           showMsg('⚡ MAGNET!');
         }
 
-        // Rail loop
+        // Rail loops
         if (labels.includes('rail_loop')) {
           addScore(500);
           showMsg('🌀 RAIL LOOP! +500');
           spawnParticles(ball.position.x, ball.position.y, 10, NEON.green, 6);
+        }
+        if (labels.includes('rail_loop_r')) {
+          addScore(500);
+          showMsg('🌀 RAIL LOOP! +500');
+          spawnParticles(ball.position.x, ball.position.y, 10, NEON.purple, 6);
         }
 
         // CYBER letters
@@ -819,9 +826,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (g.screenPulse < 0.02) g.screenPulse = 0;
       }
 
-      // ── Rotating rail ramp ──
+      // ── Rotating rail ramps ──
       g.railAngle += 0.008;
       Body.setAngle(railRamp, Math.sin(g.railAngle) * 0.25 - 0.15);
+      Body.setAngle(railRampR, Math.sin(g.railAngle + Math.PI) * 0.25 + 0.15);
 
       // ── Flipper physics ──
       if (g.leftFlipper) {
@@ -1307,11 +1315,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText('⚡', 0, 1);
 
-        // ── Rail ramp ──
-        } else if (body.label === 'rail_ramp') {
+        // ── Rail ramps ──
+        } else if (body.label === 'rail_ramp' || body.label === 'rail_ramp_r') {
+          const isRightRamp = body.label === 'rail_ramp_r';
+          const rampColor = isRightRamp ? NEON.purple : NEON.green;
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.strokeStyle = NEON.green;
-          ctx.shadowColor = NEON.green;
+          ctx.strokeStyle = rampColor;
+          ctx.shadowColor = rampColor;
           ctx.shadowBlur = 10;
           ctx.lineWidth = 3;
           ctx.beginPath();
@@ -1323,7 +1333,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             const dt = ((t * 2 + d * 0.2) % 1);
             const dx = verts[0].x + (verts[1].x - verts[0].x) * dt;
             const dy = verts[0].y + (verts[1].y - verts[0].y) * dt;
-            ctx.fillStyle = NEON.green;
+            ctx.fillStyle = rampColor;
             ctx.globalAlpha = 0.6;
             ctx.beginPath(); ctx.arc(dx, dy, 1.5, 0, Math.PI * 2); ctx.fill();
           }
