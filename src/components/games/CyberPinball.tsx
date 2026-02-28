@@ -29,7 +29,7 @@ const TW = 420;
 const TH = 820;
 const BALL_R = 6;
 // Cyber Breaker-style ball physics: restitution 1.0, speed controlled per-frame
-const BALL_OPTS = { label: 'ball', restitution: 1.0, friction: 0.005, frictionAir: 0.0006, density: 0.003 };
+const BALL_OPTS = { label: 'ball', restitution: 0.6, friction: 0.01, frictionAir: 0.001, density: 0.004 };
 const WALL = 8;
 const BUMPER_R = 16;
 const FW = 64;
@@ -354,7 +354,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const comboTargets = [0, 1, 2, 3, 4].map(i =>
       Bodies.rectangle(TW / 2 - 48 + i * 24, ctY, 5, 22, sensorOpts(`combo_target_${i}`))
     );
-    walls.push(Bodies.rectangle(TW / 2, ctY - 15, 120, 3, wallOpts));
+    // combo target wall removed
 
     // ── Portal hole ──
     const portalHole = Bodies.circle(bCX, 560, 10, sensorOpts('portal_hole'));
@@ -387,13 +387,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const orbitL = Bodies.rectangle(28, 115, 16, 8, sensorOpts('orbit_left'));
     const orbitR = Bodies.rectangle(TW - 52, 115, 16, 8, sensorOpts('orbit_right'));
 
-    // ── Ramps ──
-    const rampL = Bodies.rectangle(52, 380, 4, 160, { ...wallOpts, angle: 0.2 });
-    const rampLGuide = Bodies.rectangle(76, 380, 4, 160, { ...wallOpts, angle: 0.2 });
-    const rampLSensor = Bodies.rectangle(52, 300, 12, 8, sensorOpts('ramp_left'));
-    const rampR = Bodies.rectangle(TW - 76, 380, 4, 160, { ...wallOpts, angle: -0.2 });
-    const rampRGuide = Bodies.rectangle(TW - 100, 380, 4, 160, { ...wallOpts, angle: -0.2 });
-    const rampRSensor = Bodies.rectangle(TW - 76, 300, 12, 8, sensorOpts('ramp_right'));
+    // ── Side Ramps (launch ball to top) ──
+    const rampLOuter = Bodies.rectangle(32, 440, 4, 260, { ...wallOpts, angle: 0.12 });
+    const rampLInner = Bodies.rectangle(56, 440, 4, 260, { ...wallOpts, angle: 0.12 });
+    const rampLSensor = Bodies.rectangle(40, 340, 20, 12, sensorOpts('ramp_left'));
+    const rampROuter = Bodies.rectangle(TW - 32, 440, 4, 260, { ...wallOpts, angle: -0.12 });
+    const rampRInner = Bodies.rectangle(TW - 56, 440, 4, 260, { ...wallOpts, angle: -0.12 });
+    const rampRSensor = Bodies.rectangle(TW - 40, 340, 20, 12, sensorOpts('ramp_right'));
 
     const spinner = Bodies.rectangle(bCX, bCY - 78, 32, 3, sensorOpts('spinner'));
     const lockSensor = Bodies.rectangle(bCX, bCY + 60, 26, 6, sensorOpts('multiball_lock'));
@@ -409,8 +409,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...cyberSensors,
       ...demonTargetsL, ...demonTargetsR,
       orbitL, orbitR,
-      rampL, rampLGuide, rampLSensor,
-      rampR, rampRGuide, rampRSensor,
+      rampLOuter, rampLInner, rampLSensor,
+      rampROuter, rampRInner, rampRSensor,
       spinner, lockSensor, kickback,
     ]);
 
@@ -560,11 +560,17 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           if (g.orbitCount > 1) showMsg(`ORBIT x${g.orbitCount}!`);
         }
 
-        // Ramps
+        // Ramps — zoom ball to top
         if (labels.includes('ramp_left') || labels.includes('ramp_right')) {
           addScore(300);
-          showMsg(labels.includes('ramp_left') ? 'DOWNTOWN RAMP!' : 'NEON HIGHWAY!');
-          spawnParticles(ball.position.x, ball.position.y, 6, NEON.green, 4);
+          const isLeft = labels.includes('ramp_left');
+          showMsg(isLeft ? '🚀 DOWNTOWN RAMP!' : '🚀 NEON HIGHWAY!');
+          spawnParticles(ball.position.x, ball.position.y, 12, isLeft ? NEON.green : NEON.pink, 6);
+          g.shake.power = 5;
+          // Launch ball to the top of playfield
+          Body.setPosition(ball, { x: isLeft ? 80 : TW - 80, y: 70 });
+          Body.setVelocity(ball, { x: isLeft ? 3 : -3, y: -2 });
+          spawnParticles(isLeft ? 80 : TW - 80, 70, 10, isLeft ? NEON.green : NEON.pink, 8);
         }
 
         if (labels.includes('spinner')) { addScore(25); }
@@ -796,27 +802,22 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
-      // ══════════════════════════════════════════════════
-      // ── CYBER BREAKER SPEED NORMALIZATION (per-frame) ──
-      // ══════════════════════════════════════════════════
+      // ── Speed cap only (natural gravity, no forced normalization) ──
       if (g.currentBall && g.launched && fin(g.currentBall.velocity.x) && fin(g.currentBall.velocity.y)) {
         const vx = g.currentBall.velocity.x;
         const vy = g.currentBall.velocity.y;
         const speed = Math.sqrt(vx * vx + vy * vy);
-        if (speed > 0) {
-          // Normalize to TARGET_SPEED, cap at MAX_SPEED
-          const desiredSpeed = Math.min(Math.max(speed, TARGET_SPEED), MAX_SPEED);
-          const scale = desiredSpeed / speed;
+        if (speed > MAX_SPEED) {
+          const scale = MAX_SPEED / speed;
           Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
         }
       }
-      // Same normalization for extra balls
+      // Same cap for extra balls
       for (const eb of g.extraBalls) {
         if (fin(eb.velocity.x) && fin(eb.velocity.y)) {
           const speed = Math.sqrt(eb.velocity.x ** 2 + eb.velocity.y ** 2);
-          if (speed > 0) {
-            const desiredSpeed = Math.min(Math.max(speed, TARGET_SPEED), MAX_SPEED);
-            const scale = desiredSpeed / speed;
+          if (speed > MAX_SPEED) {
+            const scale = MAX_SPEED / speed;
             Body.setVelocity(eb, { x: eb.velocity.x * scale, y: eb.velocity.y * scale });
           }
         }
