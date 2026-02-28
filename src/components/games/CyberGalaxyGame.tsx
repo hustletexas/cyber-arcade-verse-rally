@@ -5,6 +5,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { GalaxySFX } from './CyberGalaxySFX';
 
 // ─── Constants ───────────────────────────────────────────────────────
 const BASE_W = 720;
@@ -300,6 +301,7 @@ const CyberGalaxyGame: React.FC = () => {
     // Photon Burst: piercing beam
     if (p.photonBurst) {
       s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -10, piercing: true });
+      GalaxySFX.shootPhoton();
     } else if (p.rapidPulse) {
       // Rapid Pulse: faster weaker shots
       s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -10, weak: true });
@@ -313,12 +315,14 @@ const CyberGalaxyGame: React.FC = () => {
     } else {
       s.playerBullets.push({ x: cx, y: by, vx: 0, vy: -8 });
     }
+    if (!p.photonBurst) GalaxySFX.shoot();
     // Rapid Pulse fires faster
     const cooldown = (p.rapidPulse || p.rapidFire) ? SHOOT_COOLDOWN * 0.35 : SHOOT_COOLDOWN;
     s.shootCooldown = cooldown;
 
     // Missile Swarm: launch homing missiles on each shot
     if (p.missileSwarm && s.enemies.length > 0) {
+      GalaxySFX.missile();
       for (let i = 0; i < 2; i++) {
         const targetIdx = Math.floor(Math.random() * s.enemies.length);
         s.missiles.push({
@@ -437,6 +441,7 @@ const CyberGalaxyGame: React.FC = () => {
         if (remaining.length === 0) break;
         picks.push(remaining[Math.floor(Math.random() * remaining.length)]);
       }
+      if (picks.length > 0) GalaxySFX.enemyDive();
       for (const e of picks) {
         e.isDiving = true;
         e.diveT = 0;
@@ -545,6 +550,7 @@ const CyberGalaxyGame: React.FC = () => {
       if (pu.x > p.x - POWER_UP_SIZE && pu.x < p.x + p.w + POWER_UP_SIZE &&
           pu.y > p.y - POWER_UP_SIZE && pu.y < p.y + p.h) {
         applyPowerUp(s, pu.type, now);
+        if (pu.type === 'extralife') GalaxySFX.extraLife(); else GalaxySFX.powerUp();
         return false;
       }
       return true;
@@ -562,6 +568,7 @@ const CyberGalaxyGame: React.FC = () => {
           e.hp -= dmg;
           spawnParticles(s.particles, b.x, b.y, ENEMY_META[e.type].color, 5);
           if (e.hp <= 0) {
+            GalaxySFX.enemyDestroy();
             const meta = ENEMY_META[e.type];
             const bonus = e.isDiving ? 100 : 0;
             s.score += meta.score + bonus;
@@ -581,6 +588,8 @@ const CyberGalaxyGame: React.FC = () => {
               });
             }
             s.enemies.splice(ei, 1);
+          } else {
+            GalaxySFX.enemyHit();
           }
           // Piercing bullets pass through, others are consumed
           if (!b.piercing) { bulletConsumed = true; break; }
@@ -608,6 +617,7 @@ const CyberGalaxyGame: React.FC = () => {
       if (m.x > target.x && m.x < target.x + target.w && m.y > target.y && m.y < target.y + target.h) {
         target.hp -= 2;
         spawnParticles(s.particles, m.x, m.y, '#ff6600', 8);
+        GalaxySFX.missileHit();
         if (target.hp <= 0) {
           const meta = ENEMY_META[target.type];
           s.score += meta.score;
@@ -647,6 +657,7 @@ const CyberGalaxyGame: React.FC = () => {
       s.wave++;
       s.enemies = spawnWave(s.wave, s.cw);
       s.waveOverlayEnd = now + WAVE_OVERLAY_TIME;
+      GalaxySFX.waveComplete();
       s.enemyBullets = [];
       s.powerUps = [];
     }
@@ -711,9 +722,11 @@ const CyberGalaxyGame: React.FC = () => {
         s.activePowerEnd = 0;
       }
       spawnParticles(s.particles, p.x + p.w / 2, p.y, '#00ccff', 12);
+      GalaxySFX.shieldHit();
       return;
     }
     p.lives--;
+    GalaxySFX.playerHit();
     p.invulnTimer = INVULN_TIME;
     p.weaponLevel = 1;
     p.weaponTimer = 0;
@@ -728,6 +741,7 @@ const CyberGalaxyGame: React.FC = () => {
 
   function endGame(s: GameState) {
     s.status = 'gameover';
+    GalaxySFX.gameOver();
     if (s.score > s.bestScore) {
       s.bestScore = s.score;
       localStorage.setItem('cyberGalaxyBest', String(s.score));
