@@ -381,7 +381,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(TW - 104 + i * 22, dtY, 4, 20, sensorOpts(`demon_r_${i}`))
     );
     walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, wallOpts));
-    walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, wallOpts));
+    
 
     // ── Orbit sensors ──
     const orbitL = Bodies.rectangle(28, 115, 16, 8, sensorOpts('orbit_left'));
