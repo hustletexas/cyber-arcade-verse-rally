@@ -165,8 +165,8 @@
 }
 
 .sequence-button--teal {
-  background: linear-gradient(160deg, rgba(160, 220, 255, 0.95) 0%, rgba(100, 195, 255, 0.9) 40%, rgba(70, 170, 245, 0.92) 80%, rgba(45, 140, 220, 0.95) 100%);
-  border-color: rgba(130, 210, 255, 0.7) rgba(90, 180, 250, 0.5) rgba(40, 120, 200, 0.75) rgba(110, 200, 255, 0.4);
+  background: linear-gradient(160deg, rgba(90, 160, 220, 0.95) 0%, rgba(55, 130, 200, 0.9) 40%, rgba(35, 100, 180, 0.92) 80%, rgba(20, 75, 150, 0.95) 100%);
+  border-color: rgba(70, 145, 210, 0.7) rgba(45, 115, 190, 0.5) rgba(15, 65, 130, 0.75) rgba(60, 135, 200, 0.4);
   box-shadow: 0 6px 0 rgba(5, 85, 75, 0.8), 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 25px rgba(20, 210, 185, 0.4), inset 0 2px 15px rgba(255, 255, 255, 0.2), inset 0 -6px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -357,8 +357,8 @@
 }
 
 .sequence-button--active.sequence-button--teal {
-  background: linear-gradient(145deg, rgba(200, 235, 255, 1) 0%, rgba(120, 200, 255, 0.98) 50%, rgba(90, 180, 250, 1) 100%);
-  box-shadow: 0 2px 0 rgba(40, 120, 200, 0.6), 0 0 60px rgba(120, 200, 255, 0.9), 0 0 120px rgba(120, 200, 255, 0.5), 0 0 180px rgba(120, 200, 255, 0.3), inset 0 2px 30px rgba(255, 255, 255, 0.6);
+  background: linear-gradient(145deg, rgba(140, 195, 245, 1) 0%, rgba(70, 150, 225, 0.98) 50%, rgba(45, 120, 200, 1) 100%);
+  box-shadow: 0 2px 0 rgba(15, 60, 130, 0.6), 0 0 60px rgba(55, 130, 210, 0.9), 0 0 120px rgba(55, 130, 210, 0.5), 0 0 180px rgba(55, 130, 210, 0.3), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--magenta {
@@ -436,7 +436,7 @@
 .sequence-button--pink { --c: #ff00aa; }
 .sequence-button--yellow { --c: #eab308; }
 .sequence-button--blue { --c: #3b82f6; }
-.sequence-button--teal { --c: #7ac8ff; }
+.sequence-button--teal { --c: #3782c8; }
 .sequence-button--magenta { --c: #d946ef; }
 .sequence-button--lime { --c: #84cc16; }
 .sequence-button--gold { --c: #f59e0b; }
