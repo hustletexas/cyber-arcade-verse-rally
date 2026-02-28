@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ExternalLink, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface GameCardProps {
@@ -13,7 +14,7 @@ interface GameCardProps {
     blockchain: string;
     image: string;
     description: string;
-    playUrl: string;
+    playUrl: string | null;
     downloadUrl?: string | null;
     isWebBased: boolean;
     rewards: string[];
@@ -23,28 +24,35 @@ interface GameCardProps {
 }
 
 export const GameCard: React.FC<GameCardProps> = ({ game }) => {
-  const handlePlay = () => {
-    if (game.isWebBased) {
+  const handlePrimary = () => {
+    if (game.isWebBased && game.playUrl) {
       window.open(game.playUrl, '_blank');
       toast.success(`Launching ${game.name}...`);
+    } else if (game.playUrl) {
+      window.open(game.playUrl, '_blank');
+    } else if (game.downloadUrl) {
+      window.open(game.downloadUrl, '_blank');
+      toast.success(`Opening ${game.name} download page...`);
     } else {
-      toast.info(`${game.name} requires download to play`);
+      toast.info(`${game.name} — coming soon!`);
     }
   };
 
   const handleDownload = () => {
     if (game.downloadUrl) {
-      // For demo purposes, show a placeholder message since these are placeholder URLs
-      if (game.downloadUrl.includes('otg.game') || game.downloadUrl.includes('placeholder')) {
-        toast.info(`${game.name} download coming soon! Check back later.`);
-      } else {
-        window.open(game.downloadUrl, '_blank');
-        toast.success(`Downloading ${game.name}...`);
-      }
-    } else {
-      toast.error('Download not available for this game');
+      window.open(game.downloadUrl, '_blank');
+      toast.success(`Opening ${game.name} download page...`);
     }
   };
+
+  const getPrimaryLabel = () => {
+    if (game.isWebBased && game.playUrl) return '🚀 PLAY NOW';
+    if (game.playUrl) return '🌐 WEBSITE';
+    if (game.downloadUrl) return '📥 GET GAME';
+    return '🔜 COMING SOON';
+  };
+
+  const showDownloadButton = !game.isWebBased && game.downloadUrl && game.playUrl;
 
   return (
     <Card className="holographic hover:scale-105 transition-all duration-300">
@@ -102,22 +110,23 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
           <Button 
-            onClick={handlePlay}
-            className="flex-1 cyber-button text-sm"
+            onClick={handlePrimary}
+            className="w-full cyber-button text-sm"
             size="sm"
           >
-            {game.isWebBased ? '🚀 PLAY' : '👀 VIEW'}
+            {getPrimaryLabel()}
           </Button>
-          {!game.isWebBased && game.downloadUrl && (
+          {showDownloadButton && (
             <Button 
               onClick={handleDownload}
               variant="outline"
-              className="border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black"
+              className="w-full border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-black text-sm"
               size="sm"
             >
-              📥
+              <Download className="w-4 h-4 mr-2" />
+              DOWNLOAD
             </Button>
           )}
         </div>
