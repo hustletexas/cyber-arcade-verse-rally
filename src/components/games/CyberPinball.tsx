@@ -387,13 +387,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const orbitL = Bodies.rectangle(28, 115, 16, 8, sensorOpts('orbit_left'));
     const orbitR = Bodies.rectangle(TW - 52, 115, 16, 8, sensorOpts('orbit_right'));
 
-    // ── Side Ramps (launch ball to top) ──
-    const rampLOuter = Bodies.rectangle(32, 440, 4, 260, { ...wallOpts, angle: 0.12 });
-    const rampLInner = Bodies.rectangle(56, 440, 4, 260, { ...wallOpts, angle: 0.12 });
-    const rampLSensor = Bodies.rectangle(40, 340, 20, 12, sensorOpts('ramp_left'));
-    const rampROuter = Bodies.rectangle(TW - 32, 440, 4, 260, { ...wallOpts, angle: -0.12 });
-    const rampRInner = Bodies.rectangle(TW - 56, 440, 4, 260, { ...wallOpts, angle: -0.12 });
-    const rampRSensor = Bodies.rectangle(TW - 40, 340, 20, 12, sensorOpts('ramp_right'));
 
     const spinner = Bodies.rectangle(bCX, bCY - 78, 32, 3, sensorOpts('spinner'));
     const lockSensor = Bodies.rectangle(bCX, bCY + 60, 26, 6, sensorOpts('multiball_lock'));
@@ -409,8 +402,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...cyberSensors,
       ...demonTargetsL, ...demonTargetsR,
       orbitL, orbitR,
-      rampLOuter, rampLInner, rampLSensor,
-      rampROuter, rampRInner, rampRSensor,
       spinner, lockSensor, kickback,
     ]);
 
@@ -560,18 +551,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           if (g.orbitCount > 1) showMsg(`ORBIT x${g.orbitCount}!`);
         }
 
-        // Ramps — zoom ball to top
-        if (labels.includes('ramp_left') || labels.includes('ramp_right')) {
-          addScore(300);
-          const isLeft = labels.includes('ramp_left');
-          showMsg(isLeft ? '🚀 DOWNTOWN RAMP!' : '🚀 NEON HIGHWAY!');
-          spawnParticles(ball.position.x, ball.position.y, 12, isLeft ? NEON.green : NEON.pink, 6);
-          g.shake.power = 5;
-          // Launch ball to the top of playfield
-          Body.setPosition(ball, { x: isLeft ? 80 : TW - 80, y: 70 });
-          Body.setVelocity(ball, { x: isLeft ? 3 : -3, y: -2 });
-          spawnParticles(isLeft ? 80 : TW - 80, 70, 10, isLeft ? NEON.green : NEON.pink, 8);
-        }
 
         if (labels.includes('spinner')) { addScore(25); }
 
@@ -1557,20 +1536,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       }
 
       // ── Labels ──
-      ctx.globalAlpha = 0.65;
-      ctx.shadowColor = NEON.green; ctx.shadowBlur = 4;
-      ctx.fillStyle = NEON.green; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
-      ctx.save();
-      ctx.translate(36, 410); ctx.rotate(-0.2);
-      ctx.fillText('DOWNTOWN', 0, 0); ctx.fillText('RAMP', 0, 8);
-      ctx.restore();
-      ctx.save();
-      ctx.translate(TW - 58, 410); ctx.rotate(0.2);
-      ctx.shadowColor = NEON.pink;
-      ctx.fillStyle = NEON.pink;
-      ctx.fillText('NEON', 0, 0); ctx.fillText('HIGHWAY', 0, 8);
-      ctx.restore();
-      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
 
       ctx.fillStyle = `${NEON.orange}88`; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
       ctx.fillText('▼ COMBO TARGETS ▼', TW / 2, ctY + 22);
