@@ -374,8 +374,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const demonTargetsR = [0, 1, 2].map(i =>
       Bodies.rectangle(TW - 104 + i * 22, dtY, 4, 20, sensorOpts(`demon_r_${i}`))
     );
-    walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, wallOpts));
-    walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, wallOpts));
+    const trampolineOpts = { ...wallOpts, restitution: 1.5, label: 'trampoline_wall' };
+    walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, trampolineOpts));
+    walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, trampolineOpts));
 
     // ── Orbit sensors ──
     const orbitL = Bodies.rectangle(28, 115, 16, 8, sensorOpts('orbit_left'));
@@ -1174,6 +1175,21 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const bodies = Composite.allBodies(engine.world);
       for (const body of bodies) {
         if (body.label === 'drain' || body.label === 'top_wall') continue;
+        // Trampoline walls - neon green bouncy glow
+        if (body.label === 'trampoline_wall') {
+          const tw = 70, th = 3;
+          const pulse = 0.6 + Math.sin(t * 6) * 0.4;
+          ctx.shadowColor = NEON.green;
+          ctx.shadowBlur = 18 * pulse;
+          ctx.fillStyle = `rgba(57, 255, 20, ${0.7 * pulse})`;
+          ctx.fillRect(-tw / 2, -th / 2, tw, th);
+          ctx.strokeStyle = NEON.green;
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(-tw / 2, -th / 2, tw, th);
+          ctx.shadowBlur = 0;
+          ctx.restore();
+          continue;
+        }
         if (!fin(body.position.x) || !fin(body.position.y) || !fin(body.angle)) continue;
         ctx.save();
         ctx.translate(body.position.x, body.position.y);
