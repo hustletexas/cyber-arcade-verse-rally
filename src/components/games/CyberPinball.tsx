@@ -5,6 +5,7 @@ import { useMultiWallet } from '@/hooks/useMultiWallet';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SFX } from './CyberPinballSFX';
 
 const { Engine, Runner, Bodies, Body, Composite, Events, Constraint, Vector } = Matter;
 
@@ -221,6 +222,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.antiGravMeter = 0;
       setAntiGrav(true);
       setAntiGravMeter(0);
+      SFX.antiGravity();
       showMsg('🌀 ANTI-GRAVITY ACTIVATED!', 3000);
       g.lightFlash = 1.5;
       g.shake.power = 6;
@@ -413,6 +415,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         for (let i = 0; i < 4; i++) {
           if (labels.includes(`bumper_${i}`)) {
             addScore(100);
+            SFX.bumper();
             g.bumperFlash.set(`bumper_${i}`, Date.now() + 300);
             g.shake.power = 5;
             g.lightFlash = 0.4;
@@ -422,6 +425,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
               g.overdriveActive = true;
               g.overdriveTimer = Date.now() + 15000;
               setOverdrive(true);
+              SFX.modeActivate();
               showMsg('⚡ OVERDRIVE ENGAGED! 2x SCORING!', 3000);
               g.lightFlash = 1;
             }
@@ -436,6 +440,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         if (labels.includes('slingshot')) {
           addScore(50);
+          SFX.slingshot();
           g.shake.power = 3;
           spawnParticles(ball.position.x, ball.position.y, 6, NEON.yellow, 4);
         }
@@ -445,6 +450,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           if (labels.includes(`skill_lane_${i}`)) {
             if (g.skillShot) {
               addScore(3000);
+              SFX.skillShot();
               showMsg('🎯 SKILL SHOT! +3000', 2500);
               g.skillShot = false;
               spawnParticles(ball.position.x, ball.position.y, 15, NEON.white, 8);
@@ -464,6 +470,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
               g.comboTargetComplete++;
               g.comboTargets.fill(false);
               addScore(2000);
+              SFX.comboBank();
               showMsg(`💥 COMBO BANK COMPLETE! +2000`, 3000);
               g.lightFlash = 1;
               g.shake.power = 10;
@@ -475,6 +482,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         // Magnet bumper
         if (labels.includes('magnet_bumper')) {
           addScore(75);
+          SFX.magnet();
           g.magnetActive = true;
           g.magnetTimer = Date.now() + 600;
           if (fin(ball.velocity.x) && fin(ball.velocity.y)) {
@@ -487,11 +495,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         // Rail loops
         if (labels.includes('rail_loop')) {
           addScore(500);
+          SFX.railLoop();
           showMsg('🌀 RAIL LOOP! +500');
           spawnParticles(ball.position.x, ball.position.y, 10, NEON.green, 6);
         }
         if (labels.includes('rail_loop_r')) {
           addScore(500);
+          SFX.railLoop();
           showMsg('🌀 RAIL LOOP! +500');
           spawnParticles(ball.position.x, ball.position.y, 10, NEON.purple, 6);
         }
@@ -502,6 +512,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             g.cyberLetters[i] = true;
             setCyberLetters([...g.cyberLetters]);
             addScore(500);
+            SFX.letterLit();
             showMsg(`${'CYBER'[i]} LIT!`);
             spawnParticles(ball.position.x, ball.position.y, 6, NEON.cyan, 4);
             if (g.cyberLetters.every(Boolean)) {
@@ -510,6 +521,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
               setCyberLetters([false, false, false, false, false]);
               const bonus = 5000 * g.cyberComplete;
               addScore(bonus);
+              SFX.cyberJackpot();
               showMsg(`🌆 CYBER JACKPOT x${g.cyberComplete}! +${bonus.toLocaleString()}`, 3000);
               g.lightFlash = 1;
               g.shake.power = 8;
@@ -534,6 +546,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.demonMode = true;
           g.demonTimer = Date.now() + 20000;
           setDemonMode(true);
+          SFX.modeActivate();
           showMsg('👹 DEMON MODE! 3x SCORING!', 4000);
           g.lightFlash = 1;
           g.shake.power = 8;
@@ -541,6 +554,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         // Orbits
         if (labels.includes('orbit_left') || labels.includes('orbit_right')) {
+          SFX.orbit();
           const dir = labels.includes('orbit_left') ? 'left' : 'right';
           if (g.lastOrbitDir !== dir) { g.orbitCount++; g.lastOrbitDir = dir; }
           else { g.orbitCount = 1; g.lastOrbitDir = dir; }
@@ -554,6 +568,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         // Portal hole
         if (labels.includes('portal_hole')) {
           addScore(250);
+          SFX.portal();
           showMsg('🌀 PORTAL! +250');
           g.shake.power = 6;
           g.lightFlash = 0.6;
@@ -573,6 +588,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             g.multiballActive = true;
             g.lightFlash = 1;
             g.shake.power = 8;
+            SFX.multiball();
             showMsg('🌩 CYBER STORM MULTIBALL!', 4000);
             for (let b = 0; b < 2; b++) {
               const extra = Bodies.circle(TW / 2 + (b - 0.5) * 35, 100, BALL_R, {
@@ -622,8 +638,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         onGameOver?.(g.score);
         // Submit score + smart contract
         submitScore(g.score, 3 - g.balls);
+        SFX.gameOver();
         showMsg('GAME OVER');
       } else {
+        SFX.drain();
         showMsg(`BALL LOST — ${g.balls} LEFT`);
         setTimeout(() => spawnBall(), 1000);
       }
@@ -677,6 +695,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.launched = true;
       // Cannon muzzle flash
       cannonFlashRef.current = Date.now() + 400;
+      SFX.cannon();
       showMsg('🔥 CANNON FIRE!');
       g.shake.power = 6;
       g.screenPulse = 0.5;
@@ -1746,8 +1765,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // ═══════════════════════════════════════
     const onKeyDown = (e: KeyboardEvent) => {
       const g = G.current;
-      if (e.key === 'ArrowLeft' || e.key === 'z' || e.key === 'Z') { e.preventDefault(); g.leftUp = true; }
-      if (e.key === 'ArrowRight' || e.key === '/' || e.key === 'm' || e.key === 'M') { e.preventDefault(); g.rightUp = true; }
+      if (e.key === 'ArrowLeft' || e.key === 'z' || e.key === 'Z') { e.preventDefault(); if (!g.leftUp) SFX.flipper(); g.leftUp = true; }
+      if (e.key === 'ArrowRight' || e.key === '/' || e.key === 'm' || e.key === 'M') { e.preventDefault(); if (!g.rightUp) SFX.flipper(); g.rightUp = true; }
       if (e.key === ' ' || e.key === 'ArrowDown') {
         e.preventDefault();
         if (g.gameOver) {
