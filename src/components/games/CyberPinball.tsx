@@ -352,6 +352,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const portalHole = Bodies.circle(bCX, 560, 10, sensorOpts('portal_hole'));
     const portalBL = Bodies.circle(40, TH - 80, 10, sensorOpts('portal_bl'));
     const portalBR = Bodies.circle(TW - 40, TH - 80, 10, sensorOpts('portal_br'));
+    const portalExit = Bodies.circle(35, 45, 10, sensorOpts('portal_exit'));
 
     // ── Magnet bumper ──
     const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
@@ -393,7 +394,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...walls, lf, rf, lp, rp,
       tlf, trf, tlp, trp,
       ...(lSling ? [lSling] : []), ...(rSling ? [rSling] : []),
-      ...bumpers, reactorSensor, portalHole, portalBL, portalBR,
+      ...bumpers, reactorSensor, portalHole, portalBL, portalBR, portalExit,
       ...skillLaneSensors, ...skillLaneGuides,
       ...comboTargets, magnetBumper, railRamp, railSensor, railRampR, railSensorR,
       ...cyberSensors,
@@ -570,39 +571,42 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         // Portal hole
         if (labels.includes('portal_hole')) {
+          const spd = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2) || TARGET_SPEED;
           addScore(250);
           SFX.portal();
           showMsg('🌀 PORTAL! +250');
           g.shake.power = 6;
           g.lightFlash = 0.6;
           spawnParticles(ball.position.x, ball.position.y, 15, NEON.purple, 8);
-          Body.setPosition(ball, { x: TW / 2, y: 30 });
-          Body.setVelocity(ball, { x: (Math.random() - 0.5) * 3, y: 2 });
-          spawnParticles(TW / 2, 30, 12, NEON.purple, 6);
+          Body.setPosition(ball, { x: 35, y: 45 });
+          Body.setVelocity(ball, { x: spd * 0.7, y: spd * 0.7 });
+          spawnParticles(35, 45, 12, NEON.purple, 6);
         }
 
-        // Corner portals — BL teleports to BR and vice versa
+        // Corner portals — teleport to top-left exit
         if (labels.includes('portal_bl')) {
+          const spd = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2) || TARGET_SPEED;
           addScore(150);
           SFX.portal();
           showMsg('🌀 CORNER WARP! +150');
           g.shake.power = 4;
           g.lightFlash = 0.5;
           spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
-          Body.setPosition(ball, { x: TW - 40, y: TH - 80 });
-          Body.setVelocity(ball, { x: -3, y: -4 });
-          spawnParticles(TW - 40, TH - 80, 10, NEON.orange, 6);
+          Body.setPosition(ball, { x: 35, y: 45 });
+          Body.setVelocity(ball, { x: spd * 0.7, y: spd * 0.7 });
+          spawnParticles(35, 45, 10, NEON.orange, 6);
         }
         if (labels.includes('portal_br')) {
+          const spd = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2) || TARGET_SPEED;
           addScore(150);
           SFX.portal();
           showMsg('🌀 CORNER WARP! +150');
           g.shake.power = 4;
           g.lightFlash = 0.5;
           spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
-          Body.setPosition(ball, { x: 40, y: TH - 80 });
-          Body.setVelocity(ball, { x: 3, y: -4 });
-          spawnParticles(40, TH - 80, 10, NEON.orange, 6);
+          Body.setPosition(ball, { x: 35, y: 45 });
+          Body.setVelocity(ball, { x: spd * 0.7, y: spd * 0.7 });
+          spawnParticles(35, 45, 10, NEON.orange, 6);
         }
 
         // Multiball lock
@@ -1315,22 +1319,25 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
           ctx.globalAlpha = 1;
 
-        // ── Corner portals ──
-        } else if (body.label === 'portal_bl' || body.label === 'portal_br') {
+        // ── Corner portals & exit portal ──
+        } else if (body.label === 'portal_bl' || body.label === 'portal_br' || body.label === 'portal_exit') {
+          const isExit = body.label === 'portal_exit';
+          const col = isExit ? NEON.cyan : NEON.orange;
+          const col2 = isExit ? `${NEON.green}aa` : `${NEON.yellow}aa`;
           const pulseP = 10 + Math.sin(t * 5 + 2) * 2;
-          ctx.shadowColor = NEON.orange;
+          ctx.shadowColor = col;
           ctx.shadowBlur = 20;
-          ctx.strokeStyle = NEON.orange;
+          ctx.strokeStyle = col;
           ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(0, 0, pulseP, 0, Math.PI * 2); ctx.stroke();
           ctx.shadowBlur = 10;
-          ctx.strokeStyle = `${NEON.yellow}aa`;
+          ctx.strokeStyle = col2;
           ctx.lineWidth = 1.5;
           ctx.beginPath(); ctx.arc(0, 0, pulseP - 4, -t * 4, -t * 4 + Math.PI * 1.5); ctx.stroke();
           ctx.shadowBlur = 0;
           ctx.fillStyle = '#0b0f1a';
           ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = NEON.orange;
+          ctx.fillStyle = col;
           ctx.globalAlpha = 0.6 + Math.sin(t * 6 + 1) * 0.3;
           ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
           ctx.globalAlpha = 1;
