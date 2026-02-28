@@ -1175,13 +1175,18 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const bodies = Composite.allBodies(engine.world);
       for (const body of bodies) {
         if (body.label === 'drain' || body.label === 'top_wall') continue;
+        if (!fin(body.position.x) || !fin(body.position.y) || !fin(body.angle)) continue;
+        ctx.save();
+        ctx.translate(body.position.x, body.position.y);
+        ctx.rotate(body.angle);
+
         // Trampoline walls - neon green bouncy glow
         if (body.label === 'trampoline_wall') {
-          const tw = 70, th = 3;
+          const tw = 70, th = 6;
           const pulse = 0.6 + Math.sin(t * 6) * 0.4;
           ctx.shadowColor = NEON.green;
-          ctx.shadowBlur = 18 * pulse;
-          ctx.fillStyle = `rgba(57, 255, 20, ${0.7 * pulse})`;
+          ctx.shadowBlur = 22 * pulse;
+          ctx.fillStyle = `rgba(57, 255, 20, ${0.8 * pulse})`;
           ctx.fillRect(-tw / 2, -th / 2, tw, th);
           ctx.strokeStyle = NEON.green;
           ctx.lineWidth = 1.5;
@@ -1190,10 +1195,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.restore();
           continue;
         }
-        if (!fin(body.position.x) || !fin(body.position.y) || !fin(body.angle)) continue;
-        ctx.save();
-        ctx.translate(body.position.x, body.position.y);
-        ctx.rotate(body.angle);
 
         // ── Ball ──
         if (body.label === 'ball') {
