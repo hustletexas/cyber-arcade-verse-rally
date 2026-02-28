@@ -153,9 +153,9 @@
 }
 
 .sequence-button--yellow {
-  background: linear-gradient(160deg, rgba(255, 240, 100, 0.9) 0%, rgba(240, 200, 15, 0.8) 40%, rgba(210, 170, 8, 0.85) 80%, rgba(170, 130, 5, 0.9) 100%);
-  border-color: rgba(255, 220, 20, 0.6) rgba(220, 185, 10, 0.4) rgba(150, 115, 5, 0.7) rgba(240, 205, 15, 0.3);
-  box-shadow: 0 6px 0 rgba(140, 105, 5, 0.8), 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 25px rgba(255, 220, 20, 0.4), inset 0 2px 15px rgba(255, 255, 255, 0.2), inset 0 -6px 15px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(160deg, rgba(255, 255, 60, 0.95) 0%, rgba(255, 245, 0, 0.88) 40%, rgba(240, 225, 0, 0.9) 80%, rgba(200, 185, 0, 0.92) 100%);
+  border-color: rgba(255, 255, 0, 0.7) rgba(230, 220, 0, 0.5) rgba(170, 155, 0, 0.75) rgba(245, 240, 0, 0.4);
+  box-shadow: 0 6px 0 rgba(160, 145, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 255, 0, 0.5), inset 0 2px 15px rgba(255, 255, 255, 0.3), inset 0 -6px 15px rgba(0, 0, 0, 0.25);
 }
 
 .sequence-button--blue {
@@ -347,8 +347,8 @@
 }
 
 .sequence-button--active.sequence-button--yellow {
-  background: linear-gradient(145deg, rgba(255, 245, 120, 1) 0%, rgba(255, 220, 20, 0.95) 50%, rgba(240, 200, 10, 1) 100%);
-  box-shadow: 0 0 50px rgba(255, 220, 20, 0.9), 0 0 100px rgba(255, 220, 20, 0.5), 0 0 150px rgba(255, 220, 20, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
+  background: linear-gradient(145deg, rgba(255, 255, 180, 1) 0%, rgba(255, 255, 0, 0.98) 50%, rgba(245, 240, 0, 1) 100%);
+  box-shadow: 0 2px 0 rgba(160, 145, 0, 0.6), 0 0 60px rgba(255, 255, 0, 0.9), 0 0 120px rgba(255, 255, 0, 0.5), 0 0 180px rgba(255, 255, 0, 0.3), inset 0 2px 30px rgba(255, 255, 255, 0.6);
 }
 
 .sequence-button--active.sequence-button--blue {
