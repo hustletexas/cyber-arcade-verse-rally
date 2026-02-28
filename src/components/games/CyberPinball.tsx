@@ -287,11 +287,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(TW - WALL / 2, TH - 55, WALL, 110, wallOpts),
       // removed: plunger lane wall + left inner guides
       // removed: right inner guide (was crossing demon targets)
-      // Top area guides
-      Bodies.rectangle(20, 195, 4, 230, wallOpts),
-      // removed: top-left guide wall (was touching cannon)
-      Bodies.rectangle(TW - 46, 195, 4, 230, wallOpts),
-      Bodies.rectangle(TW - 60, 78, 42, 4, { ...wallOpts, angle: 0.3 }),
+      // removed: top area guide walls
       // Anti-gravity top drain blocker
       Bodies.rectangle(TW / 2, -10, TW - 50, 8, { ...wallOpts, restitution: 0.8, label: 'top_wall' }),
     ];
