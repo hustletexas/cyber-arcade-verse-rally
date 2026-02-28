@@ -621,8 +621,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       Body.setStatic(g.currentBall, false);
       Body.setPosition(g.currentBall, { x: PLUNGER_X - 2, y: TH - 320 });
-      Body.setVelocity(g.currentBall, { x: -5, y: -18 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.004, y: -0.12 });
+      Body.setVelocity(g.currentBall, { x: -5, y: -28 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.005, y: -0.18 });
       g.launched = true;
       showMsg('LAUNCH!');
       g.shake.power = 4;
