@@ -177,8 +177,8 @@
 }
 
 .sequence-button--lime {
-  background: linear-gradient(160deg, rgba(185, 255, 70, 0.9) 0%, rgba(125, 210, 18, 0.8) 40%, rgba(100, 175, 12, 0.85) 80%, rgba(70, 130, 8, 0.9) 100%);
-  border-color: rgba(140, 230, 20, 0.6) rgba(110, 185, 15, 0.4) rgba(60, 110, 8, 0.7) rgba(130, 215, 18, 0.3);
+  background: linear-gradient(160deg, rgba(180, 255, 0, 0.95) 0%, rgba(140, 240, 0, 0.9) 40%, rgba(110, 210, 0, 0.92) 80%, rgba(80, 170, 0, 0.95) 100%);
+  border-color: rgba(160, 250, 0, 0.7) rgba(120, 220, 0, 0.5) rgba(70, 150, 0, 0.75) rgba(150, 240, 0, 0.4);
   box-shadow: 0 6px 0 rgba(55, 100, 5, 0.8), 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 25px rgba(140, 230, 20, 0.4), inset 0 2px 15px rgba(255, 255, 255, 0.2), inset 0 -6px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -367,8 +367,8 @@
 }
 
 .sequence-button--active.sequence-button--lime {
-  background: linear-gradient(145deg, rgba(190, 255, 80, 1) 0%, rgba(140, 230, 20, 0.95) 50%, rgba(120, 205, 15, 1) 100%);
-  box-shadow: 0 0 50px rgba(140, 230, 20, 0.9), 0 0 100px rgba(140, 230, 20, 0.5), 0 0 150px rgba(140, 230, 20, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
+  background: linear-gradient(145deg, rgba(220, 255, 100, 1) 0%, rgba(160, 250, 0, 0.98) 50%, rgba(130, 230, 0, 1) 100%);
+  box-shadow: 0 2px 0 rgba(60, 140, 0, 0.6), 0 0 60px rgba(150, 245, 0, 0.9), 0 0 120px rgba(150, 245, 0, 0.5), 0 0 180px rgba(150, 245, 0, 0.3), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--gold {
@@ -438,7 +438,7 @@
 .sequence-button--blue { --c: #3b82f6; }
 .sequence-button--teal { --c: #3782c8; }
 .sequence-button--magenta { --c: #d946ef; }
-.sequence-button--lime { --c: #84cc16; }
+.sequence-button--lime { --c: #a0f000; }
 .sequence-button--gold { --c: #f59e0b; }
 
 /* Container for particles */
