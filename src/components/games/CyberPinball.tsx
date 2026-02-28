@@ -587,7 +587,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const spawnBall = () => {
       const g = G.current;
       if (g.currentBall || g.gameOver) return;
-      const ball = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
+      const ball = Bodies.circle(30, 30, BALL_R, {
         ...BALL_OPTS, isStatic: true,
       });
       Composite.add(engine.world, ball);
@@ -611,7 +611,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (!g.currentBall && worldBall) g.currentBall = worldBall;
 
       if (!g.currentBall) {
-        const emergencyBall = Bodies.circle(PLUNGER_X, TH - 38, BALL_R, {
+        const emergencyBall = Bodies.circle(30, 30, BALL_R, {
           ...BALL_OPTS,
         });
         Composite.add(engine.world, emergencyBall);
@@ -620,13 +620,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (!g.currentBall || !fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
 
       Body.setStatic(g.currentBall, false);
-      Body.setPosition(g.currentBall, { x: PLUNGER_X - 2, y: TH - 320 });
-      Body.setVelocity(g.currentBall, { x: -5, y: -28 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.005, y: -0.18 });
+      Body.setPosition(g.currentBall, { x: 30, y: 30 });
+      Body.setVelocity(g.currentBall, { x: 6, y: 8 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0.004, y: 0.003 });
       g.launched = true;
       showMsg('LAUNCH!');
       g.shake.power = 4;
-      spawnParticles(PLUNGER_X, TH - 38, 14, NEON.cyan, 7);
+      spawnParticles(30, 30, 14, NEON.cyan, 7);
     };
 
     setTimeout(() => spawnBall(), 400);
