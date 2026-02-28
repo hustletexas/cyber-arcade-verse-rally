@@ -348,8 +348,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     );
     // combo target wall removed
 
-    // ── Portal hole ──
+    // ── Portal holes ──
     const portalHole = Bodies.circle(bCX, 560, 10, sensorOpts('portal_hole'));
+    const portalBL = Bodies.circle(40, TH - 80, 10, sensorOpts('portal_bl'));
+    const portalBR = Bodies.circle(TW - 40, TH - 80, 10, sensorOpts('portal_br'));
 
     // ── Magnet bumper ──
     const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
@@ -391,7 +393,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...walls, lf, rf, lp, rp,
       tlf, trf, tlp, trp,
       ...(lSling ? [lSling] : []), ...(rSling ? [rSling] : []),
-      ...bumpers, reactorSensor, portalHole,
+      ...bumpers, reactorSensor, portalHole, portalBL, portalBR,
       ...skillLaneSensors, ...skillLaneGuides,
       ...comboTargets, magnetBumper, railRamp, railSensor, railRampR, railSensorR,
       ...cyberSensors,
@@ -577,6 +579,30 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           Body.setPosition(ball, { x: TW / 2, y: 30 });
           Body.setVelocity(ball, { x: (Math.random() - 0.5) * 3, y: 2 });
           spawnParticles(TW / 2, 30, 12, NEON.purple, 6);
+        }
+
+        // Corner portals — BL teleports to BR and vice versa
+        if (labels.includes('portal_bl')) {
+          addScore(150);
+          SFX.portal();
+          showMsg('🌀 CORNER WARP! +150');
+          g.shake.power = 4;
+          g.lightFlash = 0.5;
+          spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
+          Body.setPosition(ball, { x: TW - 40, y: TH - 80 });
+          Body.setVelocity(ball, { x: -3, y: -4 });
+          spawnParticles(TW - 40, TH - 80, 10, NEON.orange, 6);
+        }
+        if (labels.includes('portal_br')) {
+          addScore(150);
+          SFX.portal();
+          showMsg('🌀 CORNER WARP! +150');
+          g.shake.power = 4;
+          g.lightFlash = 0.5;
+          spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
+          Body.setPosition(ball, { x: 40, y: TH - 80 });
+          Body.setVelocity(ball, { x: 3, y: -4 });
+          spawnParticles(40, TH - 80, 10, NEON.orange, 6);
         }
 
         // Multiball lock
@@ -1289,7 +1315,26 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
           ctx.globalAlpha = 1;
 
-        // ── Flippers ──
+        // ── Corner portals ──
+        } else if (body.label === 'portal_bl' || body.label === 'portal_br') {
+          const pulseP = 10 + Math.sin(t * 5 + 2) * 2;
+          ctx.shadowColor = NEON.orange;
+          ctx.shadowBlur = 20;
+          ctx.strokeStyle = NEON.orange;
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, 0, pulseP, 0, Math.PI * 2); ctx.stroke();
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = `${NEON.yellow}aa`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(0, 0, pulseP - 4, -t * 4, -t * 4 + Math.PI * 1.5); ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#0b0f1a';
+          ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = NEON.orange;
+          ctx.globalAlpha = 0.6 + Math.sin(t * 6 + 1) * 0.3;
+          ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+
         } else if (body.label.includes('Flipper')) {
           const isTop = body.label.startsWith('top');
           const isLeft = body.label.includes('Left');
