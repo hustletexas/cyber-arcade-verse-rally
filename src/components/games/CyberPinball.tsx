@@ -780,21 +780,21 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       // ── Flipper physics ──
       if (g.leftFlipper) {
-        const ta = g.leftUp ? -0.52 : 0.38;
-        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 0.35);
+        const ta = g.leftUp ? -0.62 : 0.38;
+        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 0.55);
       }
       if (g.rightFlipper) {
-        const ta = g.rightUp ? 0.52 : -0.38;
-        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.35);
+        const ta = g.rightUp ? 0.62 : -0.38;
+        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.55);
       }
       // Top mini flippers follow main flippers
       if (g.topLeftFlipper) {
-        const ta = g.leftUp ? -0.45 : 0.3;
-        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.3);
+        const ta = g.leftUp ? -0.55 : 0.3;
+        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.45);
       }
       if (g.topRightFlipper) {
-        const ta = g.rightUp ? 0.45 : -0.3;
-        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.3);
+        const ta = g.rightUp ? 0.55 : -0.3;
+        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.45);
       }
 
       // ═══════════════════════════════════════
