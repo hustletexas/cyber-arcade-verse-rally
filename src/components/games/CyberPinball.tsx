@@ -24,7 +24,7 @@ const TW = 420;
 const TH = 820;
 const BALL_R = 6;
 // Ping-pong ball physics constants
-const BALL_OPTS = { label: 'ball', restitution: 0.85, friction: 0.005, frictionAir: 0.0008, density: 0.003 };
+const BALL_OPTS = { label: 'ball', restitution: 1.05, friction: 0.005, frictionAir: 0.0006, density: 0.003 };
 const WALL = 8;
 const BUMPER_R = 16;
 const FW = 64;
@@ -621,8 +621,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       Body.setStatic(g.currentBall, false);
       Body.setPosition(g.currentBall, { x: PLUNGER_X - 2, y: TH - 320 });
-      Body.setVelocity(g.currentBall, { x: -4, y: -12 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.003, y: -0.08 });
+      Body.setVelocity(g.currentBall, { x: -5, y: -18 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: -0.004, y: -0.12 });
       g.launched = true;
       showMsg('LAUNCH!');
       g.shake.power = 4;
