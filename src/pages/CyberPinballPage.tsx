@@ -26,7 +26,7 @@ const CyberPinballPage: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-black/50 backdrop-blur border-b border-border/50">
         <div className="max-w-5xl mx-auto flex items-center justify-between p-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="gap-2">
+          <Button variant="ghost" size="sm" onClick={() => { navigate('/'); window.scrollTo(0, 0); }} className="gap-2">
             <ArrowLeft size={16} />
             <span className="hidden sm:inline">Back</span>
           </Button>

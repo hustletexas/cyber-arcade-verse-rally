@@ -97,7 +97,7 @@ const AboutPage = () => {
         <div className="relative z-10 container mx-auto max-w-4xl">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
+            onClick={() => { navigate('/'); window.scrollTo(0, 0); }}
             className="mb-6 text-neon-cyan hover:bg-neon-cyan/10"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

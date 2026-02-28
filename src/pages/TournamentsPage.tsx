@@ -42,7 +42,7 @@ const TournamentsPage = () => {
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
         {/* Back Button */}
-        <Link to="/">
+        <Link to="/" onClick={() => window.scrollTo(0, 0)}>
           <Button variant="ghost" className="mb-4 text-neon-cyan hover:bg-neon-cyan/10">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Arcade

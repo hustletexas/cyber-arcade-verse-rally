@@ -37,7 +37,7 @@ const FoundationPage = () => {
 
       <main className="container mx-auto px-4 py-8 relative z-10 max-w-4xl">
         {/* Back Button */}
-        <Link to="/" className="inline-flex items-center gap-2 text-neon-cyan hover:text-neon-purple transition-colors mb-6 text-sm">
+        <Link to="/" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center gap-2 text-neon-cyan hover:text-neon-purple transition-colors mb-6 text-sm">
           <ArrowLeft className="w-4 h-4" />
           Back to Arcade
         </Link>
@@ -242,7 +242,7 @@ const FoundationPage = () => {
 
         {/* Footer Nav */}
         <div className="text-center pb-8">
-          <Link to="/" className="text-neon-cyan hover:text-neon-purple transition-colors text-sm underline">
+          <Link to="/" onClick={() => window.scrollTo(0, 0)} className="text-neon-cyan hover:text-neon-purple transition-colors text-sm underline">
             ← Back to Cyber City Arcade
           </Link>
         </div>

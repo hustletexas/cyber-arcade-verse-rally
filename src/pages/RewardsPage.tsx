@@ -138,7 +138,7 @@ const RewardsPage = () => {
         {/* Back button */}
         <Button
           variant="ghost"
-          onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')}
+          onClick={() => { navigate('/'); window.scrollTo(0, 0); }}
           className="mb-4 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

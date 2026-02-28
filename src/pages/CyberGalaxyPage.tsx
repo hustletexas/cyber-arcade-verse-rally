@@ -23,6 +23,7 @@ const CyberGalaxyPage = () => {
         {/* Back navigation */}
         <Link
           to="/"
+          onClick={() => window.scrollTo(0, 0)}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-neon-cyan transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />

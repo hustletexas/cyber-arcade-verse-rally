@@ -31,7 +31,7 @@ const EsportsPage = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Back Button */}
-        <Button variant="ghost" onClick={() => navigate('/')} className="mb-6 text-muted-foreground hover:text-accent">
+        <Button variant="ghost" onClick={() => { navigate('/'); window.scrollTo(0, 0); }} className="mb-6 text-muted-foreground hover:text-accent">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Arcade
         </Button>
 

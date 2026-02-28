@@ -64,7 +64,7 @@ const AfterSchoolProgram = () => {
         <div className="container mx-auto max-w-4xl relative z-10">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
+            onClick={() => { navigate('/'); window.scrollTo(0, 0); }}
             className="mb-6 text-neon-cyan hover:bg-neon-cyan/10"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

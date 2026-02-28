@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-arcade-dark p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <Link to="/">
+        <Link to="/" onClick={() => window.scrollTo(0, 0)}>
           <Button variant="ghost" className="mb-6 text-neon-cyan hover:text-neon-pink">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Arcade

@@ -71,7 +71,7 @@ const CyberMatch: React.FC = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate('/')}
+              onClick={() => { navigate('/'); window.scrollTo(0, 0); }}
               className="text-neon-cyan hover:text-cyan-300 hover:bg-cyan-500/10"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
