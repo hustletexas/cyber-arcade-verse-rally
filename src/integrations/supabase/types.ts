@@ -827,6 +827,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pinball_scores: {
+        Row: {
+          balls_used: number | null
+          created_at: string
+          id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          balls_used?: number | null
+          created_at?: string
+          id?: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          balls_used?: number | null
+          created_at?: string
+          id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       portal_breaker_scores: {
         Row: {
           created_at: string
