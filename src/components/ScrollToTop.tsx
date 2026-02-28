@@ -8,6 +8,8 @@ export const ScrollToTop = () => {
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
+    // Scroll to top on initial app load
+    window.scrollTo(0, 0);
   }, []);
 
   useLayoutEffect(() => {
