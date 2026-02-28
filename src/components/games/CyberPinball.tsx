@@ -285,12 +285,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(TW / 2, TH + 20, TW, 40, { isStatic: true, label: 'drain' }),
       Bodies.rectangle(TW - WALL / 2, TH / 2 - 140, WALL, TH - 280, wallOpts),
       Bodies.rectangle(TW - WALL / 2, TH - 55, WALL, 110, wallOpts),
-      // Plunger lane walls (kept as playfield walls)
-      Bodies.rectangle(TW - 34, TH - 190, 4, 200, { ...wallOpts, angle: 0.03 }),
-      // removed: plunger lane top wall (was touching demon target)
-      // Inner guides
-      Bodies.rectangle(30, TH - 170, 4, 130, { ...wallOpts, angle: 0.12 }),
-      Bodies.rectangle(62, TH - 145, 4, 95, { ...wallOpts, angle: 0.16 }),
+      // removed: plunger lane wall + left inner guides
       // removed: right inner guide (was crossing demon targets)
       // Top area guides
       Bodies.rectangle(20, 195, 4, 230, wallOpts),
