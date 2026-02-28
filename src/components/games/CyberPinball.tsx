@@ -1,5 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Matter from 'matter-js';
+import { supabase } from '@/integrations/supabase/client';
+import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { Trophy } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const { Engine, Runner, Bodies, Body, Composite, Events, Constraint, Vector } = Matter;
 
@@ -23,8 +28,8 @@ const linGrad = (ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: numb
 const TW = 420;
 const TH = 820;
 const BALL_R = 6;
-// Ping-pong ball physics constants
-const BALL_OPTS = { label: 'ball', restitution: 1.05, friction: 0.005, frictionAir: 0.0006, density: 0.003 };
+// Cyber Breaker-style ball physics: restitution 1.0, speed controlled per-frame
+const BALL_OPTS = { label: 'ball', restitution: 1.0, friction: 0.005, frictionAir: 0.0006, density: 0.003 };
 const WALL = 8;
 const BUMPER_R = 16;
 const FW = 64;
@@ -33,6 +38,14 @@ const MINI_FW = 36;
 const MINI_FH = 8;
 const PLUNGER_X = TW - 16;
 const BG_COLOR = '#0b0f1a';
+
+// ── Cannon constants ──
+const CANNON_X = 50;
+const CANNON_Y = 60;
+const CANNON_MUZZLE_X = 50;
+const CANNON_MUZZLE_Y = 70;
+const TARGET_SPEED = 7; // Cyber Breaker base speed
+const MAX_SPEED = 12;   // Cyber Breaker max speed
 
 // ── Neon color palette ──
 const NEON = {
@@ -47,6 +60,15 @@ const NEON = {
   white: '#ffffff',
   deepBlue: '#1a0a3e',
 };
+
+const maskWallet = (w: string) => w.length > 12 ? `${w.slice(0, 4)}...${w.slice(-4)}` : w;
+
+interface LeaderboardEntry {
+  user_id: string;
+  score: number;
+  balls_used: number;
+  created_at: string;
+}
 
 interface CyberPinballProps {
   onScoreUpdate?: (score: number) => void;
@@ -66,6 +88,17 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const particles = useRef<Particle[]>([]);
   const bgParticles = useRef<BGParticle[]>([]);
   const touchStartY = useRef<number | null>(null);
+  const scoreSubmittedRef = useRef(false);
+  const cannonFlashRef = useRef(0); // cannon muzzle flash timer
+
+  // Wallet & leaderboard
+  const { primaryWallet, isWalletConnected } = useMultiWallet();
+  const walletAddress = primaryWallet?.address || '';
+  const { deductBalance } = useUserBalance();
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loadingLb, setLoadingLb] = useState(false);
+  const [cccEarned, setCccEarned] = useState<number | null>(null);
 
   // ── Game state ref ──
   const G = useRef({
@@ -122,6 +155,42 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const [antiGravMeter, setAntiGravMeter] = useState(0);
   const [highScore, setHighScore] = useState(G.current.highScore);
 
+  // ── Leaderboard ──
+  const fetchLeaderboard = useCallback(async () => {
+    setLoadingLb(true);
+    const { data } = await supabase
+      .from('pinball_scores')
+      .select('user_id, score, balls_used, created_at')
+      .order('score', { ascending: false })
+      .limit(20);
+    setLeaderboard((data as LeaderboardEntry[]) || []);
+    setLoadingLb(false);
+  }, []);
+
+  const submitScore = useCallback(async (finalScore: number, ballsUsed: number) => {
+    if (!walletAddress || finalScore <= 0 || scoreSubmittedRef.current) return;
+    scoreSubmittedRef.current = true;
+    await supabase.from('pinball_scores').insert({
+      user_id: walletAddress,
+      score: finalScore,
+      balls_used: ballsUsed,
+    });
+    fetchLeaderboard();
+    // Smart contract: submit score for CCC rewards
+    try {
+      const { data } = await supabase.functions.invoke('submit-score', {
+        body: { walletAddress, score: finalScore, gameType: 'arcade' },
+      });
+      if (data?.tokensAwarded) {
+        setCccEarned(data.tokensAwarded);
+      }
+    } catch (e) {
+      console.warn('Score submit to contract failed:', e);
+    }
+  }, [walletAddress, fetchLeaderboard]);
+
+  useEffect(() => { fetchLeaderboard(); }, [fetchLeaderboard]);
+
   const showMsg = useCallback((msg: string, dur = 2000) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), dur);
@@ -155,7 +224,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.lightFlash = 1.5;
       g.shake.power = 6;
       g.screenPulse = 1;
-      // Flip gravity
       if (engineRef.current) {
         engineRef.current.gravity.y = -1.0;
       }
@@ -216,7 +284,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(TW / 2, TH + 20, TW, 40, { isStatic: true, label: 'drain' }),
       Bodies.rectangle(TW - WALL / 2, TH / 2 - 140, WALL, TH - 280, wallOpts),
       Bodies.rectangle(TW - WALL / 2, TH - 55, WALL, 110, wallOpts),
-      // Plunger lane
+      // Plunger lane walls (kept as playfield walls)
       Bodies.rectangle(TW - 34, TH - 190, 4, 200, { ...wallOpts, angle: 0.03 }),
       Bodies.rectangle(TW - 48, TH - 310, 45, 4, { ...wallOpts, angle: -0.32 }),
       // Inner guides
@@ -229,7 +297,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(38, 78, 42, 4, { ...wallOpts, angle: -0.3 }),
       Bodies.rectangle(TW - 46, 195, 4, 230, wallOpts),
       Bodies.rectangle(TW - 60, 78, 42, 4, { ...wallOpts, angle: 0.3 }),
-      // Anti-gravity top drain blocker (invisible ceiling bumper)
+      // Anti-gravity top drain blocker
       Bodies.rectangle(TW / 2, -10, TW - 50, 8, { ...wallOpts, restitution: 0.8, label: 'top_wall' }),
     ];
 
@@ -255,7 +323,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.6 });
     const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.6 });
 
-    // ── 4 Neon Bumpers (high bounce) ──
+    // ── 4 Neon Bumpers ──
     const bCX = TW / 2, bCY = 240;
     const bumpers = [
       Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.8 }),
@@ -266,7 +334,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     const reactorSensor = Bodies.circle(bCX, bCY, 8, sensorOpts('reactor_core'));
 
-    // ── 3 Skill shot lanes at top ──
+    // ── Skill shot lanes ──
     const laneY = 52;
     const skillLaneSensors = [
       Bodies.rectangle(TW / 2 - 40, laneY, 14, 24, sensorOpts('skill_lane_0')),
@@ -280,14 +348,14 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.rectangle(TW / 2 + 55, laneY, 3, 34, wallOpts),
     ];
 
-    // ── Combo target bank (5 targets in row) ──
+    // ── Combo target bank ──
     const ctY = 420;
     const comboTargets = [0, 1, 2, 3, 4].map(i =>
       Bodies.rectangle(TW / 2 - 48 + i * 24, ctY, 5, 22, sensorOpts(`combo_target_${i}`))
     );
     walls.push(Bodies.rectangle(TW / 2, ctY - 15, 120, 3, wallOpts));
 
-    // ── Portal hole (between lower bumpers) ──
+    // ── Portal hole ──
     const portalHole = Bodies.circle(bCX, 560, 10, sensorOpts('portal_hole'));
 
     // ── Magnet bumper ──
@@ -357,7 +425,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         if (labels.includes('drain')) { handleDrain(ball); continue; }
 
-        // Bumpers (strong impulse)
+        // Bumpers
         for (let i = 0; i < 4; i++) {
           if (labels.includes(`bumper_${i}`)) {
             addScore(100);
@@ -425,7 +493,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           addScore(75);
           g.magnetActive = true;
           g.magnetTimer = Date.now() + 600;
-          // Slow the ball briefly
           if (fin(ball.velocity.x) && fin(ball.velocity.y)) {
             Body.setVelocity(ball, { x: ball.velocity.x * 0.3, y: ball.velocity.y * 0.3 });
           }
@@ -501,14 +568,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         if (labels.includes('spinner')) { addScore(25); }
 
-        // Portal hole — teleport ball to top of screen
+        // Portal hole
         if (labels.includes('portal_hole')) {
           addScore(250);
           showMsg('🌀 PORTAL! +250');
           g.shake.power = 6;
           g.lightFlash = 0.6;
           spawnParticles(ball.position.x, ball.position.y, 15, NEON.purple, 8);
-          // Teleport ball to top center with downward velocity
           Body.setPosition(ball, { x: TW / 2, y: 30 });
           Body.setVelocity(ball, { x: (Math.random() - 0.5) * 3, y: 2 });
           spawnParticles(TW / 2, 30, 12, NEON.purple, 6);
@@ -569,13 +635,14 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (g.balls <= 0) {
         g.gameOver = true;
         setGameOver(true);
-        // Save high score
         if (g.score > g.highScore) {
           g.highScore = g.score;
           localStorage.setItem('cyberPinballHigh', String(g.score));
           setHighScore(g.score);
         }
         onGameOver?.(g.score);
+        // Submit score + smart contract
+        submitScore(g.score, 3 - g.balls);
         showMsg('GAME OVER');
       } else {
         showMsg(`BALL LOST — ${g.balls} LEFT`);
@@ -583,11 +650,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       }
     };
 
-    // ── Spawn ball ──
+    // ── Spawn ball at cannon muzzle (unified) ──
     const spawnBall = () => {
       const g = G.current;
       if (g.currentBall || g.gameOver) return;
-      const ball = Bodies.circle(30, 30, BALL_R, {
+      const ball = Bodies.circle(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, BALL_R, {
         ...BALL_OPTS, isStatic: true,
       });
       Composite.add(engine.world, ball);
@@ -598,7 +665,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       setTiltW(0);
     };
 
-    // ── Instant launch helper ──
+    // ── Cannon launch (unified) ──
     const doLaunch = () => {
       const g = G.current;
       if (g.launched || g.gameOver) return;
@@ -611,7 +678,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (!g.currentBall && worldBall) g.currentBall = worldBall;
 
       if (!g.currentBall) {
-        const emergencyBall = Bodies.circle(30, 30, BALL_R, {
+        const emergencyBall = Bodies.circle(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, BALL_R, {
           ...BALL_OPTS,
         });
         Composite.add(engine.world, emergencyBall);
@@ -620,13 +687,20 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (!g.currentBall || !fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
 
       Body.setStatic(g.currentBall, false);
-      Body.setPosition(g.currentBall, { x: 30, y: 30 });
-      Body.setVelocity(g.currentBall, { x: 6, y: 8 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0.004, y: 0.003 });
+      Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
+      // Fire at ~45° downward-right into playfield
+      Body.setVelocity(g.currentBall, { x: 8, y: 6 });
+      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0.005, y: 0.003 });
       g.launched = true;
-      showMsg('LAUNCH!');
-      g.shake.power = 4;
-      spawnParticles(30, 30, 14, NEON.cyan, 7);
+      // Cannon muzzle flash
+      cannonFlashRef.current = Date.now() + 400;
+      showMsg('🔥 CANNON FIRE!');
+      g.shake.power = 6;
+      g.screenPulse = 0.5;
+      // Muzzle flash particles
+      spawnParticles(CANNON_MUZZLE_X + 15, CANNON_MUZZLE_Y + 10, 20, NEON.orange, 10);
+      spawnParticles(CANNON_MUZZLE_X + 10, CANNON_MUZZLE_Y + 5, 10, NEON.yellow, 8);
+      spawnParticles(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, 8, NEON.cyan, 6);
     };
 
     setTimeout(() => spawnBall(), 400);
@@ -663,7 +737,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
-      // ── Boundary clamping — keep ball inside playfield ──
+      // ── Boundary clamping ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
         const bx = g.currentBall.position.x;
         const by = g.currentBall.position.y;
@@ -673,10 +747,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (bx < margin) { cx = margin; clamped = true; }
         if (bx > TW - margin) { cx = TW - margin; clamped = true; }
         if (by < margin) { cy = margin; clamped = true; }
-        // Don't clamp bottom — drain handles that
         if (clamped) {
           Body.setPosition(g.currentBall, { x: cx, y: cy });
-          // Bounce velocity away from wall
           const vx = g.currentBall.velocity.x;
           const vy = g.currentBall.velocity.y;
           Body.setVelocity(g.currentBall, {
@@ -705,37 +777,39 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
-      // ── Top curve: arc ball across at full speed when near ceiling ──
+      // ── Top curve ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.y) && fin(g.currentBall.velocity.y)) {
         const by = g.currentBall.position.y;
         const bx = g.currentBall.position.x;
         const vy = g.currentBall.velocity.y;
-        // When ball is in the top zone and moving upward, curve it horizontally
         if (by < 80 && vy < -2) {
-          // Push ball toward center with a strong horizontal curve
           const dirX = bx > TW / 2 ? -1 : 1;
           const curvePower = 0.006 * Math.abs(vy / 12);
           Body.applyForce(g.currentBall, g.currentBall.position, { x: dirX * curvePower, y: 0.002 });
         }
       }
 
-      // ── Ball speed cap only (Cyber Breaker style: natural fall, cap max) ──
+      // ══════════════════════════════════════════════════
+      // ── CYBER BREAKER SPEED NORMALIZATION (per-frame) ──
+      // ══════════════════════════════════════════════════
       if (g.currentBall && g.launched && fin(g.currentBall.velocity.x) && fin(g.currentBall.velocity.y)) {
         const vx = g.currentBall.velocity.x;
         const vy = g.currentBall.velocity.y;
         const speed = Math.sqrt(vx * vx + vy * vy);
-        const MAX_SPEED = 12;
-        if (speed > MAX_SPEED) {
-          const scale = MAX_SPEED / speed;
+        if (speed > 0) {
+          // Normalize to TARGET_SPEED, cap at MAX_SPEED
+          const desiredSpeed = Math.min(Math.max(speed, TARGET_SPEED), MAX_SPEED);
+          const scale = desiredSpeed / speed;
           Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
         }
       }
-      // Same for extra balls
+      // Same normalization for extra balls
       for (const eb of g.extraBalls) {
         if (fin(eb.velocity.x) && fin(eb.velocity.y)) {
           const speed = Math.sqrt(eb.velocity.x ** 2 + eb.velocity.y ** 2);
-          if (speed > 12) {
-            const scale = 12 / speed;
+          if (speed > 0) {
+            const desiredSpeed = Math.min(Math.max(speed, TARGET_SPEED), MAX_SPEED);
+            const scale = desiredSpeed / speed;
             Body.setVelocity(eb, { x: eb.velocity.x * scale, y: eb.velocity.y * scale });
           }
         }
@@ -754,7 +828,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         g.demonTargetsR.fill(false);
         setDemonMode(false);
       }
-      // Anti-gravity timer
       if (g.antiGravActive && now > g.antiGravTimer) {
         g.antiGravActive = false;
         setAntiGrav(false);
@@ -763,7 +836,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
         showMsg('GRAVITY RESTORED');
       }
-      // Magnet timer
       if (g.magnetActive && now > g.magnetTimer) {
         g.magnetActive = false;
       }
@@ -787,7 +859,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         const ta = g.rightUp ? 0.62 : -0.38;
         Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.55);
       }
-      // Top mini flippers follow main flippers
       if (g.topLeftFlipper) {
         const ta = g.leftUp ? -0.55 : 0.3;
         Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.45);
@@ -889,7 +960,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         const agPulse = Math.sin(t * 5) * 0.5 + 0.5;
         ctx.fillStyle = `rgba(191, 0, 255, ${0.04 + agPulse * 0.03})`;
         ctx.fillRect(0, 0, TW, TH);
-        // Upward particle streaks
         ctx.globalAlpha = 0.15;
         for (let i = 0; i < 8; i++) {
           const sx = ((i * 53 + f * 2) % TW);
@@ -939,7 +1009,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (g.lightFlash < 0.03) g.lightFlash = 0;
       }
 
-      // ── Electric table border (steady) ──
+      // ── Electric table border ──
       ctx.shadowColor = NEON.cyan;
       ctx.shadowBlur = 14;
       ctx.strokeStyle = `rgba(0, 255, 255, 0.5)`;
@@ -949,7 +1019,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.strokeStyle = `rgba(255, 0, 255, 0.15)`;
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, TW - 10, TH - 10);
-      // Corner glow (steady)
       const corners = [[6, 6], [TW - 6, 6], [6, TH - 6], [TW - 6, TH - 6]];
       for (let ci = 0; ci < corners.length; ci++) {
         const [cx, cy] = corners[ci];
@@ -959,13 +1028,100 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
       }
-      // Flowing current dot along top edge
       const arcX = 6 + ((t * 60) % (TW - 12));
       ctx.fillStyle = NEON.cyan;
       ctx.shadowColor = NEON.cyan;
       ctx.shadowBlur = 8;
       ctx.beginPath(); ctx.arc(arcX, 3, 1.5, 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0;
+
+      // ══════════════════════════════════════
+      // ── DRAW CANNON (top-left) ──
+      // ══════════════════════════════════════
+      const cannonFlashing = now < cannonFlashRef.current;
+      ctx.save();
+      ctx.translate(CANNON_X, CANNON_Y);
+      ctx.rotate(Math.PI / 4); // 45° angle pointing down-right
+      
+      // Cannon base (circle)
+      ctx.shadowColor = NEON.orange;
+      ctx.shadowBlur = cannonFlashing ? 30 : 12;
+      ctx.fillStyle = '#1a1a2e';
+      ctx.strokeStyle = cannonFlashing ? NEON.yellow : NEON.orange;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      // Cannon barrel
+      const barrelGrad = linGrad(ctx, 0, -3, 30, -3);
+      if (barrelGrad) {
+        barrelGrad.addColorStop(0, '#2a2a4e');
+        barrelGrad.addColorStop(0.5, cannonFlashing ? NEON.orange : '#3a3a5e');
+        barrelGrad.addColorStop(1, '#1a1a2e');
+        ctx.fillStyle = barrelGrad;
+      } else {
+        ctx.fillStyle = '#2a2a4e';
+      }
+      ctx.beginPath();
+      ctx.roundRect(0, -5, 28, 10, 2);
+      ctx.fill();
+      ctx.strokeStyle = cannonFlashing ? NEON.yellow : NEON.orange;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      
+      // Barrel details (rivets)
+      ctx.fillStyle = cannonFlashing ? NEON.yellow : `${NEON.orange}88`;
+      ctx.beginPath(); ctx.arc(8, -3, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(8, 3, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(18, -3, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(18, 3, 1.5, 0, Math.PI * 2); ctx.fill();
+      
+      // Muzzle tip
+      ctx.fillStyle = cannonFlashing ? '#fff' : NEON.orange;
+      ctx.shadowColor = cannonFlashing ? NEON.yellow : NEON.orange;
+      ctx.shadowBlur = cannonFlashing ? 20 : 6;
+      ctx.beginPath(); ctx.arc(28, 0, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      // Muzzle flash effect
+      if (cannonFlashing) {
+        const flashIntensity = 1 - (now - (cannonFlashRef.current - 400)) / 400;
+        if (flashIntensity > 0) {
+          ctx.globalAlpha = flashIntensity;
+          // Flame burst
+          const flameGrad = radGrad(ctx, 30, 0, 2, 30, 0, 25);
+          if (flameGrad) {
+            flameGrad.addColorStop(0, '#ffffff');
+            flameGrad.addColorStop(0.3, NEON.yellow);
+            flameGrad.addColorStop(0.6, NEON.orange);
+            flameGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = flameGrad;
+            ctx.beginPath(); ctx.arc(30, 0, 25, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
+      }
+      
+      // Base emblem
+      ctx.fillStyle = cannonFlashing ? NEON.yellow : NEON.orange;
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('⚡', 0, 0);
+      
+      ctx.restore();
+      
+      // Cannon label (unrotated)
+      if (!g.launched && !g.gameOver) {
+        const pulseA = 0.4 + Math.sin(t * 4) * 0.4;
+        ctx.fillStyle = NEON.orange;
+        ctx.font = 'bold 7px monospace';
+        ctx.textAlign = 'center';
+        ctx.globalAlpha = pulseA;
+        ctx.fillText('CANNON', CANNON_X, CANNON_Y + 28);
+        ctx.fillText('▼ TAP ▼', CANNON_X, CANNON_Y + 37);
+        ctx.globalAlpha = 1;
+      }
 
       // ── Ball trail ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
@@ -978,7 +1134,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (pt.age > 30 || !fin(pt.x) || !fin(pt.y)) { g.trail.splice(i, 1); continue; }
         const a = 1 - pt.age / 30;
         const s = Math.max(0, BALL_R * a);
-        const trailColor = g.antiGravActive ? NEON.purple : NEON.cyan;
         const tg = radGrad(ctx, pt.x, pt.y, 0, pt.x, pt.y, s + 5);
         if (!tg) continue;
         tg.addColorStop(0, `rgba(${g.antiGravActive ? '191,0,255' : '0,128,255'}, ${a * 0.6})`);
@@ -1069,20 +1224,17 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.strokeStyle = `${neonCol}55`;
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.arc(0, 0, BUMPER_R - 5, 0, Math.PI * 2); ctx.stroke();
-          // Pulsing ring
           const pulseR = BUMPER_R + 3 + Math.sin(t * 4 + idx) * 2;
           ctx.globalAlpha = 0.2 + Math.sin(t * 3 + idx * 2) * 0.1;
           ctx.strokeStyle = neonCol;
           ctx.lineWidth = 0.5;
           ctx.beginPath(); ctx.arc(0, 0, pulseR, 0, Math.PI * 2); ctx.stroke();
           ctx.globalAlpha = 1;
-          // Center
           ctx.fillStyle = flash ? '#fff' : neonCol;
           ctx.shadowColor = neonCol;
           ctx.shadowBlur = flash ? 18 : 8;
           ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
-          // Score text
           if (flash) {
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 8px monospace';
@@ -1093,28 +1245,24 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         // ── Portal hole ──
         } else if (body.label === 'portal_hole') {
           const pulseP = 10 + Math.sin(t * 5) * 2;
-          // Outer glow
           ctx.shadowColor = NEON.purple;
           ctx.shadowBlur = 20;
           ctx.strokeStyle = NEON.purple;
           ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(0, 0, pulseP, 0, Math.PI * 2); ctx.stroke();
-          // Inner swirl
           ctx.shadowBlur = 10;
           ctx.strokeStyle = `${NEON.cyan}aa`;
           ctx.lineWidth = 1.5;
           ctx.beginPath(); ctx.arc(0, 0, pulseP - 4, t * 3, t * 3 + Math.PI * 1.5); ctx.stroke();
-          // Dark center
           ctx.shadowBlur = 0;
           ctx.fillStyle = '#0b0f1a';
           ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
-          // Center dot
           ctx.fillStyle = NEON.purple;
           ctx.globalAlpha = 0.6 + Math.sin(t * 6) * 0.3;
           ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
           ctx.globalAlpha = 1;
 
-        // ── Flippers (bottom + top mini) ──
+        // ── Flippers ──
         } else if (body.label.includes('Flipper')) {
           const isTop = body.label.startsWith('top');
           const isLeft = body.label.includes('Left');
@@ -1140,7 +1288,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.strokeStyle = col;
           ctx.lineWidth = 1.2;
           ctx.beginPath(); ctx.roundRect(-fw / 2, -fh / 2, fw, fh, isTop ? 3 : 5); ctx.stroke();
-          // Pivot dot
           const px = isLeft ? -fw / 2 + (isTop ? 4 : 6) : fw / 2 - (isTop ? 4 : 6);
           ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.35)';
           ctx.beginPath(); ctx.arc(px, 0, isTop ? 1.5 : 2.5, 0, Math.PI * 2); ctx.fill();
@@ -1164,7 +1311,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.strokeStyle = NEON.purple;
           ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.stroke();
-          // Magnetic field rings
           for (let r = 0; r < 3; r++) {
             const rr = 18 + r * 6 + Math.sin(t * 3 + r) * 2;
             ctx.globalAlpha = 0.1 - r * 0.03;
@@ -1173,7 +1319,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
           }
           ctx.globalAlpha = 1;
-          // ⚡ icon
           ctx.fillStyle = mFlash ? '#fff' : NEON.purple;
           ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1191,7 +1336,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.stroke();
           ctx.shadowBlur = 0;
-          // Animated dots along ramp
           for (let d = 0; d < 5; d++) {
             const dt = ((t * 2 + d * 0.2) % 1);
             const dx = verts[0].x + (verts[1].x - verts[0].x) * dt;
@@ -1202,28 +1346,24 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
           ctx.globalAlpha = 1;
 
-        // ── Walls (Electric) ──
+        // ── Walls ──
         } else if (body.label === 'wall') {
           const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
           if (verts.length < 2) { ctx.restore(); continue; }
-          // Dark fill
           ctx.fillStyle = '#080c18';
           ctx.beginPath();
           ctx.moveTo(verts[0].x, verts[0].y);
           for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
-          // Steady electric glow border
           ctx.shadowColor = NEON.cyan;
           ctx.shadowBlur = 10;
           ctx.strokeStyle = `rgba(0, 255, 255, 0.35)`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
           ctx.shadowBlur = 0;
-          // Secondary steady pink layer
           ctx.strokeStyle = `rgba(255, 0, 255, 0.12)`;
           ctx.lineWidth = 0.8;
           ctx.stroke();
-          // Flowing current dots along wall edges
           const wallLen = Math.sqrt((verts[1].x - verts[0].x) ** 2 + (verts[1].y - verts[0].y) ** 2);
           if (wallLen > 20) {
             const dotCount = Math.floor(wallLen / 10);
@@ -1384,26 +1524,18 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
           ctx.closePath(); ctx.fill();
           ctx.shadowBlur = 0;
+          ctx.strokeStyle = NEON.orange;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+        // ── Sensor defaults ──
+        } else if (body.isSensor) {
+          // sensors are invisible except handled above
+        } else {
+          // Generic body fallback
         }
 
         ctx.restore();
-      }
-
-      // ── Plunger ready indicator ──
-      if (!g.launched && g.currentBall) {
-        const pulseA = 0.5 + Math.sin(t * 4) * 0.35;
-        ctx.shadowColor = NEON.cyan;
-        ctx.shadowBlur = 16;
-        ctx.fillStyle = `rgba(0, 128, 255, ${pulseA})`;
-        ctx.beginPath(); ctx.arc(PLUNGER_X, TH - 38, BALL_R + 5, 0, Math.PI * 2); ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = NEON.cyan;
-        ctx.font = 'bold 8px monospace';
-        ctx.textAlign = 'center';
-        ctx.globalAlpha = pulseA;
-        ctx.fillText('TAP', PLUNGER_X, TH - 55);
-        ctx.fillText('HERE', PLUNGER_X, TH - 46);
-        ctx.globalAlpha = 1;
       }
 
       // ── Labels ──
@@ -1422,27 +1554,22 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.restore();
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;
 
-      // Combo target label
       ctx.fillStyle = `${NEON.orange}88`; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
       ctx.fillText('▼ COMBO TARGETS ▼', TW / 2, ctY + 22);
 
-      // Reactor label
       ctx.fillStyle = NEON.blue; ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center';
       ctx.globalAlpha = 0.55;
       ctx.fillText('REACTOR CORE', bCXd, bCYd + 45);
       ctx.globalAlpha = 1;
 
-      // Demon targets label
       ctx.fillStyle = `${NEON.red}88`; ctx.font = 'bold 6px monospace';
       ctx.fillText('DEMON', 82, dtY + 22);
       ctx.fillText('DEMON', TW - 82, dtY + 22);
 
-      // CYBER label
       ctx.fillStyle = `${NEON.cyan}66`; ctx.font = 'bold 7px monospace';
       ctx.fillText('▼ C · Y · B · E · R ▼', TW / 2, cyberY + 22);
 
       // ── HUD overlays ──
-      // In-canvas score display (neon digital font)
       if (g.started && !g.gameOver) {
         ctx.save();
         ctx.shadowColor = NEON.cyan;
@@ -1452,7 +1579,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.textAlign = 'center';
         ctx.fillText(g.score.toLocaleString(), TW / 2, 22);
         ctx.shadowBlur = 0;
-        // Multiplier
         if (g.combo > 1) {
           ctx.fillStyle = NEON.pink;
           ctx.shadowColor = NEON.pink;
@@ -1462,7 +1588,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.fillText(`${Math.min(g.combo, 8)}x`, 14, 20);
           ctx.shadowBlur = 0;
         }
-        // Balls remaining
         ctx.textAlign = 'right';
         for (let i = 0; i < 3; i++) {
           ctx.fillStyle = i < g.balls ? NEON.cyan : 'rgba(255,255,255,0.15)';
@@ -1470,12 +1595,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.beginPath(); ctx.arc(TW - 18 - i * 14, 16, 4, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
         }
-        // Anti-gravity meter (top right)
         ctx.textAlign = 'right';
         ctx.fillStyle = g.antiGravActive ? NEON.purple : `${NEON.purple}88`;
         ctx.font = 'bold 7px monospace';
         ctx.fillText(g.antiGravActive ? 'ANTI-GRAV!' : `AG: ${g.antiGravMeter}/10`, TW - 14, 34);
-        // AG meter bar
         const agBarW = 50;
         ctx.fillStyle = 'rgba(255,255,255,0.1)';
         ctx.fillRect(TW - 14 - agBarW, 37, agBarW, 4);
@@ -1518,11 +1641,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // ── START SCREEN ──
       if (!g.started) {
         ctx.fillStyle = 'rgba(11, 15, 26, 0.92)'; ctx.fillRect(0, 0, TW, TH);
-        // Scanlines
         ctx.globalAlpha = 0.03;
         for (let y = 0; y < TH; y += 2) { ctx.fillStyle = NEON.blue; ctx.fillRect(0, y, TW, 1); }
         ctx.globalAlpha = 1;
-        // Title
         ctx.shadowColor = NEON.blue; ctx.shadowBlur = 40;
         ctx.fillStyle = NEON.blue; ctx.font = 'bold 38px monospace'; ctx.textAlign = 'center';
         ctx.fillText('CYBER', TW / 2, TH / 2 - 80);
@@ -1530,10 +1651,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillStyle = NEON.pink; ctx.font = 'bold 38px monospace';
         ctx.fillText('PINBALL', TW / 2, TH / 2 - 40);
         ctx.shadowBlur = 0;
-        // Subtitle
         ctx.fillStyle = `${NEON.purple}cc`; ctx.font = '10px monospace';
         ctx.fillText('NEON CYBERPUNK EDITION', TW / 2, TH / 2 - 15);
-        // Press start (pulsing)
         const startPulse = 0.4 + Math.sin(t * 3) * 0.4;
         ctx.globalAlpha = startPulse;
         ctx.shadowColor = NEON.green; ctx.shadowBlur = 20;
@@ -1541,11 +1660,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillText('TAP TO LAUNCH', TW / 2, TH / 2 + 30);
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
-        // Instructions
         ctx.fillStyle = `${NEON.cyan}88`; ctx.font = '8px monospace';
         ctx.fillText('Click/Tap to Launch  |  ←→ Flippers', TW / 2, TH / 2 + 65);
         ctx.fillText('Mobile: Tap Canvas = Launch  |  Buttons = Flippers', TW / 2, TH / 2 + 80);
-        // High score
         if (g.highScore > 0) {
           ctx.fillStyle = NEON.yellow;
           ctx.font = 'bold 10px monospace';
@@ -1556,7 +1673,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // ── GAME OVER SCREEN ──
       if (g.gameOver) {
         ctx.fillStyle = 'rgba(11, 15, 26, 0.94)'; ctx.fillRect(0, 0, TW, TH);
-        // Scanlines
         ctx.globalAlpha = 0.03;
         for (let y = 0; y < TH; y += 2) { ctx.fillStyle = NEON.blue; ctx.fillRect(0, y, TW, 1); }
         ctx.globalAlpha = 1;
@@ -1564,7 +1680,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillStyle = NEON.red; ctx.font = 'bold 36px monospace'; ctx.textAlign = 'center';
         ctx.fillText('GAME OVER', TW / 2, TH / 2 - 60);
         ctx.shadowBlur = 0;
-        // Final score
         ctx.shadowColor = NEON.cyan; ctx.shadowBlur = 20;
         ctx.fillStyle = NEON.cyan; ctx.font = 'bold 14px monospace';
         ctx.fillText('FINAL SCORE', TW / 2, TH / 2 - 25);
@@ -1572,7 +1687,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.shadowColor = NEON.pink; ctx.shadowBlur = 25;
         ctx.fillText(g.score.toLocaleString(), TW / 2, TH / 2 + 5);
         ctx.shadowBlur = 0;
-        // High score
         ctx.fillStyle = NEON.yellow; ctx.font = 'bold 11px monospace';
         ctx.fillText(`HIGH SCORE: ${g.highScore.toLocaleString()}`, TW / 2, TH / 2 + 35);
         if (g.score >= g.highScore && g.score > 0) {
@@ -1588,12 +1702,18 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.fillStyle = `${NEON.purple}aa`; ctx.font = '9px monospace';
           ctx.fillText(`MAX COMBO: ${g.maxCombo}x`, TW / 2, TH / 2 + 75);
         }
-        // Play again
+        // CCC earned display
+        if (cccEarned && cccEarned > 0) {
+          ctx.fillStyle = NEON.green; ctx.font = 'bold 12px monospace';
+          ctx.shadowColor = NEON.green; ctx.shadowBlur = 10;
+          ctx.fillText(`+${cccEarned} CCC EARNED!`, TW / 2, TH / 2 + 92);
+          ctx.shadowBlur = 0;
+        }
         const rPulse = 0.4 + Math.sin(t * 3) * 0.35;
         ctx.globalAlpha = rPulse;
         ctx.shadowColor = NEON.green; ctx.shadowBlur = 15;
         ctx.fillStyle = NEON.green; ctx.font = 'bold 13px monospace';
-        ctx.fillText('TAP TO PLAY AGAIN', TW / 2, TH / 2 + 105);
+        ctx.fillText('TAP TO PLAY AGAIN', TW / 2, TH / 2 + 115);
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
       }
@@ -1624,7 +1744,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillText('👹 DEMON MODE 3x 👹', TW / 2, 11);
         ctx.globalAlpha = 1; ctx.shadowBlur = 0;
       }
-      // Overdrive banner
       if (g.overdriveActive) {
         const oa = 0.55 + Math.sin(t * 8) * 0.3;
         ctx.fillStyle = `rgba(191, 0, 255, ${oa * 0.12})`;
@@ -1636,7 +1755,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillText('⚡ OVERDRIVE 2x ⚡', TW / 2, (g.demonMode ? 16 : 0) + 11);
         ctx.globalAlpha = 1; ctx.shadowBlur = 0;
       }
-      // Anti-gravity banner
       if (g.antiGravActive) {
         const aa = 0.6 + Math.sin(t * 6) * 0.35;
         const bannerY = (g.demonMode ? 16 : 0) + (g.overdriveActive ? 16 : 0);
@@ -1667,7 +1785,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (e.key === ' ' || e.key === 'ArrowDown') {
         e.preventDefault();
         if (g.gameOver) {
-          // Reset
           g.score = 0; g.balls = 3; g.gameOver = false; g.combo = 0; g.maxCombo = 0; g.totalHits = 0;
           g.cyberLetters.fill(false); g.cyberComplete = 0;
           g.demonTargetsL.fill(false); g.demonTargetsR.fill(false);
@@ -1681,6 +1798,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           setCyberLetters([false, false, false, false, false]);
           setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
           setAntiGrav(false); setAntiGravMeter(0);
+          scoreSubmittedRef.current = false;
+          setCccEarned(null);
           spawnBall();
           return;
         }
@@ -1729,7 +1848,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const launchBall = useCallback(() => {
     const g = G.current;
     if (g.gameOver) {
-      // Restart game on tap
+      // Restart game
       g.score = 0; g.balls = 3; g.gameOver = false; g.combo = 0; g.maxCombo = 0; g.totalHits = 0;
       g.cyberLetters.fill(false); g.cyberComplete = 0;
       g.demonTargetsL.fill(false); g.demonTargetsR.fill(false);
@@ -1743,16 +1862,15 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       setCyberLetters([false, false, false, false, false]);
       setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
       setAntiGrav(false); setAntiGravMeter(0);
-      // spawnBall will be called via the effect since we need the engine's spawnBall
-      // Instead, create a new ball directly
+      scoreSubmittedRef.current = false;
+      setCccEarned(null);
       const engine = engineRef.current;
       if (engine) {
-        // Remove any existing balls
         const oldBalls = Composite.allBodies(engine.world).filter(b => b.label === 'ball');
         oldBalls.forEach(b => { try { Composite.remove(engine.world, b); } catch {} });
         g.currentBall = null;
         g.launched = false;
-        const ball = Bodies.circle(30, 30, BALL_R, {
+        const ball = Bodies.circle(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, BALL_R, {
           ...BALL_OPTS, isStatic: true,
         });
         Composite.add(engine.world, ball);
@@ -1773,7 +1891,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     if (!g.currentBall && worldBall) g.currentBall = worldBall;
 
     if (!g.currentBall) {
-      const emergencyBall = Bodies.circle(30, 30, BALL_R, {
+      const emergencyBall = Bodies.circle(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, BALL_R, {
         ...BALL_OPTS,
       });
       Composite.add(engine.world, emergencyBall);
@@ -1782,13 +1900,17 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     if (!g.currentBall || !fin(g.currentBall.position.x) || !fin(g.currentBall.position.y)) return;
 
     Body.setStatic(g.currentBall, false);
-    Body.setPosition(g.currentBall, { x: 30, y: 30 });
-    Body.setVelocity(g.currentBall, { x: 6, y: 8 });
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0.004, y: 0.003 });
+    Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
+    Body.setVelocity(g.currentBall, { x: 8, y: 6 });
+    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0.005, y: 0.003 });
     g.launched = true;
-    showMsg('LAUNCH!');
-    g.shake.power = 4;
-    spawnParticles(30, 30, 14, NEON.cyan, 7);
+    cannonFlashRef.current = Date.now() + 400;
+    showMsg('🔥 CANNON FIRE!');
+    g.shake.power = 6;
+    g.screenPulse = 0.5;
+    spawnParticles(CANNON_MUZZLE_X + 15, CANNON_MUZZLE_Y + 10, 20, NEON.orange, 10);
+    spawnParticles(CANNON_MUZZLE_X + 10, CANNON_MUZZLE_Y + 5, 10, NEON.yellow, 8);
+    spawnParticles(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, 8, NEON.cyan, 6);
   }, [showMsg, spawnParticles]);
 
   // Mobile swipe-to-launch
@@ -1800,7 +1922,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     if (touchStartY.current !== null) {
       const dy = touchStartY.current - (e.changedTouches[0]?.clientY ?? touchStartY.current);
       if (dy > 30) {
-        // Swipe up detected
         launchBall();
       }
       touchStartY.current = null;
@@ -1836,14 +1957,14 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           type="button"
           className="rounded-xl touch-none select-none font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed"
           style={{
-            background: G.current.launched ? 'rgba(255,255,255,0.05)' : 'rgba(0,128,255,0.15)',
-            border: '1px solid rgba(0,128,255,0.4)',
-            color: NEON.cyan,
+            background: G.current.launched ? 'rgba(255,255,255,0.05)' : 'rgba(255,102,0,0.2)',
+            border: '1px solid rgba(255,102,0,0.5)',
+            color: NEON.orange,
           }}
           onClick={launchBall}
           disabled={G.current.launched || gameOver}
         >
-          {G.current.launched ? '🎯' : '🚀 LAUNCH'}
+          {G.current.launched ? '🎯' : '💥 FIRE!'}
         </button>
         <button className="font-bold py-5 rounded-xl select-none text-sm touch-none"
           style={{ background: 'rgba(255,0,255,0.15)', border: '1px solid rgba(255,0,255,0.4)', color: NEON.pink }}
@@ -1859,9 +1980,58 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       <div className="hidden md:flex gap-5 text-xs text-muted-foreground">
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">←</kbd>/<kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">Z</kbd> Left</span>
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">→</kbd>/<kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">M</kbd> Right</span>
-        <span>🖱️ Click to Launch</span>
+        <span>🖱️ Click to Fire Cannon</span>
         <span><kbd className="px-1.5 py-0.5 bg-muted/20 rounded border border-muted/30 text-foreground">T</kbd> Nudge</span>
       </div>
+
+      {/* Leaderboard toggle */}
+      <div className="flex gap-2">
+        <Button
+          onClick={() => { setShowLeaderboard(!showLeaderboard); if (!showLeaderboard) fetchLeaderboard(); }}
+          variant="outline"
+          className="border-amber-500/50 gap-2 text-xs"
+        >
+          <Trophy className="w-4 h-4" /> Leaderboard
+        </Button>
+      </div>
+
+      {/* Leaderboard panel */}
+      {showLeaderboard && (
+        <div className="w-full max-w-[420px] bg-black/40 backdrop-blur-sm border border-purple-500/30 rounded-xl p-4 font-mono">
+          <h3 className="text-center text-amber-400 text-sm font-bold mb-3">🏆 TOP PINBALL PLAYERS</h3>
+          {loadingLb ? (
+            <p className="text-center text-muted-foreground text-xs">Loading...</p>
+          ) : leaderboard.length === 0 ? (
+            <p className="text-center text-muted-foreground text-xs">No scores yet. Be the first!</p>
+          ) : (
+            <div className="space-y-1.5 max-h-64 overflow-y-auto">
+              {leaderboard.map((entry, i) => (
+                <div key={`${entry.user_id}-${entry.created_at}`} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs ${
+                  i === 0 ? 'bg-amber-500/15 border border-amber-500/30' :
+                  i === 1 ? 'bg-gray-400/10 border border-gray-400/20' :
+                  i === 2 ? 'bg-orange-600/10 border border-orange-600/20' :
+                  'bg-white/5'
+                } ${entry.user_id === walletAddress ? 'ring-1 ring-cyan-400/50' : ''}`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-6 text-center font-bold ${
+                      i === 0 ? 'text-amber-400' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-400' : 'text-muted-foreground'
+                    }`}>
+                      {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
+                    </span>
+                    <span className={`${entry.user_id === walletAddress ? 'text-cyan-400' : 'text-foreground'}`}>
+                      {entry.user_id === walletAddress ? 'You' : maskWallet(entry.user_id)}
+                    </span>
+                  </div>
+                  <span className="text-amber-400 font-bold">{entry.score.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {!walletAddress && (
+            <p className="text-center text-xs text-muted-foreground mt-2">Connect wallet to submit scores</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };
