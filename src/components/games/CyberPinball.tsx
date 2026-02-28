@@ -90,6 +90,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const touchStartY = useRef<number | null>(null);
   const scoreSubmittedRef = useRef(false);
   const cannonFlashRef = useRef(0); // cannon muzzle flash timer
+  const cannonAngleRef = useRef(Math.PI / 4); // default 45° down-right
 
   // Wallet & leaderboard
   const { primaryWallet, isWalletConnected } = useMultiWallet();
@@ -688,9 +689,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       Body.setStatic(g.currentBall, false);
       Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
-      // Fire at ~45° downward-right into playfield
-      Body.setVelocity(g.currentBall, { x: 8, y: 6 });
-      Body.applyForce(g.currentBall, g.currentBall.position, { x: 0.005, y: 0.003 });
+      // Fire in aimed direction
+      const aimAngle = cannonAngleRef.current;
+      const launchSpeed = 10;
+      Body.setVelocity(g.currentBall, {
+        x: Math.cos(aimAngle) * launchSpeed,
+        y: Math.sin(aimAngle) * launchSpeed,
+      });
       g.launched = true;
       // Cannon muzzle flash
       cannonFlashRef.current = Date.now() + 400;
@@ -698,8 +703,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.shake.power = 6;
       g.screenPulse = 0.5;
       // Muzzle flash particles
-      spawnParticles(CANNON_MUZZLE_X + 15, CANNON_MUZZLE_Y + 10, 20, NEON.orange, 10);
-      spawnParticles(CANNON_MUZZLE_X + 10, CANNON_MUZZLE_Y + 5, 10, NEON.yellow, 8);
+      const muzzleTipX = CANNON_X + Math.cos(aimAngle) * 28;
+      const muzzleTipY = CANNON_Y + Math.sin(aimAngle) * 28;
+      spawnParticles(muzzleTipX, muzzleTipY, 20, NEON.orange, 10);
+      spawnParticles(muzzleTipX, muzzleTipY, 10, NEON.yellow, 8);
       spawnParticles(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, 8, NEON.cyan, 6);
     };
 
@@ -1041,7 +1048,27 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       const cannonFlashing = now < cannonFlashRef.current;
       ctx.save();
       ctx.translate(CANNON_X, CANNON_Y);
-      ctx.rotate(Math.PI / 4); // 45° angle pointing down-right
+      ctx.rotate(cannonAngleRef.current); // dynamic aim angle
+
+      // ── Aim laser line (when not launched) ──
+      if (!g.launched && !g.gameOver) {
+        ctx.save();
+        ctx.strokeStyle = `${NEON.orange}44`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.moveTo(30, 0);
+        ctx.lineTo(200, 0);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Aim dot at end
+        const dotPulse = 0.3 + Math.sin(t * 5) * 0.3;
+        ctx.fillStyle = NEON.orange;
+        ctx.globalAlpha = dotPulse;
+        ctx.beginPath(); ctx.arc(200, 0, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
       
       // Cannon base (circle)
       ctx.shadowColor = NEON.orange;
@@ -1891,32 +1918,52 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     Body.setStatic(g.currentBall, false);
     Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
-    Body.setVelocity(g.currentBall, { x: 8, y: 6 });
-    Body.applyForce(g.currentBall, g.currentBall.position, { x: 0.005, y: 0.003 });
+    // Fire in aimed direction
+    const aimAngle = cannonAngleRef.current;
+    const launchSpeed = 10;
+    Body.setVelocity(g.currentBall, {
+      x: Math.cos(aimAngle) * launchSpeed,
+      y: Math.sin(aimAngle) * launchSpeed,
+    });
     g.launched = true;
     cannonFlashRef.current = Date.now() + 400;
     showMsg('🔥 CANNON FIRE!');
     g.shake.power = 6;
     g.screenPulse = 0.5;
-    spawnParticles(CANNON_MUZZLE_X + 15, CANNON_MUZZLE_Y + 10, 20, NEON.orange, 10);
-    spawnParticles(CANNON_MUZZLE_X + 10, CANNON_MUZZLE_Y + 5, 10, NEON.yellow, 8);
+    const muzzleTipX = CANNON_X + Math.cos(aimAngle) * 28;
+    const muzzleTipY = CANNON_Y + Math.sin(aimAngle) * 28;
+    spawnParticles(muzzleTipX, muzzleTipY, 20, NEON.orange, 10);
+    spawnParticles(muzzleTipX, muzzleTipY, 10, NEON.yellow, 8);
     spawnParticles(CANNON_MUZZLE_X, CANNON_MUZZLE_Y, 8, NEON.cyan, 6);
   }, [showMsg, spawnParticles]);
 
-  // Mobile swipe-to-launch
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
+  // Mouse/touch aim handler — updates cannon angle based on pointer position
+  const handleCanvasPointerMove = useCallback((clientX: number, clientY: number) => {
+    const g = G.current;
+    if (g.launched && !g.gameOver) return; // only aim when ball not launched
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = TW / rect.width;
+    const scaleY = TH / rect.height;
+    const mx = (clientX - rect.left) * scaleX;
+    const my = (clientY - rect.top) * scaleY;
+    const dx = mx - CANNON_X;
+    const dy = my - CANNON_Y;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      cannonAngleRef.current = Math.atan2(dy, dx);
+    }
   }, []);
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (touchStartY.current !== null) {
-      const dy = touchStartY.current - (e.changedTouches[0]?.clientY ?? touchStartY.current);
-      if (dy > 30) {
-        launchBall();
-      }
-      touchStartY.current = null;
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    handleCanvasPointerMove(e.clientX, e.clientY);
+  }, [handleCanvasPointerMove]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      handleCanvasPointerMove(e.touches[0].clientX, e.touches[0].clientY);
     }
-  }, [launchBall]);
+  }, [handleCanvasPointerMove]);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -1924,13 +1971,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       <div
         className="relative rounded-xl overflow-hidden shadow-[0_0_60px_rgba(0,128,255,0.2)]"
         style={{ border: '2px solid rgba(0, 128, 255, 0.3)' }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onMouseMove={handleMouseMove}
+        onTouchMove={handleTouchMove}
         onClick={launchBall}
         role="button"
         tabIndex={0}
       >
-        <canvas ref={canvasRef} className="block cursor-pointer" style={{ width: TW, height: TH }} />
+        <canvas ref={canvasRef} className="block cursor-crosshair" style={{ width: TW, height: TH }} />
       </div>
 
       {/* Mobile controls */}
