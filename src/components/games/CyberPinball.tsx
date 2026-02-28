@@ -380,7 +380,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     const spinner = Bodies.rectangle(bCX, bCY - 78, 32, 3, sensorOpts('spinner'));
     const lockSensor = Bodies.rectangle(bCX, bCY + 60, 26, 6, sensorOpts('multiball_lock'));
-    const kickback = Bodies.rectangle(14, TH - 210, 6, 30, { isStatic: true, label: 'kickback', restitution: 1.6 });
+    // removed: kickback
 
     Composite.add(engine.world, [
       ...walls, lf, rf, lp, rp,
@@ -392,7 +392,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...cyberSensors,
       ...demonTargetsL, ...demonTargetsR,
       orbitL, orbitR,
-      spinner, lockSensor, kickback,
+      spinner, lockSensor,
     ]);
 
     // ═══════════════════════════════════════
@@ -578,11 +578,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
         }
 
-        if (labels.includes('kickback')) {
-          if (fin(ball.position.x)) Body.applyForce(ball, ball.position, { x: 0.003, y: -0.016 });
-          addScore(100);
-          showMsg('KICKBACK!');
-        }
+        // removed: kickback collision
       }
     });
 
@@ -1500,20 +1496,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(16, 0); ctx.stroke();
           ctx.shadowBlur = 0;
 
-        // ── Kickback ──
-        } else if (body.label === 'kickback') {
-          ctx.fillStyle = `${NEON.orange}66`;
-          ctx.shadowColor = NEON.orange;
-          ctx.shadowBlur = 8;
-          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.beginPath();
-          ctx.moveTo(verts[0].x, verts[0].y);
-          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
-          ctx.closePath(); ctx.fill();
-          ctx.shadowBlur = 0;
-          ctx.strokeStyle = NEON.orange;
-          ctx.lineWidth = 1;
-          ctx.stroke();
+        // removed: kickback rendering
 
         // ── Sensor defaults ──
         } else if (body.isSensor) {
