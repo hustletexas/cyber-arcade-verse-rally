@@ -67,12 +67,13 @@
 .sequence-button {
   aspect-ratio: 1;
   min-height: 80px;
-  border-radius: 12px;
+  border-radius: 16px;
   position: relative;
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.15s ease;
   transform-style: preserve-3d;
   perspective: 500px;
+  overflow: hidden;
 }
 
 .sequence-button::before {
@@ -88,189 +89,80 @@
 }
 
 .sequence-button:hover:not(:disabled)::before {
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
-/* Button colors - NEON BRIGHT */
+/* ── Button colors — SIMON SAYS VIBRANT ── */
 .sequence-button--cyan {
-  background: linear-gradient(
-    145deg,
-    rgba(0, 255, 255, 0.7) 0%,
-    rgba(0, 230, 230, 0.5) 50%,
-    rgba(0, 200, 200, 0.6) 100%
-  );
-  border: 3px solid rgba(0, 255, 255, 0.9);
-  box-shadow: 
-    0 0 30px rgba(0, 255, 255, 0.6),
-    0 0 60px rgba(0, 255, 255, 0.3),
-    inset 0 2px 15px rgba(0, 255, 255, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(0, 255, 255, 0.85) 0%, rgba(0, 210, 210, 0.7) 60%, rgba(0, 180, 180, 0.8) 100%);
+  border: 3px solid rgba(0, 255, 255, 1);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 50px rgba(0, 255, 255, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--purple {
-  background: linear-gradient(
-    145deg,
-    rgba(168, 85, 247, 0.7) 0%,
-    rgba(147, 51, 234, 0.5) 50%,
-    rgba(126, 34, 206, 0.6) 100%
-  );
-  border: 3px solid rgba(168, 85, 247, 0.9);
-  box-shadow: 
-    0 0 30px rgba(168, 85, 247, 0.6),
-    0 0 60px rgba(168, 85, 247, 0.3),
-    inset 0 2px 15px rgba(168, 85, 247, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.85) 0%, rgba(139, 60, 220, 0.7) 60%, rgba(120, 40, 200, 0.8) 100%);
+  border: 3px solid rgba(168, 85, 247, 1);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.5), 0 0 50px rgba(168, 85, 247, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--green {
-  background: linear-gradient(
-    145deg,
-    rgba(74, 222, 128, 0.7) 0%,
-    rgba(34, 197, 94, 0.5) 50%,
-    rgba(22, 163, 74, 0.6) 100%
-  );
-  border: 3px solid rgba(74, 222, 128, 0.9);
-  box-shadow: 
-    0 0 30px rgba(74, 222, 128, 0.6),
-    0 0 60px rgba(74, 222, 128, 0.3),
-    inset 0 2px 15px rgba(74, 222, 128, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(34, 220, 80, 0.85) 0%, rgba(22, 190, 60, 0.7) 60%, rgba(16, 160, 50, 0.8) 100%);
+  border: 3px solid rgba(34, 220, 80, 1);
+  box-shadow: 0 0 20px rgba(34, 220, 80, 0.5), 0 0 50px rgba(34, 220, 80, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--red {
-  background: linear-gradient(
-    145deg,
-    rgba(248, 113, 113, 0.7) 0%,
-    rgba(239, 68, 68, 0.5) 50%,
-    rgba(220, 38, 38, 0.6) 100%
-  );
-  border: 3px solid rgba(248, 113, 113, 0.9);
-  box-shadow: 
-    0 0 30px rgba(248, 113, 113, 0.6),
-    0 0 60px rgba(248, 113, 113, 0.3),
-    inset 0 2px 15px rgba(248, 113, 113, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(239, 50, 50, 0.85) 0%, rgba(210, 35, 35, 0.7) 60%, rgba(185, 25, 25, 0.8) 100%);
+  border: 3px solid rgba(239, 50, 50, 1);
+  box-shadow: 0 0 20px rgba(239, 50, 50, 0.5), 0 0 50px rgba(239, 50, 50, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
-/* New button colors for 8-tile grid - NEON BRIGHT */
 .sequence-button--orange {
-  background: linear-gradient(
-    145deg,
-    rgba(251, 146, 60, 0.7) 0%,
-    rgba(249, 115, 22, 0.5) 50%,
-    rgba(234, 88, 12, 0.6) 100%
-  );
-  border: 3px solid rgba(251, 146, 60, 0.9);
-  box-shadow: 
-    0 0 30px rgba(251, 146, 60, 0.6),
-    0 0 60px rgba(251, 146, 60, 0.3),
-    inset 0 2px 15px rgba(251, 146, 60, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(255, 140, 30, 0.85) 0%, rgba(240, 110, 15, 0.7) 60%, rgba(220, 90, 10, 0.8) 100%);
+  border: 3px solid rgba(255, 140, 30, 1);
+  box-shadow: 0 0 20px rgba(255, 140, 30, 0.5), 0 0 50px rgba(255, 140, 30, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--pink {
-  background: linear-gradient(
-    145deg,
-    rgba(244, 114, 182, 0.7) 0%,
-    rgba(236, 72, 153, 0.5) 50%,
-    rgba(219, 39, 119, 0.6) 100%
-  );
-  border: 3px solid rgba(244, 114, 182, 0.9);
-  box-shadow: 
-    0 0 30px rgba(244, 114, 182, 0.6),
-    0 0 60px rgba(244, 114, 182, 0.3),
-    inset 0 2px 15px rgba(244, 114, 182, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(255, 80, 170, 0.85) 0%, rgba(236, 50, 140, 0.7) 60%, rgba(210, 30, 110, 0.8) 100%);
+  border: 3px solid rgba(255, 80, 170, 1);
+  box-shadow: 0 0 20px rgba(255, 80, 170, 0.5), 0 0 50px rgba(255, 80, 170, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--yellow {
-  background: linear-gradient(
-    145deg,
-    rgba(250, 204, 21, 0.7) 0%,
-    rgba(234, 179, 8, 0.5) 50%,
-    rgba(202, 138, 4, 0.6) 100%
-  );
-  border: 3px solid rgba(250, 204, 21, 0.9);
-  box-shadow: 
-    0 0 30px rgba(250, 204, 21, 0.6),
-    0 0 60px rgba(250, 204, 21, 0.3),
-    inset 0 2px 15px rgba(250, 204, 21, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(255, 220, 20, 0.85) 0%, rgba(240, 195, 10, 0.7) 60%, rgba(215, 165, 5, 0.8) 100%);
+  border: 3px solid rgba(255, 220, 20, 1);
+  box-shadow: 0 0 20px rgba(255, 220, 20, 0.5), 0 0 50px rgba(255, 220, 20, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--blue {
-  background: linear-gradient(
-    145deg,
-    rgba(96, 165, 250, 0.7) 0%,
-    rgba(59, 130, 246, 0.5) 50%,
-    rgba(37, 99, 235, 0.6) 100%
-  );
-  border: 3px solid rgba(96, 165, 250, 0.9);
-  box-shadow: 
-    0 0 30px rgba(96, 165, 250, 0.6),
-    0 0 60px rgba(96, 165, 250, 0.3),
-    inset 0 2px 15px rgba(96, 165, 250, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(50, 120, 255, 0.85) 0%, rgba(35, 100, 235, 0.7) 60%, rgba(25, 80, 210, 0.8) 100%);
+  border: 3px solid rgba(50, 120, 255, 1);
+  box-shadow: 0 0 20px rgba(50, 120, 255, 0.5), 0 0 50px rgba(50, 120, 255, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--teal {
-  background: linear-gradient(
-    145deg,
-    rgba(45, 212, 191, 0.7) 0%,
-    rgba(20, 184, 166, 0.5) 50%,
-    rgba(13, 148, 136, 0.6) 100%
-  );
-  border: 3px solid rgba(45, 212, 191, 0.9);
-  box-shadow: 
-    0 0 30px rgba(45, 212, 191, 0.6),
-    0 0 60px rgba(45, 212, 191, 0.3),
-    inset 0 2px 15px rgba(45, 212, 191, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(20, 210, 185, 0.85) 0%, rgba(15, 180, 160, 0.7) 60%, rgba(10, 155, 140, 0.8) 100%);
+  border: 3px solid rgba(20, 210, 185, 1);
+  box-shadow: 0 0 20px rgba(20, 210, 185, 0.5), 0 0 50px rgba(20, 210, 185, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--magenta {
-  background: linear-gradient(
-    145deg,
-    rgba(217, 70, 239, 0.7) 0%,
-    rgba(192, 38, 211, 0.5) 50%,
-    rgba(162, 28, 175, 0.6) 100%
-  );
-  border: 3px solid rgba(217, 70, 239, 0.9);
-  box-shadow: 
-    0 0 30px rgba(217, 70, 239, 0.6),
-    0 0 60px rgba(217, 70, 239, 0.3),
-    inset 0 2px 15px rgba(217, 70, 239, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(220, 50, 245, 0.85) 0%, rgba(190, 30, 215, 0.7) 60%, rgba(165, 20, 185, 0.8) 100%);
+  border: 3px solid rgba(220, 50, 245, 1);
+  box-shadow: 0 0 20px rgba(220, 50, 245, 0.5), 0 0 50px rgba(220, 50, 245, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--lime {
-  background: linear-gradient(
-    145deg,
-    rgba(163, 230, 53, 0.7) 0%,
-    rgba(132, 204, 22, 0.5) 50%,
-    rgba(101, 163, 13, 0.6) 100%
-  );
-  border: 3px solid rgba(163, 230, 53, 0.9);
-  box-shadow: 
-    0 0 30px rgba(163, 230, 53, 0.6),
-    0 0 60px rgba(163, 230, 53, 0.3),
-    inset 0 2px 15px rgba(163, 230, 53, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(140, 230, 20, 0.85) 0%, rgba(120, 200, 15, 0.7) 60%, rgba(100, 175, 10, 0.8) 100%);
+  border: 3px solid rgba(140, 230, 20, 1);
+  box-shadow: 0 0 20px rgba(140, 230, 20, 0.5), 0 0 50px rgba(140, 230, 20, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sequence-button--gold {
-  background: linear-gradient(
-    145deg,
-    rgba(251, 191, 36, 0.7) 0%,
-    rgba(245, 158, 11, 0.5) 50%,
-    rgba(217, 119, 6, 0.6) 100%
-  );
-  border: 3px solid rgba(251, 191, 36, 0.9);
-  box-shadow: 
-    0 0 30px rgba(251, 191, 36, 0.6),
-    0 0 60px rgba(251, 191, 36, 0.3),
-    inset 0 2px 15px rgba(251, 191, 36, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, rgba(255, 195, 20, 0.85) 0%, rgba(240, 165, 10, 0.7) 60%, rgba(215, 135, 5, 0.8) 100%);
+  border: 3px solid rgba(255, 195, 20, 1);
+  box-shadow: 0 0 20px rgba(255, 195, 20, 0.5), 0 0 50px rgba(255, 195, 20, 0.2), inset 0 2px 20px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* Neon core glow inside buttons */
@@ -394,133 +286,70 @@
   }
 }
 
-/* Active/lit state */
+/* Active/lit state — BLAZING BRIGHT like Simon Says */
 .sequence-button--active {
-  transform: scale(1.05);
+  transform: scale(1.06);
+  filter: brightness(1.3);
 }
 
 .sequence-button--active.sequence-button--cyan {
-  background: linear-gradient(
-    145deg,
-    rgba(0, 255, 255, 0.9) 0%,
-    rgba(0, 220, 220, 0.7) 50%,
-    rgba(0, 180, 180, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(0, 255, 255, 0.8),
-    0 0 80px rgba(0, 255, 255, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(100, 255, 255, 1) 0%, rgba(0, 255, 255, 0.95) 50%, rgba(0, 230, 230, 1) 100%);
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.9), 0 0 100px rgba(0, 255, 255, 0.5), 0 0 150px rgba(0, 255, 255, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--purple {
-  background: linear-gradient(
-    145deg,
-    rgba(147, 51, 234, 0.9) 0%,
-    rgba(130, 45, 210, 0.7) 50%,
-    rgba(110, 35, 190, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(147, 51, 234, 0.8),
-    0 0 80px rgba(147, 51, 234, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(200, 130, 255, 1) 0%, rgba(168, 85, 247, 0.95) 50%, rgba(145, 65, 230, 1) 100%);
+  box-shadow: 0 0 50px rgba(168, 85, 247, 0.9), 0 0 100px rgba(168, 85, 247, 0.5), 0 0 150px rgba(168, 85, 247, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--green {
-  background: linear-gradient(
-    145deg,
-    rgba(34, 197, 94, 0.9) 0%,
-    rgba(30, 175, 85, 0.7) 50%,
-    rgba(26, 155, 75, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(34, 197, 94, 0.8),
-    0 0 80px rgba(34, 197, 94, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(100, 255, 130, 1) 0%, rgba(34, 220, 80, 0.95) 50%, rgba(20, 200, 65, 1) 100%);
+  box-shadow: 0 0 50px rgba(34, 220, 80, 0.9), 0 0 100px rgba(34, 220, 80, 0.5), 0 0 150px rgba(34, 220, 80, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--red {
-  background: linear-gradient(
-    145deg,
-    rgba(239, 68, 68, 0.9) 0%,
-    rgba(215, 60, 60, 0.7) 50%,
-    rgba(190, 50, 50, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(239, 68, 68, 0.8),
-    0 0 80px rgba(239, 68, 68, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(255, 120, 120, 1) 0%, rgba(239, 50, 50, 0.95) 50%, rgba(220, 35, 35, 1) 100%);
+  box-shadow: 0 0 50px rgba(239, 50, 50, 0.9), 0 0 100px rgba(239, 50, 50, 0.5), 0 0 150px rgba(239, 50, 50, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--orange {
-  background: linear-gradient(
-    145deg,
-    rgba(249, 115, 22, 0.9) 0%,
-    rgba(230, 100, 20, 0.7) 50%,
-    rgba(210, 85, 18, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(249, 115, 22, 0.8),
-    0 0 80px rgba(249, 115, 22, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(255, 190, 100, 1) 0%, rgba(255, 140, 30, 0.95) 50%, rgba(240, 115, 20, 1) 100%);
+  box-shadow: 0 0 50px rgba(255, 140, 30, 0.9), 0 0 100px rgba(255, 140, 30, 0.5), 0 0 150px rgba(255, 140, 30, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--pink {
-  background: linear-gradient(
-    145deg,
-    rgba(236, 72, 153, 0.9) 0%,
-    rgba(215, 65, 140, 0.7) 50%,
-    rgba(195, 55, 125, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(236, 72, 153, 0.8),
-    0 0 80px rgba(236, 72, 153, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(255, 140, 200, 1) 0%, rgba(255, 80, 170, 0.95) 50%, rgba(240, 55, 145, 1) 100%);
+  box-shadow: 0 0 50px rgba(255, 80, 170, 0.9), 0 0 100px rgba(255, 80, 170, 0.5), 0 0 150px rgba(255, 80, 170, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--yellow {
-  background: linear-gradient(
-    145deg,
-    rgba(234, 179, 8, 0.9) 0%,
-    rgba(215, 165, 8, 0.7) 50%,
-    rgba(195, 150, 8, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(234, 179, 8, 0.8),
-    0 0 80px rgba(234, 179, 8, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(255, 245, 120, 1) 0%, rgba(255, 220, 20, 0.95) 50%, rgba(240, 200, 10, 1) 100%);
+  box-shadow: 0 0 50px rgba(255, 220, 20, 0.9), 0 0 100px rgba(255, 220, 20, 0.5), 0 0 150px rgba(255, 220, 20, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--blue {
-  background: linear-gradient(
-    145deg,
-    rgba(59, 130, 246, 0.9) 0%,
-    rgba(52, 120, 225, 0.7) 50%,
-    rgba(45, 105, 200, 0.8) 100%
-  );
-  box-shadow: 
-    0 0 40px rgba(59, 130, 246, 0.8),
-    0 0 80px rgba(59, 130, 246, 0.4),
-    inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(120, 170, 255, 1) 0%, rgba(50, 120, 255, 0.95) 50%, rgba(40, 100, 240, 1) 100%);
+  box-shadow: 0 0 50px rgba(50, 120, 255, 0.9), 0 0 100px rgba(50, 120, 255, 0.5), 0 0 150px rgba(50, 120, 255, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--teal {
-  background: linear-gradient(145deg, rgba(20, 184, 166, 0.9) 0%, rgba(17, 160, 145, 0.7) 50%, rgba(13, 148, 136, 0.8) 100%);
-  box-shadow: 0 0 40px rgba(20, 184, 166, 0.8), 0 0 80px rgba(20, 184, 166, 0.4), inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(80, 240, 215, 1) 0%, rgba(20, 210, 185, 0.95) 50%, rgba(15, 190, 165, 1) 100%);
+  box-shadow: 0 0 50px rgba(20, 210, 185, 0.9), 0 0 100px rgba(20, 210, 185, 0.5), 0 0 150px rgba(20, 210, 185, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--magenta {
-  background: linear-gradient(145deg, rgba(192, 38, 211, 0.9) 0%, rgba(170, 34, 190, 0.7) 50%, rgba(150, 28, 170, 0.8) 100%);
-  box-shadow: 0 0 40px rgba(192, 38, 211, 0.8), 0 0 80px rgba(192, 38, 211, 0.4), inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(245, 120, 255, 1) 0%, rgba(220, 50, 245, 0.95) 50%, rgba(195, 35, 220, 1) 100%);
+  box-shadow: 0 0 50px rgba(220, 50, 245, 0.9), 0 0 100px rgba(220, 50, 245, 0.5), 0 0 150px rgba(220, 50, 245, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--lime {
-  background: linear-gradient(145deg, rgba(132, 204, 22, 0.9) 0%, rgba(115, 180, 20, 0.7) 50%, rgba(101, 163, 13, 0.8) 100%);
-  box-shadow: 0 0 40px rgba(132, 204, 22, 0.8), 0 0 80px rgba(132, 204, 22, 0.4), inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(190, 255, 80, 1) 0%, rgba(140, 230, 20, 0.95) 50%, rgba(120, 205, 15, 1) 100%);
+  box-shadow: 0 0 50px rgba(140, 230, 20, 0.9), 0 0 100px rgba(140, 230, 20, 0.5), 0 0 150px rgba(140, 230, 20, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 .sequence-button--active.sequence-button--gold {
-  background: linear-gradient(145deg, rgba(245, 158, 11, 0.9) 0%, rgba(225, 140, 10, 0.7) 50%, rgba(217, 119, 6, 0.8) 100%);
-  box-shadow: 0 0 40px rgba(245, 158, 11, 0.8), 0 0 80px rgba(245, 158, 11, 0.4), inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(145deg, rgba(255, 225, 100, 1) 0%, rgba(255, 195, 20, 0.95) 50%, rgba(240, 170, 10, 1) 100%);
+  box-shadow: 0 0 50px rgba(255, 195, 20, 0.9), 0 0 100px rgba(255, 195, 20, 0.5), 0 0 150px rgba(255, 195, 20, 0.25), inset 0 2px 30px rgba(255, 255, 255, 0.5);
 }
 
 /* Pressed state */
