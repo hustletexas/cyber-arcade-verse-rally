@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Users, Settings, Calendar, Gamepad2, GitBranch, Vote } from 'lucide-react';
+import { Trophy, Users, Settings, Calendar, Gamepad2, GitBranch, Vote, Monitor } from 'lucide-react';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/hooks/useAuth';
 import { TournamentList } from './TournamentList';
@@ -10,6 +10,7 @@ import { TournamentAdminDashboard } from './TournamentAdminDashboard';
 import { MyTournaments } from './MyTournaments';
 import { BracketPreview } from './BracketPreview';
 import { TournamentVoting } from './TournamentVoting';
+import { TournamentGamesList } from './TournamentGamesList';
 export const TournamentHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState('browse');
   const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
@@ -47,10 +48,14 @@ export const TournamentHub: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full -mt-1">
-        <TabsList className="grid w-full grid-cols-5 bg-background/50 border border-border">
+        <TabsList className="grid w-full grid-cols-6 bg-background/50 border border-border">
           <TabsTrigger value="browse" className="flex items-center gap-2">
             <Gamepad2 className="w-4 h-4" />
             Browse
+          </TabsTrigger>
+          <TabsTrigger value="games" className="flex items-center gap-2">
+            <Monitor className="w-4 h-4" />
+            Games
           </TabsTrigger>
           <TabsTrigger value="vote" className="flex items-center gap-2">
             <Vote className="w-4 h-4" />
@@ -97,6 +102,10 @@ export const TournamentHub: React.FC = () => {
               <BracketPreview tournamentId={selectedTournamentId || 'empty'} isAdmin={isAdmin} />
             </CardContent>
           </Card>}
+
+        <TabsContent value="games" className="mt-2">
+          <TournamentGamesList />
+        </TabsContent>
 
         <TabsContent value="vote" className="mt-2">
           <TournamentVoting />
