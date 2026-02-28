@@ -1,84 +1,82 @@
 
-
-# Cyber Pinball: Cannon Launch, Leaderboard, and Smart Contract Integration
+# Evolving Enemies: Shapes, Colors, and Bullets Per Wave
 
 ## Overview
-Three major additions to Cyber Pinball: a cannon-based ball launch system, a Supabase-powered leaderboard, and smart contract score submission -- all following existing patterns from Portal Breaker (Cyber Breaker).
+Currently, enemy shapes change every 3 waves (5 tiers), but colors and bullet patterns remain static. This plan makes enemies visually and mechanically distinct on every wave by introducing per-wave color palettes and new bullet patterns that rotate with the tiers.
 
 ---
 
-## 1. Cannon Ball Launch
+## Changes
 
-**Problem**: The current launch code sets position/velocity but something in the physics loop or spawn logic keeps overriding it.
+### 1. Wave-Based Color Palettes
+Replace the static `ENEMY_META` colors with a palette system that cycles through distinct color sets based on the current wave.
 
-**Solution**: Replace the top-left drop with a visible cannon in the top-left corner that fires the ball with a dramatic animation.
+**5 Color Palettes** (one per shape tier, cycling after tier 4):
 
-- Add a cannon body (static, visual-only) at top-left of playfield (~x:40, y:60)
-- Draw a detailed cannon graphic in the render loop (barrel, base, muzzle flash on fire)
-- On launch: position ball at cannon muzzle, fire at ~45-degree angle downward-right
-- Add muzzle flash particles and screen shake
-- Remove ALL other spawn/launch coordinate references (there are 3 duplicate locations: `spawnBall()` at line ~590, `doLaunch()` at line ~602, and `launchBall` callback at line ~1729) -- unify them to ONE cannon position
-- Ball spawn coordinates: `{ x: 50, y: 70 }` (cannon muzzle)
-- Launch velocity: `{ x: 8, y: 6 }` (diagonal right-downward into playfield)
+| Tier | Scout | Striker | Core |
+|------|-------|---------|------|
+| 0 | Cyan `#00ffcc` | Amber `#f59e0b` | Pink `#ff3d7f` |
+| 1 | Lime `#39ff14` | Orange `#ff6a00` | Violet `#bf00ff` |
+| 2 | Ice Blue `#00d4ff` | Red `#ff2244` | Gold `#ffd700` |
+| 3 | Hot Pink `#ff69b4` | Teal `#00ffa5` | Crimson `#dc143c` |
+| 4 | Electric Purple `#b400ff` | Neon Yellow `#ccff00` | Deep Blue `#4466ff` |
 
-## 2. Match Cyber Breaker Ball Bounce
+A helper function `getEnemyColor(type, wave)` will return the correct color based on the current shape tier.
 
-**Current state**: CyberPinball uses Matter.js `restitution: 1.05` which handles bouncing automatically but inconsistently.
+### 2. Wave-Based Bullet Patterns
+Each enemy type gets **new attack patterns** that rotate with the shape tier:
 
-**Solution**: Add a per-frame speed normalization step (same as Cyber Breaker line 830-831) inside the render loop to keep ball speed consistent:
+**Scout** (single-shot base):
+- Tier 0: Single aimed shot (current)
+- Tier 1: Fast double-tap (two quick shots)
+- Tier 2: Sine-wave bullet (wobbles horizontally)
+- Tier 3: Boomerang shot (curves back toward player)
+- Tier 4: Homing bullet (slow turn toward player)
 
-```text
-After each frame, normalize ball velocity:
-  currentSpeed = sqrt(vx^2 + vy^2)
-  targetSpeed = 7 (base, matching Breaker)
-  if currentSpeed > 0: scale vx and vy to targetSpeed
-```
+**Striker** (spread base):
+- Tier 0: 3-way spread (current)
+- Tier 1: 4-way cross pattern
+- Tier 2: Rotating spiral (2 bullets at spinning angles)
+- Tier 3: Shotgun burst (5 tight spread)
+- Tier 4: Alternating left-right volleys
 
-- Add speed normalization in the render loop (around line 667 where boundary clamping already happens)
-- Set `restitution` to `1.0` (perfect bounce, no energy gain/loss) since speed is manually controlled
-- Cap max speed at 12 (same as Breaker)
-- This ensures the ball always moves at a consistent, predictable speed just like Cyber Breaker
+**Core** (burst base):
+- Tier 0: 5-way burst (current)
+- Tier 1: Ring of 8 bullets
+- Tier 2: Aimed triple with splash
+- Tier 3: Sweeping laser (3 sequential aimed shots)
+- Tier 4: Dual spiral (rotating double helix)
 
-## 3. Leaderboard (Supabase)
-
-Following the exact Portal Breaker pattern:
-
-**Database**: Create `pinball_scores` table via migration:
-- `id` (uuid, primary key, default gen_random_uuid())
-- `user_id` (text, not null) -- wallet address
-- `score` (integer, not null)
-- `balls_used` (integer, default 3)
-- `created_at` (timestamptz, default now())
-- RLS: Enable, allow public insert and select (same as portal_breaker_scores)
-
-**Component changes**:
-- Import `supabase`, `useMultiWallet`, `useUserBalance` into CyberPinball
-- Add `fetchLeaderboard()` and `submitScore()` callbacks (copy Portal Breaker pattern)
-- Submit score on game over
-- Add leaderboard toggle button and leaderboard display panel below the game canvas
-- Show top 20 scores with rank badges, wallet masking, and "You" highlight
-
-## 4. Smart Contract Integration
-
-- Import `useMultiWallet` for wallet address
-- On game over with score > 0, call `supabase.functions.invoke('submit-score')` with the wallet address, score, and `gameType: 'arcade'` (the existing edge function already supports this)
-- Display earned CCC tokens in the game over screen
-- Follow the same pattern already used in the platform's other games
+### 3. Bullet Rendering Variety
+Enemy bullets will be color-matched to their parent enemy and have visual variation:
+- Standard bullets use the enemy's current wave color
+- Special patterns (sine-wave, homing) get unique trail effects
 
 ---
 
-## Files to Create/Modify
+## Technical Details
 
-| File | Action |
-|------|--------|
-| `src/components/games/CyberPinball.tsx` | Major: cannon launch, speed normalization, leaderboard UI, smart contract calls |
-| `src/pages/CyberPinballPage.tsx` | Minor: pass wallet props if needed |
-| Database migration | Create `pinball_scores` table |
+### File: `src/components/games/CyberGalaxyGame.tsx`
 
-## Technical Notes
+**New color lookup** (added near `ENEMY_META`):
+- Add `WAVE_PALETTES` array with 5 color sets
+- Add `getWaveColors(wave)` helper that returns `{scout, striker, core}` colors
+- Modify enemy rendering to use `getWaveColors` instead of `ENEMY_META[e.type].color`
+- Update particle spawn colors to also use wave-based colors
 
-- The cannon replaces the plunger lane entirely -- the plunger wall segments (lines 220-221) can remain as playfield walls
-- Speed normalization runs every frame after Matter.js physics step, overriding any weird velocity from high-restitution bounces
-- The three duplicate launch code paths (spawnBall, doLaunch, launchBall) will all use the same cannon coordinates
-- Leaderboard follows the identical pattern as PortalBreakerGame (lines 356-374, 1998-2036)
+**New bullet interface extension**:
+- Add optional `color` and `pattern` fields to the `Bullet` interface (`sineWave`, `homing`, etc.)
+- Sine-wave bullets: update x position each frame using `Math.sin()`
+- Homing bullets: slight steering toward player each frame
 
+**Enemy shooting refactor** (lines ~496-514):
+- Replace the current type-based switch with a tier+type lookup
+- Each tier/type combination calls a specific pattern function
+- Pattern functions push bullets with appropriate `vx`/`vy` and `pattern` tags
+
+**Bullet rendering update** (around line 1000):
+- Enemy bullets rendered with their `.color` property instead of hardcoded magenta
+- Special pattern bullets get small visual differences (size, glow intensity)
+
+**Particle colors update**:
+- All `spawnParticles` calls for enemies use `getWaveColors()` instead of `ENEMY_META[e.type].color`
