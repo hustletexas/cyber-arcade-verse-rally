@@ -46,7 +46,8 @@ interface Player {
   guardianDrone: boolean; guardianDroneEnd: number;
 }
 
-interface Bullet { x: number; y: number; vx: number; vy: number; piercing?: boolean; weak?: boolean; }
+type BulletPattern = 'standard' | 'sineWave' | 'homing' | 'boomerang';
+interface Bullet { x: number; y: number; vx: number; vy: number; piercing?: boolean; weak?: boolean; color?: string; pattern?: BulletPattern; spawnTime?: number; originX?: number; baseVx?: number; }
 
 interface Missile { x: number; y: number; vx: number; vy: number; targetIdx: number; life: number; }
 
@@ -111,6 +112,20 @@ const ENEMY_META: Record<EnemyType, { hp: number; w: number; h: number; score: n
   striker: { hp: 2, w: 30, h: 26, score: 150, color: '#f59e0b' },
   core:    { hp: 3, w: 38, h: 32, score: 500, color: '#ff3d7f' },
 };
+
+// ─── Wave-Based Color Palettes ─────────────────────────────────────
+const WAVE_PALETTES: { scout: string; striker: string; core: string }[] = [
+  { scout: '#00ffcc', striker: '#f59e0b', core: '#ff3d7f' },
+  { scout: '#39ff14', striker: '#ff6a00', core: '#bf00ff' },
+  { scout: '#00d4ff', striker: '#ff2244', core: '#ffd700' },
+  { scout: '#ff69b4', striker: '#00ffa5', core: '#dc143c' },
+  { scout: '#b400ff', striker: '#ccff00', core: '#4466ff' },
+];
+
+function getWaveColor(type: EnemyType, wave: number): string {
+  const tier = Math.min(Math.floor((wave - 1) / 3), 4);
+  return WAVE_PALETTES[tier % WAVE_PALETTES.length][type];
+}
 
 function spawnWave(wave: number, cw: number): Enemy[] {
   const enemies: Enemy[] = [];
@@ -493,22 +508,98 @@ const CyberGalaxyGame: React.FC = () => {
         const dy = (p.y + p.h / 2) - ey;
         const mag = Math.sqrt(dx * dx + dy * dy) || 1;
 
+        const tier = Math.min(Math.floor((s.wave - 1) / 3), 4);
+        const bulletColor = getWaveColor(e.type, s.wave);
+        const spawnT = performance.now();
+
         if (e.type === 'scout') {
-          // Scout: single aimed shot
-          s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed, vy: (dy / mag) * enemyBulletSpeed });
+          if (tier === 0) {
+            // Single aimed shot
+            s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed, vy: (dy / mag) * enemyBulletSpeed, color: bulletColor });
+          } else if (tier === 1) {
+            // Fast double-tap
+            s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed * 1.2, vy: (dy / mag) * enemyBulletSpeed * 1.2, color: bulletColor });
+            s.enemyBullets.push({ x: ex, y: ey + 6, vx: (dx / mag) * enemyBulletSpeed * 1.1, vy: (dy / mag) * enemyBulletSpeed * 1.1, color: bulletColor });
+          } else if (tier === 2) {
+            // Sine-wave bullet
+            s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed, vy: (dy / mag) * enemyBulletSpeed, color: bulletColor, pattern: 'sineWave', spawnTime: spawnT, originX: ex, baseVx: (dx / mag) * enemyBulletSpeed });
+          } else if (tier === 3) {
+            // Boomerang shot
+            s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed * 1.3, vy: (dy / mag) * enemyBulletSpeed * 0.6, color: bulletColor, pattern: 'boomerang', spawnTime: spawnT });
+          } else {
+            // Homing bullet
+            s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed * 0.7, vy: (dy / mag) * enemyBulletSpeed * 0.7, color: bulletColor, pattern: 'homing' });
+          }
         } else if (e.type === 'striker') {
-          // Striker: 3-way spread
           const baseAngle = Math.atan2(dy, dx);
-          for (const offset of [-0.2, 0, 0.2]) {
-            const a = baseAngle + offset;
-            s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed, vy: Math.sin(a) * enemyBulletSpeed });
+          if (tier === 0) {
+            // 3-way spread
+            for (const offset of [-0.2, 0, 0.2]) {
+              const a = baseAngle + offset;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed, vy: Math.sin(a) * enemyBulletSpeed, color: bulletColor });
+            }
+          } else if (tier === 1) {
+            // 4-way cross
+            for (const offset of [-Math.PI / 2, 0, Math.PI / 2, Math.PI]) {
+              const a = baseAngle + offset;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * 0.8, vy: Math.sin(a) * enemyBulletSpeed * 0.8, color: bulletColor });
+            }
+          } else if (tier === 2) {
+            // Rotating spiral (2 bullets at spinning angles)
+            const spin = performance.now() * 0.003;
+            for (let i = 0; i < 2; i++) {
+              const a = spin + i * Math.PI;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed, vy: Math.sin(a) * enemyBulletSpeed, color: bulletColor });
+            }
+          } else if (tier === 3) {
+            // Shotgun burst (5 tight spread)
+            for (const offset of [-0.12, -0.06, 0, 0.06, 0.12]) {
+              const a = baseAngle + offset;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * (0.9 + Math.random() * 0.3), vy: Math.sin(a) * enemyBulletSpeed * (0.9 + Math.random() * 0.3), color: bulletColor });
+            }
+          } else {
+            // Alternating left-right volleys
+            const side = Math.floor(performance.now() / 300) % 2 === 0 ? -0.3 : 0.3;
+            for (let i = 0; i < 2; i++) {
+              const a = baseAngle + side + i * 0.1;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed, vy: Math.sin(a) * enemyBulletSpeed, color: bulletColor });
+            }
           }
         } else {
-          // Core: 5-way burst
+          // Core
           const baseAngle = Math.atan2(dy, dx);
-          for (const offset of [-0.35, -0.17, 0, 0.17, 0.35]) {
-            const a = baseAngle + offset;
-            s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * 0.9, vy: Math.sin(a) * enemyBulletSpeed * 0.9 });
+          if (tier === 0) {
+            // 5-way burst
+            for (const offset of [-0.35, -0.17, 0, 0.17, 0.35]) {
+              const a = baseAngle + offset;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * 0.9, vy: Math.sin(a) * enemyBulletSpeed * 0.9, color: bulletColor });
+            }
+          } else if (tier === 1) {
+            // Ring of 8
+            for (let i = 0; i < 8; i++) {
+              const a = (i * Math.PI * 2) / 8;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * 0.8, vy: Math.sin(a) * enemyBulletSpeed * 0.8, color: bulletColor });
+            }
+          } else if (tier === 2) {
+            // Aimed triple with splash
+            s.enemyBullets.push({ x: ex, y: ey, vx: (dx / mag) * enemyBulletSpeed, vy: (dy / mag) * enemyBulletSpeed, color: bulletColor });
+            for (const offset of [-0.4, 0.4]) {
+              const a = baseAngle + offset;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * 0.6, vy: Math.sin(a) * enemyBulletSpeed * 0.6, color: bulletColor });
+            }
+          } else if (tier === 3) {
+            // Sweeping laser (3 sequential aimed shots)
+            for (let i = 0; i < 3; i++) {
+              const a = baseAngle + (i - 1) * 0.15;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * (1 + i * 0.1), vy: Math.sin(a) * enemyBulletSpeed * (1 + i * 0.1), color: bulletColor });
+            }
+          } else {
+            // Dual spiral (rotating double helix)
+            const spin = performance.now() * 0.004;
+            for (let i = 0; i < 2; i++) {
+              const a = spin + i * Math.PI;
+              s.enemyBullets.push({ x: ex, y: ey, vx: Math.cos(a) * enemyBulletSpeed * 0.9, vy: Math.sin(a) * enemyBulletSpeed * 0.9, color: bulletColor });
+            }
           }
         }
       }
@@ -520,9 +611,31 @@ const CyberGalaxyGame: React.FC = () => {
       return b.y > -20 && b.x > -20 && b.x < s.cw + 20;
     });
 
-    // ── Update enemy bullets ──
+    // ── Update enemy bullets (with special patterns) ──
     s.enemyBullets = s.enemyBullets.filter(b => {
-      b.x += b.vx; b.y += b.vy;
+      // Special movement patterns
+      if (b.pattern === 'sineWave' && b.spawnTime !== undefined && b.baseVx !== undefined) {
+        const elapsed = (now - b.spawnTime) * 0.001;
+        b.x += b.baseVx + Math.sin(elapsed * 8) * 3;
+        b.y += b.vy;
+      } else if (b.pattern === 'homing') {
+        const dx = (p.x + p.w / 2) - b.x;
+        const dy = (p.y + p.h / 2) - b.y;
+        const mag = Math.sqrt(dx * dx + dy * dy) || 1;
+        b.vx += (dx / mag) * 0.08;
+        b.vy += (dy / mag) * 0.08;
+        const vmag = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        const maxSpd = 3;
+        if (vmag > maxSpd) { b.vx = (b.vx / vmag) * maxSpd; b.vy = (b.vy / vmag) * maxSpd; }
+        b.x += b.vx; b.y += b.vy;
+      } else if (b.pattern === 'boomerang' && b.spawnTime !== undefined) {
+        const elapsed = (now - b.spawnTime) * 0.001;
+        b.vy += 0.06; // gravity curves it back
+        b.vx *= 0.995;
+        b.x += b.vx; b.y += b.vy;
+      } else {
+        b.x += b.vx; b.y += b.vy;
+      }
       if (b.y >= s.ch + 20) return false;
       // Guardian drone intercepts nearby enemy bullets
       if (p.guardianDrone) {
@@ -560,12 +673,12 @@ const CyberGalaxyGame: React.FC = () => {
           s.shotsHit++;
           const dmg = b.weak ? 0.5 : 1;
           e.hp -= dmg;
-          spawnParticles(s.particles, b.x, b.y, ENEMY_META[e.type].color, 5);
+          spawnParticles(s.particles, b.x, b.y, getWaveColor(e.type, s.wave), 5);
           if (e.hp <= 0) {
             const meta = ENEMY_META[e.type];
             const bonus = e.isDiving ? 100 : 0;
             s.score += meta.score + bonus;
-            spawnParticles(s.particles, e.x + e.w / 2, e.y + e.h / 2, meta.color, 15);
+            spawnParticles(s.particles, e.x + e.w / 2, e.y + e.h / 2, getWaveColor(e.type, s.wave), 15);
             if (Math.random() < POWER_UP_DROP_CHANCE) {
               const types: PowerUpType[] = ['overcharge', 'shield', 'rapidfire', 'extralife', 'photonburst', 'rapidpulse', 'missileswarm', 'guardiandrone'];
               const weights = [0.20, 0.18, 0.13, 0.08, 0.12, 0.10, 0.09, 0.10];
@@ -611,7 +724,7 @@ const CyberGalaxyGame: React.FC = () => {
         if (target.hp <= 0) {
           const meta = ENEMY_META[target.type];
           s.score += meta.score;
-          spawnParticles(s.particles, target.x + target.w / 2, target.y + target.h / 2, meta.color, 15);
+          spawnParticles(s.particles, target.x + target.w / 2, target.y + target.h / 2, getWaveColor(target.type, s.wave), 15);
           const idx = s.enemies.indexOf(target);
           if (idx >= 0) s.enemies.splice(idx, 1);
         }
@@ -801,13 +914,14 @@ const CyberGalaxyGame: React.FC = () => {
     const shapeTier = Math.min(Math.floor((s.wave - 1) / 3), 4);
     s.enemies.forEach(e => {
       const meta = ENEMY_META[e.type];
+      const eColor = getWaveColor(e.type, s.wave);
       ctx.save();
       ctx.translate(e.x + e.w / 2, e.y + e.h / 2);
-      ctx.shadowColor = meta.color;
+      ctx.shadowColor = eColor;
       ctx.shadowBlur = 8;
-      ctx.strokeStyle = meta.color;
+      ctx.strokeStyle = eColor;
       ctx.lineWidth = 1.5;
-      ctx.fillStyle = `${meta.color}33`;
+      ctx.fillStyle = `${eColor}33`;
 
       const hw = e.w / 2, hh = e.h / 2;
 
@@ -900,7 +1014,7 @@ const CyberGalaxyGame: React.FC = () => {
           ctx.beginPath(); ctx.arc(0, -hh * 1.5, 3, 0, Math.PI * 2); ctx.fill();
         }
         // Twin engines for all tiers
-        ctx.fillStyle = meta.color; ctx.shadowBlur = 10;
+        ctx.fillStyle = eColor; ctx.shadowBlur = 10;
         ctx.beginPath(); ctx.ellipse(-hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.ellipse(hw * 0.2, -hh * 0.5, 2.5, 4, 0, 0, Math.PI * 2); ctx.fill();
       } else {
@@ -931,7 +1045,7 @@ const CyberGalaxyGame: React.FC = () => {
           ctx.lineTo(hw, -hh); ctx.lineTo(hw * 0.8, -hh * 0.2);
           ctx.closePath(); ctx.fill(); ctx.stroke();
           // Bridge
-          ctx.fillStyle = meta.color;
+          ctx.fillStyle = eColor;
           ctx.beginPath(); ctx.rect(-hw * 0.15, -hh * 0.7, hw * 0.3, hh * 0.3); ctx.fill();
         } else {
           // Eldritch eye
@@ -939,7 +1053,7 @@ const CyberGalaxyGame: React.FC = () => {
           ctx.ellipse(0, 0, hw, hh * 0.5, 0, 0, Math.PI * 2);
           ctx.fill(); ctx.stroke();
           // Pupil
-          ctx.fillStyle = meta.color; ctx.shadowBlur = 16;
+          ctx.fillStyle = eColor; ctx.shadowBlur = 16;
           ctx.globalAlpha = 0.8 + Math.sin(now * 0.006) * 0.2;
           ctx.beginPath(); ctx.arc(0, 0, hw * 0.3, 0, Math.PI * 2); ctx.fill();
           ctx.globalAlpha = 1;
@@ -956,7 +1070,7 @@ const CyberGalaxyGame: React.FC = () => {
           }
         }
         // Core glow
-        ctx.fillStyle = meta.color; ctx.shadowBlur = 16;
+        ctx.fillStyle = eColor; ctx.shadowBlur = 16;
         ctx.globalAlpha = 0.6 + Math.sin(now * 0.005) * 0.3;
         ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
@@ -964,7 +1078,7 @@ const CyberGalaxyGame: React.FC = () => {
 
       // Engine glow for scouts
       if (e.type === 'scout') {
-        ctx.fillStyle = meta.color; ctx.shadowBlur = 12;
+        ctx.fillStyle = eColor; ctx.shadowBlur = 12;
         ctx.beginPath(); ctx.ellipse(0, -hh * 0.5, 3, 4, 0, 0, Math.PI * 2); ctx.fill();
       }
 
@@ -1017,14 +1131,24 @@ const CyberGalaxyGame: React.FC = () => {
     });
     ctx.shadowBlur = 0;
 
-    // Enemy bullets — varied colors
+    // Enemy bullets — color-matched to parent enemy
     s.enemyBullets.forEach(b => {
-      ctx.fillStyle = '#ff3d7f';
-      ctx.shadowColor = '#ff3d7f';
-      ctx.shadowBlur = 5;
+      const bColor = b.color || '#ff3d7f';
+      const isSpecial = b.pattern === 'sineWave' || b.pattern === 'homing';
+      ctx.fillStyle = bColor;
+      ctx.shadowColor = bColor;
+      ctx.shadowBlur = isSpecial ? 10 : 5;
       ctx.beginPath();
-      ctx.arc(b.x, b.y, E_BULLET_W, 0, Math.PI * 2);
+      ctx.arc(b.x, b.y, isSpecial ? E_BULLET_W + 1 : E_BULLET_W, 0, Math.PI * 2);
       ctx.fill();
+      // Trail for special bullets
+      if (isSpecial) {
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(b.x - b.vx * 2, b.y - b.vy * 2, E_BULLET_W, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
     });
     ctx.shadowBlur = 0;
 
