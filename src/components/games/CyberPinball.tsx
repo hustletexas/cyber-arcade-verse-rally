@@ -1111,17 +1111,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       
       ctx.restore();
       
-      // Cannon label (unrotated)
-      if (!g.launched && !g.gameOver) {
-        const pulseA = 0.4 + Math.sin(t * 4) * 0.4;
-        ctx.fillStyle = NEON.orange;
-        ctx.font = 'bold 7px monospace';
-        ctx.textAlign = 'center';
-        ctx.globalAlpha = pulseA;
-        ctx.fillText('CANNON', CANNON_X, CANNON_Y + 28);
-        ctx.fillText('▼ TAP ▼', CANNON_X, CANNON_Y + 37);
-        ctx.globalAlpha = 1;
-      }
+      // Cannon label removed (no blinking tap text)
 
       // ── Ball trail ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
