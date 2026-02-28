@@ -8,6 +8,7 @@ import { PlayerDashboard } from '@/components/PlayerDashboard';
 import { CreditsRewardsShowcase } from '@/components/CreditsRewardsShowcase';
 
 import { CommunityHub } from '@/components/CommunityHub';
+import { RankingsSection } from '@/components/RankingsSection';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
@@ -135,6 +136,10 @@ const Index = () => {
           {/* Cyber Arcade Games Section */}
          <section id="arcade-hub" className="px-2 sm:px-4">
             <CyberGamesSection />
+          </section>
+          {/* Rankings Section */}
+         <section id="rankings" className="px-2 sm:px-4">
+            <RankingsSection />
           </section>
 
           {/* NFT Marketplace Section - Mobile Optimized */}
