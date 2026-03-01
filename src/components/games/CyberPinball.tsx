@@ -137,9 +137,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // New features
     dropTargets: [false, false, false] as boolean[],
     dropTargetResetTimer: 0,
-    kickoutTimers: [0, 0] as number[],
-    kickoutBalls: [null, null] as (Matter.Body | null)[],
+    midLeftFlipper: null as Matter.Body | null,
+    midRightFlipper: null as Matter.Body | null,
     captiveBallHits: 0,
+    stuckTimer: 0,
+    stuckX: 0, stuckY: 0,
     rollSpinnerAngle: 0,
     rightGateOpen: true,
     rightGateUsed: false,
@@ -409,11 +411,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Bodies.circle(250, 390, DROP_R, { isStatic: true, label: 'drop_target_2', restitution: 0.5 }),
     ];
 
-    // ── NEW: Kick-out holes (2) — sensors that capture the ball ──
-    const kickoutHoles = [
-      Bodies.circle(38, 430, 11, sensorOpts('kickout_0')),
-      Bodies.circle(TW - 38, 350, 11, sensorOpts('kickout_1')),
-    ];
+    // ── Mid-field flippers (replacing kickout holes) ──
+    const MID_FW = 44, MID_FH = 9;
+    const mlfX = 80, mlfY = 430;
+    const mrfX = TW - 80, mrfY = 350;
+    const mlf = Bodies.rectangle(mlfX, mlfY, MID_FW, MID_FH, { label: 'midLeftFlipper', density: 0.018, frictionAir: 0.02, chamfer: { radius: 3 } });
+    const mrf = Bodies.rectangle(mrfX, mrfY, MID_FW, MID_FH, { label: 'midRightFlipper', density: 0.018, frictionAir: 0.02, chamfer: { radius: 3 } });
+    const mlp = Constraint.create({ bodyA: mlf, pointA: { x: -MID_FW / 2 + 5, y: 0 }, pointB: { x: mlfX - MID_FW / 2 + 5, y: mlfY }, stiffness: 1, length: 0 });
+    const mrp = Constraint.create({ bodyA: mrf, pointA: { x: MID_FW / 2 - 5, y: 0 }, pointB: { x: mrfX + MID_FW / 2 - 5, y: mrfY }, stiffness: 1, length: 0 });
+    G.current.midLeftFlipper = mlf;
+    G.current.midRightFlipper = mrf;
 
     // ── NEW: Captive ball — trapped ball with walls ──
     const captiveWallOpts = { isStatic: true, label: 'captive_wall', restitution: 0.3 };
@@ -456,7 +463,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       spinner, lockSensor,
       ...popBumpers,
       ...dropTargetBodies,
-      ...kickoutHoles,
+      mlf, mrf, mlp, mrp,
       ...captiveWalls, captiveBallBody, captiveSpring, captiveSensor,
       rollSpinner,
       rightGateSensor,
@@ -731,23 +738,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
         }
 
-        // ── NEW: Kick-out holes ──
-        for (let i = 0; i < 2; i++) {
-          if (labels.includes(`kickout_${i}`) && !g.kickoutBalls[i]) {
-            addScore(500);
-            SFX.kickOut();
-            showMsg(`⬇️ KICK-OUT HOLE! +500`);
-            g.shake.power = 3;
-            // Capture ball — hold it for 600ms then eject
-            Body.setVelocity(ball, { x: 0, y: 0 });
-            Body.setStatic(ball, true);
-            const holePos = i === 0 ? { x: 38, y: 430 } : { x: TW - 38, y: 350 };
-            Body.setPosition(ball, holePos);
-            g.kickoutTimers[i] = Date.now() + 600;
-            g.kickoutBalls[i] = ball;
-            spawnParticles(holePos.x, holePos.y, 10, NEON.blue, 5);
-          }
-        }
+        // Mid flippers are physics bodies, no special collision handling needed
 
         // ── NEW: Captive ball sensor ──
         if (labels.includes('captive_sensor')) {
@@ -810,8 +801,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // Reset per-ball features
       g.rightGateOpen = true;
       g.rightGateUsed = false;
-      g.kickoutTimers = [0, 0];
-      g.kickoutBalls = [null, null];
+      g.stuckTimer = 0;
       setBalls(g.balls);
       onBallLost?.(g.balls);
       if (g.balls <= 0) {
@@ -1026,18 +1016,30 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         g.magnetActive = false;
       }
 
-      // ── NEW: Kick-out hole ejection timers ──
-      for (let i = 0; i < 2; i++) {
-        if (g.kickoutTimers[i] > 0 && now > g.kickoutTimers[i] && g.kickoutBalls[i]) {
-          const kBall = g.kickoutBalls[i]!;
-          Body.setStatic(kBall, false);
-          // Eject upward with slight random horizontal
-          const ejectX = (Math.random() - 0.5) * 4;
-          Body.setVelocity(kBall, { x: ejectX, y: -8 });
-          const holePos = i === 0 ? { x: 38, y: 430 } : { x: TW - 38, y: 350 };
-          spawnParticles(holePos.x, holePos.y, 12, NEON.blue, 6);
-          g.kickoutTimers[i] = 0;
-          g.kickoutBalls[i] = null;
+      // ── Anti-stuck detection ──
+      if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
+        const bx = g.currentBall.position.x;
+        const by = g.currentBall.position.y;
+        const speed = Math.sqrt(g.currentBall.velocity.x ** 2 + g.currentBall.velocity.y ** 2);
+        if (speed < 0.3 && by < TH - 100) {
+          if (g.stuckTimer === 0) {
+            g.stuckX = bx; g.stuckY = by; g.stuckTimer = now;
+          } else if (now - g.stuckTimer > 2000) {
+            const dist = Math.sqrt((bx - g.stuckX) ** 2 + (by - g.stuckY) ** 2);
+            if (dist < 10) {
+              // Ball is stuck — nudge it
+              Body.setVelocity(g.currentBall, {
+                x: (Math.random() - 0.5) * 6,
+                y: -5 - Math.random() * 3,
+              });
+              spawnParticles(bx, by, 6, NEON.cyan, 4);
+              g.stuckTimer = 0;
+            } else {
+              g.stuckTimer = 0;
+            }
+          }
+        } else {
+          g.stuckTimer = 0;
         }
       }
 
@@ -1086,6 +1088,15 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       if (g.topRightFlipper) {
         const ta = g.rightUp ? 0.55 : -0.3;
         Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.45);
+      }
+      // Mid flippers
+      if (g.midLeftFlipper) {
+        const ta = g.leftUp ? -0.55 : 0.35;
+        Body.setAngularVelocity(g.midLeftFlipper, (ta - g.midLeftFlipper.angle) * 0.5);
+      }
+      if (g.midRightFlipper) {
+        const ta = g.rightUp ? 0.55 : -0.35;
+        Body.setAngularVelocity(g.midRightFlipper, (ta - g.midRightFlipper.angle) * 0.5);
       }
 
       // ═══════════════════════════════════════
@@ -1863,30 +1874,32 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
           // If hit, body is off-screen so nothing draws
 
-        // ── NEW: Kick-out holes ──
-        } else if (body.label.startsWith('kickout_')) {
-          const idx = parseInt(body.label.split('_')[1]);
-          const captured = g.kickoutBalls[idx] !== null;
-          const col = NEON.blue;
-          const pulseK = 11 + Math.sin(t * 4 + idx * 3) * 2;
-          ctx.shadowColor = col;
-          ctx.shadowBlur = captured ? 25 : 12;
-          ctx.strokeStyle = col;
-          ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(0, 0, pulseK, 0, Math.PI * 2); ctx.stroke();
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = '#0b0f1a';
-          ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
-          // Swirling indicator
-          ctx.strokeStyle = `${col}88`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.arc(0, 0, pulseK - 4, t * 5 + idx, t * 5 + idx + Math.PI); ctx.stroke();
-          if (captured) {
-            ctx.fillStyle = col;
-            ctx.globalAlpha = 0.6 + Math.sin(t * 8) * 0.3;
-            ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
-            ctx.globalAlpha = 1;
+        // ── Mid-field flippers ──
+        } else if (body.label === 'midLeftFlipper' || body.label === 'midRightFlipper') {
+          const isLeft = body.label === 'midLeftFlipper';
+          const up = isLeft ? g.leftUp : g.rightUp;
+          const col = isLeft ? NEON.blue : NEON.orange;
+          const fg = linGrad(ctx, -MID_FW / 2, -MID_FH / 2, MID_FW / 2, MID_FH / 2);
+          if (fg) {
+            fg.addColorStop(0, up ? col : `${col}55`);
+            fg.addColorStop(0.5, up ? `${col}cc` : `${col}33`);
+            fg.addColorStop(1, up ? col : `${col}22`);
+            ctx.fillStyle = fg;
+          } else {
+            ctx.fillStyle = up ? col : `${col}55`;
           }
+          ctx.shadowColor = col;
+          ctx.shadowBlur = up ? 22 : 8;
+          ctx.beginPath(); ctx.roundRect(-MID_FW / 2, -MID_FH / 2, MID_FW, MID_FH, 3); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = `rgba(255,255,255,${up ? 0.3 : 0.06})`;
+          ctx.beginPath(); ctx.roundRect(-MID_FW / 2 + 2, -MID_FH / 2 + 1, MID_FW - 4, 2, 2); ctx.fill();
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.roundRect(-MID_FW / 2, -MID_FH / 2, MID_FW, MID_FH, 3); ctx.stroke();
+          const px = isLeft ? -MID_FW / 2 + 5 : MID_FW / 2 - 5;
+          ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.3)';
+          ctx.beginPath(); ctx.arc(px, 0, 2, 0, Math.PI * 2); ctx.fill();
 
         // ── NEW: Captive ball ──
         } else if (body.label === 'captive_ball') {
@@ -1997,9 +2010,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.fillStyle = `${NEON.green}66`; ctx.font = 'bold 5px monospace';
       ctx.fillText('DROP TARGETS', 210, 390 + DROP_R + 10);
 
-      ctx.fillStyle = `${NEON.blue}66`; ctx.font = 'bold 5px monospace';
-      ctx.fillText('KICK', 38, 430 + 18);
-      ctx.fillText('KICK', TW - 38, 350 + 18);
+      ctx.fillStyle = `${NEON.blue}44`; ctx.font = 'bold 5px monospace';
+      ctx.fillText('MID', 80, 430 + 14);
+      ctx.fillStyle = `${NEON.orange}44`;
+      ctx.fillText('MID', TW - 80, 350 + 14);
 
       ctx.fillStyle = `${NEON.white}44`; ctx.font = 'bold 5px monospace';
       ctx.fillText('CAPTIVE', captiveX, captiveY + 20);
@@ -2237,8 +2251,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.antiGravActive = false; g.antiGravMeter = 0;
           g.trail = []; g.screenPulse = 0;
           g.dropTargets.fill(false); g.dropTargetResetTimer = 0;
-          g.kickoutTimers = [0, 0]; g.kickoutBalls = [null, null];
-          g.captiveBallHits = 0; g.rollSpinnerAngle = 0;
+          g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
           g.rightGateOpen = true; g.rightGateUsed = false;
           g.popBumperFlash.clear();
           if (engineRef.current) engineRef.current.gravity.y = 1.3;
@@ -2306,8 +2319,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.antiGravActive = false; g.antiGravMeter = 0;
       g.trail = []; g.screenPulse = 0;
       g.dropTargets.fill(false); g.dropTargetResetTimer = 0;
-      g.kickoutTimers = [0, 0]; g.kickoutBalls = [null, null];
-      g.captiveBallHits = 0; g.rollSpinnerAngle = 0;
+      g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
       g.rightGateOpen = true; g.rightGateUsed = false;
       g.popBumperFlash.clear();
       if (engineRef.current) engineRef.current.gravity.y = 1.3;
