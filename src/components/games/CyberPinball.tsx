@@ -350,8 +350,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     // ── Portal holes ──
     const portalHole = Bodies.circle(bCX, 560, 10, sensorOpts('portal_hole'));
-    const portalBL = Bodies.circle(40, TH - 80, 10, sensorOpts('portal_bl'));
-    const portalBR = Bodies.circle(TW - 40, TH - 80, 10, sensorOpts('portal_br'));
+    const portalBL = Bodies.circle(25, TH - 80, 10, sensorOpts('portal_bl'));
+    const portalBR = Bodies.circle(TW - 55, TH - 80, 10, sensorOpts('portal_br'));
     const portalExit = Bodies.circle(TW - 35, 45, 10, sensorOpts('portal_exit'));
 
     // ── Magnet bumper ──
