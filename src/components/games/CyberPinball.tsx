@@ -29,9 +29,13 @@ const linGrad = (ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: numb
 const TW = 420;
 const TH = 820;
 const BALL_R = 6;
-// Natural pinball physics: heavier ball, moderate bounce, real friction
-const BALL_OPTS = { label: 'ball', restitution: 0.35, friction: 0.02, frictionAir: 0.0008, density: 0.008 };
-const MIN_SPEED = 1.5; // minimum speed to prevent floating/dead ball
+// Natural pinball physics: heavier steel ball, consistent bounce, controlled drag
+const BALL_OPTS = { label: 'ball', restitution: 0.42, friction: 0.018, frictionAir: 0.00055, density: 0.0085 };
+const MIN_SPEED = 1.8; // keep flow alive without floaty behavior
+const TABLE_SLIDE_FORCE_Y = 0.00022; // table slope keeps ball naturally sliding down
+const TABLE_SLIDE_FORCE_X = -0.00003; // subtle left drift like a real table
+const STUCK_SPEED_THRESHOLD = 0.45;
+const STUCK_TIMEOUT_MS = 1400;
 const WALL = 8;
 const BUMPER_R = 16;
 const FW = 64;
@@ -282,10 +286,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     canvas.width = TW;
     canvas.height = TH;
 
-    const engine = Engine.create({ gravity: { x: 0, y: 1.8, scale: 0.001 } });
+    const engine = Engine.create({ gravity: { x: 0, y: 1.95, scale: 0.001 } });
     engineRef.current = engine;
 
-    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.4 };
+    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.55 };
     const sensorOpts = (label: string) => ({ isStatic: true, isSensor: true, label });
 
     // ── Walls ──
@@ -385,7 +389,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const demonTargetsR = [0, 1, 2].map(i =>
       Bodies.rectangle(TW - 104 + i * 22, dtY, 4, 20, sensorOpts(`demon_r_${i}`))
     );
-    const trampolineOpts = { ...wallOpts, restitution: 1.0, label: 'trampoline_wall' };
+    const trampolineOpts = { ...wallOpts, restitution: 0.92, label: 'trampoline_wall' };
     walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, trampolineOpts));
     walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, trampolineOpts));
 
@@ -971,7 +975,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
-      // ── Speed cap + minimum speed to prevent floating ──
+      // ── Speed cap + table slide force + minimum speed to prevent floating ──
       if (g.currentBall && g.launched && fin(g.currentBall.velocity.x) && fin(g.currentBall.velocity.y)) {
         const vx = g.currentBall.velocity.x;
         const vy = g.currentBall.velocity.y;
@@ -980,18 +984,30 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           const scale = MAX_SPEED / speed;
           Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
         }
-        // Prevent floating: if ball is nearly stationary mid-field, give it a downward nudge
-        if (speed < MIN_SPEED && g.currentBall.position.y < TH - 120) {
-          Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: 0.0005 });
+
+        // Constant table slope: natural downward motion + slight lateral drift
+        if (!g.antiGravActive) {
+          Body.applyForce(g.currentBall, g.currentBall.position, { x: TABLE_SLIDE_FORCE_X, y: TABLE_SLIDE_FORCE_Y });
+        }
+
+        // If speed drops too much, add a small consistent downhill push
+        if (speed < MIN_SPEED && g.currentBall.position.y < TH - 90 && !g.antiGravActive) {
+          Body.setVelocity(g.currentBall, {
+            x: vx * 0.92 + TABLE_SLIDE_FORCE_X * 8000,
+            y: Math.max(vy * 0.92, 2.4),
+          });
         }
       }
-      // Same cap for extra balls
+      // Same cap/slope behavior for extra balls
       for (const eb of g.extraBalls) {
         if (fin(eb.velocity.x) && fin(eb.velocity.y)) {
           const speed = Math.sqrt(eb.velocity.x ** 2 + eb.velocity.y ** 2);
           if (speed > MAX_SPEED) {
             const scale = MAX_SPEED / speed;
             Body.setVelocity(eb, { x: eb.velocity.x * scale, y: eb.velocity.y * scale });
+          }
+          if (!g.antiGravActive) {
+            Body.applyForce(eb, eb.position, { x: TABLE_SLIDE_FORCE_X, y: TABLE_SLIDE_FORCE_Y });
           }
         }
       }
@@ -1013,7 +1029,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         g.antiGravActive = false;
         setAntiGrav(false);
         if (engineRef.current) {
-          engineRef.current.gravity.y = 1.8;
+          engineRef.current.gravity.y = 1.95;
         }
         showMsg('GRAVITY RESTORED');
       }
@@ -1021,27 +1037,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         g.magnetActive = false;
       }
 
-      // ── Anti-stuck detection ──
+      // ── Anti-stuck detection (deterministic escape for consistent behavior) ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
         const bx = g.currentBall.position.x;
         const by = g.currentBall.position.y;
-        const speed = Math.sqrt(g.currentBall.velocity.x ** 2 + g.currentBall.velocity.y ** 2);
-        if (speed < 0.3 && by < TH - 100) {
+        const vx = g.currentBall.velocity.x;
+        const vy = g.currentBall.velocity.y;
+        const speed = Math.sqrt(vx * vx + vy * vy);
+
+        if (speed < STUCK_SPEED_THRESHOLD && by < TH - 90) {
           if (g.stuckTimer === 0) {
-            g.stuckX = bx; g.stuckY = by; g.stuckTimer = now;
-          } else if (now - g.stuckTimer > 2000) {
+            g.stuckX = bx;
+            g.stuckY = by;
+            g.stuckTimer = now;
+          } else if (now - g.stuckTimer > STUCK_TIMEOUT_MS) {
             const dist = Math.sqrt((bx - g.stuckX) ** 2 + (by - g.stuckY) ** 2);
-            if (dist < 10) {
-              // Ball is stuck — nudge it
-              Body.setVelocity(g.currentBall, {
-                x: (Math.random() - 0.5) * 6,
-                y: -5 - Math.random() * 3,
-              });
+            if (dist < 9) {
+              const escapeX = bx < TW * 0.33 ? 2.8 : bx > TW * 0.67 ? -2.8 : (vx >= 0 ? 1.6 : -1.6);
+              const escapeY = Math.max(3.6, Math.abs(vy) + 1.6);
+              Body.setVelocity(g.currentBall, { x: escapeX, y: escapeY });
+              Body.setPosition(g.currentBall, { x: bx + escapeX * 0.5, y: Math.min(by + 4, TH - 120) });
               spawnParticles(bx, by, 6, NEON.cyan, 4);
-              g.stuckTimer = 0;
-            } else {
-              g.stuckTimer = 0;
             }
+            g.stuckTimer = 0;
           }
         } else {
           g.stuckTimer = 0;
