@@ -29,8 +29,9 @@ const linGrad = (ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: numb
 const TW = 420;
 const TH = 820;
 const BALL_R = 6;
-// Cyber Breaker-style ball physics: restitution 1.0, speed controlled per-frame
-const BALL_OPTS = { label: 'ball', restitution: 0.6, friction: 0.01, frictionAir: 0.001, density: 0.004 };
+// Natural pinball physics: heavier ball, moderate bounce, real friction
+const BALL_OPTS = { label: 'ball', restitution: 0.35, friction: 0.02, frictionAir: 0.0008, density: 0.008 };
+const MIN_SPEED = 1.5; // minimum speed to prevent floating/dead ball
 const WALL = 8;
 const BUMPER_R = 16;
 const FW = 64;
@@ -281,10 +282,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     canvas.width = TW;
     canvas.height = TH;
 
-    const engine = Engine.create({ gravity: { x: 0, y: 1.3, scale: 0.001 } });
+    const engine = Engine.create({ gravity: { x: 0, y: 1.8, scale: 0.001 } });
     engineRef.current = engine;
 
-    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.7 };
+    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.4 };
     const sensorOpts = (label: string) => ({ isStatic: true, isSensor: true, label });
 
     // ── Walls ──
@@ -320,16 +321,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     G.current.topRightFlipper = trf;
 
     // ── Slingshots ──
-    const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.6 });
-    const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.6 });
+    const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.2 });
+    const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.2 });
 
     // ── 4 Neon Bumpers ──
     const bCX = TW / 2, bCY = 240;
     const bumpers = [
-      Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.8 }),
-      Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.8 }),
-      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.8 }),
-      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 1.8 }),
+      Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.3 }),
+      Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.3 }),
+      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.3 }),
+      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 1.3 }),
     ];
 
     const reactorSensor = Bodies.circle(bCX, bCY, 8, sensorOpts('reactor_core'));
@@ -384,7 +385,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const demonTargetsR = [0, 1, 2].map(i =>
       Bodies.rectangle(TW - 104 + i * 22, dtY, 4, 20, sensorOpts(`demon_r_${i}`))
     );
-    const trampolineOpts = { ...wallOpts, restitution: 1.5, label: 'trampoline_wall' };
+    const trampolineOpts = { ...wallOpts, restitution: 1.0, label: 'trampoline_wall' };
     walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, trampolineOpts));
     walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, trampolineOpts));
 
@@ -399,8 +400,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // ── NEW: Pop bumpers (2) — higher restitution, active pop ──
     const POP_R = 14;
     const popBumpers = [
-      Bodies.circle(120, 470, POP_R, { isStatic: true, label: 'pop_bumper_0', restitution: 2.2 }),
-      Bodies.circle(300, 470, POP_R, { isStatic: true, label: 'pop_bumper_1', restitution: 2.2 }),
+      Bodies.circle(120, 470, POP_R, { isStatic: true, label: 'pop_bumper_0', restitution: 1.5 }),
+      Bodies.circle(300, 470, POP_R, { isStatic: true, label: 'pop_bumper_1', restitution: 1.5 }),
     ];
 
     // ── NEW: Drop targets (3) — round stationary targets ──
@@ -970,7 +971,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
       }
 
-      // ── Speed cap only (natural gravity, no forced normalization) ──
+      // ── Speed cap + minimum speed to prevent floating ──
       if (g.currentBall && g.launched && fin(g.currentBall.velocity.x) && fin(g.currentBall.velocity.y)) {
         const vx = g.currentBall.velocity.x;
         const vy = g.currentBall.velocity.y;
@@ -978,6 +979,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (speed > MAX_SPEED) {
           const scale = MAX_SPEED / speed;
           Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
+        }
+        // Prevent floating: if ball is nearly stationary mid-field, give it a downward nudge
+        if (speed < MIN_SPEED && g.currentBall.position.y < TH - 120) {
+          Body.applyForce(g.currentBall, g.currentBall.position, { x: 0, y: 0.0005 });
         }
       }
       // Same cap for extra balls
@@ -1008,7 +1013,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         g.antiGravActive = false;
         setAntiGrav(false);
         if (engineRef.current) {
-          engineRef.current.gravity.y = 1.3;
+          engineRef.current.gravity.y = 1.8;
         }
         showMsg('GRAVITY RESTORED');
       }
@@ -2254,7 +2259,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
           g.rightGateOpen = true; g.rightGateUsed = false;
           g.popBumperFlash.clear();
-          if (engineRef.current) engineRef.current.gravity.y = 1.3;
+          if (engineRef.current) engineRef.current.gravity.y = 1.8;
           setScore(0); setBalls(3); setGameOver(false); setCombo(0);
           setCyberLetters([false, false, false, false, false]);
           setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
@@ -2322,7 +2327,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
       g.rightGateOpen = true; g.rightGateUsed = false;
       g.popBumperFlash.clear();
-      if (engineRef.current) engineRef.current.gravity.y = 1.3;
+      if (engineRef.current) engineRef.current.gravity.y = 1.8;
       setScore(0); setBalls(3); setGameOver(false); setCombo(0);
       setCyberLetters([false, false, false, false, false]);
       setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
@@ -2414,22 +2419,22 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   }, [handleCanvasPointerMove]);
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {/* Canvas */}
+    <div className="flex flex-col items-center gap-3 w-full">
+      {/* Canvas — responsive: scales to fit mobile */}
       <div
-        className="relative rounded-xl overflow-hidden shadow-[0_0_60px_rgba(0,128,255,0.2)]"
-        style={{ border: '2px solid rgba(0, 128, 255, 0.3)' }}
+        className="relative rounded-xl overflow-hidden shadow-[0_0_60px_rgba(0,128,255,0.2)] w-full"
+        style={{ border: '2px solid rgba(0, 128, 255, 0.3)', maxWidth: TW, aspectRatio: `${TW} / ${TH}` }}
         onMouseMove={handleMouseMove}
         onTouchMove={handleTouchMove}
         onClick={launchBall}
         role="button"
         tabIndex={0}
       >
-        <canvas ref={canvasRef} className="block cursor-crosshair" style={{ width: TW, height: TH }} />
+        <canvas ref={canvasRef} className="block cursor-crosshair w-full h-full" />
       </div>
 
       {/* Mobile controls */}
-      <div className="w-full max-w-[420px] grid grid-cols-3 gap-2 md:hidden touch-none select-none">
+      <div className="w-full max-w-[420px] grid grid-cols-3 gap-2 lg:hidden touch-none select-none">
         <button className="font-bold py-5 rounded-xl select-none text-sm touch-none"
           style={{ background: 'rgba(0,128,255,0.15)', border: '1px solid rgba(0,128,255,0.4)', color: NEON.cyan }}
           onTouchStart={(e) => { e.preventDefault(); flipperTouch('left', true); }}

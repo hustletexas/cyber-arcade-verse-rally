@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Trophy, RotateCcw } from 'lucide-react';
 import { CyberPinball } from '@/components/games/CyberPinball';
 import { GalaxyBackground } from '@/components/games/GalaxyBackground';
+import { CCCBalanceBar } from '@/components/games/CCCBalanceBar';
 
 const CyberPinballPage: React.FC = () => {
   const navigate = useNavigate();
@@ -41,15 +42,15 @@ const CyberPinballPage: React.FC = () => {
       </div>
 
       {/* Game area */}
-      <div className="relative z-10 max-w-5xl mx-auto p-4 flex flex-col lg:flex-row gap-6 items-start justify-center">
-        {/* Main game */}
-        <div className="flex-shrink-0">
-          <CyberPinball
-            key={key}
-            onGameOver={handleGameOver}
-          />
-        </div>
+      <div className="relative z-10 max-w-lg mx-auto px-3 py-4 flex flex-col items-center gap-4">
+        {/* CCC Balance Bar — wallet status like all other games */}
+        <CCCBalanceBar className="w-full" />
 
+        {/* Main game */}
+        <CyberPinball
+          key={key}
+          onGameOver={handleGameOver}
+        />
       </div>
     </div>
   );
