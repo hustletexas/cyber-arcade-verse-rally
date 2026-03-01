@@ -31,7 +31,6 @@ const CyberPinballPage: React.FC = () => {
             <span className="hidden sm:inline">Back</span>
           </Button>
           <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <span className="text-xl">🎰</span>
             CYBER PINBALL
           </h1>
           <Button variant="ghost" size="sm" onClick={handleRestart} className="gap-2">
