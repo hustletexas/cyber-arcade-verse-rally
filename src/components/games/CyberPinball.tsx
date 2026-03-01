@@ -352,7 +352,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const portalHole = Bodies.circle(bCX, 560, 10, sensorOpts('portal_hole'));
     const portalBL = Bodies.circle(40, TH - 80, 10, sensorOpts('portal_bl'));
     const portalBR = Bodies.circle(TW - 40, TH - 80, 10, sensorOpts('portal_br'));
-    const portalExit = Bodies.circle(TW - 35, 45, 10, sensorOpts('portal_exit'));
+    const portalExit = Bodies.circle(TW - 70, 45, 10, sensorOpts('portal_exit'));
 
     // ── Magnet bumper ──
     const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
@@ -592,9 +592,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.shake.power = 4;
           g.lightFlash = 0.5;
           spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
-          Body.setPosition(ball, { x: TW - 35, y: 45 });
+          Body.setPosition(ball, { x: TW - 70, y: 45 });
           Body.setVelocity(ball, { x: -spd * 0.7, y: spd * 0.7 });
-          spawnParticles(TW - 35, 45, 10, NEON.orange, 6);
+          spawnParticles(TW - 70, 45, 10, NEON.orange, 6);
         }
         if (labels.includes('portal_br')) {
           const spd = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2) || TARGET_SPEED;
@@ -604,9 +604,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.shake.power = 4;
           g.lightFlash = 0.5;
           spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
-          Body.setPosition(ball, { x: TW - 35, y: 45 });
+          Body.setPosition(ball, { x: TW - 70, y: 45 });
           Body.setVelocity(ball, { x: -spd * 0.7, y: spd * 0.7 });
-          spawnParticles(TW - 35, 45, 10, NEON.orange, 6);
+          spawnParticles(TW - 70, 45, 10, NEON.orange, 6);
         }
 
         // Multiball lock
