@@ -36,6 +36,7 @@ import CyberColumnsPage from "./pages/CyberColumnsPage";
 import CyberPinballPage from "./pages/CyberPinballPage";
 import SponsorshipsPage from "./pages/SponsorshipsPage";
 import WalletPage from "./pages/WalletPage";
+import MissionsPage from "./pages/MissionsPage";
 import WelcomePromoPopup from "./components/WelcomePromoPopup";
 import { CyberMusicPlayer } from "./components/CyberMusicPlayer";
 import { FloatingSupportAgent } from "./components/FloatingSupportAgent";
@@ -83,6 +84,7 @@ const App = () => (
                   <Route path="/games/cyber-pinball" element={<CyberPinballPage />} />
                   <Route path="/sponsorships" element={<SponsorshipsPage />} />
                   <Route path="/wallet" element={<WalletPage />} />
+                  <Route path="/missions" element={<MissionsPage />} />
                   <Route path="/success" element={<Success />} />
                   <Route path="/cancel" element={<Cancel />} />
                   <Route path="*" element={<NotFound />} />
