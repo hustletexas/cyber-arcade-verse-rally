@@ -112,16 +112,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     topRightFlipper: null as Matter.Body | null,
     leftUp: false, rightUp: false,
     combo: 0, comboTimer: 0, maxCombo: 0, totalHits: 0,
-    // Anti-gravity
     antiGravActive: false, antiGravTimer: 0, antiGravMeter: 0,
-    // Combo target bank (5 targets)
     comboTargets: [false, false, false, false, false] as boolean[],
     comboTargetComplete: 0,
-    // Magnet bumper
     magnetActive: false, magnetTimer: 0,
-    // Rotating rail angle
     railAngle: 0,
-    // Modes
     demonTargetsL: [false, false, false] as boolean[],
     demonTargetsR: [false, false, false] as boolean[],
     demonMode: false, demonTimer: 0,
@@ -139,6 +134,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     cyberComplete: 0,
     highScore: parseInt(localStorage.getItem('cyberPinballHigh') || '0', 10),
     screenPulse: 0,
+    // New features
+    dropTargets: [false, false, false] as boolean[],
+    dropTargetResetTimer: 0,
+    kickoutTimers: [0, 0] as number[],
+    kickoutBalls: [null, null] as (Matter.Body | null)[],
+    captiveBallHits: 0,
+    rollSpinnerAngle: 0,
+    rightGateOpen: true,
+    rightGateUsed: false,
+    popBumperFlash: new Map<string, number>(),
   });
 
   const [score, setScore] = useState(0);
@@ -388,7 +393,55 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
     const spinner = Bodies.rectangle(bCX, bCY - 78, 32, 3, sensorOpts('spinner'));
     const lockSensor = Bodies.rectangle(bCX, bCY + 60, 26, 6, sensorOpts('multiball_lock'));
-    // removed: kickback
+
+    // ── NEW: Pop bumpers (2) — higher restitution, active pop ──
+    const POP_R = 14;
+    const popBumpers = [
+      Bodies.circle(120, 470, POP_R, { isStatic: true, label: 'pop_bumper_0', restitution: 2.2 }),
+      Bodies.circle(300, 470, POP_R, { isStatic: true, label: 'pop_bumper_1', restitution: 2.2 }),
+    ];
+
+    // ── NEW: Drop targets (3) — round stationary targets ──
+    const DROP_R = 10;
+    const dropTargetBodies = [
+      Bodies.circle(170, 390, DROP_R, { isStatic: true, label: 'drop_target_0', restitution: 0.5 }),
+      Bodies.circle(210, 385, DROP_R, { isStatic: true, label: 'drop_target_1', restitution: 0.5 }),
+      Bodies.circle(250, 390, DROP_R, { isStatic: true, label: 'drop_target_2', restitution: 0.5 }),
+    ];
+
+    // ── NEW: Kick-out holes (2) — sensors that capture the ball ──
+    const kickoutHoles = [
+      Bodies.circle(38, 430, 11, sensorOpts('kickout_0')),
+      Bodies.circle(TW - 38, 350, 11, sensorOpts('kickout_1')),
+    ];
+
+    // ── NEW: Captive ball — trapped ball with walls ──
+    const captiveWallOpts = { isStatic: true, label: 'captive_wall', restitution: 0.3 };
+    const captiveX = TW - 60, captiveY = 195;
+    const captiveWalls = [
+      Bodies.rectangle(captiveX, captiveY - 18, 4, 24, captiveWallOpts),
+      Bodies.rectangle(captiveX, captiveY + 18, 4, 24, captiveWallOpts),
+    ];
+    const captiveBallBody = Bodies.circle(captiveX, captiveY, BALL_R + 1, {
+      isStatic: false, label: 'captive_ball', restitution: 0.8, friction: 0.05,
+      density: 0.006,
+    });
+    // Constrain captive ball to stay in place (spring constraint)
+    const captiveSpring = Constraint.create({
+      bodyA: captiveBallBody,
+      pointB: { x: captiveX, y: captiveY },
+      stiffness: 0.05,
+      damping: 0.1,
+      length: 0,
+    });
+    const captiveSensor = Bodies.circle(captiveX, captiveY, 12, sensorOpts('captive_sensor'));
+
+    // ── NEW: Rollunder spinner ──
+    const rollSpinner = Bodies.rectangle(bCX, 490, 40, 3, sensorOpts('roll_spinner'));
+
+    // ── NEW: Right outlane ball return gate ──
+    const gateX = TW - 22, gateY = TH - 130;
+    const rightGateSensor = Bodies.rectangle(gateX, gateY, 8, 30, sensorOpts('right_gate'));
 
     Composite.add(engine.world, [
       ...walls, lf, rf, lp, rp,
@@ -401,6 +454,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...demonTargetsL, ...demonTargetsR,
       orbitL, orbitR,
       spinner, lockSensor,
+      ...popBumpers,
+      ...dropTargetBodies,
+      ...kickoutHoles,
+      ...captiveWalls, captiveBallBody, captiveSpring, captiveSensor,
+      rollSpinner,
+      rightGateSensor,
     ]);
 
     // ═══════════════════════════════════════
@@ -632,7 +691,99 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
         }
 
-        // removed: kickback collision
+        // ── NEW: Pop bumpers ──
+        for (let i = 0; i < 2; i++) {
+          if (labels.includes(`pop_bumper_${i}`)) {
+            addScore(150);
+            SFX.popBumper();
+            g.popBumperFlash.set(`pop_bumper_${i}`, Date.now() + 350);
+            g.shake.power = 6;
+            g.lightFlash = 0.3;
+            const bmp = pair.bodyA.label === `pop_bumper_${i}` ? pair.bodyA : pair.bodyB;
+            if (fin(ball.position.x) && fin(bmp.position.x)) {
+              const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
+              Body.applyForce(ball, ball.position, { x: d.x * 0.025, y: d.y * 0.025 });
+            }
+            spawnParticles(ball.position.x, ball.position.y, 14, NEON.yellow, 7);
+          }
+        }
+
+        // ── NEW: Drop targets (round) ──
+        for (let i = 0; i < 3; i++) {
+          if (labels.includes(`drop_target_${i}`) && !g.dropTargets[i]) {
+            g.dropTargets[i] = true;
+            addScore(300);
+            SFX.dropTarget();
+            spawnParticles(ball.position.x, ball.position.y, 8, NEON.green, 5);
+            // Hide the target body by moving it off-screen
+            const dtBody = pair.bodyA.label === `drop_target_${i}` ? pair.bodyA : pair.bodyB;
+            Body.setPosition(dtBody, { x: -100, y: -100 });
+            if (g.dropTargets.every(Boolean)) {
+              addScore(3000);
+              SFX.dropTargetBank();
+              showMsg('🎯 DROP BANK CLEAR! +3000', 3000);
+              g.lightFlash = 1;
+              g.shake.power = 8;
+              spawnParticles(210, 390, 20, NEON.green, 10);
+              // Schedule reset after 5 seconds
+              g.dropTargetResetTimer = Date.now() + 5000;
+            }
+          }
+        }
+
+        // ── NEW: Kick-out holes ──
+        for (let i = 0; i < 2; i++) {
+          if (labels.includes(`kickout_${i}`) && !g.kickoutBalls[i]) {
+            addScore(500);
+            SFX.kickOut();
+            showMsg(`⬇️ KICK-OUT HOLE! +500`);
+            g.shake.power = 3;
+            // Capture ball — hold it for 600ms then eject
+            Body.setVelocity(ball, { x: 0, y: 0 });
+            Body.setStatic(ball, true);
+            const holePos = i === 0 ? { x: 38, y: 430 } : { x: TW - 38, y: 350 };
+            Body.setPosition(ball, holePos);
+            g.kickoutTimers[i] = Date.now() + 600;
+            g.kickoutBalls[i] = ball;
+            spawnParticles(holePos.x, holePos.y, 10, NEON.blue, 5);
+          }
+        }
+
+        // ── NEW: Captive ball sensor ──
+        if (labels.includes('captive_sensor')) {
+          // The main ball hit near the captive ball area
+          g.captiveBallHits++;
+          const pts = 200 * g.captiveBallHits;
+          addScore(pts);
+          SFX.captiveBall();
+          showMsg(`🔒 CAPTIVE HIT x${g.captiveBallHits}! +${pts}`);
+          spawnParticles(captiveX, captiveY, 8, NEON.white, 4);
+          g.shake.power = 4;
+          // Push captive ball
+          Body.applyForce(captiveBallBody, captiveBallBody.position, { x: 0, y: -0.003 });
+        }
+
+        // ── NEW: Roll-under spinner ──
+        if (labels.includes('roll_spinner')) {
+          addScore(50);
+          SFX.spinnerWhir();
+          g.rollSpinnerAngle += Math.PI * 2; // trigger spin animation
+          spawnParticles(ball.position.x, ball.position.y, 4, NEON.cyan, 3);
+        }
+
+        // ── NEW: Right outlane ball return gate ──
+        if (labels.includes('right_gate') && g.rightGateOpen && !g.rightGateUsed) {
+          // Save the ball — push it back inward
+          g.rightGateUsed = true;
+          g.rightGateOpen = false;
+          SFX.ballSave();
+          showMsg('🛡️ BALL SAVED!', 2000);
+          g.shake.power = 4;
+          g.lightFlash = 0.5;
+          Body.setVelocity(ball, { x: -6, y: -4 });
+          Body.setPosition(ball, { x: TW - 55, y: ball.position.y });
+          spawnParticles(ball.position.x, ball.position.y, 12, NEON.green, 6);
+        }
       }
     });
 
@@ -656,6 +807,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.orbitCount = 0;
       g.lastOrbitDir = '';
       g.trail = [];
+      // Reset per-ball features
+      g.rightGateOpen = true;
+      g.rightGateUsed = false;
+      g.kickoutTimers = [0, 0];
+      g.kickoutBalls = [null, null];
       setBalls(g.balls);
       onBallLost?.(g.balls);
       if (g.balls <= 0) {
@@ -868,6 +1024,39 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       }
       if (g.magnetActive && now > g.magnetTimer) {
         g.magnetActive = false;
+      }
+
+      // ── NEW: Kick-out hole ejection timers ──
+      for (let i = 0; i < 2; i++) {
+        if (g.kickoutTimers[i] > 0 && now > g.kickoutTimers[i] && g.kickoutBalls[i]) {
+          const kBall = g.kickoutBalls[i]!;
+          Body.setStatic(kBall, false);
+          // Eject upward with slight random horizontal
+          const ejectX = (Math.random() - 0.5) * 4;
+          Body.setVelocity(kBall, { x: ejectX, y: -8 });
+          const holePos = i === 0 ? { x: 38, y: 430 } : { x: TW - 38, y: 350 };
+          spawnParticles(holePos.x, holePos.y, 12, NEON.blue, 6);
+          g.kickoutTimers[i] = 0;
+          g.kickoutBalls[i] = null;
+        }
+      }
+
+      // ── NEW: Drop target reset timer ──
+      if (g.dropTargetResetTimer > 0 && now > g.dropTargetResetTimer) {
+        g.dropTargets.fill(false);
+        g.dropTargetResetTimer = 0;
+        // Move drop target bodies back to their positions
+        dropTargetBodies[0] && Body.setPosition(dropTargetBodies[0], { x: 170, y: 390 });
+        dropTargetBodies[1] && Body.setPosition(dropTargetBodies[1], { x: 210, y: 385 });
+        dropTargetBodies[2] && Body.setPosition(dropTargetBodies[2], { x: 250, y: 390 });
+        showMsg('DROP TARGETS RESET');
+      }
+
+      // ── NEW: Roll spinner angle decay ──
+      if (g.rollSpinnerAngle > 0.1) {
+        g.rollSpinnerAngle *= 0.95;
+      } else {
+        g.rollSpinnerAngle = 0;
       }
 
       // Screen pulse decay
@@ -1594,7 +1783,184 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(16, 0); ctx.stroke();
           ctx.shadowBlur = 0;
 
-        // removed: kickback rendering
+        // ── NEW: Pop bumpers ──
+        } else if (body.label.startsWith('pop_bumper_')) {
+          const idx = parseInt(body.label.split('_')[2]);
+          const flash = g.popBumperFlash.has(body.label) && now < (g.popBumperFlash.get(body.label) || 0);
+          const col = flash ? NEON.white : NEON.yellow;
+          // Draw with spiky pop appearance
+          ctx.shadowColor = col;
+          ctx.shadowBlur = flash ? 35 : 14;
+          const pg = radGrad(ctx, 0, -2, 1, 0, 1, POP_R);
+          if (pg) {
+            pg.addColorStop(0, flash ? '#fff' : col);
+            pg.addColorStop(0.5, flash ? col : `${col}88`);
+            pg.addColorStop(1, BG_COLOR);
+            ctx.fillStyle = pg;
+          } else {
+            ctx.fillStyle = col;
+          }
+          ctx.beginPath(); ctx.arc(0, 0, POP_R, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(0, 0, POP_R, 0, Math.PI * 2); ctx.stroke();
+          // Inner ring
+          ctx.strokeStyle = `${col}55`;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(0, 0, POP_R - 4, 0, Math.PI * 2); ctx.stroke();
+          // Center dot
+          ctx.fillStyle = flash ? '#fff' : col;
+          ctx.shadowColor = col;
+          ctx.shadowBlur = flash ? 15 : 6;
+          ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          // Spiky ring pulses
+          const spikes = 8;
+          ctx.strokeStyle = `${col}44`;
+          ctx.lineWidth = 1;
+          for (let s = 0; s < spikes; s++) {
+            const sa = (s / spikes) * Math.PI * 2 + t * 3;
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(sa) * (POP_R + 2), Math.sin(sa) * (POP_R + 2));
+            ctx.lineTo(Math.cos(sa) * (POP_R + 6), Math.sin(sa) * (POP_R + 6));
+            ctx.stroke();
+          }
+          if (flash) {
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace';
+            ctx.textAlign = 'center'; ctx.fillText('150', 0, -POP_R - 5);
+          }
+
+        // ── NEW: Drop targets (round) ──
+        } else if (body.label.startsWith('drop_target_')) {
+          const idx = parseInt(body.label.split('_')[2]);
+          const hit = g.dropTargets[idx];
+          if (!hit) {
+            const col = NEON.green;
+            const dg = radGrad(ctx, 0, -1, 1, 0, 1, DROP_R);
+            if (dg) {
+              dg.addColorStop(0, col);
+              dg.addColorStop(0.5, `${col}88`);
+              dg.addColorStop(1, BG_COLOR);
+              ctx.fillStyle = dg;
+            } else {
+              ctx.fillStyle = col;
+            }
+            ctx.shadowColor = col;
+            ctx.shadowBlur = 12;
+            ctx.beginPath(); ctx.arc(0, 0, DROP_R, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = col;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(0, 0, DROP_R, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = `${col}44`;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(0, 0, DROP_R - 3, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 7px monospace';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(`${idx + 1}`, 0, 1);
+          }
+          // If hit, body is off-screen so nothing draws
+
+        // ── NEW: Kick-out holes ──
+        } else if (body.label.startsWith('kickout_')) {
+          const idx = parseInt(body.label.split('_')[1]);
+          const captured = g.kickoutBalls[idx] !== null;
+          const col = NEON.blue;
+          const pulseK = 11 + Math.sin(t * 4 + idx * 3) * 2;
+          ctx.shadowColor = col;
+          ctx.shadowBlur = captured ? 25 : 12;
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, 0, pulseK, 0, Math.PI * 2); ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#0b0f1a';
+          ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+          // Swirling indicator
+          ctx.strokeStyle = `${col}88`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(0, 0, pulseK - 4, t * 5 + idx, t * 5 + idx + Math.PI); ctx.stroke();
+          if (captured) {
+            ctx.fillStyle = col;
+            ctx.globalAlpha = 0.6 + Math.sin(t * 8) * 0.3;
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1;
+          }
+
+        // ── NEW: Captive ball ──
+        } else if (body.label === 'captive_ball') {
+          // Render like a normal ball but with a cage effect
+          const col = NEON.white;
+          ctx.shadowColor = col;
+          ctx.shadowBlur = 12;
+          const cbg = radGrad(ctx, -1, -1.5, 0.5, 0, 0, BALL_R + 1);
+          if (cbg) {
+            cbg.addColorStop(0, '#ffffff');
+            cbg.addColorStop(0.3, '#cccccc');
+            cbg.addColorStop(0.7, '#666666');
+            cbg.addColorStop(1, '#222222');
+            ctx.fillStyle = cbg;
+          } else {
+            ctx.fillStyle = col;
+          }
+          ctx.beginPath(); ctx.arc(0, 0, BALL_R + 1, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          // Cage bars
+          ctx.strokeStyle = `${NEON.cyan}66`;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(0, -(BALL_R + 6)); ctx.lineTo(0, (BALL_R + 6)); ctx.stroke();
+
+        } else if (body.label === 'captive_wall') {
+          ctx.fillStyle = `${NEON.cyan}88`;
+          ctx.shadowColor = NEON.cyan;
+          ctx.shadowBlur = 6;
+          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
+          ctx.beginPath();
+          ctx.moveTo(verts[0].x, verts[0].y);
+          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
+          ctx.closePath(); ctx.fill();
+          ctx.shadowBlur = 0;
+
+        } else if (body.label === 'captive_sensor') {
+          // invisible sensor
+
+        // ── NEW: Roll-under spinner ──
+        } else if (body.label === 'roll_spinner') {
+          const spinAngle = g.rollSpinnerAngle;
+          ctx.save();
+          ctx.rotate(spinAngle);
+          ctx.strokeStyle = NEON.cyan;
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = NEON.cyan;
+          ctx.shadowBlur = 10;
+          ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(20, 0); ctx.stroke();
+          // Cross bars
+          ctx.strokeStyle = `${NEON.cyan}66`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(-15, -3); ctx.lineTo(15, -3); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-15, 3); ctx.lineTo(15, 3); ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.restore();
+
+        // ── NEW: Right outlane gate ──
+        } else if (body.label === 'right_gate') {
+          const gateOpen = g.rightGateOpen && !g.rightGateUsed;
+          const col = gateOpen ? NEON.green : `${NEON.red}44`;
+          ctx.strokeStyle = col;
+          ctx.lineWidth = gateOpen ? 2.5 : 1;
+          ctx.shadowColor = gateOpen ? NEON.green : 'transparent';
+          ctx.shadowBlur = gateOpen ? 12 : 0;
+          // Draw gate as a small vertical bar
+          ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(0, 15); ctx.stroke();
+          ctx.shadowBlur = 0;
+          if (gateOpen) {
+            // Pulsing indicator
+            ctx.fillStyle = NEON.green;
+            ctx.globalAlpha = 0.4 + Math.sin(t * 4) * 0.3;
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1;
+          }
 
         // ── Sensor defaults ──
         } else if (body.isSensor) {
@@ -1622,6 +1988,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       ctx.fillStyle = `${NEON.cyan}66`; ctx.font = 'bold 7px monospace';
       ctx.fillText('▼ C · Y · B · E · R ▼', TW / 2, cyberY + 22);
+
+      // New feature labels
+      ctx.fillStyle = `${NEON.yellow}66`; ctx.font = 'bold 5px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('POP', 120, 470 + POP_R + 8);
+      ctx.fillText('POP', 300, 470 + POP_R + 8);
+
+      ctx.fillStyle = `${NEON.green}66`; ctx.font = 'bold 5px monospace';
+      ctx.fillText('DROP TARGETS', 210, 390 + DROP_R + 10);
+
+      ctx.fillStyle = `${NEON.blue}66`; ctx.font = 'bold 5px monospace';
+      ctx.fillText('KICK', 38, 430 + 18);
+      ctx.fillText('KICK', TW - 38, 350 + 18);
+
+      ctx.fillStyle = `${NEON.white}44`; ctx.font = 'bold 5px monospace';
+      ctx.fillText('CAPTIVE', captiveX, captiveY + 20);
+
+      ctx.fillStyle = `${NEON.cyan}44`; ctx.font = 'bold 5px monospace';
+      ctx.fillText('SPINNER', bCXd, 490 + 10);
+
+      if (g.rightGateOpen && !g.rightGateUsed) {
+        ctx.fillStyle = `${NEON.green}66`; ctx.font = 'bold 5px monospace';
+        ctx.fillText('SAVE', gateX, gateY + 22);
+      }
 
       // ── HUD overlays ──
       if (g.started && !g.gameOver) {
@@ -1847,6 +2236,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.comboTargets.fill(false); g.comboTargetComplete = 0;
           g.antiGravActive = false; g.antiGravMeter = 0;
           g.trail = []; g.screenPulse = 0;
+          g.dropTargets.fill(false); g.dropTargetResetTimer = 0;
+          g.kickoutTimers = [0, 0]; g.kickoutBalls = [null, null];
+          g.captiveBallHits = 0; g.rollSpinnerAngle = 0;
+          g.rightGateOpen = true; g.rightGateUsed = false;
+          g.popBumperFlash.clear();
           if (engineRef.current) engineRef.current.gravity.y = 1.3;
           setScore(0); setBalls(3); setGameOver(false); setCombo(0);
           setCyberLetters([false, false, false, false, false]);
@@ -1911,6 +2305,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.comboTargets.fill(false); g.comboTargetComplete = 0;
       g.antiGravActive = false; g.antiGravMeter = 0;
       g.trail = []; g.screenPulse = 0;
+      g.dropTargets.fill(false); g.dropTargetResetTimer = 0;
+      g.kickoutTimers = [0, 0]; g.kickoutBalls = [null, null];
+      g.captiveBallHits = 0; g.rollSpinnerAngle = 0;
+      g.rightGateOpen = true; g.rightGateUsed = false;
+      g.popBumperFlash.clear();
       if (engineRef.current) engineRef.current.gravity.y = 1.3;
       setScore(0); setBalls(3); setGameOver(false); setCombo(0);
       setCyberLetters([false, false, false, false, false]);
