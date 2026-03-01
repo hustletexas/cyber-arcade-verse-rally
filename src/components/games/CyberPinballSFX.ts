@@ -216,4 +216,59 @@ export const SFX = {
     osc(ac, 'triangle', 700, 0.15, 0.08, 1400);
     osc(ac, 'sine', 350, 0.1, 0.05, 700);
   },
+
+  popBumper() {
+    const ac = getCtx();
+    // Punchy pop — sharper than regular bumper
+    osc(ac, 'square', 1200, 0.06, 0.14, 300);
+    osc(ac, 'sine', 600, 0.1, 0.1, 150);
+    noise(ac, 0.04, 0.1);
+  },
+
+  dropTarget() {
+    const ac = getCtx();
+    // Metallic clank + descend
+    osc(ac, 'square', 900, 0.1, 0.1, 200);
+    noise(ac, 0.06, 0.07);
+  },
+
+  dropTargetBank() {
+    const ac = getCtx();
+    // All 3 cleared — rewarding cascade
+    [1000, 1300, 1600, 2000].forEach((freq, i) => {
+      setTimeout(() => osc(ac, 'sine', freq, 0.12, 0.1), i * 50);
+    });
+    osc(ac, 'sawtooth', 300, 0.4, 0.06, 900);
+  },
+
+  kickOut() {
+    const ac = getCtx();
+    // Captured then ejected — swoosh
+    osc(ac, 'sine', 300, 0.15, 0.08, 100);
+    setTimeout(() => {
+      osc(ac, 'sawtooth', 200, 0.2, 0.12, 800);
+      noise(ac, 0.08, 0.08);
+    }, 400);
+  },
+
+  captiveBall() {
+    const ac = getCtx();
+    // Heavy thud + ring
+    osc(ac, 'sine', 180, 0.15, 0.12, 80);
+    osc(ac, 'triangle', 1100, 0.1, 0.06, 600);
+  },
+
+  spinnerWhir() {
+    const ac = getCtx();
+    // Quick whirring tick
+    osc(ac, 'triangle', 1800, 0.04, 0.06, 900);
+  },
+
+  ballSave() {
+    const ac = getCtx();
+    // Triumphant rescue chirp
+    osc(ac, 'sine', 800, 0.15, 0.1, 1600);
+    osc(ac, 'square', 400, 0.1, 0.06, 800);
+    noise(ac, 0.05, 0.04);
+  },
 };
