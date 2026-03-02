@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart, ChevronDown, Radio, ShoppingBag, Heart, Info, Scale, GraduationCap, Award, Swords, Trophy, Handshake, Wallet } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Radio, ShoppingBag, Heart, Info, Scale, GraduationCap, Award, Swords, Trophy, Handshake, Wallet, Target } from 'lucide-react';
 import { useSeasonPass, TIER_CONFIG } from '@/hooks/useSeasonPass';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,7 @@ const scrollSections: { id: string; label: string; icon: any }[] = [];
 
 // Sections that navigate to dedicated pages
 const pageSections = [
+  { path: '/missions', label: 'Missions', icon: Target },
   { path: '/wallet', label: 'Wallet', icon: Wallet },
   { path: '/store', label: 'Merch', icon: ShoppingBag },
   { path: '/tournaments', label: 'Tournament', icon: Trophy },
