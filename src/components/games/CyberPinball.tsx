@@ -30,10 +30,10 @@ const TW = 420;
 const TH = 820;
 const BALL_R = 6;
 // Natural pinball physics: heavier steel ball, consistent bounce, controlled drag
-const BALL_OPTS = { label: 'ball', restitution: 0.42, friction: 0.018, frictionAir: 0.00055, density: 0.0085 };
-const MIN_SPEED = 1.8; // keep flow alive without floaty behavior
-const TABLE_SLIDE_FORCE_Y = 0.00022; // table slope keeps ball naturally sliding down
-const TABLE_SLIDE_FORCE_X = -0.00003; // subtle left drift like a real table
+const BALL_OPTS = { label: 'ball', restitution: 0.65, friction: 0.012, frictionAir: 0.00035, density: 0.007 };
+const MIN_SPEED = 2.2; // keep flow alive — arcade pacing
+const TABLE_SLIDE_FORCE_Y = 0.00016; // lighter table slope (floaty gravity)
+const TABLE_SLIDE_FORCE_X = -0.00002; // subtle left drift
 const STUCK_SPEED_THRESHOLD = 0.45;
 const STUCK_TIMEOUT_MS = 1400;
 const WALL = 8;
@@ -45,13 +45,13 @@ const MINI_FH = 8;
 const PLUNGER_X = TW - 16;
 const BG_COLOR = '#0b0f1a';
 
-// ── Cannon constants ──
-const CANNON_X = 50;
-const CANNON_Y = 60;
-const CANNON_MUZZLE_X = 50;
-const CANNON_MUZZLE_Y = 70;
-const TARGET_SPEED = 7; // Cyber Breaker base speed
-const MAX_SPEED = 12;   // Cyber Breaker max speed
+// ── Cannon constants — centered between bottom flippers, below them ──
+const CANNON_X = TW / 2;
+const CANNON_Y = TH - 32;
+const CANNON_MUZZLE_X = TW / 2;
+const CANNON_MUZZLE_Y = TH - 32;
+const TARGET_SPEED = 9; // Arcade base speed
+const MAX_SPEED = 22;   // Higher cap for arcade chaos
 
 // ── Neon color palette ──
 const NEON = {
@@ -96,7 +96,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const touchStartY = useRef<number | null>(null);
   const scoreSubmittedRef = useRef(false);
   const cannonFlashRef = useRef(0); // cannon muzzle flash timer
-  const cannonAngleRef = useRef(Math.PI / 4); // default 45° down-right
+  const cannonAngleRef = useRef(-Math.PI / 2); // default straight up
 
   // Wallet & leaderboard
   const { primaryWallet, isWalletConnected } = useMultiWallet();
@@ -286,10 +286,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     canvas.width = TW;
     canvas.height = TH;
 
-    const engine = Engine.create({ gravity: { x: 0, y: 1.95, scale: 0.001 } });
+    const engine = Engine.create({ gravity: { x: 0, y: 1.3, scale: 0.001 } });
     engineRef.current = engine;
 
-    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.55 };
+    const wallOpts = { isStatic: true, label: 'wall', restitution: 0.75 };
     const sensorOpts = (label: string) => ({ isStatic: true, isSensor: true, label });
 
     // ── Walls ──
@@ -325,16 +325,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     G.current.topRightFlipper = trf;
 
     // ── Slingshots ──
-    const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.2 });
-    const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 1.2 });
+    const lSling = Bodies.fromVertices(82, TH - 148, [[{ x: 0, y: 0 }, { x: 30, y: 50 }, { x: -4, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 2.2 });
+    const rSling = Bodies.fromVertices(TW - 108, TH - 148, [[{ x: 0, y: 0 }, { x: 4, y: 50 }, { x: -30, y: 50 }]], { isStatic: true, label: 'slingshot', restitution: 2.2 });
 
     // ── 4 Neon Bumpers ──
     const bCX = TW / 2, bCY = 240;
     const bumpers = [
-      Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 1.3 }),
-      Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 1.3 }),
-      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 1.3 }),
-      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 1.3 }),
+      Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 2.8 }),
+      Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 2.8 }),
+      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 2.8 }),
+      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 2.8 }),
     ];
 
     const reactorSensor = Bodies.circle(bCX, bCY, 8, sensorOpts('reactor_core'));
@@ -389,7 +389,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const demonTargetsR = [0, 1, 2].map(i =>
       Bodies.rectangle(TW - 104 + i * 22, dtY, 4, 20, sensorOpts(`demon_r_${i}`))
     );
-    const trampolineOpts = { ...wallOpts, restitution: 0.92, label: 'trampoline_wall' };
+    const trampolineOpts = { ...wallOpts, restitution: 1.5, label: 'trampoline_wall' };
     walls.push(Bodies.rectangle(82, dtY - 14, 70, 3, trampolineOpts));
     walls.push(Bodies.rectangle(TW - 82, dtY - 14, 70, 3, trampolineOpts));
 
@@ -404,16 +404,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // ── NEW: Pop bumpers (2) — higher restitution, active pop ──
     const POP_R = 14;
     const popBumpers = [
-      Bodies.circle(120, 470, POP_R, { isStatic: true, label: 'pop_bumper_0', restitution: 1.5 }),
-      Bodies.circle(300, 470, POP_R, { isStatic: true, label: 'pop_bumper_1', restitution: 1.5 }),
+      Bodies.circle(120, 470, POP_R, { isStatic: true, label: 'pop_bumper_0', restitution: 3.2 }),
+      Bodies.circle(300, 470, POP_R, { isStatic: true, label: 'pop_bumper_1', restitution: 3.2 }),
     ];
 
     // ── NEW: Drop targets (3) — round stationary targets ──
     const DROP_R = 10;
     const dropTargetBodies = [
-      Bodies.circle(170, 390, DROP_R, { isStatic: true, label: 'drop_target_0', restitution: 0.5 }),
-      Bodies.circle(210, 385, DROP_R, { isStatic: true, label: 'drop_target_1', restitution: 0.5 }),
-      Bodies.circle(250, 390, DROP_R, { isStatic: true, label: 'drop_target_2', restitution: 0.5 }),
+      Bodies.circle(170, 390, DROP_R, { isStatic: true, label: 'drop_target_0', restitution: 1.4 }),
+      Bodies.circle(210, 385, DROP_R, { isStatic: true, label: 'drop_target_1', restitution: 1.4 }),
+      Bodies.circle(250, 390, DROP_R, { isStatic: true, label: 'drop_target_2', restitution: 1.4 }),
     ];
 
     // ── Mid-field flippers (replacing kickout holes) ──
@@ -474,6 +474,18 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       rightGateSensor,
     ]);
 
+    // ── Inlane rails (guides from above pop bumpers down to flippers) ──
+    const railOpts = { isStatic: true, label: 'inlane_rail', restitution: 0.8 };
+    const inlaneRails = [
+      // Left inlane rail — runs from behind left pop bumper down to left flipper
+      Bodies.rectangle(55, TH - 180, 4, 160, { ...railOpts, angle: 0.12 }),
+      Bodies.rectangle(72, TH - 180, 4, 160, { ...railOpts, angle: 0.12 }),
+      // Right inlane rail — runs from behind right pop bumper down to right flipper
+      Bodies.rectangle(TW - 55, TH - 180, 4, 160, { ...railOpts, angle: -0.12 }),
+      Bodies.rectangle(TW - 72, TH - 180, 4, 160, { ...railOpts, angle: -0.12 }),
+    ];
+    Composite.add(engine.world, inlaneRails);
+
     // ═══════════════════════════════════════
     // ── COLLISION HANDLING ──
     // ═══════════════════════════════════════
@@ -507,7 +519,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             const bmp = pair.bodyA.label === `bumper_${i}` ? pair.bodyA : pair.bodyB;
             if (fin(ball.position.x) && fin(bmp.position.x)) {
               const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
-              Body.applyForce(ball, ball.position, { x: d.x * 0.018, y: d.y * 0.018 });
+              Body.applyForce(ball, ball.position, { x: d.x * 0.045, y: d.y * 0.045 });
             }
             spawnParticles(ball.position.x, ball.position.y, 12, [NEON.cyan, NEON.pink, NEON.green, NEON.purple][i], 6);
           }
@@ -516,8 +528,14 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         if (labels.includes('slingshot')) {
           addScore(50);
           SFX.slingshot();
-          g.shake.power = 3;
-          spawnParticles(ball.position.x, ball.position.y, 6, NEON.yellow, 4);
+          g.shake.power = 8; // strong screen shake for slingshots
+          spawnParticles(ball.position.x, ball.position.y, 10, NEON.yellow, 6);
+          // Explosive slingshot kick
+          const sBody = pair.bodyA.label === 'slingshot' ? pair.bodyA : pair.bodyB;
+          if (fin(ball.position.x) && fin(sBody.position.x)) {
+            const d = Vector.normalise(Vector.sub(ball.position, sBody.position));
+            Body.applyForce(ball, ball.position, { x: d.x * 0.035, y: d.y * 0.035 });
+          }
         }
 
         // Skill shot lanes
@@ -714,7 +732,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             const bmp = pair.bodyA.label === `pop_bumper_${i}` ? pair.bodyA : pair.bodyB;
             if (fin(ball.position.x) && fin(bmp.position.x)) {
               const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
-              Body.applyForce(ball, ball.position, { x: d.x * 0.025, y: d.y * 0.025 });
+              Body.applyForce(ball, ball.position, { x: d.x * 0.06, y: d.y * 0.06 });
             }
             spawnParticles(ball.position.x, ball.position.y, 14, NEON.yellow, 7);
           }
@@ -869,7 +887,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
       // Fire in aimed direction
       const aimAngle = cannonAngleRef.current;
-      const launchSpeed = 10;
+      const launchSpeed = 14; // stronger arcade launch
       Body.setVelocity(g.currentBall, {
         x: Math.cos(aimAngle) * launchSpeed,
         y: Math.sin(aimAngle) * launchSpeed,
@@ -980,9 +998,19 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         const vx = g.currentBall.velocity.x;
         const vy = g.currentBall.velocity.y;
         const speed = Math.sqrt(vx * vx + vy * vy);
-        if (speed > MAX_SPEED) {
+      if (speed > MAX_SPEED) {
           const scale = MAX_SPEED / speed;
           Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
+        }
+
+        // ── Spin curve: exaggerated ball bend on strong hits ──
+        if (speed > 8) {
+          const curveFactor = 0.0004 * (speed / MAX_SPEED);
+          const spinDir = vx > 0 ? 1 : -1;
+          Body.applyForce(g.currentBall, g.currentBall.position, {
+            x: spinDir * curveFactor * Math.abs(vy),
+            y: 0,
+          });
         }
 
         // Constant table slope: natural downward motion + slight lateral drift
@@ -1096,30 +1124,31 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Body.setAngle(railRampR, Math.sin(g.railAngle + Math.PI) * 0.25 + 0.15);
 
       // ── Flipper physics ──
+      // ── Flipper physics — +30% stronger for arcade feel ──
       if (g.leftFlipper) {
-        const ta = g.leftUp ? -0.62 : 0.38;
-        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 0.55);
+        const ta = g.leftUp ? -0.72 : 0.38;
+        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 0.75);
       }
       if (g.rightFlipper) {
-        const ta = g.rightUp ? 0.62 : -0.38;
-        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.55);
+        const ta = g.rightUp ? 0.72 : -0.38;
+        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.75);
       }
       if (g.topLeftFlipper) {
-        const ta = g.leftUp ? -0.55 : 0.3;
-        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.45);
+        const ta = g.leftUp ? -0.65 : 0.3;
+        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.6);
       }
       if (g.topRightFlipper) {
-        const ta = g.rightUp ? 0.55 : -0.3;
-        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.45);
+        const ta = g.rightUp ? 0.65 : -0.3;
+        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.6);
       }
-      // Mid flippers
+      // Mid flippers — also boosted
       if (g.midLeftFlipper) {
-        const ta = g.leftUp ? -0.55 : 0.35;
-        Body.setAngularVelocity(g.midLeftFlipper, (ta - g.midLeftFlipper.angle) * 0.5);
+        const ta = g.leftUp ? -0.65 : 0.35;
+        Body.setAngularVelocity(g.midLeftFlipper, (ta - g.midLeftFlipper.angle) * 0.65);
       }
       if (g.midRightFlipper) {
-        const ta = g.rightUp ? 0.55 : -0.35;
-        Body.setAngularVelocity(g.midRightFlipper, (ta - g.midRightFlipper.angle) * 0.5);
+        const ta = g.rightUp ? 0.65 : -0.35;
+        Body.setAngularVelocity(g.midRightFlipper, (ta - g.midRightFlipper.angle) * 0.65);
       }
 
       // ═══════════════════════════════════════
@@ -1290,7 +1319,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.shadowBlur = 0;
 
       // ══════════════════════════════════════
-      // ── DRAW CANNON (top-left) ──
+      // ══════════════════════════════════════
+      // ── DRAW CANNON (center-bottom between flippers) ──
       // ══════════════════════════════════════
       const cannonFlashing = now < cannonFlashRef.current;
       ctx.save();
@@ -1304,15 +1334,14 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 6]);
         ctx.beginPath();
-        ctx.moveTo(30, 0);
-        ctx.lineTo(200, 0);
+        ctx.moveTo(18, 0);
+        ctx.lineTo(180, 0);
         ctx.stroke();
         ctx.setLineDash([]);
-        // Aim dot at end
         const dotPulse = 0.3 + Math.sin(t * 5) * 0.3;
         ctx.fillStyle = NEON.orange;
         ctx.globalAlpha = dotPulse;
-        ctx.beginPath(); ctx.arc(200, 0, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(180, 0, 3, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
         ctx.restore();
       }
@@ -1387,10 +1416,35 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       
       // Cannon label removed (no blinking tap text)
 
-      // ── Ball trail ──
+      // ── Draw inlane rails ──
+      for (const rail of inlaneRails) {
+        if (!fin(rail.position.x) || !fin(rail.position.y)) continue;
+        ctx.save();
+        ctx.translate(rail.position.x, rail.position.y);
+        ctx.rotate(rail.angle);
+        const rw = 4, rh = 160;
+        ctx.strokeStyle = `${NEON.cyan}66`;
+        ctx.shadowColor = NEON.cyan;
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-rw / 2, -rh / 2, rw, rh, 2); ctx.stroke();
+        ctx.shadowBlur = 0;
+        // Running dots along rail
+        for (let d = 0; d < 8; d++) {
+          const prog = ((d / 8) + t * 0.5) % 1;
+          const dy = -rh / 2 + rh * prog;
+          ctx.fillStyle = NEON.cyan;
+          ctx.globalAlpha = 0.5;
+          ctx.beginPath(); ctx.arc(0, dy, 1.2, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      // ── Ball trail (always on — neon plasma) ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
         g.trail.push({ x: g.currentBall.position.x, y: g.currentBall.position.y, age: 0 });
-        if (g.trail.length > 30) g.trail.shift();
+        if (g.trail.length > 40) g.trail.shift(); // longer trail for arcade feel
       }
       for (let i = g.trail.length - 1; i >= 0; i--) {
         const pt = g.trail[i];
@@ -1998,6 +2052,21 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             ctx.globalAlpha = 1;
           }
 
+        // ── Inlane rails ──
+        } else if (body.label === 'inlane_rail') {
+          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
+          ctx.fillStyle = '#0c1025';
+          ctx.beginPath();
+          ctx.moveTo(verts[0].x, verts[0].y);
+          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = `${NEON.cyan}55`;
+          ctx.shadowColor = NEON.cyan;
+          ctx.shadowBlur = 6;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+
         // ── Sensor defaults ──
         } else if (body.isSensor) {
           // sensors are invisible except handled above
@@ -2277,7 +2346,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
           g.rightGateOpen = true; g.rightGateUsed = false;
           g.popBumperFlash.clear();
-          if (engineRef.current) engineRef.current.gravity.y = 1.8;
+          if (engineRef.current) engineRef.current.gravity.y = 1.3;
           setScore(0); setBalls(3); setGameOver(false); setCombo(0);
           setCyberLetters([false, false, false, false, false]);
           setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
@@ -2345,7 +2414,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
       g.rightGateOpen = true; g.rightGateUsed = false;
       g.popBumperFlash.clear();
-      if (engineRef.current) engineRef.current.gravity.y = 1.8;
+      if (engineRef.current) engineRef.current.gravity.y = 1.3;
       setScore(0); setBalls(3); setGameOver(false); setCombo(0);
       setCyberLetters([false, false, false, false, false]);
       setDemonMode(false); setReactorCharge(0); setOverdrive(false); setLockedBalls(0);
@@ -2391,7 +2460,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
     // Fire in aimed direction
     const aimAngle = cannonAngleRef.current;
-    const launchSpeed = 10;
+    const launchSpeed = 14; // arcade launch power
     Body.setVelocity(g.currentBall, {
       x: Math.cos(aimAngle) * launchSpeed,
       y: Math.sin(aimAngle) * launchSpeed,
@@ -2422,7 +2491,9 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const dx = mx - CANNON_X;
     const dy = my - CANNON_Y;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      cannonAngleRef.current = Math.atan2(dy, dx);
+      // Default aim upward; clamp to upper hemisphere
+      const angle = Math.atan2(dy, dx);
+      cannonAngleRef.current = Math.min(angle, -0.15); // prevent aiming downward
     }
   }, []);
 
