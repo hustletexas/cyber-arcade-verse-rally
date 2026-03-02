@@ -5,6 +5,7 @@ import { Lock, ShieldCheck, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSeasonPass } from '@/hooks/useSeasonPass';
 import { useMultiWallet } from '@/hooks/useMultiWallet';
+import { isMobileDevice } from '@/utils/mobileWalletDetection';
 
 interface SeasonPassGateProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ interface SeasonPassGateProps {
 export const SeasonPassGate: React.FC<SeasonPassGateProps> = ({ children, featureName = 'this feature' }) => {
   const { hasPass, isLoading } = useSeasonPass();
   const { isWalletConnected, connectWallet } = useMultiWallet();
+  const isMobile = isMobileDevice();
 
   if (isLoading) {
     return (
@@ -23,7 +25,8 @@ export const SeasonPassGate: React.FC<SeasonPassGateProps> = ({ children, featur
     );
   }
 
-  if (!isWalletConnected) {
+  // On mobile, skip wallet requirement — allow purchase without wallet
+  if (!isWalletConnected && !isMobile) {
     return (
       <Card className="max-w-lg mx-auto mt-12 border-neon-cyan/30 bg-card/80 backdrop-blur">
         <CardContent className="pt-8 pb-8 text-center space-y-4">

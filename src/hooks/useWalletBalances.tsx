@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { STELLAR_NETWORK } from '@/config/stellar';
 
-type ChainType = 'stellar';
+type ChainType = 'stellar' | 'solana';
 
 interface WalletInput {
   address: string;
