@@ -6,15 +6,15 @@ import { supabase } from '@/integrations/supabase/client';
 import freighterApi from '@stellar/freighter-api';
 
 // Stellar-only wallet types
-export type WalletType = 'lobstr' | 'freighter' | 'hotwallet' | 'created';
+export type WalletType = 'lobstr' | 'freighter' | 'hotwallet' | 'phantom' | 'created';
 
 export interface ConnectedWallet {
   type: WalletType;
   address: string;
   isConnected: boolean;
   balance?: number;
-  chain: 'stellar';
-  symbol: 'XLM';
+  chain: 'stellar' | 'solana';
+  symbol: 'XLM' | 'SOL';
 }
 
 export const useMultiWallet = () => {
@@ -36,13 +36,13 @@ export const useMultiWallet = () => {
       if (stored) {
         const wallets = JSON.parse(stored);
         // Filter to only Stellar wallets
-        const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
+        const validWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'phantom', 'created'];
         return wallets.filter((w: any) => 
-          stellarWalletTypes.includes(w.type)
+          validWalletTypes.includes(w.type)
         ).map((w: any) => ({
           ...w,
-          chain: 'stellar' as const,
-          symbol: 'XLM' as const
+          chain: w.type === 'phantom' ? 'solana' : 'stellar',
+          symbol: w.type === 'phantom' ? 'SOL' : 'XLM',
         }));
       }
     } catch (error) {
@@ -57,12 +57,12 @@ export const useMultiWallet = () => {
       if (stored) {
         const wallet = JSON.parse(stored);
         // Only return if it's a Stellar wallet
-        const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
-        if (stellarWalletTypes.includes(wallet.type)) {
+        const validWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'phantom', 'created'];
+        if (validWalletTypes.includes(wallet.type)) {
           return {
             ...wallet,
-            chain: 'stellar' as const,
-            symbol: 'XLM' as const
+            chain: wallet.type === 'phantom' ? 'solana' as const : 'stellar' as const,
+            symbol: wallet.type === 'phantom' ? 'SOL' as const : 'XLM' as const,
           };
         }
       }
@@ -92,9 +92,9 @@ export const useMultiWallet = () => {
       if (e.key === WALLET_STORAGE_KEY && e.newValue) {
         try {
           const wallets = JSON.parse(e.newValue);
-          const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
+          const validWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'phantom', 'created'];
           setConnectedWallets(wallets.filter((w: any) => 
-            stellarWalletTypes.includes(w.type)
+            validWalletTypes.includes(w.type)
           ));
         } catch (error) {
           console.error('Error syncing wallets:', error);
@@ -103,8 +103,8 @@ export const useMultiWallet = () => {
       if (e.key === PRIMARY_WALLET_KEY && e.newValue) {
         try {
           const primary = JSON.parse(e.newValue);
-          const stellarWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'created'];
-          if (stellarWalletTypes.includes(primary.type)) {
+          const validWalletTypes = ['lobstr', 'freighter', 'hotwallet', 'phantom', 'created'];
+          if (validWalletTypes.includes(primary.type)) {
             setPrimaryWallet(primary);
           }
         } catch (error) {
@@ -221,8 +221,8 @@ export const useMultiWallet = () => {
         // Ensure all wallets have correct chain data
         updatedWallets = updatedWallets.map(w => ({
           ...w,
-          chain: 'stellar' as const,
-          symbol: 'XLM' as const
+          chain: w.type === 'phantom' ? 'solana' as const : 'stellar' as const,
+          symbol: w.type === 'phantom' ? 'SOL' as const : 'XLM' as const,
         }));
         
         setConnectedWallets(updatedWallets);
@@ -283,12 +283,15 @@ export const useMultiWallet = () => {
   };
 
   const connectWallet = useCallback(async (type: WalletType, address: string) => {
+    const chain = type === 'phantom' ? 'solana' as const : 'stellar' as const;
+    const symbol = type === 'phantom' ? 'SOL' as const : 'XLM' as const;
+    
     const newWallet: ConnectedWallet = {
       type,
       address,
       isConnected: true,
-      chain: 'stellar',
-      symbol: 'XLM'
+      chain,
+      symbol,
     };
 
     setConnectedWallets(prev => {
@@ -368,6 +371,7 @@ export const useMultiWallet = () => {
       case 'lobstr': return '🌟';
       case 'freighter': return '🚀';
       case 'hotwallet': return '🔥';
+      case 'phantom': return '👻';
       case 'created': return '💰';
       default: return '🔗';
     }

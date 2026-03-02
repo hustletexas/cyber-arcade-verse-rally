@@ -303,22 +303,26 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const getWalletOptions = (): WalletOption[] => {
-    const walletIds: WalletType[] = ['lobstr', 'freighter', 'hotwallet', 'phantom'];
+    // On mobile, only show Phantom wallet
+    const walletIds: WalletType[] = isMobile 
+      ? ['phantom'] 
+      : ['lobstr', 'freighter', 'hotwallet', 'phantom'];
 
-    const allOptions: WalletOption[] = walletIds.map(id => ({
-      ...WALLETS.find(w => w.id === id)!,
-      isInstalled: walletAvailability[id] ?? false,
-      connect: () => connectWallet(id),
-      isMobileReady: true,
-    }));
+    const allOptions: WalletOption[] = walletIds
+      .map(id => WALLETS.find(w => w.id === id))
+      .filter((w): w is WalletInfo => !!w)
+      .map(w => ({
+        ...w,
+        isInstalled: walletAvailability[w.id] ?? false,
+        connect: () => connectWallet(w.id),
+        isMobileReady: true,
+      }));
 
     if (isMobile) {
-      return allOptions
-        .filter(w => w.isMobileReady)
-        .map(w => ({
-          ...w,
-          isInstalled: mobileWallets.includes(w.id),
-        }));
+      return allOptions.map(w => ({
+        ...w,
+        isInstalled: true, // Phantom is always available via deep link on mobile
+      }));
     }
 
     return allOptions;
@@ -612,9 +616,9 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         {authMode === 'wallets' && (
           <div className="p-4 border-t border-white/5 bg-white/[0.02]">
             <p className="text-xs text-white/30 text-center">
-              Connect with USDC on Stellar, Solana, Hedera, or XRPL.{' '}
+              {isMobile ? 'Connect with Phantom wallet on Solana.' : 'Connect with USDC on Stellar or Solana.'}{' '}
               <a 
-                href="https://lobstr.co/" 
+                href={isMobile ? 'https://phantom.app/' : 'https://lobstr.co/'} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-cyan-400 hover:text-cyan-300 transition-colors"
