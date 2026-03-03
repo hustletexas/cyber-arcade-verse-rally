@@ -161,7 +161,7 @@ export const CommunityHub = () => {
                 className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green data-[state=active]:shadow-neon-glow font-mono text-xs sm:text-sm"
               >
                 <Share2 className="w-3 h-3 mr-1 sm:mr-2" />
-                Feed & Chat
+                Feed
               </TabsTrigger>
               <TabsTrigger
                 value="trivia"
