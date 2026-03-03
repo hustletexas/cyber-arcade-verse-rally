@@ -46,22 +46,22 @@ export const TournamentHub: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full -mt-1">
-        <TabsList className="grid w-full grid-cols-4 bg-background/50 border border-border">
-          <TabsTrigger value="browse" className="flex items-center gap-2">
-            <Gamepad2 className="w-4 h-4" />
-            Browse
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 bg-background/50 border border-border">
+          <TabsTrigger value="browse" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+            <Gamepad2 className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>Browse</span>
           </TabsTrigger>
-          <TabsTrigger value="games" className="flex items-center gap-2">
-            <Monitor className="w-4 h-4" />
-            Games
+          <TabsTrigger value="games" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+            <Monitor className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>Games</span>
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            Calendar
+          <TabsTrigger value="calendar" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>Calendar</span>
           </TabsTrigger>
-          {(isAdmin || user) && <TabsTrigger value="admin" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Organizer
+          {(isAdmin || user) && <TabsTrigger value="admin" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 col-span-3 sm:col-span-1">
+              <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>Organizer</span>
             </TabsTrigger>}
         </TabsList>
 
