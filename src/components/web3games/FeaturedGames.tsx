@@ -163,13 +163,6 @@ export const FeaturedGames = () => {
         </CardContent>
       </Card>
 
-      {/* WEB3 Games Only */}
-      <h3 className="text-2xl font-bold text-neon-purple mb-6">🎯 TOP WEB3 GAMES</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {featuredGames.map((game) => (
-          <GameCard key={game.id} game={game} />
-        ))}
-      </div>
     </div>
   );
 };
