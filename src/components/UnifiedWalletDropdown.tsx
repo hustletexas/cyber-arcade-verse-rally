@@ -219,7 +219,7 @@ export const UnifiedWalletDropdown = () => {
     
   };
   const handleSupport = () => {
-    window.open('https://discord.gg/cybercityarcade', '_blank');
+    window.location.href = 'mailto:cybercityarcade@gmail.com';
   };
   const handleSend = () => {
     if (!sendAmount || !sendAddress) {
