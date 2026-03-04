@@ -36,58 +36,56 @@ export const CCCBalanceBar: React.FC<CCCBalanceBarProps> = ({
 
   return (
     <div className={cn(
-      "flex items-center justify-between p-3 rounded-lg bg-black/40 backdrop-blur-sm border border-neon-cyan/20",
+      "flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 rounded-lg bg-black/40 backdrop-blur-sm border border-neon-cyan/20 gap-2 sm:gap-0",
       className
     )}>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
         {showChainBadge && (
           <>
             <Badge 
               variant="outline" 
-              className="border-neon-cyan/50 text-neon-cyan flex items-center gap-1.5 px-3 py-1"
+              className="border-neon-cyan/50 text-neon-cyan flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-0.5 sm:py-1"
             >
               <Zap className="w-3 h-3" />
-              <span className="text-xs font-medium">Stellar Powered</span>
+              <span className="text-[10px] sm:text-xs font-medium">Stellar</span>
             </Badge>
-            <span className="text-xs text-muted-foreground">Soroban Smart Contract</span>
           </>
         )}
       </div>
       
       {isWalletConnected && primaryWallet ? (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap w-full sm:w-auto">
           {/* CCC Balance */}
-          <div className="flex items-center gap-2 relative">
-            <Coins className="w-4 h-4 text-accent" />
-            <span className="text-xs text-muted-foreground">CCC:</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 relative">
+            <Coins className="w-3 h-3 sm:w-4 sm:h-4 text-accent" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground">CCC:</span>
             <span className={cn(
-              "text-sm font-bold text-accent transition-all",
+              "text-xs sm:text-sm font-bold text-accent transition-all",
               showBonusAnimation && "animate-pulse scale-110"
             )}>
               {balance.cctr_balance?.toLocaleString() ?? '0'}
             </span>
             
-            {/* Daily Bonus Indicator */}
             {showBonusAnimation && (
-              <span className="absolute -top-2 -right-2 text-xs text-neon-green animate-bounce">
+              <span className="absolute -top-2 -right-2 text-[10px] sm:text-xs text-neon-green animate-bounce">
                 +{dailyBonusAwarded}
               </span>
             )}
           </div>
           
           {/* Wallet Address */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30">
-            <Wallet className="w-4 h-4 text-neon-cyan" />
-            <span className="text-sm text-neon-cyan font-mono">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30">
+            <Wallet className="w-3 h-3 sm:w-4 sm:h-4 text-neon-cyan" />
+            <span className="text-xs sm:text-sm text-neon-cyan font-mono">
               {primaryWallet.address.slice(0, 4)}...{primaryWallet.address.slice(-4)}
             </span>
-            <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse" />
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-neon-green animate-pulse" />
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/30">
-          <Wallet className="w-4 h-4 text-destructive" />
-          <span className="text-sm text-destructive">Connect Wallet to Play</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-destructive/10 border border-destructive/30">
+          <Wallet className="w-3 h-3 sm:w-4 sm:h-4 text-destructive" />
+          <span className="text-xs sm:text-sm text-destructive">Connect Wallet to Play</span>
         </div>
       )}
     </div>

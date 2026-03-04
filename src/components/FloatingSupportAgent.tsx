@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLocation } from 'react-router-dom';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -12,10 +13,12 @@ interface Message {
 }
 
 export const FloatingSupportAgent = () => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-  { role: 'assistant', content: "Hey! 👋 I'm the CyberCity Support Agent. Ask me about tournaments, wallets, payouts, game rules, or anything else!" }]
-  );
+    { role: 'assistant', content: "Hey! 👋 I'm the CyberCity Support Agent. Ask me about tournaments, wallets, payouts, game rules, or anything else!" }
+  ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showTicketForm, setShowTicketForm] = useState(false);
@@ -23,9 +26,21 @@ export const FloatingSupportAgent = () => {
   const [ticketCategory, setTicketCategory] = useState('general');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const isGamePage = location.pathname.startsWith('/games/');
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Hide on game pages on mobile to avoid blocking gameplay
+  if (isGamePage && isMobile) return null;
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
