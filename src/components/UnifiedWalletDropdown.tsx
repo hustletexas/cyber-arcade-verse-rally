@@ -286,10 +286,10 @@ export const UnifiedWalletDropdown = () => {
   return <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className="relative h-11 px-4 rounded-2xl bg-gradient-to-r from-card via-card/90 to-card/80 border border-neon-cyan/30 hover:border-neon-cyan hover:shadow-xl hover:shadow-neon-cyan/30 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] group">
-            <div className="flex items-center gap-3">
+          <Button className="relative h-9 sm:h-11 px-2 sm:px-4 rounded-2xl bg-gradient-to-r from-card via-card/90 to-card/80 border border-neon-cyan/30 hover:border-neon-cyan hover:shadow-xl hover:shadow-neon-cyan/30 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] group">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="relative">
-                <Avatar className="w-8 h-8 border-2 border-neon-cyan/50 transition-all duration-300 group-hover:border-neon-cyan group-hover:shadow-lg group-hover:shadow-neon-cyan/30">
+                <Avatar className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-neon-cyan/50 transition-all duration-300 group-hover:border-neon-cyan group-hover:shadow-lg group-hover:shadow-neon-cyan/30">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-white text-xs font-bold">
                     {getWalletIcon(primaryWallet?.type || 'lobstr')}
@@ -311,22 +311,22 @@ export const UnifiedWalletDropdown = () => {
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" sideOffset={8} className="w-[340px] p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
+        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-1.5rem)] sm:w-[320px] max-h-[85vh] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-2xl sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
           {/* Header with wallet info */}
-          <div className="p-5 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
+          <div className="p-3 sm:p-4 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] bg-[length:400%_400%] animate-shimmer" />
             <div className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <div className="relative">
-                    <Avatar className="w-12 h-12 border-2 border-neon-cyan/60 shadow-xl shadow-neon-cyan/30 transition-transform hover:scale-110 duration-300">
+                    <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-neon-cyan/60 shadow-xl shadow-neon-cyan/30 transition-transform hover:scale-110 duration-300">
                       <AvatarImage src={user?.user_metadata?.avatar_url} />
-                      <AvatarFallback className="bg-gradient-to-br from-neon-pink via-neon-purple to-neon-cyan text-white font-bold text-lg">
+                      <AvatarFallback className="bg-gradient-to-br from-neon-pink via-neon-purple to-neon-cyan text-white font-bold text-sm">
                         {user?.email?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-neon-green rounded-full border-2 border-background flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-neon-green rounded-full border-2 border-background flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                     </div>
                   </div>
                   <div>
@@ -339,25 +339,25 @@ export const UnifiedWalletDropdown = () => {
                     </button>
                   </div>
                 </div>
-                <Badge className="bg-neon-green/20 text-neon-green border-0 font-bold capitalize px-3 py-1 shadow-lg shadow-neon-green/20">
+                <Badge className="bg-neon-green/20 text-neon-green border-0 font-bold capitalize px-2 py-0.5 text-[10px] shadow-lg shadow-neon-green/20">
                   {primaryWallet?.type}
                 </Badge>
               </div>
               
               {/* Balance display with Stellar tokens */}
-              <div className="p-4 bg-card/70 backdrop-blur-sm rounded-2xl border border-neon-cyan/20 shadow-inner space-y-3">
+               <div className="p-3 bg-card/70 backdrop-blur-sm rounded-xl border border-neon-cyan/20 shadow-inner space-y-2">
                 {/* CCTR and Claimable row */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">CCC Balance</p>
-                    <p className="text-2xl font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">CCC Balance</p>
+                    <p className="text-xl font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
                       {balance.cctr_balance.toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-muted-foreground mb-1">Claimable</p>
-                    <p className="text-xl font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
-                    {balance.claimable_rewards > 0 && <Button size="sm" onClick={() => navigate('/rewards')} className="mt-1 h-6 px-2 text-[10px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Claimable</p>
+                    <p className="text-lg font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
+                    {balance.claimable_rewards > 0 && <Button size="sm" onClick={() => navigate('/rewards')} className="mt-1 h-5 px-2 text-[9px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105">
                         Claim
                       </Button>}
                   </div>
@@ -428,7 +428,7 @@ export const UnifiedWalletDropdown = () => {
           </div>
 
           {/* Action buttons - Buy, Send, Receive, Swap */}
-          <div className="p-4 grid grid-cols-4 gap-2">
+          <div className="p-2 sm:p-3 grid grid-cols-4 gap-1.5">
             {[{
             action: 'buy' as const,
             icon: CreditCard,
@@ -465,9 +465,9 @@ export const UnifiedWalletDropdown = () => {
             color: 'text-neon-purple',
             border: 'border-neon-purple/40',
             isSwap: true
-          }].map(item => <Button key={item.action} onClick={() => item.isSwap ? setShowSwapModal(true) : handleOpenAction(item.action as 'buy' | 'send' | 'receive')} className={`flex flex-col items-center gap-2 h-auto py-3 bg-gradient-to-br ${item.gradient} ${item.hoverGradient} border ${item.border} rounded-2xl ${item.color} transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 group`} variant="ghost">
-                <item.icon size={20} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
-                <span className="text-[10px] font-bold">{item.label}</span>
+          }].map(item => <Button key={item.action} onClick={() => item.isSwap ? setShowSwapModal(true) : handleOpenAction(item.action as 'buy' | 'send' | 'receive')} className={`flex flex-col items-center gap-1 h-auto py-2 bg-gradient-to-br ${item.gradient} ${item.hoverGradient} border ${item.border} rounded-xl ${item.color} transition-all duration-300 hover:scale-105 active:scale-95 group`} variant="ghost">
+                <item.icon size={16} className="transition-transform group-hover:scale-110" />
+                <span className="text-[9px] font-bold">{item.label}</span>
               </Button>)}
           </div>
 
@@ -476,10 +476,10 @@ export const UnifiedWalletDropdown = () => {
           {/* Wallet balances now integrated into Stellar Tokens above */}
 
           {/* Recent Transactions Preview */}
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Activity</span>
-              <Button variant="ghost" size="sm" onClick={() => setShowHistoryModal(true)} className="h-6 px-2 text-[10px] text-neon-cyan hover:bg-neon-cyan/20">
+          <div className="p-2 sm:p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Recent Activity</span>
+              <Button variant="ghost" size="sm" onClick={() => setShowHistoryModal(true)} className="h-5 px-1.5 text-[9px] text-neon-cyan hover:bg-neon-cyan/20">
                 View All
               </Button>
             </div>
@@ -536,64 +536,62 @@ export const UnifiedWalletDropdown = () => {
             </>}
 
           {/* Menu items - Rewards, Settings, Support */}
-          <div className="p-2 space-y-1">
-            <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-green/10 cursor-pointer transition-all hover:scale-[1.02] group">
-              <div className="w-8 h-8 rounded-lg bg-neon-green/20 flex items-center justify-center group-hover:bg-neon-green/30 transition-all group-hover:scale-110">
-                <User size={16} className="text-neon-green" />
+          <div className="p-1.5 space-y-0.5">
+            <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="flex items-center gap-2 p-2 rounded-xl hover:bg-neon-green/10 cursor-pointer transition-all group">
+              <div className="w-7 h-7 rounded-lg bg-neon-green/20 flex items-center justify-center group-hover:bg-neon-green/30 transition-all">
+                <User size={14} className="text-neon-green" />
               </div>
               <div className="flex-1">
-                <span className="text-sm font-medium">Profile</span>
-                <span className="ml-2 text-xs text-muted-foreground">Identity & Stats</span>
+                <span className="text-xs font-medium">Profile</span>
+                <span className="ml-1.5 text-[10px] text-muted-foreground">Identity & Stats</span>
               </div>
-              <Sparkles size={14} className="text-neon-green" />
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={() => navigate('/rewards')} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neon-pink/10 cursor-pointer transition-all hover:scale-[1.02] group">
-              <div className="w-8 h-8 rounded-lg bg-neon-pink/20 flex items-center justify-center group-hover:bg-neon-pink/30 transition-all group-hover:scale-110">
-                <Gift size={16} className="text-neon-pink" />
+            <DropdownMenuItem onClick={() => navigate('/rewards')} className="flex items-center gap-2 p-2 rounded-xl hover:bg-neon-pink/10 cursor-pointer transition-all group">
+              <div className="w-7 h-7 rounded-lg bg-neon-pink/20 flex items-center justify-center group-hover:bg-neon-pink/30 transition-all">
+                <Gift size={14} className="text-neon-pink" />
               </div>
               <div className="flex-1">
-                <span className="text-sm font-medium">Rewards</span>
-                {balance.claimable_rewards > 0 && <span className="ml-2 text-xs text-neon-pink animate-pulse">
+                <span className="text-xs font-medium">Rewards</span>
+                {balance.claimable_rewards > 0 && <span className="ml-1.5 text-[10px] text-neon-pink animate-pulse">
                     {balance.claimable_rewards.toLocaleString()} available
                   </span>}
               </div>
-              <Sparkles size={14} className="text-neon-pink animate-pulse" />
             </DropdownMenuItem>
             
-            <DropdownMenuItem onClick={handleSupport} className="flex items-center gap-3 p-3 rounded-xl hover:bg-yellow-500/10 cursor-pointer transition-all hover:scale-[1.02] group">
-              <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center group-hover:bg-yellow-500/30 transition-all group-hover:scale-110">
-                <Headphones size={16} className="text-yellow-500" />
+            <DropdownMenuItem onClick={handleSupport} className="flex items-center gap-2 p-2 rounded-xl hover:bg-yellow-500/10 cursor-pointer transition-all group">
+              <div className="w-7 h-7 rounded-lg bg-yellow-500/20 flex items-center justify-center group-hover:bg-yellow-500/30 transition-all">
+                <Headphones size={14} className="text-yellow-500" />
               </div>
-              <span className="text-sm font-medium">Support</span>
-              <ExternalLink size={12} className="text-muted-foreground ml-auto" />
+              <span className="text-xs font-medium">Support</span>
+              <ExternalLink size={10} className="text-muted-foreground ml-auto" />
             </DropdownMenuItem>
           </div>
 
           <Separator className="bg-gradient-to-r from-transparent via-neon-pink/20 to-transparent" />
 
           {/* Disconnect */}
-          <div className="p-2">
-            <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 cursor-pointer transition-all hover:scale-[1.02] group">
-              <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-all group-hover:scale-110">
-                <LogOut size={16} />
+          <div className="p-1.5">
+            <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 p-2 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 cursor-pointer transition-all group">
+              <div className="w-7 h-7 rounded-lg bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-all">
+                <LogOut size={14} />
               </div>
-              <span className="text-sm font-medium">Disconnect</span>
+              <span className="text-xs font-medium">Disconnect</span>
             </DropdownMenuItem>
           </div>
 
           <Separator className="bg-gradient-to-r from-transparent via-neon-cyan/20 to-transparent" />
 
           {/* Social media links footer */}
-          <div className="p-4 bg-gradient-to-t from-card/50 to-transparent">
-            <div className="flex items-center justify-center gap-4">
-              {socialLinks.map((social, index) => <a key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className={`flex items-center justify-center w-10 h-10 rounded-xl bg-card/80 border border-white/10 ${social.color} transition-all duration-300 hover:scale-125 hover:-translate-y-1 hover:shadow-lg active:scale-95`} title={social.name} style={{
+          <div className="p-2 sm:p-3 bg-gradient-to-t from-card/50 to-transparent">
+            <div className="flex items-center justify-center gap-3">
+              {socialLinks.map((social, index) => <a key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className={`flex items-center justify-center w-8 h-8 rounded-lg bg-card/80 border border-white/10 ${social.color} transition-all duration-300 hover:scale-110 hover:-translate-y-0.5 hover:shadow-lg active:scale-95`} title={social.name} style={{
               animationDelay: `${index * 50}ms`
             }}>
-                  <span className="text-lg">{social.icon}</span>
+                  <span className="text-sm">{social.icon}</span>
                 </a>)}
             </div>
-            <p className="text-center text-[10px] text-muted-foreground mt-3 opacity-60">
+            <p className="text-center text-[9px] text-muted-foreground mt-2 opacity-60">
               Cyber City Arcade LLC • Stellar Powered 
             </p>
           </div>
