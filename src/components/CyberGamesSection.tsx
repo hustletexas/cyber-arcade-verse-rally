@@ -90,14 +90,14 @@ export const CyberGamesSection: React.FC = () => {
           </div>
         </Card>
         
-        {/* Cyber Pinball - Image Card */}
-        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30" onClick={() => navigate('/games/cyber-pinball')}>
-          <img src={cyberPinballBanner} alt="Cyber Pinball" className="w-full h-[200px] object-contain bg-black" />
-          <Badge className="absolute top-3 right-3 bg-neon-pink text-black font-bold text-xs">
+        {/* Cyber Columns - Image Card (swapped with Pinball) */}
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30" onClick={() => navigate('/games/cyber-columns')}>
+          <img src={cyberColumnsBanner} alt="Cyber Columns - Falling gem puzzle" className="w-full h-[200px] object-contain bg-black" />
+          <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
             NEW
           </Badge>
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
-            <div className="flex items-center text-neon-pink text-sm font-medium">
+            <div className="flex items-center text-neon-cyan text-sm font-medium">
               Play Now
               <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -128,14 +128,14 @@ export const CyberGamesSection: React.FC = () => {
           </div>
         </Card>
 
-        {/* Cyber Columns — NEW */}
-        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-cyan/30" onClick={() => navigate('/games/cyber-columns')}>
-          <img src={cyberColumnsBanner} alt="Cyber Columns - Falling gem puzzle" className="w-full h-auto object-cover" />
-          <Badge className="absolute top-3 right-3 bg-neon-cyan text-black font-bold text-xs">
+        {/* Cyber Pinball (swapped with Columns) */}
+        <Card className="relative overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border-0 border border-neon-pink/30" onClick={() => navigate('/games/cyber-pinball')}>
+          <img src={cyberPinballBanner} alt="Cyber Pinball" className="w-full h-auto object-cover" />
+          <Badge className="absolute top-3 right-3 bg-neon-pink text-black font-bold text-xs">
             NEW
           </Badge>
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
-            <div className="flex items-center text-neon-cyan text-sm font-medium">
+            <div className="flex items-center text-neon-pink text-sm font-medium">
               Play Now
               <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
