@@ -213,38 +213,11 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   const addScore = useCallback((pts: number) => {
     const g = G.current;
     if (g.tilted || g.gameOver) return;
-    g.combo++;
     g.totalHits++;
-    g.comboTimer = Date.now() + 3000;
-    if (g.combo > g.maxCombo) g.maxCombo = g.combo;
-    const mult = Math.min(g.combo, 8);
-    const dm = g.demonMode ? 3 : 1;
-    const od = g.overdriveActive ? 2 : 1;
-    const ag = g.antiGravActive ? 2 : 1;
-    const total = Math.round(pts * mult * dm * od * ag);
-    g.score += total;
+    g.score += pts;
     setScore(g.score);
-    setCombo(g.combo);
-    // Anti-gravity meter
-    g.antiGravMeter = Math.min(g.antiGravMeter + 1, 10);
-    setAntiGravMeter(g.antiGravMeter);
-    if (g.antiGravMeter >= 10 && !g.antiGravActive) {
-      g.antiGravActive = true;
-      g.antiGravTimer = Date.now() + 8000;
-      g.antiGravMeter = 0;
-      setAntiGrav(true);
-      setAntiGravMeter(0);
-      SFX.antiGravity();
-      showMsg('🌀 ANTI-GRAVITY ACTIVATED!', 3000);
-      g.lightFlash = 1.5;
-      g.shake.power = 6;
-      g.screenPulse = 1;
-      if (engineRef.current) {
-        engineRef.current.gravity.y = -1.0;
-      }
-    }
     onScoreUpdate?.(g.score);
-  }, [onScoreUpdate, showMsg]);
+  }, [onScoreUpdate]);
 
   const spawnParticles = useCallback((x: number, y: number, count: number, color: string, spread = 5) => {
     if (!fin(x) || !fin(y)) return;
@@ -498,332 +471,149 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         if (labels.includes('drain')) { handleDrain(ball); continue; }
 
-        // Bumpers
+        // Bumpers — simple bounce + score
         for (let i = 0; i < 4; i++) {
           if (labels.includes(`bumper_${i}`)) {
             addScore(100);
             SFX.bumper();
             g.bumperFlash.set(`bumper_${i}`, Date.now() + 300);
-            g.shake.power = 5;
-            g.lightFlash = 0.4;
-            g.reactorCharge = Math.min(g.reactorCharge + 12, 100);
-            setReactorCharge(g.reactorCharge);
-            if (g.reactorCharge >= 100 && !g.overdriveActive) {
-              g.overdriveActive = true;
-              g.overdriveTimer = Date.now() + 15000;
-              setOverdrive(true);
-              SFX.modeActivate();
-              showMsg('⚡ OVERDRIVE ENGAGED! 2x SCORING!', 3000);
-              g.lightFlash = 1;
-            }
+            g.shake.power = 3;
             const bmp = pair.bodyA.label === `bumper_${i}` ? pair.bodyA : pair.bodyB;
             if (fin(ball.position.x) && fin(bmp.position.x)) {
               const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
-              Body.applyForce(ball, ball.position, { x: d.x * 0.045, y: d.y * 0.045 });
+              Body.applyForce(ball, ball.position, { x: d.x * 0.035, y: d.y * 0.035 });
             }
-            spawnParticles(ball.position.x, ball.position.y, 12, [NEON.cyan, NEON.pink, NEON.green, NEON.purple][i], 6);
+            spawnParticles(ball.position.x, ball.position.y, 8, [NEON.cyan, NEON.pink, NEON.green, NEON.purple][i], 4);
           }
         }
 
+        // Slingshots — simple bounce
         if (labels.includes('slingshot')) {
           addScore(50);
           SFX.slingshot();
-          g.shake.power = 8; // strong screen shake for slingshots
-          spawnParticles(ball.position.x, ball.position.y, 10, NEON.yellow, 6);
-          // Explosive slingshot kick
+          g.shake.power = 4;
+          spawnParticles(ball.position.x, ball.position.y, 6, NEON.yellow, 4);
           const sBody = pair.bodyA.label === 'slingshot' ? pair.bodyA : pair.bodyB;
           if (fin(ball.position.x) && fin(sBody.position.x)) {
             const d = Vector.normalise(Vector.sub(ball.position, sBody.position));
-            Body.applyForce(ball, ball.position, { x: d.x * 0.035, y: d.y * 0.035 });
+            Body.applyForce(ball, ball.position, { x: d.x * 0.025, y: d.y * 0.025 });
           }
         }
 
-        // Skill shot lanes
-        for (let i = 0; i < 3; i++) {
-          if (labels.includes(`skill_lane_${i}`)) {
-            if (g.skillShot) {
-              addScore(3000);
-              SFX.skillShot();
-              showMsg('🎯 SKILL SHOT! +3000', 2500);
-              g.skillShot = false;
-              spawnParticles(ball.position.x, ball.position.y, 15, NEON.white, 8);
-            } else {
-              addScore(200);
-            }
-          }
-        }
-
-        // Combo target bank
-        for (let i = 0; i < 5; i++) {
-          if (labels.includes(`combo_target_${i}`) && !g.comboTargets[i]) {
-            g.comboTargets[i] = true;
-            addScore(400);
-            spawnParticles(ball.position.x, ball.position.y, 6, NEON.orange, 4);
-            if (g.comboTargets.every(Boolean)) {
-              g.comboTargetComplete++;
-              g.comboTargets.fill(false);
-              addScore(2000);
-              SFX.comboBank();
-              showMsg(`💥 COMBO BANK COMPLETE! +2000`, 3000);
-              g.lightFlash = 1;
-              g.shake.power = 10;
-              spawnParticles(TW / 2, ctY, 25, NEON.orange, 10);
-            }
-          }
-        }
-
-        // Magnet bumper
-        if (labels.includes('magnet_bumper')) {
-          addScore(75);
-          SFX.magnet();
-          g.magnetActive = true;
-          g.magnetTimer = Date.now() + 600;
-          if (fin(ball.velocity.x) && fin(ball.velocity.y)) {
-            Body.setVelocity(ball, { x: ball.velocity.x * 0.3, y: ball.velocity.y * 0.3 });
-          }
-          spawnParticles(ball.position.x, ball.position.y, 8, NEON.purple, 3);
-          showMsg('⚡ MAGNET!');
-        }
-
-        // Rail loops
-        if (labels.includes('rail_loop')) {
-          addScore(500);
-          SFX.railLoop();
-          showMsg('🌀 RAIL LOOP! +500');
-          spawnParticles(ball.position.x, ball.position.y, 10, NEON.green, 6);
-        }
-        if (labels.includes('rail_loop_r')) {
-          addScore(500);
-          SFX.railLoop();
-          showMsg('🌀 RAIL LOOP! +500');
-          spawnParticles(ball.position.x, ball.position.y, 10, NEON.purple, 6);
-        }
-
-        // CYBER letters
-        for (let i = 0; i < 5; i++) {
-          if (labels.includes(`cyber_${i}`) && !g.cyberLetters[i]) {
-            g.cyberLetters[i] = true;
-            setCyberLetters([...g.cyberLetters]);
-            addScore(500);
-            SFX.letterLit();
-            showMsg(`${'CYBER'[i]} LIT!`);
-            spawnParticles(ball.position.x, ball.position.y, 6, NEON.cyan, 4);
-            if (g.cyberLetters.every(Boolean)) {
-              g.cyberComplete++;
-              g.cyberLetters.fill(false);
-              setCyberLetters([false, false, false, false, false]);
-              const bonus = 5000 * g.cyberComplete;
-              addScore(bonus);
-              SFX.cyberJackpot();
-              showMsg(`🌆 CYBER JACKPOT x${g.cyberComplete}! +${bonus.toLocaleString()}`, 3000);
-              g.lightFlash = 1;
-              g.shake.power = 8;
-            }
-          }
-        }
-
-        // Demon targets
-        for (let i = 0; i < 3; i++) {
-          if (labels.includes(`demon_l_${i}`) && !g.demonTargetsL[i]) {
-            g.demonTargetsL[i] = true;
-            addScore(200);
-            spawnParticles(ball.position.x, ball.position.y, 5, NEON.red, 4);
-          }
-          if (labels.includes(`demon_r_${i}`) && !g.demonTargetsR[i]) {
-            g.demonTargetsR[i] = true;
-            addScore(200);
-            spawnParticles(ball.position.x, ball.position.y, 5, NEON.red, 4);
-          }
-        }
-        if (g.demonTargetsL.every(Boolean) && g.demonTargetsR.every(Boolean) && !g.demonMode) {
-          g.demonMode = true;
-          g.demonTimer = Date.now() + 20000;
-          setDemonMode(true);
-          SFX.modeActivate();
-          showMsg('👹 DEMON MODE! 3x SCORING!', 4000);
-          g.lightFlash = 1;
-          g.shake.power = 8;
-        }
-
-        // Orbits
-        if (labels.includes('orbit_left') || labels.includes('orbit_right')) {
-          SFX.orbit();
-          const dir = labels.includes('orbit_left') ? 'left' : 'right';
-          if (g.lastOrbitDir !== dir) { g.orbitCount++; g.lastOrbitDir = dir; }
-          else { g.orbitCount = 1; g.lastOrbitDir = dir; }
-          addScore(150 * g.orbitCount);
-          if (g.orbitCount > 1) showMsg(`ORBIT x${g.orbitCount}!`);
-        }
-
-
-        if (labels.includes('spinner')) { addScore(25); }
-
-        // Portal hole
-        if (labels.includes('portal_hole')) {
-          const spd = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2) || TARGET_SPEED;
-          addScore(250);
-          SFX.portal();
-          showMsg('🌀 PORTAL! +250');
-          g.shake.power = 6;
-          g.lightFlash = 0.6;
-          spawnParticles(ball.position.x, ball.position.y, 15, NEON.purple, 8);
-          Body.setPosition(ball, { x: 35, y: 45 });
-          Body.setVelocity(ball, { x: spd * 0.7, y: spd * 0.7 });
-          spawnParticles(35, 45, 12, NEON.purple, 6);
-        }
-
-        // Corner portals — teleport to top-left exit
-        if (labels.includes('portal_bl')) {
-          const spd = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2) || TARGET_SPEED;
-          addScore(150);
-          SFX.portal();
-          showMsg('🌀 CORNER WARP! +150');
-          g.shake.power = 4;
-          g.lightFlash = 0.5;
-          spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
-          Body.setPosition(ball, { x: TW - 120, y: 45 });
-          Body.setVelocity(ball, { x: -spd * 0.7, y: spd * 0.7 });
-          spawnParticles(TW - 120, 45, 10, NEON.orange, 6);
-        }
-        if (labels.includes('portal_br')) {
-          const spd = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2) || TARGET_SPEED;
-          addScore(150);
-          SFX.portal();
-          showMsg('🌀 CORNER WARP! +150');
-          g.shake.power = 4;
-          g.lightFlash = 0.5;
-          spawnParticles(ball.position.x, ball.position.y, 10, NEON.orange, 6);
-          Body.setPosition(ball, { x: TW - 120, y: 45 });
-          Body.setVelocity(ball, { x: -spd * 0.7, y: spd * 0.7 });
-          spawnParticles(TW - 120, 45, 10, NEON.orange, 6);
-        }
-
-        // Multiball lock
-        if (labels.includes('multiball_lock') && !g.multiballActive && g.lockedBalls < 2) {
-          g.lockedBalls++;
-          setLockedBalls(g.lockedBalls);
-          addScore(1000);
-          showMsg(`BALL LOCKED! (${g.lockedBalls}/2)`);
-          if (g.lockedBalls >= 2) {
-            g.multiballActive = true;
-            g.lightFlash = 1;
-            g.shake.power = 8;
-            SFX.multiball();
-            showMsg('🌩 CYBER STORM MULTIBALL!', 4000);
-            for (let b = 0; b < 2; b++) {
-              const extra = Bodies.circle(TW / 2 + (b - 0.5) * 35, 100, BALL_R, {
-                ...BALL_OPTS,
-              });
-              Composite.add(engine.world, extra);
-              g.extraBalls.push(extra);
-              Body.applyForce(extra, extra.position, { x: (Math.random() - 0.5) * 0.004, y: 0.004 });
-            }
-          }
-        }
-
-        // ── NEW: Pop bumpers ──
+        // Pop bumpers — simple bounce
         for (let i = 0; i < 2; i++) {
           if (labels.includes(`pop_bumper_${i}`)) {
             addScore(150);
             SFX.popBumper();
             g.popBumperFlash.set(`pop_bumper_${i}`, Date.now() + 350);
-            g.shake.power = 6;
-            g.lightFlash = 0.3;
+            g.shake.power = 4;
             const bmp = pair.bodyA.label === `pop_bumper_${i}` ? pair.bodyA : pair.bodyB;
             if (fin(ball.position.x) && fin(bmp.position.x)) {
               const d = Vector.normalise(Vector.sub(ball.position, bmp.position));
-              Body.applyForce(ball, ball.position, { x: d.x * 0.06, y: d.y * 0.06 });
+              Body.applyForce(ball, ball.position, { x: d.x * 0.04, y: d.y * 0.04 });
             }
-            spawnParticles(ball.position.x, ball.position.y, 14, NEON.yellow, 7);
+            spawnParticles(ball.position.x, ball.position.y, 8, NEON.yellow, 5);
           }
         }
 
-        // ── NEW: Drop targets (round) ──
+        // Drop targets — simple score
         for (let i = 0; i < 3; i++) {
           if (labels.includes(`drop_target_${i}`) && !g.dropTargets[i]) {
             g.dropTargets[i] = true;
             addScore(300);
             SFX.dropTarget();
-            spawnParticles(ball.position.x, ball.position.y, 8, NEON.green, 5);
-            // Hide the target body by moving it off-screen
+            spawnParticles(ball.position.x, ball.position.y, 6, NEON.green, 4);
             const dtBody = pair.bodyA.label === `drop_target_${i}` ? pair.bodyA : pair.bodyB;
             Body.setPosition(dtBody, { x: -100, y: -100 });
             if (g.dropTargets.every(Boolean)) {
-              addScore(3000);
+              addScore(1000);
               SFX.dropTargetBank();
-              showMsg('🎯 DROP BANK CLEAR! +3000', 3000);
-              g.lightFlash = 1;
-              g.shake.power = 8;
-              spawnParticles(210, 390, 20, NEON.green, 10);
-              // Schedule reset after 5 seconds
+              showMsg('DROP BANK CLEAR! +1000', 2000);
               g.dropTargetResetTimer = Date.now() + 5000;
             }
           }
         }
 
-        // Mid flippers are physics bodies, no special collision handling needed
-
-        // ── NEW: Captive ball sensor ──
-        if (labels.includes('captive_sensor')) {
-          // The main ball hit near the captive ball area
-          g.captiveBallHits++;
-          const pts = 200 * g.captiveBallHits;
-          addScore(pts);
-          SFX.captiveBall();
-          showMsg(`🔒 CAPTIVE HIT x${g.captiveBallHits}! +${pts}`);
-          spawnParticles(captiveX, captiveY, 8, NEON.white, 4);
-          g.shake.power = 4;
-          // Push captive ball
-          Body.applyForce(captiveBallBody, captiveBallBody.position, { x: 0, y: -0.003 });
+        // Skill lanes — simple score
+        for (let i = 0; i < 3; i++) {
+          if (labels.includes(`skill_lane_${i}`)) {
+            addScore(200);
+            spawnParticles(ball.position.x, ball.position.y, 4, NEON.white, 3);
+          }
         }
 
-        // ── NEW: Roll-under spinner ──
+        // Combo targets — simple score
+        for (let i = 0; i < 5; i++) {
+          if (labels.includes(`combo_target_${i}`)) {
+            addScore(100);
+            spawnParticles(ball.position.x, ball.position.y, 4, NEON.orange, 3);
+          }
+        }
+
+        // Spinner
+        if (labels.includes('spinner')) { addScore(25); }
+
+        // Roll spinner
         if (labels.includes('roll_spinner')) {
           addScore(50);
-          SFX.spinnerWhir();
-          g.rollSpinnerAngle += Math.PI * 2; // trigger spin animation
-          spawnParticles(ball.position.x, ball.position.y, 4, NEON.cyan, 3);
+          g.rollSpinnerAngle += Math.PI * 2;
+          spawnParticles(ball.position.x, ball.position.y, 3, NEON.cyan, 2);
         }
 
-        // ── NEW: Right outlane ball return gate ──
-        if (labels.includes('right_gate') && g.rightGateOpen && !g.rightGateUsed) {
-          // Save the ball — push it back inward
-          g.rightGateUsed = true;
-          g.rightGateOpen = false;
-          SFX.ballSave();
-          showMsg('🛡️ BALL SAVED!', 2000);
-          g.shake.power = 4;
-          g.lightFlash = 0.5;
-          Body.setVelocity(ball, { x: -6, y: -4 });
-          Body.setPosition(ball, { x: TW - 55, y: ball.position.y });
-          spawnParticles(ball.position.x, ball.position.y, 12, NEON.green, 6);
+        // Captive ball
+        if (labels.includes('captive_sensor')) {
+          addScore(200);
+          SFX.captiveBall();
+          spawnParticles(captiveX, captiveY, 5, NEON.white, 3);
+          Body.applyForce(captiveBallBody, captiveBallBody.position, { x: 0, y: -0.002 });
+        }
+
+        // Magnet bumper — just a simple bounce now
+        if (labels.includes('magnet_bumper')) {
+          addScore(75);
+          spawnParticles(ball.position.x, ball.position.y, 5, NEON.purple, 3);
+        }
+
+        // Portal holes — simple score (no teleport)
+        if (labels.includes('portal_hole') || labels.includes('portal_bl') || labels.includes('portal_br')) {
+          addScore(100);
+          spawnParticles(ball.position.x, ball.position.y, 6, NEON.purple, 4);
+        }
+
+        // CYBER letters — simple score
+        for (let i = 0; i < 5; i++) {
+          if (labels.includes(`cyber_${i}`)) {
+            addScore(100);
+            spawnParticles(ball.position.x, ball.position.y, 4, NEON.cyan, 3);
+          }
+        }
+
+        // Demon targets — simple score
+        for (let i = 0; i < 3; i++) {
+          if (labels.includes(`demon_l_${i}`)) { addScore(100); }
+          if (labels.includes(`demon_r_${i}`)) { addScore(100); }
+        }
+
+        // Orbits — simple score
+        if (labels.includes('orbit_left') || labels.includes('orbit_right')) {
+          addScore(150);
         }
       }
     });
 
-    // ── Drain handler ──
+    // ── Drain handler — ball goes "underground" and reappears at cannon ──
     const handleDrain = (ball: Matter.Body) => {
       const g = G.current;
       try { Composite.remove(engine.world, ball); } catch {}
       const extraIdx = g.extraBalls.indexOf(ball);
       if (extraIdx >= 0) {
         g.extraBalls.splice(extraIdx, 1);
-        if (g.extraBalls.length === 0 && g.multiballActive) {
-          g.multiballActive = false;
-          showMsg('MULTIBALL ENDED');
-        }
         return;
       }
       g.currentBall = null;
       g.balls--;
       g.launched = false;
-      g.skillShot = true;
-      g.orbitCount = 0;
-      g.lastOrbitDir = '';
       g.trail = [];
-      // Reset per-ball features
-      g.rightGateOpen = true;
-      g.rightGateUsed = false;
       g.stuckTimer = 0;
       setBalls(g.balls);
       onBallLost?.(g.balls);
@@ -836,14 +626,13 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           setHighScore(g.score);
         }
         onGameOver?.(g.score);
-        // Submit score + smart contract
         submitScore(g.score, 3 - g.balls);
         SFX.gameOver();
         showMsg('GAME OVER');
       } else {
         SFX.drain();
-        showMsg(`BALL LOST — ${g.balls} LEFT`);
-        setTimeout(() => spawnBall(), 1000);
+        // Instant respawn at cannon (ball goes "underground")
+        spawnBall();
       }
     };
 
@@ -1003,30 +792,19 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           Body.setVelocity(g.currentBall, { x: vx * scale, y: vy * scale });
         }
 
-        // ── Spin curve: exaggerated ball bend on strong hits ──
-        if (speed > 8) {
-          const curveFactor = 0.0004 * (speed / MAX_SPEED);
-          const spinDir = vx > 0 ? 1 : -1;
-          Body.applyForce(g.currentBall, g.currentBall.position, {
-            x: spinDir * curveFactor * Math.abs(vy),
-            y: 0,
-          });
-        }
 
-        // Constant table slope: natural downward motion + slight lateral drift
-        if (!g.antiGravActive) {
-          Body.applyForce(g.currentBall, g.currentBall.position, { x: TABLE_SLIDE_FORCE_X, y: TABLE_SLIDE_FORCE_Y });
-        }
+        // Constant table slope
+        Body.applyForce(g.currentBall, g.currentBall.position, { x: TABLE_SLIDE_FORCE_X, y: TABLE_SLIDE_FORCE_Y });
 
-        // If speed drops too much, add a small consistent downhill push
-        if (speed < MIN_SPEED && g.currentBall.position.y < TH - 90 && !g.antiGravActive) {
+        // If speed drops too much, add a small downhill push
+        if (speed < MIN_SPEED && g.currentBall.position.y < TH - 90) {
           Body.setVelocity(g.currentBall, {
             x: vx * 0.92 + TABLE_SLIDE_FORCE_X * 8000,
             y: Math.max(vy * 0.92, 2.4),
           });
         }
       }
-      // Same cap/slope behavior for extra balls
+      // Same for extra balls
       for (const eb of g.extraBalls) {
         if (fin(eb.velocity.x) && fin(eb.velocity.y)) {
           const speed = Math.sqrt(eb.velocity.x ** 2 + eb.velocity.y ** 2);
@@ -1034,36 +812,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
             const scale = MAX_SPEED / speed;
             Body.setVelocity(eb, { x: eb.velocity.x * scale, y: eb.velocity.y * scale });
           }
-          if (!g.antiGravActive) {
-            Body.applyForce(eb, eb.position, { x: TABLE_SLIDE_FORCE_X, y: TABLE_SLIDE_FORCE_Y });
-          }
+          Body.applyForce(eb, eb.position, { x: TABLE_SLIDE_FORCE_X, y: TABLE_SLIDE_FORCE_Y });
         }
       }
 
       // ── Timers ──
       const now = Date.now();
-      if (g.combo > 0 && now > g.comboTimer) { g.combo = 0; setCombo(0); }
-      if (g.overdriveActive && now > g.overdriveTimer) {
-        g.overdriveActive = false; g.reactorCharge = 0;
-        setOverdrive(false); setReactorCharge(0);
-      }
-      if (g.demonMode && now > g.demonTimer) {
-        g.demonMode = false;
-        g.demonTargetsL.fill(false);
-        g.demonTargetsR.fill(false);
-        setDemonMode(false);
-      }
-      if (g.antiGravActive && now > g.antiGravTimer) {
-        g.antiGravActive = false;
-        setAntiGrav(false);
-        if (engineRef.current) {
-          engineRef.current.gravity.y = 1.95;
-        }
-        showMsg('GRAVITY RESTORED');
-      }
-      if (g.magnetActive && now > g.magnetTimer) {
-        g.magnetActive = false;
-      }
 
       // ── Anti-stuck detection (deterministic escape for consistent behavior) ──
       if (g.currentBall && g.launched && fin(g.currentBall.position.x) && fin(g.currentBall.position.y)) {
@@ -1238,21 +992,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.fillStyle = nGlow3; ctx.fillRect(0, 0, TW, TH);
       }
 
-      // ── Anti-gravity screen effects ──
-      if (g.antiGravActive) {
-        const agPulse = Math.sin(t * 5) * 0.5 + 0.5;
-        ctx.fillStyle = `rgba(191, 0, 255, ${0.04 + agPulse * 0.03})`;
-        ctx.fillRect(0, 0, TW, TH);
-        ctx.globalAlpha = 0.15;
-        for (let i = 0; i < 8; i++) {
-          const sx = ((i * 53 + f * 2) % TW);
-          const sy = TH - (f * 3 + i * 100) % TH;
-          ctx.strokeStyle = NEON.purple;
-          ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx, sy - 20); ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
-      }
 
       // ── Screen pulse effect ──
       if (g.screenPulse > 0.01) {
@@ -1454,7 +1193,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         const s = Math.max(0, BALL_R * a);
         const tg = radGrad(ctx, pt.x, pt.y, 0, pt.x, pt.y, s + 5);
         if (!tg) continue;
-        tg.addColorStop(0, `rgba(${g.antiGravActive ? '191,0,255' : '0,128,255'}, ${a * 0.6})`);
+        tg.addColorStop(0, `rgba(0,128,255, ${a * 0.6})`);
         tg.addColorStop(0.5, `rgba(255,0,255, ${a * 0.25})`);
         tg.addColorStop(1, 'transparent');
         ctx.fillStyle = tg;
@@ -1505,21 +1244,20 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
         // ── Ball ──
         if (body.label === 'ball') {
-          const ballGlow = g.antiGravActive ? 1.5 : 1;
-          const ballColor = g.antiGravActive ? NEON.purple : NEON.cyan;
+          const ballColor = NEON.cyan;
           for (let r = 3; r >= 1; r--) {
-            ctx.fillStyle = `rgba(${g.antiGravActive ? '191,0,255' : '0,128,255'}, ${0.04 * r * ballGlow})`;
+            ctx.fillStyle = `rgba(0,128,255, ${0.04 * r})`;
             ctx.beginPath(); ctx.arc(0, 0, BALL_R + r * 7, 0, Math.PI * 2); ctx.fill();
           }
           const bg = radGrad(ctx, -1.5, -2.5, 0.5, 0, 0, BALL_R);
           if (bg) {
             bg.addColorStop(0, '#ffffff');
-            bg.addColorStop(0.15, g.antiGravActive ? '#eeccff' : '#cceeff');
+            bg.addColorStop(0.15, '#cceeff');
             bg.addColorStop(0.4, ballColor);
-            bg.addColorStop(0.75, g.antiGravActive ? '#3a0066' : '#004466');
+            bg.addColorStop(0.75, '#004466');
             bg.addColorStop(1, '#000a1a');
             ctx.shadowColor = ballColor;
-            ctx.shadowBlur = 28 * ballGlow;
+            ctx.shadowBlur = 28;
             ctx.fillStyle = bg;
           } else {
             ctx.fillStyle = ballColor;
@@ -2128,15 +1866,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.textAlign = 'center';
         ctx.fillText(g.score.toLocaleString(), TW / 2, 22);
         ctx.shadowBlur = 0;
-        if (g.combo > 1) {
-          ctx.fillStyle = NEON.pink;
-          ctx.shadowColor = NEON.pink;
-          ctx.shadowBlur = 6;
-          ctx.font = 'bold 11px monospace';
-          ctx.textAlign = 'left';
-          ctx.fillText(`${Math.min(g.combo, 8)}x`, 14, 20);
-          ctx.shadowBlur = 0;
-        }
         ctx.textAlign = 'right';
         for (let i = 0; i < 3; i++) {
           ctx.fillStyle = i < g.balls ? NEON.cyan : 'rgba(255,255,255,0.15)';
@@ -2144,19 +1873,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.beginPath(); ctx.arc(TW - 18 - i * 14, 16, 4, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
         }
-        ctx.textAlign = 'right';
-        ctx.fillStyle = g.antiGravActive ? NEON.purple : `${NEON.purple}88`;
-        ctx.font = 'bold 7px monospace';
-        ctx.fillText(g.antiGravActive ? 'ANTI-GRAV!' : `AG: ${g.antiGravMeter}/10`, TW - 14, 34);
-        const agBarW = 50;
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.fillRect(TW - 14 - agBarW, 37, agBarW, 4);
-        const agFill = g.antiGravActive ? 1 : g.antiGravMeter / 10;
-        ctx.fillStyle = g.antiGravActive ? NEON.purple : `${NEON.purple}cc`;
-        ctx.shadowColor = NEON.purple;
-        ctx.shadowBlur = g.antiGravActive ? 8 : 0;
-        ctx.fillRect(TW - 14 - agBarW, 37, agBarW * agFill, 4);
-        ctx.shadowBlur = 0;
         ctx.restore();
       }
 
@@ -2281,41 +1997,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         ctx.restore();
       }
 
-      // Demon mode banner
-      if (g.demonMode) {
-        const da = 0.55 + Math.sin(t * 7) * 0.35;
-        ctx.fillStyle = `rgba(255, 0, 64, ${da * 0.15})`;
-        ctx.fillRect(0, 0, TW, 16);
-        ctx.shadowColor = NEON.red; ctx.shadowBlur = 6;
-        ctx.fillStyle = NEON.red;
-        ctx.globalAlpha = da;
-        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('👹 DEMON MODE 3x 👹', TW / 2, 11);
-        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-      }
-      if (g.overdriveActive) {
-        const oa = 0.55 + Math.sin(t * 8) * 0.3;
-        ctx.fillStyle = `rgba(191, 0, 255, ${oa * 0.12})`;
-        ctx.fillRect(0, g.demonMode ? 16 : 0, TW, 16);
-        ctx.shadowColor = NEON.purple; ctx.shadowBlur = 6;
-        ctx.fillStyle = NEON.purple;
-        ctx.globalAlpha = oa;
-        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('⚡ OVERDRIVE 2x ⚡', TW / 2, (g.demonMode ? 16 : 0) + 11);
-        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-      }
-      if (g.antiGravActive) {
-        const aa = 0.6 + Math.sin(t * 6) * 0.35;
-        const bannerY = (g.demonMode ? 16 : 0) + (g.overdriveActive ? 16 : 0);
-        ctx.fillStyle = `rgba(191, 0, 255, ${aa * 0.15})`;
-        ctx.fillRect(0, bannerY, TW, 16);
-        ctx.shadowColor = NEON.purple; ctx.shadowBlur = 8;
-        ctx.fillStyle = NEON.purple;
-        ctx.globalAlpha = aa;
-        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('🌀 ANTI-GRAVITY x2 🌀', TW / 2, bannerY + 11);
-        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-      }
 
       ctx.restore(); // shake
 
