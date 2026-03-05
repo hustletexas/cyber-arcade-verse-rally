@@ -311,15 +311,15 @@ export const UnifiedWalletDropdown = () => {
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-1.5rem)] sm:w-[320px] max-h-[85vh] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-2xl sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
+        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-1rem)] sm:w-[320px] max-h-[80vh] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-xl sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
           {/* Header with wallet info */}
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
+          <div className="p-2 sm:p-4 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] bg-[length:400%_400%] animate-shimmer" />
             <div className="relative">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="flex items-center gap-2">
                   <div className="relative">
-                    <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-neon-cyan/60 shadow-xl shadow-neon-cyan/30 transition-transform hover:scale-110 duration-300">
+                    <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-neon-cyan/60 shadow-xl shadow-neon-cyan/30 transition-transform hover:scale-110 duration-300">
                       <AvatarImage src={user?.user_metadata?.avatar_url} />
                       <AvatarFallback className="bg-gradient-to-br from-neon-pink via-neon-purple to-neon-cyan text-white font-bold text-sm">
                         {user?.email?.charAt(0) || 'U'}
@@ -345,18 +345,18 @@ export const UnifiedWalletDropdown = () => {
               </div>
               
               {/* Balance display with Stellar tokens */}
-               <div className="p-3 bg-card/70 backdrop-blur-sm rounded-xl border border-neon-cyan/20 shadow-inner space-y-2">
+               <div className="p-2 sm:p-3 bg-card/70 backdrop-blur-sm rounded-xl border border-neon-cyan/20 shadow-inner space-y-1.5">
                 {/* CCTR and Claimable row */}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[10px] text-muted-foreground mb-0.5">CCC Balance</p>
-                    <p className="text-xl font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
+                    <p className="text-lg sm:text-xl font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
                       {balance.cctr_balance.toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] text-muted-foreground mb-0.5">Claimable</p>
-                    <p className="text-lg font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
+                    <p className="text-base sm:text-lg font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
                     {balance.claimable_rewards > 0 && <Button size="sm" onClick={() => navigate('/rewards')} className="mt-1 h-5 px-2 text-[9px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105">
                         Claim
                       </Button>}

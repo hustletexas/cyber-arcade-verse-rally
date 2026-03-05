@@ -26,7 +26,7 @@ export const FloatingSupportAgent = () => {
   const [ticketCategory, setTicketCategory] = useState('general');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isGamePage = location.pathname.startsWith('/games/');
+  const isGamePage = location.pathname.startsWith('/games/') || location.pathname.startsWith('/cyber-galaxy');
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
