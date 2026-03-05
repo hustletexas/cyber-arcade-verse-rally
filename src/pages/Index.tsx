@@ -22,7 +22,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AIGamingCoach } from '@/components/AIGamingCoach';
 import { Web3Gaming } from '@/components/Web3Gaming';
 import { SponsorshipSection } from '@/components/SponsorshipSection';
-import { ClaimPassButton } from '@/components/ClaimPassButton';
+
 const Index = () => {
   const {
     toast
@@ -119,9 +119,6 @@ const Index = () => {
             <img alt="Cyber City Arcade NFT" className="w-80 h-auto sm:w-[500px] md:w-[700px] lg:w-[900px] object-contain hover:scale-105 transition-transform duration-300 touch-manipulation" style={{
             filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
           }} src="/lovable-uploads/1ef75412-acb6-4745-b890-65710aafc798.png" />
-            <div className="absolute bottom-20 sm:bottom-24 md:bottom-28 left-1/2 -translate-x-1/2">
-              <ClaimPassButton />
-            </div>
           </div>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neon-purple mb-4 sm:mb-6 md:mb-8 animate-neon-flicker px-2 sm:px-4 leading-relaxed">
