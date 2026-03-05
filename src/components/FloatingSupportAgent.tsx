@@ -39,8 +39,8 @@ export const FloatingSupportAgent = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Hide on game pages on mobile to avoid blocking gameplay
-  if (isGamePage && isMobile) return null;
+  // Hide on game pages and cyber galaxy to avoid blocking gameplay
+  if (isGamePage) return null;
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
