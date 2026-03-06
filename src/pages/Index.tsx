@@ -11,55 +11,7 @@ import { CyberGamesSection } from '@/components/CyberGamesSection';
 import { Link } from 'react-router-dom';
 import { Web3Gaming } from '@/components/Web3Gaming';
 const Index = () => {
-  const {
-    toast
-  } = useToast();
-  const {
-    isWalletConnected
-  } = useMultiWallet();
-  const {
-    purchaseSeasonPass,
-    status,
-    price
-  } = useSeasonPassPurchase();
-  const {
-    user,
-    loading
-  } = useAuth();
-  const {
-    trackAchievement
-  } = useAchievements();
-  const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
-  const isPurchasing = status !== 'idle' && status !== 'success' && status !== 'error';
-  const getButtonText = () => {
-    switch (status) {
-      case 'checkout':
-        return 'PROCESSING PAYMENT...';
-      case 'processing':
-        return 'CONFIRMING...';
-      case 'delivering':
-        return 'DELIVERING NFT...';
-      case 'success':
-        return 'PURCHASED ✓';
-      default:
-        return `BUY SEASON PASS - $${price}`;
-    }
-  };
-  const handlePurchase = async () => {
-    if (!isWalletConnected) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet first to purchase",
-        variant: "destructive"
-      });
-      return;
-    }
-    const result = await purchaseSeasonPass();
-    if (result.success) {
-      trackAchievement('nft_minted');
-    }
-  };
   return <div className="min-h-screen bg-transparent relative">
       {/* Galaxy Background - matching game pages */}
       <GalaxyBackground />
