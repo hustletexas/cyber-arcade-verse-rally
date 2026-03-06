@@ -33,7 +33,7 @@ export const SocialFeatures = () => {
   };
 
   const handleDiscord = () => {
-    window.open('https://discord.gg/cybercityarcade', '_blank');
+    window.open('https://discord.gg/83vpV7NBUU', '_blank');
   };
 
   const handleX = () => {
