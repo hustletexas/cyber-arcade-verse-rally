@@ -311,53 +311,53 @@ export const UnifiedWalletDropdown = () => {
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-0.75rem)] sm:w-[310px] max-h-[75vh] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-xl sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
+        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-1.25rem)] sm:w-[300px] max-h-[calc(100vh-5.5rem)] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-xl sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
           {/* Header with wallet info */}
-          <div className="p-1.5 sm:p-3 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
+          <div className="p-1 sm:p-2.5 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] bg-[length:400%_400%] animate-shimmer" />
             <div className="relative">
-              <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                <div className="flex items-center gap-1.5">
                   <div className="relative">
-                    <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-neon-cyan/60 shadow-xl shadow-neon-cyan/30 transition-transform hover:scale-110 duration-300">
+                    <Avatar className="w-7 h-7 sm:w-9 sm:h-9 border-2 border-neon-cyan/60 shadow-xl shadow-neon-cyan/30 transition-transform hover:scale-110 duration-300">
                       <AvatarImage src={user?.user_metadata?.avatar_url} />
-                      <AvatarFallback className="bg-gradient-to-br from-neon-pink via-neon-purple to-neon-cyan text-white font-bold text-sm">
+                      <AvatarFallback className="bg-gradient-to-br from-neon-pink via-neon-purple to-neon-cyan text-white font-bold text-xs">
                         {user?.email?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-neon-green rounded-full border-2 border-background flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-neon-green rounded-full border-2 border-background flex items-center justify-center">
+                      <div className="w-1 h-1 bg-white rounded-full animate-ping" />
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">
+                    <p className="text-xs sm:text-sm font-bold text-foreground">
                       {user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'}
                     </p>
-                    <button onClick={copyAddress} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-neon-cyan transition-all duration-200 hover:scale-105">
+                    <button onClick={copyAddress} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-neon-cyan transition-all duration-200 hover:scale-105">
                       {primaryWallet?.address.slice(0, 6)}...{primaryWallet?.address.slice(-4)}
                       <Copy size={10} />
                     </button>
                   </div>
                 </div>
-                <Badge className="bg-neon-green/20 text-neon-green border-0 font-bold capitalize px-2 py-0.5 text-[10px] shadow-lg shadow-neon-green/20">
+                <Badge className="bg-neon-green/20 text-neon-green border-0 font-bold capitalize px-1.5 py-0 text-[9px] shadow-lg shadow-neon-green/20">
                   {primaryWallet?.type}
                 </Badge>
               </div>
               
               {/* Balance display with Stellar tokens */}
-               <div className="p-1.5 sm:p-2.5 bg-card/70 backdrop-blur-sm rounded-xl border border-neon-cyan/20 shadow-inner space-y-1">
+               <div className="p-1 sm:p-2 bg-card/70 backdrop-blur-sm rounded-xl border border-neon-cyan/20 shadow-inner space-y-1">
                 {/* CCTR and Claimable row */}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[10px] text-muted-foreground mb-0.5">CCC Balance</p>
-                    <p className="text-base sm:text-lg font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
+                    <p className="text-sm sm:text-base font-bold bg-gradient-to-r from-neon-cyan to-neon-green bg-clip-text text-transparent">
                       {balance.cctr_balance.toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] text-muted-foreground mb-0.5">Claimable</p>
-                    <p className="text-sm sm:text-base font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
-                    {balance.claimable_rewards > 0 && <Button size="sm" onClick={() => navigate('/rewards')} className="mt-1 h-5 px-2 text-[9px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-lg transition-all hover:scale-105">
+                    <p className="text-xs sm:text-sm font-bold text-neon-pink animate-pulse">{balance.claimable_rewards.toLocaleString()}</p>
+                    {balance.claimable_rewards > 0 && <Button size="sm" onClick={() => navigate('/rewards')} className="mt-1 h-4 px-1.5 text-[8px] bg-neon-pink/20 text-neon-pink hover:bg-neon-pink hover:text-black border-0 rounded-md transition-all hover:scale-105">
                         Claim
                       </Button>}
                   </div>
@@ -367,16 +367,16 @@ export const UnifiedWalletDropdown = () => {
                 {primaryWallet && (() => {
                 const stellarAssets = getStellarAssets(primaryWallet.address);
                 if (stellarAssets.length > 0) {
-                  return <div className="pt-3 border-t border-neon-cyan/10">
-                        <div className="flex items-center justify-between mb-2">
+                  return <div className="pt-2 border-t border-neon-cyan/10">
+                        <div className="flex items-center justify-between mb-1.5">
                       <div>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
                               Stellar Tokens
                               <Badge variant="outline" className="text-[8px] border-neon-cyan/30 text-neon-cyan px-1 py-0">
                                 {getChainIcon()} STELLAR
                               </Badge>
                             </p>
-                            <p className="text-sm font-bold text-white mt-0.5">
+                            <p className="text-xs sm:text-sm font-bold text-white mt-0.5">
                               {formatBalance(stellarAssets.find(a => a.code === 'XLM')?.balance || 0, 4)} XLM
                             </p>
                           </div>
@@ -428,7 +428,7 @@ export const UnifiedWalletDropdown = () => {
           </div>
 
           {/* Action buttons - Buy, Send, Receive, Swap */}
-          <div className="p-2 sm:p-3 grid grid-cols-4 gap-1.5">
+          <div className="p-1.5 sm:p-2 grid grid-cols-4 gap-1">
             {[{
             action: 'buy' as const,
             icon: CreditCard,
@@ -465,9 +465,9 @@ export const UnifiedWalletDropdown = () => {
             color: 'text-neon-purple',
             border: 'border-neon-purple/40',
             isSwap: true
-          }].map(item => <Button key={item.action} onClick={() => item.isSwap ? setShowSwapModal(true) : handleOpenAction(item.action as 'buy' | 'send' | 'receive')} className={`flex flex-col items-center gap-1 h-auto py-2 bg-gradient-to-br ${item.gradient} ${item.hoverGradient} border ${item.border} rounded-xl ${item.color} transition-all duration-300 hover:scale-105 active:scale-95 group`} variant="ghost">
-                <item.icon size={16} className="transition-transform group-hover:scale-110" />
-                <span className="text-[9px] font-bold">{item.label}</span>
+          }].map(item => <Button key={item.action} onClick={() => item.isSwap ? setShowSwapModal(true) : handleOpenAction(item.action as 'buy' | 'send' | 'receive')} className={`flex flex-col items-center gap-0.5 h-auto py-1.5 bg-gradient-to-br ${item.gradient} ${item.hoverGradient} border ${item.border} rounded-xl ${item.color} transition-all duration-300 hover:scale-105 active:scale-95 group`} variant="ghost">
+                <item.icon size={14} className="transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-bold">{item.label}</span>
               </Button>)}
           </div>
 
@@ -476,7 +476,7 @@ export const UnifiedWalletDropdown = () => {
           {/* Wallet balances now integrated into Stellar Tokens above */}
 
           {/* Recent Transactions Preview */}
-          <div className="p-2 sm:p-3">
+          <div className="p-1.5 sm:p-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Recent Activity</span>
               <Button variant="ghost" size="sm" onClick={() => setShowHistoryModal(true)} className="h-5 px-1.5 text-[9px] text-neon-cyan hover:bg-neon-cyan/20">

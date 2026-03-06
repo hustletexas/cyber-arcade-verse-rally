@@ -15,7 +15,6 @@ interface Message {
 export const FloatingSupportAgent = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: "Hey! 👋 I'm the CyberCity Support Agent. Ask me about tournaments, wallets, payouts, game rules, or anything else!" }
   ]);
@@ -26,21 +25,17 @@ export const FloatingSupportAgent = () => {
   const [ticketCategory, setTicketCategory] = useState('general');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isGamePage = location.pathname.startsWith('/games/') || location.pathname.startsWith('/cyber-galaxy');
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
+  const shouldHideSupportAgent =
+    location.pathname.startsWith('/games/') ||
+    location.pathname.includes('/cyber-galaxy') ||
+    location.pathname.includes('cyber-galaxy');
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Hide on game pages and cyber galaxy to avoid blocking gameplay
-  if (isGamePage) return null;
+  // Hide on all game pages (including Cyber Galaxy) to avoid blocking gameplay
+  if (shouldHideSupportAgent) return null;
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
