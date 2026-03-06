@@ -110,7 +110,7 @@ const WelcomePromoPopup: React.FC = () => {
               <div className="space-y-2 pt-1">
                 <Button
                   onClick={handleConnectWallet}
-                  className="w-full font-['Orbitron'] text-sm font-bold bg-gradient-to-r from-[hsl(var(--neon-pink))] to-[hsl(var(--neon-purple))] hover:opacity-90 text-primary-foreground h-11"
+                  className="hidden sm:flex w-full font-['Orbitron'] text-sm font-bold bg-gradient-to-r from-[hsl(var(--neon-pink))] to-[hsl(var(--neon-purple))] hover:opacity-90 text-primary-foreground h-11"
                 >
                   <Wallet className="w-4 h-4 mr-2" />
                   Connect Wallet & Claim
