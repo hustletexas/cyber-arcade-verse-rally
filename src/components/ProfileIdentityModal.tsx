@@ -608,7 +608,13 @@ export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarCh
                             <p className="text-[10px] text-muted-foreground">Join the community for support</p>
                           </div>
                         </a>
-                        <a href="mailto:support@cybercityarcade.com" className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 hover:border-neon-cyan/30 transition-all cursor-pointer">
+                        <a href="mailto:cybercityarcade@gmail.com" className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 hover:border-neon-cyan/30 transition-all cursor-pointer">
+                          <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 flex items-center justify-center">
+                            <Settings size={14} className="text-neon-cyan" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">Email Support</p>
+                            <p className="text-[10px] text-muted-foreground">cybercityarcade@gmail.com</p>
                           <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 flex items-center justify-center">
                             <Settings size={14} className="text-neon-cyan" />
                           </div>

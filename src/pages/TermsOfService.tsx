@@ -154,8 +154,8 @@ const TermsOfService = () => {
                 For questions or concerns regarding these Terms, contact:
               </p>
               <p className="text-neon-cyan font-mono">
-                <a href="mailto:support@cybercityarcade.com" className="hover:text-neon-purple transition-colors underline">
-                  support@cybercityarcade.com
+                <a href="mailto:cybercityarcade@gmail.com" className="hover:text-neon-purple transition-colors underline">
+                  cybercityarcade@gmail.com
                 </a>
               </p>
             </section>
