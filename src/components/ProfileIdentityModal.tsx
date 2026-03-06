@@ -615,12 +615,6 @@ export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarCh
                           <div className="flex-1">
                             <p className="text-sm font-medium">Email Support</p>
                             <p className="text-[10px] text-muted-foreground">cybercityarcade@gmail.com</p>
-                          <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 flex items-center justify-center">
-                            <Settings size={14} className="text-neon-cyan" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">Email Support</p>
-                            <p className="text-[10px] text-muted-foreground">support@cybercityarcade.com</p>
                           </div>
                         </a>
                       </div>

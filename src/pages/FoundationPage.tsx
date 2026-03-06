@@ -226,12 +226,12 @@ const FoundationPage = () => {
               If you would like to support, sponsor, or help identify recipients for the Computer Access Program, contact us:
             </p>
             <a
-              href="mailto:support@cybercityarcade.com?subject=Computer Access Program"
+              href="mailto:cybercityarcade@gmail.com?subject=Computer Access Program"
               className="inline-flex items-center gap-2"
             >
               <Button className="cyber-button text-base px-8 py-3">
                 <Mail className="w-5 h-5 mr-2" />
-                support@cybercityarcade.com
+                cybercityarcade@gmail.com
               </Button>
             </a>
             <p className="text-xs text-muted-foreground mt-3">
