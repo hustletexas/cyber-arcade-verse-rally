@@ -440,7 +440,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[420px] w-[calc(100vw-2rem)] sm:w-full bg-[#0f0f14] border-white/10 p-0 gap-0 overflow-hidden max-h-[90vh] sm:scale-100 scale-[0.6] origin-center">
         {/* Header */}
-        <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-white/5">
+        <DialogHeader className="p-3 sm:p-6 pb-2 sm:pb-4 border-b border-white/5">
           <DialogTitle className="text-lg sm:text-xl text-white font-semibold flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
               {authMode === 'magic_link' 
