@@ -25,10 +25,11 @@ export const FloatingSupportAgent = () => {
   const [ticketCategory, setTicketCategory] = useState('general');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const normalizedPath = location.pathname.toLowerCase();
   const shouldHideSupportAgent =
-    location.pathname.startsWith('/games/') ||
-    location.pathname.includes('/cyber-galaxy') ||
-    location.pathname.includes('cyber-galaxy');
+    normalizedPath.startsWith('/games/') ||
+    normalizedPath === '/cyber-galaxy' ||
+    normalizedPath.startsWith('/cyber-galaxy/');
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
