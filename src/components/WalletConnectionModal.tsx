@@ -469,7 +469,7 @@ export const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           )}
         </DialogHeader>
 
-        <div className="p-4 sm:p-5 space-y-4 sm:space-y-5 max-h-[55vh] sm:max-h-[60vh] overflow-y-auto">
+        <div className="p-3 sm:p-5 space-y-3 sm:space-y-5 max-h-[65vh] sm:max-h-[60vh] overflow-y-auto">
           {authMode === 'magic_link' ? (
             /* Magic Link Form */
             <div className="space-y-4">
