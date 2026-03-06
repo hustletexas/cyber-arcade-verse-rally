@@ -599,7 +599,7 @@ export const ProfileIdentityModal = ({ open, onOpenChange, avatarUrl, onAvatarCh
                         <p className="text-xs text-muted-foreground mt-1">Get help or report issues</p>
                       </div>
                       <div className="space-y-2">
-                        <a href="https://discord.gg/cybercity" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 hover:border-neon-cyan/30 transition-all cursor-pointer">
+                        <a href="https://discord.gg/83vpV7NBUU" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 hover:border-neon-cyan/30 transition-all cursor-pointer">
                           <div className="w-8 h-8 rounded-lg bg-neon-purple/20 flex items-center justify-center">
                             <LifeBuoy size={14} className="text-neon-purple" />
                           </div>
