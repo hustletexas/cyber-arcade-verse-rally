@@ -118,11 +118,11 @@ const Index = () => {
           <div className="relative flex justify-center mb-4 sm:mb-6">
             <img
               alt="Cyber City Arcade NFT"
-              className="w-full max-w-[320px] sm:max-w-[500px] md:max-w-[700px] lg:max-w-[900px] h-auto object-contain hover:scale-105 transition-transform duration-300 touch-manipulation"
+              className="w-[92vw] max-w-[92vw] min-w-[260px] sm:w-full sm:max-w-[500px] md:max-w-[700px] lg:max-w-[900px] h-auto object-contain hover:scale-105 transition-transform duration-300 touch-manipulation"
               style={{
                 filter: 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 60px rgba(191, 0, 255, 0.3))'
               }}
-              src="/lovable-uploads/1ef75412-acb6-4745-b890-65710aafc798.png?v=2"
+              src="/lovable-uploads/1ef75412-acb6-4745-b890-65710aafc798.png?v=3"
               loading="eager"
               decoding="async"
             />

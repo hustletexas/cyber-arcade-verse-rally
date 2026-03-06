@@ -286,16 +286,16 @@ export const UnifiedWalletDropdown = () => {
   return <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className="relative h-9 sm:h-11 px-2 sm:px-4 rounded-2xl bg-gradient-to-r from-card via-card/90 to-card/80 border border-neon-cyan/30 hover:border-neon-cyan hover:shadow-xl hover:shadow-neon-cyan/30 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] group">
-            <div className="flex items-center gap-2 sm:gap-3">
+          <Button className="relative h-8 sm:h-11 px-2 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-card via-card/90 to-card/80 border border-neon-cyan/30 hover:border-neon-cyan hover:shadow-xl hover:shadow-neon-cyan/30 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] group">
+            <div className="flex items-center gap-1.5 sm:gap-3">
               <div className="relative">
-                <Avatar className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-neon-cyan/50 transition-all duration-300 group-hover:border-neon-cyan group-hover:shadow-lg group-hover:shadow-neon-cyan/30">
+                <Avatar className="w-5 h-5 sm:w-8 sm:h-8 border-2 border-neon-cyan/50 transition-all duration-300 group-hover:border-neon-cyan group-hover:shadow-lg group-hover:shadow-neon-cyan/30">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-br from-neon-pink to-neon-purple text-white text-xs font-bold">
                     {getWalletIcon(primaryWallet?.type || 'lobstr')}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-neon-green rounded-full border-2 border-background animate-pulse" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-neon-green rounded-full border-2 border-background animate-pulse" />
               </div>
               <div className="hidden sm:flex flex-col items-start">
                 <span className="text-xs text-neon-cyan font-medium transition-all group-hover:text-neon-green">
@@ -306,12 +306,12 @@ export const UnifiedWalletDropdown = () => {
                   {balance.cctr_balance.toLocaleString()} CCC
                 </span>
               </div>
-              <ChevronDown size={14} className="text-muted-foreground transition-transform duration-300 group-hover:rotate-180" />
+              <ChevronDown size={12} className="text-muted-foreground transition-transform duration-300 group-hover:rotate-180" />
             </div>
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-1.25rem)] sm:w-[300px] max-h-[calc(100vh-5.5rem)] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-xl sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
+        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-2rem)] max-w-[280px] sm:w-[300px] sm:max-w-[300px] max-h-[70vh] sm:max-h-[calc(100vh-5.5rem)] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-lg sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
           {/* Header with wallet info */}
           <div className="p-1 sm:p-2.5 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] bg-[length:400%_400%] animate-shimmer" />
