@@ -311,7 +311,7 @@ export const UnifiedWalletDropdown = () => {
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-2rem)] max-w-[280px] sm:w-[300px] sm:max-w-[300px] max-h-[70vh] sm:max-h-[calc(100vh-5.5rem)] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-lg sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in">
+        <DropdownMenuContent align="end" sideOffset={8} className="w-[calc(100vw-2rem)] max-w-[280px] sm:w-[300px] sm:max-w-[300px] max-h-[70vh] sm:max-h-[calc(100vh-5.5rem)] overflow-y-auto p-0 bg-background/98 backdrop-blur-xl border border-neon-cyan/30 rounded-lg sm:rounded-3xl shadow-2xl shadow-neon-cyan/20 overflow-hidden animate-fade-in scale-[0.6] sm:scale-100 origin-top-right">
           {/* Header with wallet info */}
           <div className="p-1 sm:p-2.5 bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] bg-[length:400%_400%] animate-shimmer" />
