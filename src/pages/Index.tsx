@@ -1,29 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { GalaxyBackground } from '@/components/games/GalaxyBackground';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
 import { VotingSection } from '@/components/VotingSection';
 import { Marketplace } from '@/components/Marketplace';
-import { PlayerDashboard } from '@/components/PlayerDashboard';
-import { CreditsRewardsShowcase } from '@/components/CreditsRewardsShowcase';
-
 import { CommunityHub } from '@/components/CommunityHub';
 import { RankingsSection } from '@/components/RankingsSection';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { CyberGamesSection } from '@/components/CyberGamesSection';
-
-import { useToast } from '@/hooks/use-toast';
-import { useMultiWallet } from '@/hooks/useMultiWallet';
-import { useSeasonPassPurchase } from '@/hooks/useSeasonPassPurchase';
-import { useAuth } from '@/hooks/useAuth';
-import { useAchievements } from '@/hooks/useAchievements';
-import { useNavigate, Link } from 'react-router-dom';
-import { AIGamingCoach } from '@/components/AIGamingCoach';
+import { Link } from 'react-router-dom';
 import { Web3Gaming } from '@/components/Web3Gaming';
-import { SponsorshipSection } from '@/components/SponsorshipSection';
-
 const Index = () => {
   const {
     toast
