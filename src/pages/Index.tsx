@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { GalaxyBackground } from '@/components/games/GalaxyBackground';
 import { TopBar } from '@/components/TopBar';
 import { VotingSection } from '@/components/VotingSection';
