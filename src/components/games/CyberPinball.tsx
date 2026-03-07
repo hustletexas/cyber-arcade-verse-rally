@@ -518,13 +518,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
 
 
-        // Captive ball
-        if (labels.includes('captive_sensor')) {
-          addScore(200);
-          SFX.captiveBall();
-          spawnParticles(captiveX, captiveY, 5, NEON.white, 3);
-          Body.applyForce(captiveBallBody, captiveBallBody.position, { x: 0, y: -0.002 });
-        }
+
+
 
         // Magnet bumper — just a simple bounce now
         if (labels.includes('magnet_bumper')) {
