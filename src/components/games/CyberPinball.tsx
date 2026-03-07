@@ -527,10 +527,15 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           spawnParticles(ball.position.x, ball.position.y, 5, NEON.purple, 3);
         }
 
-        // Portal holes — simple score (no teleport)
+        // Portal holes — teleport ball to exit portal at top
         if (labels.includes('portal_hole') || labels.includes('portal_bl') || labels.includes('portal_br')) {
-          addScore(100);
-          spawnParticles(ball.position.x, ball.position.y, 6, NEON.purple, 4);
+          addScore(500);
+          spawnParticles(ball.position.x, ball.position.y, 8, NEON.purple, 5);
+          // Teleport ball to the exit portal position (TW - 120, 45)
+          Body.setPosition(ball, { x: TW - 120, y: 45 });
+          Body.setVelocity(ball, { x: (Math.random() - 0.5) * 4, y: 3 });
+          spawnParticles(TW - 120, 45, 8, NEON.cyan, 5);
+          SFX.popBumper();
         }
 
         // CYBER letters — simple score
