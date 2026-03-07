@@ -2809,7 +2809,7 @@ export type Database = {
           id?: string | null
           updated_at?: string | null
           username?: string | null
-          wallet_address?: string | null
+          wallet_address?: never
         }
         Update: {
           avatar_url?: string | null
@@ -2818,7 +2818,7 @@ export type Database = {
           id?: string | null
           updated_at?: string | null
           username?: string | null
-          wallet_address?: string | null
+          wallet_address?: never
         }
         Relationships: []
       }
@@ -2865,14 +2865,14 @@ export type Database = {
           created_at?: string | null
           id?: string | null
           username?: string | null
-          wallet_address?: string | null
+          wallet_address?: never
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
           id?: string | null
           username?: string | null
-          wallet_address?: string | null
+          wallet_address?: never
         }
         Relationships: []
       }
