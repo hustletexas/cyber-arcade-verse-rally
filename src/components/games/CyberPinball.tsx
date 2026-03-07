@@ -398,26 +398,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     G.current.midLeftFlipper = mlf;
     G.current.midRightFlipper = mrf;
 
-    // ── NEW: Captive ball — trapped ball with walls ──
-    const captiveWallOpts = { isStatic: true, label: 'captive_wall', restitution: 0.3 };
-    const captiveX = TW - 60, captiveY = 195;
-    const captiveWalls = [
-      Bodies.rectangle(captiveX, captiveY - 18, 4, 24, captiveWallOpts),
-      Bodies.rectangle(captiveX, captiveY + 18, 4, 24, captiveWallOpts),
-    ];
-    const captiveBallBody = Bodies.circle(captiveX, captiveY, BALL_R + 1, {
-      isStatic: false, label: 'captive_ball', restitution: 0.8, friction: 0.05,
-      density: 0.006,
-    });
-    // Constrain captive ball to stay in place (spring constraint)
-    const captiveSpring = Constraint.create({
-      bodyA: captiveBallBody,
-      pointB: { x: captiveX, y: captiveY },
-      stiffness: 0.05,
-      damping: 0.1,
-      length: 0,
-    });
-    const captiveSensor = Bodies.circle(captiveX, captiveY, 12, sensorOpts('captive_sensor'));
+    // (captive ball removed)
 
     // ── NEW: Right outlane ball return gate ──
     const gateX = TW - 22, gateY = TH - 130;
@@ -437,7 +418,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...popBumpers,
       ...dropTargetBodies,
       mlf, mrf, mlp, mrp,
-      ...captiveWalls, captiveBallBody, captiveSpring, captiveSensor,
+      
       
       rightGateSensor,
     ]);
@@ -537,13 +518,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         }
 
 
-        // Captive ball
-        if (labels.includes('captive_sensor')) {
-          addScore(200);
-          SFX.captiveBall();
-          spawnParticles(captiveX, captiveY, 5, NEON.white, 3);
-          Body.applyForce(captiveBallBody, captiveBallBody.position, { x: 0, y: -0.002 });
-        }
+
+
 
         // Magnet bumper — just a simple bounce now
         if (labels.includes('magnet_bumper')) {
@@ -1680,42 +1656,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.3)';
           ctx.beginPath(); ctx.arc(px, 0, 2, 0, Math.PI * 2); ctx.fill();
 
-        // ── NEW: Captive ball ──
-        } else if (body.label === 'captive_ball') {
-          // Render like a normal ball but with a cage effect
-          const col = NEON.white;
-          ctx.shadowColor = col;
-          ctx.shadowBlur = 12;
-          const cbg = radGrad(ctx, -1, -1.5, 0.5, 0, 0, BALL_R + 1);
-          if (cbg) {
-            cbg.addColorStop(0, '#ffffff');
-            cbg.addColorStop(0.3, '#cccccc');
-            cbg.addColorStop(0.7, '#666666');
-            cbg.addColorStop(1, '#222222');
-            ctx.fillStyle = cbg;
-          } else {
-            ctx.fillStyle = col;
-          }
-          ctx.beginPath(); ctx.arc(0, 0, BALL_R + 1, 0, Math.PI * 2); ctx.fill();
-          ctx.shadowBlur = 0;
-          // Cage bars
-          ctx.strokeStyle = `${NEON.cyan}66`;
-          ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(0, -(BALL_R + 6)); ctx.lineTo(0, (BALL_R + 6)); ctx.stroke();
 
-        } else if (body.label === 'captive_wall') {
-          ctx.fillStyle = `${NEON.cyan}88`;
-          ctx.shadowColor = NEON.cyan;
-          ctx.shadowBlur = 6;
-          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.beginPath();
-          ctx.moveTo(verts[0].x, verts[0].y);
-          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
-          ctx.closePath(); ctx.fill();
-          ctx.shadowBlur = 0;
 
-        } else if (body.label === 'captive_sensor') {
-          // invisible sensor
 
         // ── NEW: Right outlane gate ──
         } else if (body.label === 'right_gate') {
@@ -1790,8 +1732,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.fillStyle = `${NEON.orange}44`;
       ctx.fillText('MID', TW - 80, 350 + 14);
 
-      ctx.fillStyle = `${NEON.white}44`; ctx.font = 'bold 5px monospace';
-      ctx.fillText('CAPTIVE', captiveX, captiveY + 20);
+
+
 
 
       if (g.rightGateOpen && !g.rightGateUsed) {
