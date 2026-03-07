@@ -447,17 +447,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       rightGateSensor,
     ]);
 
-    // ── Inlane rails (guides from above pop bumpers down to flippers) ──
-    const railOpts = { isStatic: true, label: 'inlane_rail', restitution: 0.8 };
-    const inlaneRails = [
-      // Left inlane rail — runs from behind left pop bumper down to left flipper
-      Bodies.rectangle(55, TH - 180, 4, 160, { ...railOpts, angle: 0.12 }),
-      Bodies.rectangle(72, TH - 180, 4, 160, { ...railOpts, angle: 0.12 }),
-      // Right inlane rail — runs from behind right pop bumper down to right flipper
-      Bodies.rectangle(TW - 55, TH - 180, 4, 160, { ...railOpts, angle: -0.12 }),
-      Bodies.rectangle(TW - 72, TH - 180, 4, 160, { ...railOpts, angle: -0.12 }),
-    ];
-    Composite.add(engine.world, inlaneRails);
+    // ── Inlane rails removed — were blocking portals ──
+    const inlaneRails: Matter.Body[] = [];
 
     // ═══════════════════════════════════════
     // ── COLLISION HANDLING ──
