@@ -1724,24 +1724,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         } else if (body.label === 'captive_sensor') {
           // invisible sensor
 
-        // ── NEW: Roll-under spinner ──
-        } else if (body.label === 'roll_spinner') {
-          const spinAngle = g.rollSpinnerAngle;
-          ctx.save();
-          ctx.rotate(spinAngle);
-          ctx.strokeStyle = NEON.cyan;
-          ctx.lineWidth = 2.5;
-          ctx.shadowColor = NEON.cyan;
-          ctx.shadowBlur = 10;
-          ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(20, 0); ctx.stroke();
-          // Cross bars
-          ctx.strokeStyle = `${NEON.cyan}66`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.moveTo(-15, -3); ctx.lineTo(15, -3); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(-15, 3); ctx.lineTo(15, 3); ctx.stroke();
-          ctx.shadowBlur = 0;
-          ctx.restore();
-
         // ── NEW: Right outlane gate ──
         } else if (body.label === 'right_gate') {
           const gateOpen = g.rightGateOpen && !g.rightGateUsed;
