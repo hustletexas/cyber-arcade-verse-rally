@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Gift, ShoppingBag, Sparkles, X, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +41,10 @@ const WelcomePromoPopup: React.FC = () => {
     <>
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
         <DialogContent className="max-w-md p-0 border-0 bg-transparent overflow-hidden [&>button]:hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Welcome to Cyber City Arcade</DialogTitle>
+            <DialogDescription>Exclusive rewards for new players including wallet perks and merch discounts.</DialogDescription>
+          </DialogHeader>
           <div className="relative rounded-2xl overflow-hidden">
             {/* Animated border glow */}
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[hsl(var(--neon-pink))] via-[hsl(var(--neon-purple))] to-[hsl(var(--neon-cyan))] p-[2px]">
