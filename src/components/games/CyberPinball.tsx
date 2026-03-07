@@ -147,7 +147,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     captiveBallHits: 0,
     stuckTimer: 0,
     stuckX: 0, stuckY: 0,
-    rollSpinnerAngle: 0,
+    
     rightGateOpen: true,
     rightGateUsed: false,
     popBumperFlash: new Map<string, number>(),
