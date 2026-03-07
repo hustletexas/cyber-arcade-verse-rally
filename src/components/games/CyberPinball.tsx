@@ -676,7 +676,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
       // Fire in aimed direction
       const aimAngle = cannonAngleRef.current;
-      const launchSpeed = 14; // stronger arcade launch
+      const launchSpeed = 20; // powerful arcade cannon blast
       Body.setVelocity(g.currentBall, {
         x: Math.cos(aimAngle) * launchSpeed,
         y: Math.sin(aimAngle) * launchSpeed,
