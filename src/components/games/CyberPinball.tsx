@@ -398,26 +398,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     G.current.midLeftFlipper = mlf;
     G.current.midRightFlipper = mrf;
 
-    // ── NEW: Captive ball — trapped ball with walls ──
-    const captiveWallOpts = { isStatic: true, label: 'captive_wall', restitution: 0.3 };
-    const captiveX = TW - 60, captiveY = 195;
-    const captiveWalls = [
-      Bodies.rectangle(captiveX, captiveY - 18, 4, 24, captiveWallOpts),
-      Bodies.rectangle(captiveX, captiveY + 18, 4, 24, captiveWallOpts),
-    ];
-    const captiveBallBody = Bodies.circle(captiveX, captiveY, BALL_R + 1, {
-      isStatic: false, label: 'captive_ball', restitution: 0.8, friction: 0.05,
-      density: 0.006,
-    });
-    // Constrain captive ball to stay in place (spring constraint)
-    const captiveSpring = Constraint.create({
-      bodyA: captiveBallBody,
-      pointB: { x: captiveX, y: captiveY },
-      stiffness: 0.05,
-      damping: 0.1,
-      length: 0,
-    });
-    const captiveSensor = Bodies.circle(captiveX, captiveY, 12, sensorOpts('captive_sensor'));
+    // (captive ball removed)
 
     // ── NEW: Right outlane ball return gate ──
     const gateX = TW - 22, gateY = TH - 130;
