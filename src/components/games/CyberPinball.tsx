@@ -1735,7 +1735,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.fillStyle = `${NEON.blue}44`; ctx.font = 'bold 5px monospace';
       ctx.fillText('MID', 80, 430 + 14);
       ctx.fillStyle = `${NEON.orange}44`;
-      ctx.fillText('MID', TW - 80, 350 + 14);
+      ctx.fillText('MID', TW - 80, 310 + 14);
 
 
 
