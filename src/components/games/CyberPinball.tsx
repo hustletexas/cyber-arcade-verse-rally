@@ -1780,7 +1780,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
 
       // New feature labels
       ctx.fillStyle = `${NEON.yellow}66`; ctx.font = 'bold 5px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('POP', 55, 120 + POP_R + 8);
+      ctx.fillText('POP', 365, 120 + POP_R + 8);
 
       ctx.fillStyle = `${NEON.green}66`; ctx.font = 'bold 5px monospace';
       ctx.fillText('DROP TARGETS', 210, 390 + DROP_R + 10);
