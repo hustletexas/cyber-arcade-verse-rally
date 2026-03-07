@@ -837,12 +837,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         showMsg('DROP TARGETS RESET');
       }
 
-      // ── NEW: Roll spinner angle decay ──
-      if (g.rollSpinnerAngle > 0.1) {
-        g.rollSpinnerAngle *= 0.95;
-      } else {
-        g.rollSpinnerAngle = 0;
-      }
 
       // Screen pulse decay
       if (g.screenPulse > 0.01) {
