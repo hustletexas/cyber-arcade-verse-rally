@@ -463,7 +463,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           const sBody = pair.bodyA.label === 'slingshot' ? pair.bodyA : pair.bodyB;
           if (fin(ball.position.x) && fin(sBody.position.x)) {
             const d = Vector.normalise(Vector.sub(ball.position, sBody.position));
-            Body.applyForce(ball, ball.position, { x: d.x * 0.025, y: d.y * 0.025 });
+            Body.applyForce(ball, ball.position, { x: d.x * 0.08, y: d.y * 0.08 });
           }
         }
 
