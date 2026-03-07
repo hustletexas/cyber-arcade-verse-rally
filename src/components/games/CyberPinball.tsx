@@ -537,15 +537,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
         }
 
-        // Spinner
-        if (labels.includes('spinner')) { addScore(25); }
-
-        // Roll spinner
-        if (labels.includes('roll_spinner')) {
-          addScore(50);
-          g.rollSpinnerAngle += Math.PI * 2;
-          spawnParticles(ball.position.x, ball.position.y, 3, NEON.cyan, 2);
-        }
 
         // Captive ball
         if (labels.includes('captive_sensor')) {
