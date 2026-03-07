@@ -1656,42 +1656,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.fillStyle = up ? '#fff' : 'rgba(255,255,255,0.3)';
           ctx.beginPath(); ctx.arc(px, 0, 2, 0, Math.PI * 2); ctx.fill();
 
-        // ── NEW: Captive ball ──
-        } else if (body.label === 'captive_ball') {
-          // Render like a normal ball but with a cage effect
-          const col = NEON.white;
-          ctx.shadowColor = col;
-          ctx.shadowBlur = 12;
-          const cbg = radGrad(ctx, -1, -1.5, 0.5, 0, 0, BALL_R + 1);
-          if (cbg) {
-            cbg.addColorStop(0, '#ffffff');
-            cbg.addColorStop(0.3, '#cccccc');
-            cbg.addColorStop(0.7, '#666666');
-            cbg.addColorStop(1, '#222222');
-            ctx.fillStyle = cbg;
-          } else {
-            ctx.fillStyle = col;
-          }
-          ctx.beginPath(); ctx.arc(0, 0, BALL_R + 1, 0, Math.PI * 2); ctx.fill();
-          ctx.shadowBlur = 0;
-          // Cage bars
-          ctx.strokeStyle = `${NEON.cyan}66`;
-          ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(0, -(BALL_R + 6)); ctx.lineTo(0, (BALL_R + 6)); ctx.stroke();
 
-        } else if (body.label === 'captive_wall') {
-          ctx.fillStyle = `${NEON.cyan}88`;
-          ctx.shadowColor = NEON.cyan;
-          ctx.shadowBlur = 6;
-          const verts = body.vertices.map(v => ({ x: v.x - body.position.x, y: v.y - body.position.y }));
-          ctx.beginPath();
-          ctx.moveTo(verts[0].x, verts[0].y);
-          for (let vi = 1; vi < verts.length; vi++) ctx.lineTo(verts[vi].x, verts[vi].y);
-          ctx.closePath(); ctx.fill();
-          ctx.shadowBlur = 0;
 
-        } else if (body.label === 'captive_sensor') {
-          // invisible sensor
 
         // ── NEW: Right outlane gate ──
         } else if (body.label === 'right_gate') {
