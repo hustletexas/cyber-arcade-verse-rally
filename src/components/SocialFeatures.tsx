@@ -9,7 +9,7 @@ export const SocialFeatures = () => {
   const { toast } = useToast();
 
   const handleWatch = () => {
-    window.open('https://youtube.com/cybercityarcade', '_blank');
+    window.open('https://www.youtube.com/@cybercityarcade', '_blank');
     toast({
       title: "Opening Stream",
       description: "Watch live tournaments on YouTube!",
