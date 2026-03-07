@@ -306,8 +306,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const bumpers = [
       Bodies.circle(bCX - 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_0', restitution: 2.8 }),
       Bodies.circle(bCX + 30, bCY - 35, BUMPER_R, { isStatic: true, label: 'bumper_1', restitution: 2.8 }),
-      Bodies.circle(bCX - 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 2.8 }),
-      Bodies.circle(bCX + 50, bCY + 25, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 2.8 }),
+      Bodies.circle(bCX - 70, bCY + 60, BUMPER_R, { isStatic: true, label: 'bumper_2', restitution: 2.8 }),
+      Bodies.circle(bCX + 70, bCY + 60, BUMPER_R, { isStatic: true, label: 'bumper_3', restitution: 2.8 }),
     ];
 
     const reactorSensor = Bodies.circle(bCX, bCY, 8, sensorOpts('reactor_core'));
@@ -833,28 +833,28 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // ── Flipper physics — +30% stronger for arcade feel ──
       if (g.leftFlipper) {
         const ta = g.leftUp ? -0.85 : 0.38;
-        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 1.1);
+        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 1.8);
       }
       if (g.rightFlipper) {
         const ta = g.rightUp ? 0.85 : -0.38;
-        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 1.1);
+        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 1.8);
       }
       if (g.topLeftFlipper) {
         const ta = g.leftUp ? -0.78 : 0.3;
-        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.9);
+        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 1.5);
       }
       if (g.topRightFlipper) {
         const ta = g.rightUp ? 0.78 : -0.3;
-        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.9);
+        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 1.5);
       }
       // Mid flippers — also boosted
       if (g.midLeftFlipper) {
         const ta = g.leftUp ? -0.78 : 0.35;
-        Body.setAngularVelocity(g.midLeftFlipper, (ta - g.midLeftFlipper.angle) * 0.9);
+        Body.setAngularVelocity(g.midLeftFlipper, (ta - g.midLeftFlipper.angle) * 1.5);
       }
       if (g.midRightFlipper) {
         const ta = g.rightUp ? 0.78 : -0.35;
-        Body.setAngularVelocity(g.midRightFlipper, (ta - g.midRightFlipper.angle) * 0.9);
+        Body.setAngularVelocity(g.midRightFlipper, (ta - g.midRightFlipper.angle) * 1.5);
       }
 
       // ═══════════════════════════════════════
