@@ -1732,8 +1732,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.fillStyle = `${NEON.orange}44`;
       ctx.fillText('MID', TW - 80, 350 + 14);
 
-      ctx.fillStyle = `${NEON.white}44`; ctx.font = 'bold 5px monospace';
-      ctx.fillText('CAPTIVE', captiveX, captiveY + 20);
+
+
 
 
       if (g.rightGateOpen && !g.rightGateUsed) {
