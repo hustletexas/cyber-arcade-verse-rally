@@ -439,7 +439,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...dropTargetBodies,
       mlf, mrf, mlp, mrp,
       ...captiveWalls, captiveBallBody, captiveSpring, captiveSensor,
-      rollSpinner,
+      
       rightGateSensor,
     ]);
 
