@@ -343,10 +343,10 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const magnetBumper = Bodies.circle(TW / 2, 340, 14, { isStatic: true, label: 'magnet_bumper', restitution: 0.3 });
 
     // ── Rotating rail ramps ──
-    const railRamp = Bodies.rectangle(TW / 2 - 80, 300, 80, 4, { isStatic: true, label: 'rail_ramp', angle: -0.15 });
-    const railSensor = Bodies.rectangle(TW / 2 - 80, 280, 18, 8, sensorOpts('rail_loop'));
-    const railRampR = Bodies.rectangle(TW / 2 + 80, 300, 80, 4, { isStatic: true, label: 'rail_ramp_r', angle: 0.15 });
-    const railSensorR = Bodies.rectangle(TW / 2 + 80, 280, 18, 8, sensorOpts('rail_loop_r'));
+    const railRamp = Bodies.rectangle(TW / 2 - 80, 370, 80, 4, { isStatic: true, label: 'rail_ramp', angle: -0.15 });
+    const railSensor = Bodies.rectangle(TW / 2 - 80, 350, 18, 8, sensorOpts('rail_loop'));
+    const railRampR = Bodies.rectangle(TW / 2 + 80, 370, 80, 4, { isStatic: true, label: 'rail_ramp_r', angle: 0.15 });
+    const railSensorR = Bodies.rectangle(TW / 2 + 80, 350, 18, 8, sensorOpts('rail_loop_r'));
 
     // ── CYBER letter lanes ──
     const cyberY = 130;
