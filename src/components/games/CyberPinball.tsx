@@ -2156,7 +2156,8 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         style={{ border: '2px solid rgba(0, 128, 255, 0.3)', maxWidth: TW, aspectRatio: `${TW} / ${TH}` }}
         onMouseMove={handleMouseMove}
         onTouchMove={handleTouchMove}
-        onClick={launchBall}
+        onClick={handleCanvasClick}
+        onTouchStart={handleCanvasTouch}
         role="button"
         tabIndex={0}
       >
