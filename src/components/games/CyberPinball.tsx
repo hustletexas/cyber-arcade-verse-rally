@@ -420,9 +420,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     });
     const captiveSensor = Bodies.circle(captiveX, captiveY, 12, sensorOpts('captive_sensor'));
 
-    // ── NEW: Rollunder spinner ──
-    const rollSpinner = Bodies.rectangle(bCX, 490, 40, 3, sensorOpts('roll_spinner'));
-
     // ── NEW: Right outlane ball return gate ──
     const gateX = TW - 22, gateY = TH - 130;
     const rightGateSensor = Bodies.rectangle(gateX, gateY, 8, 30, sensorOpts('right_gate'));
