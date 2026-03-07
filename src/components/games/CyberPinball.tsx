@@ -376,7 +376,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // ── NEW: Pop bumpers (2) — higher restitution, active pop ──
     const POP_R = 14;
     const popBumpers = [
-      Bodies.circle(55, 120, POP_R, { isStatic: true, label: 'pop_bumper_0', restitution: 3.2 }),
+      Bodies.circle(365, 120, POP_R, { isStatic: true, label: 'pop_bumper_0', restitution: 3.2 }),
     ];
 
     // ── NEW: Drop targets (3) — round stationary targets ──
