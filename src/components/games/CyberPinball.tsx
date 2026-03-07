@@ -2102,9 +2102,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
   }, [showMsg, spawnParticles]);
 
   // Mouse/touch aim handler — updates cannon angle based on pointer position
-  const handleCanvasPointerMove = useCallback((clientX: number, clientY: number) => {
-    const g = G.current;
-    if (g.launched && !g.gameOver) return; // only aim when ball not launched
+  const aimAtPoint = useCallback((clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -2115,11 +2113,16 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const dx = mx - CANNON_X;
     const dy = my - CANNON_Y;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      // Default aim upward; clamp to upper hemisphere
       const angle = Math.atan2(dy, dx);
-      cannonAngleRef.current = Math.min(angle, -0.15); // prevent aiming downward
+      cannonAngleRef.current = Math.min(angle, -0.15);
     }
   }, []);
+
+  const handleCanvasPointerMove = useCallback((clientX: number, clientY: number) => {
+    const g = G.current;
+    if (g.launched && !g.gameOver) return;
+    aimAtPoint(clientX, clientY);
+  }, [aimAtPoint]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     handleCanvasPointerMove(e.clientX, e.clientY);
@@ -2130,6 +2133,20 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       handleCanvasPointerMove(e.touches[0].clientX, e.touches[0].clientY);
     }
   }, [handleCanvasPointerMove]);
+
+  // Click/tap to aim at point AND fire
+  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+    aimAtPoint(e.clientX, e.clientY);
+    launchBall();
+  }, [aimAtPoint, launchBall]);
+
+  const handleCanvasTouch = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      e.preventDefault();
+      aimAtPoint(e.touches[0].clientX, e.touches[0].clientY);
+      launchBall();
+    }
+  }, [aimAtPoint, launchBall]);
 
   return (
     <div className="flex flex-col items-center gap-3 w-full">
