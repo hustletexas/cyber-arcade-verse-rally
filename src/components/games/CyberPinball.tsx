@@ -1580,13 +1580,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.stroke();
           ctx.globalAlpha = 1;
 
-        // ── Spinner ──
-        } else if (body.label === 'spinner') {
-          ctx.strokeStyle = NEON.green; ctx.lineWidth = 2.5;
-          ctx.shadowColor = NEON.green; ctx.shadowBlur = 8;
-          ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(16, 0); ctx.stroke();
-          ctx.shadowBlur = 0;
-
         // ── NEW: Pop bumpers ──
         } else if (body.label.startsWith('pop_bumper_')) {
           const idx = parseInt(body.label.split('_')[2]);
