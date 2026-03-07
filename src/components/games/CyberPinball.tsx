@@ -147,7 +147,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     captiveBallHits: 0,
     stuckTimer: 0,
     stuckX: 0, stuckY: 0,
-    rollSpinnerAngle: 0,
+    
     rightGateOpen: true,
     rightGateUsed: false,
     popBumperFlash: new Map<string, number>(),
@@ -371,7 +371,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     const orbitR = Bodies.rectangle(TW - 52, 115, 16, 8, sensorOpts('orbit_right'));
 
 
-    const spinner = Bodies.rectangle(bCX, bCY - 78, 32, 3, sensorOpts('spinner'));
     const lockSensor = Bodies.rectangle(bCX, bCY + 60, 26, 6, sensorOpts('multiball_lock'));
 
     // ── NEW: Pop bumpers (2) — higher restitution, active pop ──
@@ -421,9 +420,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     });
     const captiveSensor = Bodies.circle(captiveX, captiveY, 12, sensorOpts('captive_sensor'));
 
-    // ── NEW: Rollunder spinner ──
-    const rollSpinner = Bodies.rectangle(bCX, 490, 40, 3, sensorOpts('roll_spinner'));
-
     // ── NEW: Right outlane ball return gate ──
     const gateX = TW - 22, gateY = TH - 130;
     const rightGateSensor = Bodies.rectangle(gateX, gateY, 8, 30, sensorOpts('right_gate'));
@@ -438,12 +434,12 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ...cyberSensors,
       ...demonTargetsL, ...demonTargetsR,
       orbitL, orbitR,
-      spinner, lockSensor,
+      lockSensor,
       ...popBumpers,
       ...dropTargetBodies,
       mlf, mrf, mlp, mrp,
       ...captiveWalls, captiveBallBody, captiveSpring, captiveSensor,
-      rollSpinner,
+      
       rightGateSensor,
     ]);
 
@@ -541,15 +537,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           }
         }
 
-        // Spinner
-        if (labels.includes('spinner')) { addScore(25); }
-
-        // Roll spinner
-        if (labels.includes('roll_spinner')) {
-          addScore(50);
-          g.rollSpinnerAngle += Math.PI * 2;
-          spawnParticles(ball.position.x, ball.position.y, 3, NEON.cyan, 2);
-        }
 
         // Captive ball
         if (labels.includes('captive_sensor')) {
@@ -850,12 +837,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         showMsg('DROP TARGETS RESET');
       }
 
-      // ── NEW: Roll spinner angle decay ──
-      if (g.rollSpinnerAngle > 0.1) {
-        g.rollSpinnerAngle *= 0.95;
-      } else {
-        g.rollSpinnerAngle = 0;
-      }
 
       // Screen pulse decay
       if (g.screenPulse > 0.01) {
@@ -1593,13 +1574,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           ctx.stroke();
           ctx.globalAlpha = 1;
 
-        // ── Spinner ──
-        } else if (body.label === 'spinner') {
-          ctx.strokeStyle = NEON.green; ctx.lineWidth = 2.5;
-          ctx.shadowColor = NEON.green; ctx.shadowBlur = 8;
-          ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(16, 0); ctx.stroke();
-          ctx.shadowBlur = 0;
-
         // ── NEW: Pop bumpers ──
         } else if (body.label.startsWith('pop_bumper_')) {
           const idx = parseInt(body.label.split('_')[2]);
@@ -1744,24 +1718,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
         } else if (body.label === 'captive_sensor') {
           // invisible sensor
 
-        // ── NEW: Roll-under spinner ──
-        } else if (body.label === 'roll_spinner') {
-          const spinAngle = g.rollSpinnerAngle;
-          ctx.save();
-          ctx.rotate(spinAngle);
-          ctx.strokeStyle = NEON.cyan;
-          ctx.lineWidth = 2.5;
-          ctx.shadowColor = NEON.cyan;
-          ctx.shadowBlur = 10;
-          ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(20, 0); ctx.stroke();
-          // Cross bars
-          ctx.strokeStyle = `${NEON.cyan}66`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.moveTo(-15, -3); ctx.lineTo(15, -3); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(-15, 3); ctx.lineTo(15, 3); ctx.stroke();
-          ctx.shadowBlur = 0;
-          ctx.restore();
-
         // ── NEW: Right outlane gate ──
         } else if (body.label === 'right_gate') {
           const gateOpen = g.rightGateOpen && !g.rightGateUsed;
@@ -1839,8 +1795,6 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.fillStyle = `${NEON.white}44`; ctx.font = 'bold 5px monospace';
       ctx.fillText('CAPTIVE', captiveX, captiveY + 20);
 
-      ctx.fillStyle = `${NEON.cyan}44`; ctx.font = 'bold 5px monospace';
-      ctx.fillText('SPINNER', bCXd, 490 + 10);
 
       if (g.rightGateOpen && !g.rightGateUsed) {
         ctx.fillStyle = `${NEON.green}66`; ctx.font = 'bold 5px monospace';
@@ -2015,7 +1969,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.antiGravActive = false; g.antiGravMeter = 0;
           g.trail = []; g.screenPulse = 0;
           g.dropTargets.fill(false); g.dropTargetResetTimer = 0;
-          g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
+          g.captiveBallHits = 0; g.stuckTimer = 0;
           g.rightGateOpen = true; g.rightGateUsed = false;
           g.popBumperFlash.clear();
           if (engineRef.current) engineRef.current.gravity.y = 1.3;
@@ -2083,7 +2037,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       g.antiGravActive = false; g.antiGravMeter = 0;
       g.trail = []; g.screenPulse = 0;
       g.dropTargets.fill(false); g.dropTargetResetTimer = 0;
-      g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
+      g.captiveBallHits = 0; g.stuckTimer = 0;
       g.rightGateOpen = true; g.rightGateUsed = false;
       g.popBumperFlash.clear();
       if (engineRef.current) engineRef.current.gravity.y = 1.3;
