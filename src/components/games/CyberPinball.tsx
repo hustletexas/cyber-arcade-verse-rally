@@ -47,9 +47,9 @@ const BG_COLOR = '#0b0f1a';
 
 // ── Cannon constants — centered between bottom flippers, below them ──
 const CANNON_X = TW / 2;
-const CANNON_Y = TH - 32;
+const CANNON_Y = TH - 16;
 const CANNON_MUZZLE_X = TW / 2;
-const CANNON_MUZZLE_Y = TH - 32;
+const CANNON_MUZZLE_Y = TH - 16;
 const TARGET_SPEED = 9; // Arcade base speed
 const MAX_SPEED = 22;   // Higher cap for arcade chaos
 
