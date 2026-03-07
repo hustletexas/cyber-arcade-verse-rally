@@ -47,9 +47,9 @@ const BG_COLOR = '#0b0f1a';
 
 // ── Cannon constants — centered between bottom flippers, below them ──
 const CANNON_X = TW / 2;
-const CANNON_Y = TH - 32;
+const CANNON_Y = TH - 16;
 const CANNON_MUZZLE_X = TW / 2;
-const CANNON_MUZZLE_Y = TH - 32;
+const CANNON_MUZZLE_Y = TH - 16;
 const TARGET_SPEED = 9; // Arcade base speed
 const MAX_SPEED = 22;   // Higher cap for arcade chaos
 
@@ -676,7 +676,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       Body.setPosition(g.currentBall, { x: CANNON_MUZZLE_X, y: CANNON_MUZZLE_Y });
       // Fire in aimed direction
       const aimAngle = cannonAngleRef.current;
-      const launchSpeed = 14; // stronger arcade launch
+      const launchSpeed = 20; // powerful arcade cannon blast
       Body.setVelocity(g.currentBall, {
         x: Math.cos(aimAngle) * launchSpeed,
         y: Math.sin(aimAngle) * launchSpeed,
@@ -880,29 +880,29 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       // ── Flipper physics ──
       // ── Flipper physics — +30% stronger for arcade feel ──
       if (g.leftFlipper) {
-        const ta = g.leftUp ? -0.72 : 0.38;
-        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 0.75);
+        const ta = g.leftUp ? -0.85 : 0.38;
+        Body.setAngularVelocity(g.leftFlipper, (ta - g.leftFlipper.angle) * 1.1);
       }
       if (g.rightFlipper) {
-        const ta = g.rightUp ? 0.72 : -0.38;
-        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 0.75);
+        const ta = g.rightUp ? 0.85 : -0.38;
+        Body.setAngularVelocity(g.rightFlipper, (ta - g.rightFlipper.angle) * 1.1);
       }
       if (g.topLeftFlipper) {
-        const ta = g.leftUp ? -0.65 : 0.3;
-        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.6);
+        const ta = g.leftUp ? -0.78 : 0.3;
+        Body.setAngularVelocity(g.topLeftFlipper, (ta - g.topLeftFlipper.angle) * 0.9);
       }
       if (g.topRightFlipper) {
-        const ta = g.rightUp ? 0.65 : -0.3;
-        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.6);
+        const ta = g.rightUp ? 0.78 : -0.3;
+        Body.setAngularVelocity(g.topRightFlipper, (ta - g.topRightFlipper.angle) * 0.9);
       }
       // Mid flippers — also boosted
       if (g.midLeftFlipper) {
-        const ta = g.leftUp ? -0.65 : 0.35;
-        Body.setAngularVelocity(g.midLeftFlipper, (ta - g.midLeftFlipper.angle) * 0.65);
+        const ta = g.leftUp ? -0.78 : 0.35;
+        Body.setAngularVelocity(g.midLeftFlipper, (ta - g.midLeftFlipper.angle) * 0.9);
       }
       if (g.midRightFlipper) {
-        const ta = g.rightUp ? 0.65 : -0.35;
-        Body.setAngularVelocity(g.midRightFlipper, (ta - g.midRightFlipper.angle) * 0.65);
+        const ta = g.rightUp ? 0.78 : -0.35;
+        Body.setAngularVelocity(g.midRightFlipper, (ta - g.midRightFlipper.angle) * 0.9);
       }
 
       // ═══════════════════════════════════════
