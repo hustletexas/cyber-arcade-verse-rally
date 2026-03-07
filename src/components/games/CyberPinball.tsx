@@ -390,7 +390,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
     // ── Mid-field flippers (replacing kickout holes) ──
     const MID_FW = 44, MID_FH = 9;
     const mlfX = 80, mlfY = 430;
-    const mrfX = TW - 80, mrfY = 350;
+    const mrfX = TW - 80, mrfY = 310;
     const mlf = Bodies.rectangle(mlfX, mlfY, MID_FW, MID_FH, { label: 'midLeftFlipper', density: 0.018, frictionAir: 0.02, chamfer: { radius: 3 } });
     const mrf = Bodies.rectangle(mrfX, mrfY, MID_FW, MID_FH, { label: 'midRightFlipper', density: 0.018, frictionAir: 0.02, chamfer: { radius: 3 } });
     const mlp = Constraint.create({ bodyA: mlf, pointA: { x: -MID_FW / 2 + 5, y: 0 }, pointB: { x: mlfX - MID_FW / 2 + 5, y: mlfY }, stiffness: 1, length: 0 });
@@ -1735,7 +1735,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
       ctx.fillStyle = `${NEON.blue}44`; ctx.font = 'bold 5px monospace';
       ctx.fillText('MID', 80, 430 + 14);
       ctx.fillStyle = `${NEON.orange}44`;
-      ctx.fillText('MID', TW - 80, 350 + 14);
+      ctx.fillText('MID', TW - 80, 310 + 14);
 
 
 
