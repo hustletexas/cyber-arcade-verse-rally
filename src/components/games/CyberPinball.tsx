@@ -1969,7 +1969,7 @@ export const CyberPinball: React.FC<CyberPinballProps> = ({ onScoreUpdate, onBal
           g.antiGravActive = false; g.antiGravMeter = 0;
           g.trail = []; g.screenPulse = 0;
           g.dropTargets.fill(false); g.dropTargetResetTimer = 0;
-          g.captiveBallHits = 0; g.rollSpinnerAngle = 0; g.stuckTimer = 0;
+          g.captiveBallHits = 0; g.stuckTimer = 0;
           g.rightGateOpen = true; g.rightGateUsed = false;
           g.popBumperFlash.clear();
           if (engineRef.current) engineRef.current.gravity.y = 1.3;
